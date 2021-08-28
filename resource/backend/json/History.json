@@ -1,0 +1,18 @@
+{
+    "tl_history": [
+        {
+            "from": "en",
+            "to": "jp",
+            "query": "apple",
+            "result": "アップル",
+            "engine": "deepl"
+        },
+        {
+            "from": "jp",
+            "to": "en",
+            "query": "アップル",
+            "result": "apple",
+            "engine": "deepl"
+        }
+    ]
+}
