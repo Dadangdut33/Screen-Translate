@@ -20,4 +20,4 @@ def google_tl(text, lang):
 # https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=en&dt=t&q=das ist ein krankenhaus
 
 # print(google_tl("id", "das ist ein krankenhaus"))
-print(google_tl("jp", "こにちわ"))
+# print(google_tl("jp", "こにちわ"))

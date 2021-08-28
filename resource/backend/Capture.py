@@ -23,7 +23,7 @@ def captureImg(coords, sourceLang, tesseract_Location, cached = False):
     Returns:
         status, result: Success or Error, Result
     """
-    status_Success = False
+    is_Success = False
     try:
         # Capture the designated location
         captured = pyautogui.screenshot(region=(coords[0], coords[1], coords[2], coords[3]))
@@ -35,8 +35,8 @@ def captureImg(coords, sourceLang, tesseract_Location, cached = False):
         if cached:
             captured.save(dir_path + r'\img_cache\captured_' + datetime.now().strftime('%Y-%m-%d_%H%M%S') + '.png')
             
-        status_Success = True
+        is_Success = True
     except:
         wordsGet = ''
     finally:
-        return status_Success, wordsGet
+        return is_Success, wordsGet
