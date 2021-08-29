@@ -55,5 +55,3 @@ def captureImg(coords, sourceLang, tesseract_Location, cached = False):
             ctypes.windll.user32.MessageBoxW(0, e, "Error", 0)
     finally:
         return is_Success, wordsGet.strip()
-
-print(captureImg((0, 0, 1024, 768), 'English', 'C:\\Program Files\\Tesseract-OCR\\aaa.exe'))

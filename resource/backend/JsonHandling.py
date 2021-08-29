@@ -71,14 +71,14 @@ def writeSetting(data):
         return is_Success, status
 
 def setDefault():
-    default_Setting = { 
-        "cached": True,
-        "offsetXY": ["auto", "auto"],
-        "tesseract_loc": "C:\\Program Files\\Tesseract-OCR\\tesseract.exe",
-        "default_Engine": "Google Translate",
-        "default_FromOnOpen": "Auto-Detect",
-        "default_ToOnOpen": "English"
-    }
+    # default_Setting = { 
+    #     "cached": True,
+    #     "offsetXY": ["auto", "auto"],
+    #     "tesseract_loc": "C:\\Program Files\\Tesseract-OCR\\tesseract.exe",
+    #     "default_Engine": "Google Translate",
+    #     "default_FromOnOpen": "Auto-Detect",
+    #     "default_ToOnOpen": "English"
+    # }
 
     is_Success = False
     status = ""
