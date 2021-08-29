@@ -1,6 +1,8 @@
 {
     "cached": true,
-    "offsetXY": "auto",
+    "offsetXY": ["auto", "auto"],
     "tesseract_loc": "C:\\Program Files\\Tesseract-OCR\\tesseract.exe",
-    "deepl_keys": ""
+    "default_Engine": "Google Translate",
+    "default_FromOnOpen": "Japanese",
+    "default_ToOnOpen": "English"
 }

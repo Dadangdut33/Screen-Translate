@@ -2,11 +2,11 @@ import json
 import os
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
-# Read, Write, Append
+# Read, Write, Append History
 def write_History(new_data, filename):
     is_Success = False
     status = ""
-    try:
+    try: # datetime.now().strftime('%Y-%m-%d_%H%M%S')
         with open(dir_path + '/json/' + filename,'r+', encoding='utf-8') as f:
             # First we load existing data into a dict.
             file_data = json.load(f)
@@ -62,10 +62,12 @@ def writeSetting(data):
 
 def setDefault():
     default_Setting = { 
-        "cached": False,
-        "offsetXY": "auto",
-        "tesseract_loc": r"C:\Program Files\Tesseract-OCR\tesseract.exe",
-        "deepl_keys": ""
+        "cached": True,
+        "offsetXY": ["auto", "auto"],
+        "tesseract_loc": "C:\\Program Files\\Tesseract-OCR\\tesseract.exe",
+        "default_Engine": "Google Translate",
+        "default_FromOnOpen": "Auto-Detect",
+        "default_ToOnOpen": "English"
     }
 
     is_Success = False

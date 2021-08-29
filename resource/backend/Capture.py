@@ -3,6 +3,9 @@ import os
 import pytesseract
 from datetime import datetime
 
+# Lang Code
+from .LangCode import *
+
 # Settings to capture all screens
 from PIL import Image, ImageGrab
 from functools import partial
@@ -23,6 +26,9 @@ def captureImg(coords, sourceLang, tesseract_Location, cached = False):
     Returns:
         status, result: Success or Error, Result
     """
+    # Language Code
+    langCode = tesseract_Lang[sourceLang]
+
     is_Success = False
     try:
         # Capture the designated location
@@ -30,7 +36,7 @@ def captureImg(coords, sourceLang, tesseract_Location, cached = False):
         pytesseract.pytesseract.tesseract_cmd = tesseract_Location
         
         # Get the text from the image 
-        wordsGet = pytesseract.image_to_string(captured, sourceLang)
+        wordsGet = pytesseract.image_to_string(captured, langCode)
 
         if cached:
             captured.save(dir_path + r'\img_cache\captured_' + datetime.now().strftime('%Y-%m-%d_%H%M%S') + '.png')
@@ -39,4 +45,4 @@ def captureImg(coords, sourceLang, tesseract_Location, cached = False):
     except:
         wordsGet = ''
     finally:
-        return is_Success, wordsGet
+        return is_Success, wordsGet.strip()
