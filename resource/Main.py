@@ -100,14 +100,15 @@ class CaptureUI():
         coords = [x, y, w, h]
         tStatus, settings = fJson.readSetting()
         if tStatus == False: # If error its probably file not found, thats why we only handle the file not found error
-            if settings == "File not Found":
-                print("Error: " + settings)
-                Mbox("Error: Please check your setting.json file", settings, 0)
+            if settings[0] == "Setting file is not found":
+                print("Error: " + settings[0])
+                print(settings[1])
+                Mbox("Error: " + settings[0], settings[1], 0)
                 var1, var2 = fJson.setDefault()
                 if var1 :
                     print("Default setting applied")
                     Mbox("Default setting applied", "Please change your tesseract location in setting if you didn't install tesseract on default C location", 0)
-        if settings['tesseract_loc'] == "":
+        if settings['tesseract_loc'] == "" or "tesseract" in settings['tesseract_loc'] == False:
             self.root.wm_withdraw()  # Hide the capture window
             x = Mbox("Error: Tesseract Not Set!",
                         "Please set tesseract_loc in Setting.json.\nYou can set this in setting menu or modify it manually in resource/backend/json/Setting.json", 0)
@@ -389,17 +390,19 @@ class main_Menu():
         self.root.wm_attributes('-topmost', False) # Default False
         tStatus, settings = fJson.readSetting()
         if tStatus == False: # If error its probably file not found, thats why we only handle the file not found error
-            if settings == "File not Found":
-                print("Error: " + settings)
-                Mbox("Error: Please check your setting.json file", settings, 0)
+            if settings[0] == "Setting file is not found":
+                print("Error: " + settings[0])
+                print(settings[1])
+                Mbox("Error: " + settings[0], settings[1], 0)
+                settings = fJson.default_Setting
                 var1, var2 = fJson.setDefault()
                 if var1 :
                     print("Default setting applied")
                     Mbox("Default setting applied", "Please change your tesseract location in setting if you didn't install tesseract on default C location", 0)
-        if settings['tesseract_loc'] == "":
+        elif settings['tesseract_loc'] == "" or "tesseract" in settings['tesseract_loc'] == False:
             x = Mbox("Error: Tesseract Not Set!",
                         "Please set tesseract_loc in Setting.json.\nYou can set this in setting menu or modify it manually in resource/backend/json/Setting.json", 0)
-
+        
         # Menubar
         def stay_on_top():
             if self.stayOnTop:
@@ -445,7 +448,6 @@ class main_Menu():
         self.captureOpacitySlider.pack(side=LEFT, padx=5, pady=5)
         self.captureOpacityLabel.pack(side=LEFT, padx=5, pady=5)
 
-        print(settings['default_Engine'])
         # bottomFrame1
         self.labelEngines.pack(side=LEFT, padx=5, pady=5)
         self.CBTranslateEngine.current(self.searchList(settings['default_Engine'], self.engines))

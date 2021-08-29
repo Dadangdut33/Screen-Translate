@@ -2,6 +2,16 @@ import json
 import os
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
+# Default Setting
+default_Setting = { 
+    "cached": True,
+    "offsetXY": ["auto", "auto"],
+    "tesseract_loc": "C:\\Program Files\\Tesseract-OCR\\tesseract.exe",
+    "default_Engine": "Google Translate",
+    "default_FromOnOpen": "Auto-Detect",
+    "default_ToOnOpen": "English"
+}
+
 # Read, Write, Append History
 def write_History(new_data, filename):
     is_Success = False
@@ -76,6 +86,7 @@ def setDefault():
         with open(dir_path + '/json/Setting.json' , 'w', encoding='utf-8') as f:
             json.dump(default_Setting, f, ensure_ascii=False, indent=4)
             status = "Successfuly set setting to default"
+            is_Success = True
     except Exception as e:
         status = e
     finally:
@@ -90,8 +101,8 @@ def readSetting():
             is_Success = True
     # Debug
     except FileNotFoundError:
-        data = "File not Found"
+        data = ["Setting file is not found", "Setting.json coould not be loaded please do not move or delete the setting file.\n\nProgram will now automatically create and set the setting to default value"]
     except Exception as e:
-        data = e
+        data = [e]
     finally:
         return is_Success, data

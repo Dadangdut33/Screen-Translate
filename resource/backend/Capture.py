@@ -1,6 +1,7 @@
 import pyautogui
 import os
 import pytesseract
+import ctypes
 from datetime import datetime
 
 # Lang Code
@@ -30,6 +31,7 @@ def captureImg(coords, sourceLang, tesseract_Location, cached = False):
     langCode = tesseract_Lang[sourceLang]
 
     is_Success = False
+    wordsGet = ""
     try:
         # Capture the designated location
         captured = pyautogui.screenshot(region=(coords[0], coords[1], coords[2], coords[3]))
@@ -42,7 +44,16 @@ def captureImg(coords, sourceLang, tesseract_Location, cached = False):
             captured.save(dir_path + r'\img_cache\captured_' + datetime.now().strftime('%Y-%m-%d_%H%M%S') + '.png')
             
         is_Success = True
-    except:
-        wordsGet = ''
+    except Exception as e:
+        print("Error: " + str(e))
+        wordsGet = str(e)
+        if "is not installed or it's not in your PATH" in str(e):
+            ctypes.windll.user32.MessageBoxW(0, "Invalid path location for tesseract.exe, please change it in the setting!", "Error: Tesseract Could not be Found", 0)
+        elif "Failed loading language" in str(e):
+            ctypes.windll.user32.MessageBoxW(0, "Language data not found! It could be that the language data is not installed! Please reinstall tesseract or download the language data and put it into Tesseract-OCR\\tessdata!\n\nThe official version that is used for this program is v5.0.0-alpha.20210811. You can download it from https://github.com/UB-Mannheim/tesseract/wiki or https://digi.bib.uni-mannheim.de/tesseract/", "Error: Failed Loading Language", 0)
+        else:
+            ctypes.windll.user32.MessageBoxW(0, e, "Error", 0)
     finally:
         return is_Success, wordsGet.strip()
+
+print(captureImg((0, 0, 1024, 768), 'English', 'C:\\Program Files\\Tesseract-OCR\\aaa.exe'))
