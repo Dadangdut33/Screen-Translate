@@ -1,13 +1,36 @@
 import pyautogui
+import os
 import asyncio
 import backend.Translate as tl
 import backend.Capture as capture
 import backend.JsonHandling as fJson
 from backend.LangCode import *
 from tkinter import *
+from tkinter.tix import *
 import tkinter.ttk as ttk
 from Mbox import Mbox
+dir_path = os.path.dirname(os.path.realpath(__file__))
 
+# public func
+def searchList(searchFor, theList):
+    index = 0
+    for lang in theList:
+        if lang == searchFor:
+            return index
+        index += 1
+
+def fillList(dictFrom, listTo, insertFirst, insertSecond = ""):
+    for item in dictFrom:
+        if item == "Auto-Detect":
+            continue
+        listTo += [item]
+
+    listTo.sort()
+    listTo.insert(0, insertFirst)
+    if insertSecond != "":
+        listTo.insert(1, insertSecond)
+
+# -------------------------
 def console():
     print("-" * 80)
     print("Welcome to Screen Translate")
@@ -52,7 +75,7 @@ class CaptureUI():
         main_Menu.captureOpacityLabel.config(text="Capture UI Opacity: " + str(round(float(x), 2)))
 
     # Capture the text
-    def getTextAndTranslate(self, offsetXY=["auto", "auto"]):
+    def getTextAndTranslate(self, offSetXY=["auto", "auto"]):
         if(main_Menu.capUiHidden): # If Hidden
             Mbox("Error: You need to generate the capture window", "Please generate the capture window first", 0)
             print("Error Need to generate the capture window! Please generate the capture window first")
@@ -71,32 +94,62 @@ class CaptureUI():
         x, y, w, h = self.root.winfo_x(), self.root.winfo_y(
         ), self.root.winfo_width(), self.root.winfo_height()
 
+        # Get settings
+        status, settings = fJson.readSetting() 
+        offSetXY = settings["offsetXY"]
+        offSetWH = settings["offsetWH"]
+        offSetType = settings["offsetType"]
+
+        # AUTO BIAR NTAR PAS SETIAP BUKA SETTING DIITUNG LAGI, JADI KALAU NANTI DI MODIFY ISINYA GA AUTO LAGI, CEK NYA ILANG, KALAU MASIH DI CEK NTAR SPINNERNYA DI DISABLE
+        # KALAU DAH GA DI CEK DAH GA DI DISABLE
+        # OFFSET SAMA KONSEPNYA
+        # ALSO ADD offset type horizontal or vertical or auto, auto will be if w > h
+        # add checkbox widget for auto x auto y also auto w auto h
+        # clicking the checbox will fill the spinner with the auto get
         # X Y offset
-        if offsetXY[0] == "auto":
+        if offSetXY[0] == "auto" and offSetXY[1] == "auto":
             offsetX = pyautogui.size().width
             offsetY = pyautogui.size().height
+        elif offSetXY[0] == "auto" and offSetXY[1] != "auto":
+            offsetX = pyautogui.size().width
+            offsetY = offSetXY[1]
+        elif offSetXY[0] != "auto" and offSetXY[1] == "auto":
+            offsetX = offSetXY[0]
+            offsetY = pyautogui.size().height
         else:
-            offsetX = offsetXY[0]
-            offsetY = offsetXY[1]
+            offsetX = offSetXY[0]
+            offsetY = offSetXY[1]
+
+        # W H offset
+        if offSetWH[0] == "auto" and offSetWH[1] == "auto":
+            w += 60
+            h += 60
+        elif offSetWH[0] == "auto" and offSetWH[1] != "auto":
+            w += 60
+            h += offSetWH[1]
+        elif offSetWH[0] != "auto" and offSetWH[1] == "auto":
+            w += offSetWH[0]
+            h += 60
+        else:
+            w += offSetWH[0]
+            h += offSetWH[1]
 
         #  Alignment offset
-        if offsetXY[1] == "auto":
+        if offSetXY[1] == "auto":
             if(offsetX > offsetY):  # Horizontal alignment
                 if(x < offsetX):
                     x += offsetX
             else:  # Vertical Alignment
                 if(y < offsetY):
                     y += offsetY
-        elif offsetXY[1] == "horizontal":
+        elif offSetType.lower() == "horizontal":
             if(x < offsetX):
                 x += offsetX
-        elif offsetXY[1] == "vertical":
+        elif offSetType.lower() == "vertical":
             if(y < offsetY):
                 y += offsetY
 
         # Capture screen
-        w += 60 # added extra pixel cause sometimes it gets cut off
-        h += 60
         coords = [x, y, w, h]
         tStatus, settings = fJson.readSetting()
         if tStatus == False: # If error its probably file not found, thats why we only handle the file not found error
@@ -170,8 +223,8 @@ class CaptureUI():
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
 
 # ----------------------------------------------------------------------
-class HistoryUI():
-    """History Window"""
+class SettingUI():
+    """Setting Window"""
     root = Tk()
 
     def show(self):
@@ -180,13 +233,162 @@ class HistoryUI():
     def on_closing(self):
         self.root.wm_withdraw()
 
+    def screenShotAndOpenLayout(self = ""):
+        
+        pass
+
+    def restoreDefault(self = ""):
+
+        pass
+
+    def saveSettings(self = ""):
+        
+        pass
+            
+    engines = engineList
+    optGoogle = []
+    fillList(google_Lang, optGoogle, "Auto-Detect")
+    optDeepl = []
+    fillList(deepl_Lang, optDeepl, "Auto-Detect")
+    langOpt = optGoogle
+
+    # Frames
+    firstFrame = Frame(root)
+    firstFrame.pack(side=TOP, fill=X, expand=False)
+    firstFrameContent = Frame(root)
+    firstFrameContent.pack(side=TOP, fill=X, expand=False)
+
+    secondFrame = Frame(root)
+    secondFrame.pack(side=TOP, fill=X, expand=False)
+    secondFrameContent = Frame(root)
+    secondFrameContent.pack(side=TOP, fill=X, expand=False)
+    secondFrameContent2 = Frame(root)
+    secondFrameContent2.pack(side=TOP, fill=X, expand=False)
+    secondFrameContent3 = Frame(root)
+    secondFrameContent3.pack(side=TOP, fill=X, expand=False)
+    secondFrameContent4 = Frame(root)
+    secondFrameContent4.pack(side=TOP, fill=X, expand=False)
+
+    thirdFrame = Frame(root)
+    thirdFrame.pack(side=TOP, fill=X, expand=False)
+    thirdFrameContent = Frame(root)
+    thirdFrameContent.pack(side=TOP, fill=X, expand=False)
+
+    fourthFrame = Frame(root)
+    fourthFrame.pack(side=TOP, fill=X, expand=False)
+    fourthFrameContent = Frame(root)
+    fourthFrameContent.pack(side=TOP, fill=X, expand=False)
+
+    bottomFrame = Frame(root)
+    bottomFrame.pack(side=BOTTOM, fill=BOTH, expand=False)
+
+    # First Frame
+    labelImg = Label(firstFrame, text="Image Setting")
+    checkVarCache = BooleanVar(value=True)
+    checkBTNCache = Checkbutton(firstFrameContent, text="Cached", variable=checkVarCache)
+    btnOpenCacheFolder = Button(firstFrameContent, text="Open Cache Folder", command=lambda: os.startfile(dir_path + r"\backend\img_cache"))
+
+    # Second Frame
+    labelMonitor = Label(secondFrame, text="Capture Offset")
+    checkVarOffSetX = BooleanVar(value=True)
+    checkVarOffSetY = BooleanVar(value=True)
+    checkVarOffSetW = BooleanVar(value=True)
+    checkVarOffSetH = BooleanVar(value=True)
+    checkDefaultOffSetX = Checkbutton(secondFrameContent, text="Default Offset X", variable=checkVarOffSetX)
+    checkDefaultOffSetY = Checkbutton(secondFrameContent, text="Default Offset Y", variable=checkVarOffSetY)
+    checkDefaultOffsetW = Checkbutton(secondFrameContent, text="Default Offset W", variable=checkVarOffSetW)
+    checkDefaultOffsetH = Checkbutton(secondFrameContent, text="Default Offset H", variable=checkVarOffSetH)
+
+    labelOffSetX = Label(secondFrameContent2, text="Offset X\t:")
+    labelOffSetY = Label(secondFrameContent2, text="Offset Y\t:")
+    labelOffSetW = Label(secondFrameContent3, text="Offset W\t:")
+    labelOffSetH = Label(secondFrameContent3, text="Offset H\t:")
+
+    spinnerOffSetX = Spinbox(secondFrameContent2, from_=0, to=100_000, width=20)
+    spinnerOffSetY = Spinbox(secondFrameContent2, from_=0, to=100_000, width=20)
+    spinnerOffSetW = Spinbox(secondFrameContent3, from_=0, to=100_000, width=20)
+    spinnerOffSetH = Spinbox(secondFrameContent3, from_=0, to=100_000, width=20)
+
+    buttonCheckMonitorLayout = Button(secondFrameContent4, text="Click to get A Screenshot of How The Program See Your Monitor")
+
+    # Third frame
+    labelTl = Label(thirdFrame, text="Translation")
+    CBDefaultEngine = ttk.Combobox(thirdFrameContent, values=engines, state="readonly")
+    CBDefaultFrom = ttk.Combobox(thirdFrameContent, values=langOpt, state="readonly")
+    CBDefaultTo = ttk.Combobox(thirdFrameContent, values=langOpt, state="readonly")
+    labelDefaultEngine = Label(thirdFrameContent, text="Default Engine:")
+    labelDefaultFrom = Label(thirdFrameContent, text="Default From:")
+    labelDefaultTo = Label(thirdFrameContent, text="Default To:")
+
+    # Fourth frame
+    labelTesseract = Label(fourthFrame, text="Tesseract")
+    labelTesseractPath = Label(fourthFrameContent, text="Tesseract Path:")
+    textBoxTesseractPath = Text(fourthFrameContent, width=50, height=1)
+
+    # Bottom Frame
+    btnRestoreDefault = Button(bottomFrame, text="Restore Default", command=restoreDefault)
+    btnSave = Button(bottomFrame, text="Save Settings", command=saveSettings)
+
     # ----------------------------------------------------------------------
     def __init__(self):
-        self.root.title("Translation History")
-        self.root.geometry("400x600")
+        self.root.title("Setting")
+        self.root.geometry("750x400")
         self.root.wm_attributes('-topmost', False) # Default False
-        self.root.wm_withdraw()
+        # self.root.wm_withdraw()
 
+        tStatus, settings = fJson.readSetting()
+        # Ignore status, already handled in main menu
+        if settings['cached'] == True:
+            self.checkBTNCache.select()
+        else:
+            self.checkBTNCache.deselect()
+
+        # Init element
+        # 1
+        self.labelImg.pack(side=LEFT, padx=5, pady=5, fill=X)
+        self.checkBTNCache.pack(side=LEFT, padx=5, pady=5)
+        self.btnOpenCacheFolder.pack(side=LEFT, padx=5, pady=5)
+
+        # 2
+        self.labelMonitor.pack(side=LEFT, fill=X)
+        self.checkDefaultOffSetX.pack(side=LEFT, padx=5, pady=5)
+        self.checkDefaultOffSetY.pack(side=LEFT, padx=5, pady=5)
+        self.checkDefaultOffsetW.pack(side=LEFT, padx=5, pady=5)
+        self.checkDefaultOffsetH.pack(side=LEFT, padx=5, pady=5)
+
+        self.labelOffSetX.pack(side=LEFT, padx=5, pady=5)
+        self.spinnerOffSetX.pack(side=LEFT, padx=5, pady=5)
+        self.labelOffSetY.pack(side=LEFT, padx=5, pady=5)
+        self.spinnerOffSetY.pack(side=LEFT, padx=5, pady=5)
+
+        self.labelOffSetW.pack(side=LEFT, padx=5, pady=5)
+        self.spinnerOffSetW.pack(side=LEFT, padx=5, pady=5)
+        self.labelOffSetH.pack(side=LEFT, padx=5, pady=5)
+        self.spinnerOffSetH.pack(side=LEFT, padx=5, pady=5)
+        
+        self.buttonCheckMonitorLayout.pack(side=LEFT, padx=30, pady=5)
+
+        # 3
+        self.labelTl.pack(side=LEFT, padx=5, pady=5, fill=X)
+
+        self.labelDefaultEngine.pack(side=LEFT, padx=5, pady=5)
+        self.CBDefaultEngine.pack(side=LEFT, padx=5, pady=5)
+
+        self.labelDefaultFrom.pack(side=LEFT, padx=5, pady=5)
+        self.CBDefaultFrom.pack(side=LEFT, padx=5, pady=5)
+
+        self.labelDefaultTo.pack(side=LEFT, padx=5, pady=5)
+        self.CBDefaultTo.pack(side=LEFT, padx=5, pady=5)
+        
+        # 4
+        self.labelTesseract.pack(side=LEFT, padx=5, pady=5, fill=X)
+        self.labelTesseractPath.pack(side=LEFT, padx=5, pady=5)
+        self.textBoxTesseractPath.pack(side=LEFT, padx=5, pady=5)
+
+        # Bottom Frame
+        self.btnSave.pack(side=RIGHT, padx=5, pady=5)
+        self.btnRestoreDefault.pack(side=RIGHT, padx=5, pady=5)
+        
         # On Close
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
 
@@ -194,78 +396,6 @@ class HistoryUI():
 class main_Menu():
     """Main Menu Window"""
     console()
-
-    # --- Declarations and Layout ---
-    # Call the other frame
-    capture_UI = CaptureUI()
-    history = HistoryUI()
-
-    root = Tk()
-    stayOnTop = False
-    capUiHidden = False
-
-    # Frame
-    topFrame1 = Frame(root)
-    topFrame1.pack(side=TOP, fill=X, expand=False)
-
-    topFrame2 = Frame(root)
-    topFrame2.pack(side=TOP, fill=BOTH, expand=True)
-
-    bottomFrame1 = Frame(root)
-    bottomFrame1.pack(side=TOP, fill=X, expand=False)
-
-    bottomFrame2 = Frame(root)
-    bottomFrame2.pack(side=BOTTOM, fill=BOTH, expand=True)
-
-    # Capture Opacity topFrame1
-    captureOpacitySlider = ttk.Scale(topFrame1, from_=0.01, to=1.0, value=capture_UI.currOpacity, orient=HORIZONTAL, command=capture_UI.sliderOpac)
-    captureOpacityLabel = Label(topFrame1, text="Capture UI Opacity: " + str(capture_UI.currOpacity))
-
-    # Combobox bottomFrame1
-    # Some function
-    def searchList(self, searchFor, theList):
-        index = 0
-        for lang in theList:
-            if lang == searchFor:
-                return index
-            index += 1
-
-    def fillList(dictFrom, listTo, insertFirst, insertSecond = ""):
-        for item in dictFrom:
-            if item == "Auto-Detect":
-                continue
-            listTo += [item]
-
-        listTo.sort()
-        listTo.insert(0, insertFirst)
-        if insertSecond != "":
-            listTo.insert(1, insertSecond)
-            
-    optGoogle = []
-    fillList(google_Lang, optGoogle, "Auto-Detect")
-    optDeepl = []
-    fillList(deepl_Lang, optDeepl, "Auto-Detect")
-    langOpt = optGoogle
-
-    engines = ["Google Translate", "Deepl"]
-
-    labelEngines = Label(bottomFrame1, text="TL Engine:")
-    CBTranslateEngine = ttk.Combobox(bottomFrame1, value=engines, state="readonly")
-
-    labelLangFrom = Label(bottomFrame1, text="From:")
-    CBLangFrom = ttk.Combobox(bottomFrame1, values=langOpt, state="readonly")
-
-    labelLangTo = Label(bottomFrame1, text="To:")
-    CBLangTo = ttk.Combobox(bottomFrame1, values=langOpt, state="readonly")
-
-    translateOnly_Btn = Button()
-    captureNTranslate_Btn = Button()
-    clearBtn = Button()
-    swapBtn = Button()
-
-    # Translation Textbox topFrame2 & bottomFrame2
-    textBoxTop = Text(topFrame2, height = 5, width = 100, font=("Segoe UI", 10), yscrollcommand=True)
-    textBoxBottom = Text(bottomFrame2, height = 5, width = 100, font=("Segoe UI", 10), yscrollcommand=True)
 
     # --- Functions ---
     async def getDeeplTl(self, text, langTo, langFrom):
@@ -335,7 +465,7 @@ class main_Menu():
     
     # Open History Window
     def open_History(self):
-        self.history.show()
+        self.setting.show()
 
     # Open Capture Window
     def open_capture_screen(self):
@@ -366,21 +496,72 @@ class main_Menu():
 
     def tbChange(self, event = ""):
         # Get the engine from the combobox
-        engine = self.CBTranslateEngine.get()
+        curr_Engine = self.CBTranslateEngine.get()
 
         # Translate
-        if engine == "Google Translate":
+        if curr_Engine == "Google Translate":
             self.langOpt = self.optGoogle
             self.CBLangFrom['values'] = self.optGoogle
             self.CBLangFrom.current(0)
             self.CBLangTo['values'] = self.optGoogle
-            self.CBLangTo.current(self.searchList("English", self.optDeepl))
-        elif engine == "Deepl":
+            self.CBLangTo.current(searchList("English", self.optDeepl))
+        elif curr_Engine == "Deepl":
             self.langOpt = self.optDeepl
             self.CBLangFrom['values'] = self.optDeepl
             self.CBLangFrom.current(0)
             self.CBLangTo['values'] = self.optDeepl
-            self.CBLangTo.current(self.searchList("English", self.optDeepl))
+            self.CBLangTo.current(searchList("English", self.optDeepl))
+
+    # --- Declarations and Layout ---
+    # Call the other frame
+    capture_UI = CaptureUI()
+    setting = SettingUI()
+
+    root = Tk()
+    stayOnTop = False
+    capUiHidden = False
+
+    # Frame
+    topFrame1 = Frame(root)
+    topFrame1.pack(side=TOP, fill=X, expand=False)
+
+    topFrame2 = Frame(root)
+    topFrame2.pack(side=TOP, fill=BOTH, expand=True)
+
+    bottomFrame1 = Frame(root)
+    bottomFrame1.pack(side=TOP, fill=X, expand=False)
+
+    bottomFrame2 = Frame(root)
+    bottomFrame2.pack(side=BOTTOM, fill=BOTH, expand=True)
+
+    # Capture Opacity topFrame1
+    captureOpacitySlider = ttk.Scale(topFrame1, from_=0.01, to=1.0, value=capture_UI.currOpacity, orient=HORIZONTAL, command=capture_UI.sliderOpac)
+    captureOpacityLabel = Label(topFrame1, text="Capture UI Opacity: " + str(capture_UI.currOpacity))
+
+    engines = engineList
+    optGoogle = []
+    fillList(google_Lang, optGoogle, "Auto-Detect")
+    optDeepl = []
+    fillList(deepl_Lang, optDeepl, "Auto-Detect")
+    langOpt = optGoogle # Will be overwritten in innit
+
+    labelEngines = Label(bottomFrame1, text="TL Engine:")
+    CBTranslateEngine = ttk.Combobox(bottomFrame1, values=engines, state="readonly")
+
+    labelLangFrom = Label(bottomFrame1, text="From:")
+    CBLangFrom = ttk.Combobox(bottomFrame1, values=langOpt, state="readonly")
+
+    labelLangTo = Label(bottomFrame1, text="To:")
+    CBLangTo = ttk.Combobox(bottomFrame1, values=langOpt, state="readonly")
+
+    translateOnly_Btn = Button()
+    captureNTranslate_Btn = Button()
+    clearBtn = Button()
+    swapBtn = Button()
+
+    # Translation Textbox topFrame2 & bottomFrame2
+    textBoxTop = Text(topFrame2, height = 5, width = 100, font=("Segoe UI", 10), yscrollcommand=True)
+    textBoxBottom = Text(bottomFrame2, height = 5, width = 100, font=("Segoe UI", 10), yscrollcommand=True)
 
     # ----------------------------------------------------------------------
     # __init__
@@ -450,18 +631,18 @@ class main_Menu():
 
         # bottomFrame1
         self.labelEngines.pack(side=LEFT, padx=5, pady=5)
-        self.CBTranslateEngine.current(self.searchList(settings['default_Engine'], self.engines))
+        self.CBTranslateEngine.current(searchList(settings['default_Engine'], self.engines))
         self.CBTranslateEngine.pack(side=LEFT, padx=5, pady=5)
         self.CBTranslateEngine.bind("<<ComboboxSelected>>", self.tbChange)
 
         self.tbChange() # Update the cb
 
         self.labelLangFrom.pack(side=LEFT, padx=5, pady=5)
-        self.CBLangFrom.current(self.searchList(settings['default_FromOnOpen'], self.langOpt))
+        self.CBLangFrom.current(searchList(settings['default_FromOnOpen'], self.langOpt))
         self.CBLangFrom.pack(side=LEFT, padx=5, pady=5)
 
         self.labelLangTo.pack(side=LEFT, padx=5, pady=5)
-        self.CBLangTo.current(self.searchList(settings['default_ToOnOpen'], self.langOpt)) # Default to English
+        self.CBLangTo.current(searchList(settings['default_ToOnOpen'], self.langOpt)) # Default to English
         self.CBLangTo.pack(side=LEFT, padx=5, pady=5)
 
         # Button bottomFrame1

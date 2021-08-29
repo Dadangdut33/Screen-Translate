@@ -1,3 +1,6 @@
+# Engines available
+engineList = ["Google Translate", "Deepl"]
+
 # List of supported languages by Tesseract OCR
 tesseract_Lang = {
     "Auto-Detect": "auto",

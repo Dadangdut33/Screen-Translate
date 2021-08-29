@@ -5,7 +5,9 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 # Default Setting
 default_Setting = { 
     "cached": True,
-    "offsetXY": ["auto", "auto"],
+    "offSetType": "auto",
+    "offSetXY": ["auto", "auto"],
+    "offSetWH": ["auto", "auto"],
     "tesseract_loc": "C:\\Program Files\\Tesseract-OCR\\tesseract.exe",
     "default_Engine": "Google Translate",
     "default_FromOnOpen": "Auto-Detect",
@@ -71,15 +73,6 @@ def writeSetting(data):
         return is_Success, status
 
 def setDefault():
-    # default_Setting = { 
-    #     "cached": True,
-    #     "offsetXY": ["auto", "auto"],
-    #     "tesseract_loc": "C:\\Program Files\\Tesseract-OCR\\tesseract.exe",
-    #     "default_Engine": "Google Translate",
-    #     "default_FromOnOpen": "Auto-Detect",
-    #     "default_ToOnOpen": "English"
-    # }
-
     is_Success = False
     status = ""
     try:

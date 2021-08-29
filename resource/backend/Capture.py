@@ -28,7 +28,11 @@ def captureImg(coords, sourceLang, tesseract_Location, cached = False):
         status, result: Success or Error, Result
     """
     # Language Code
-    langCode = tesseract_Lang[sourceLang]
+    try:
+        langCode = tesseract_Lang[sourceLang]
+    except KeyError as e:
+        print("Error: Key Error\n" + str(e))
+        ctypes.windll.user32.MessageBoxW(0, "Key Error, On Assigning Language Code.\n" + str(e), "Error: Key Error", 0)
 
     is_Success = False
     wordsGet = ""
