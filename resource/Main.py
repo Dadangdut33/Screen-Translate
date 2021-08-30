@@ -31,7 +31,7 @@ def fillList(dictFrom, listTo, insertFirst, insertSecond = ""):
     if insertSecond != "":
         listTo.insert(1, insertSecond)
 
-def offSetSettings(widthHeighOff, xyOffsetType, xyOff):
+def offSetSettings(widthHeighOff, xyOffsetType, xyOff, custom=""):
     offSetsGet = []
     x, y, w, h = 0, 0, 0, 0
     if widthHeighOff[0] == "auto":
@@ -45,7 +45,7 @@ def offSetSettings(widthHeighOff, xyOffsetType, xyOff):
         h = widthHeighOff[1]
 
     #  If offset is set
-    if xyOffsetType.lower() != "no offset":
+    if xyOffsetType.lower() != "no offset" or custom != "":
         offsetX = pyautogui.size().width
         offsetY = pyautogui.size().height
         
@@ -73,13 +73,16 @@ def offSetSettings(widthHeighOff, xyOffsetType, xyOff):
     offSetsGet.append(h)
     return offSetsGet
 
-def getTheOffset():
+def getTheOffset(custom = ""):
     tStatus, settings = fJson.readSetting()
 
     offSetXY = settings["offSetXY"]
     offSetWH = settings["offSetWH"]
     xyOffSetType = settings["offSetXYType"]
-    offSets = offSetSettings(offSetWH, xyOffSetType, offSetXY)
+    if custom != "":
+        offSets = offSetSettings(offSetWH, xyOffSetType, offSetXY, custom)
+    else:
+        offSets = offSetSettings(offSetWH, xyOffSetType, offSetXY)
 
     return offSets
 
@@ -91,7 +94,11 @@ def console():
 
 # ----------------------------------------------------------------
 # Public var
-
+engines = engineList
+optGoogle = []
+fillList(google_Lang, optGoogle, "Auto-Detect")
+optDeepl = []
+fillList(deepl_Lang, optDeepl, "Auto-Detect")
 # ----------------------------------------------------------------------
 # Classes
 class CaptureUI():
@@ -262,8 +269,28 @@ class SettingUI():
     def on_closing(self):
         self.root.wm_withdraw()
 
+    def getCurrXYOFF(self = ""):
+        if main_Menu.setting.checkVarOffSetX.get():
+            x = int(main_Menu.setting.spinnerOffSetX.get())
+        else: 
+            x = "auto"
+        if main_Menu.setting.checkVarOffSetY.get():
+            y = int(main_Menu.setting.spinnerOffSetY.get())
+        else:
+            y = "auto"
+        if main_Menu.setting.checkVarOffSetW.get():
+            w = int(main_Menu.setting.spinnerOffSetW.get())
+        else:
+            w = "auto"
+        if main_Menu.setting.checkVarOffSetH.get():
+            h = int(main_Menu.setting.spinnerOffSetH.get())
+        else:
+            h = "auto"
+
+        return [x, y, w, h]
+
     def checkBtnX():
-        offSets = getTheOffset()
+        offSets = getTheOffset(main_Menu.setting.getCurrXYOFF()[0])
 
         if main_Menu.setting.root.getvar(name="checkVarOffSetX") == "1":
             main_Menu.setting.spinnerOffSetX.config(state=DISABLED)
@@ -272,7 +299,7 @@ class SettingUI():
             main_Menu.setting.spinnerOffSetX.config(state=NORMAL)
 
     def checkBtnY():
-        offSets = getTheOffset()
+        offSets = getTheOffset(main_Menu.setting.getCurrXYOFF()[1])
 
         if main_Menu.setting.root.getvar(name="checkVarOffSetY") == "1":
             main_Menu.setting.spinnerOffSetY.config(state=DISABLED)
@@ -281,7 +308,7 @@ class SettingUI():
             main_Menu.setting.spinnerOffSetY.config(state=NORMAL)
 
     def checkBtnW():
-        offSets = getTheOffset()
+        offSets = getTheOffset(main_Menu.setting.getCurrXYOFF()[2])
 
         if main_Menu.setting.root.getvar(name="checkVarOffSetW") == "1":
             main_Menu.setting.spinnerOffSetW.config(state=DISABLED)
@@ -290,7 +317,7 @@ class SettingUI():
             main_Menu.setting.spinnerOffSetW.config(state=NORMAL)
 
     def checkBtnH():
-        offSets = getTheOffset()
+        offSets = getTheOffset(main_Menu.setting.getCurrXYOFF()[3])
 
         if main_Menu.setting.root.getvar(name="checkVarOffSetH") == "1":
             main_Menu.setting.spinnerOffSetH.config(state=DISABLED)
@@ -298,148 +325,23 @@ class SettingUI():
         else:
             main_Menu.setting.spinnerOffSetH.config(state=NORMAL)
 
-    def screenShotAndOpenLayout(self = ""):
-        
+    def screenShotAndOpenLayout():
+        capture.captureAll()
+        os.startfile(dir_path + r"\backend\img_cache\Monitor(s) Captured View.png")
         pass
 
-    def restoreDefault(self = ""):
+    def restoreDefault(self):
+        # Restore Default Settings
+        tStatus, settings = fJson.setDefault()
+        if tStatus == True:
+            # Update the settings
+            self.reset()
+            
+            # Tell success
+            print("Restored Default Settings")
+            Mbox("Success", "Successfully Restored Value to Default Settings", 0)
 
-        pass
-
-    def saveSettings(self = ""):
-        
-        pass
-        
-    def CBOffSetChange(self, event = ""):
-        offSets = getTheOffset()
-        xyOffSetType = self.CBOffSetChoice.get()
-
-        # Check offset or not
-        if xyOffSetType == "No Offset":
-            # Select auto
-            self.checkAutoOffSetX.select()
-            self.checkAutoOffSetY.select()
-            # Disable spinner and the selector, also set stuff in spinner to 0
-            self.checkAutoOffSetX.config(state=DISABLED)
-            self.checkAutoOffSetY.config(state=DISABLED)
-            self.spinnerOffSetX.config(state=DISABLED)
-            self.spinValOffSetX.set("0")
-            self.spinnerOffSetY.config(state=DISABLED)
-            self.spinValOffSetY.set("0")
-        else:
-            # Disselect auto
-            self.checkAutoOffSetX.select()
-            self.checkAutoOffSetY.select()
-            # Make checbtn clickable, but set auto which means spin is disabled
-            self.checkAutoOffSetX.config(state=NORMAL)
-            self.checkAutoOffSetY.config(state=NORMAL)
-            self.spinValOffSetX.set(str(offSets[0]))
-            self.spinValOffSetY.set(str(offSets[1]))
-            self.spinnerOffSetX.config(state=DISABLED)
-            self.spinnerOffSetY.config(state=DISABLED)
-
-    # Frames
-    firstFrame = Frame(root)
-    firstFrame.pack(side=TOP, fill=X, expand=False)
-    firstFrameContent = Frame(root)
-    firstFrameContent.pack(side=TOP, fill=X, expand=False)
-
-    secondFrame = Frame(root)
-    secondFrame.pack(side=TOP, fill=X, expand=False)
-    secondFrameContent0 = Frame(root)
-    secondFrameContent0.pack(side=TOP, fill=X, expand=False)
-    secondFrameContent1 = Frame(root)
-    secondFrameContent1.pack(side=TOP, fill=X, expand=False)
-    secondFrameContent2 = Frame(root)
-    secondFrameContent2.pack(side=TOP, fill=X, expand=False)
-    secondFrameContent3 = Frame(root)
-    secondFrameContent3.pack(side=TOP, fill=X, expand=False)
-    secondFrameContent4 = Frame(root)
-    secondFrameContent4.pack(side=TOP, fill=X, expand=False)
-
-    thirdFrame = Frame(root)
-    thirdFrame.pack(side=TOP, fill=X, expand=False)
-    thirdFrameContent = Frame(root)
-    thirdFrameContent.pack(side=TOP, fill=X, expand=False)
-
-    fourthFrame = Frame(root)
-    fourthFrame.pack(side=TOP, fill=X, expand=False)
-    fourthFrameContent = Frame(root)
-    fourthFrameContent.pack(side=TOP, fill=X, expand=False)
-
-    bottomFrame = Frame(root)
-    bottomFrame.pack(side=BOTTOM, fill=BOTH, expand=False)
-
-    # First Frame
-    labelImg = Label(firstFrame, text="Image Setting")
-    checkVarCache = BooleanVar(root, name="checkVarCache", value=True) # So its not error
-    checkBTNCache = Checkbutton(firstFrameContent, text="Cached", variable=checkVarCache)
-    btnOpenCacheFolder = Button(firstFrameContent, text="Open Cache Folder", command=lambda: os.startfile(dir_path + r"\backend\img_cache"))
-
-    # Second Frame
-    labelMonitor = Label(secondFrame, text="Monitor Capture Offset")
-    checkVarOffSetX = BooleanVar(root, name="checkVarOffSetX", value=True)
-    checkVarOffSetY = BooleanVar(root, name="checkVarOffSetY", value=True)
-    checkVarOffSetW = BooleanVar(root, name="checkVarOffSetW", value=True)
-    checkVarOffSetH = BooleanVar(root, name="checkVarOffSetH", value=True)
-    CBOffSetChoice = ttk.Combobox(secondFrameContent0, values=["No Offset", "Custom Offset"], state="readonly")
-
-    labelCBOffsetNot = Label(secondFrameContent0, text="Capture XY Offset :")
-    labelOffSetX = Label(secondFrameContent2, text="Offset X :")
-    labelOffSetY = Label(secondFrameContent3, text="Offset Y :")
-    labelOffSetW = Label(secondFrameContent2, text="Offset W :")
-    labelOffSetH = Label(secondFrameContent3, text="Offset H :")
-
-    checkAutoOffSetX = Checkbutton(secondFrameContent1, text="Auto Offset X", variable=checkVarOffSetX, command=checkBtnX)
-    checkAutoOffSetY = Checkbutton(secondFrameContent1, text="Auto Offset Y", variable=checkVarOffSetY, command=checkBtnY)
-    checkAutoOffSetW = Checkbutton(secondFrameContent1, text="Auto Offset W", variable=checkVarOffSetW, command=checkBtnW)
-    checkAutoOffSetH = Checkbutton(secondFrameContent1, text="Auto Offset H", variable=checkVarOffSetH, command=checkBtnH)
-
-    spinValOffSetX = StringVar(root)
-    spinValOffSetY = StringVar(root)
-    spinValOffSetW = StringVar(root)
-    spinValOffSetH = StringVar(root)
-
-    spinnerOffSetX = Spinbox(secondFrameContent2, from_=0, to=100000, width=20, textvariable=spinValOffSetX)
-    spinnerOffSetY = Spinbox(secondFrameContent3, from_=0, to=100000, width=20, textvariable=spinValOffSetY)
-    spinnerOffSetW = Spinbox(secondFrameContent2, from_=0, to=100000, width=20, textvariable=spinValOffSetW)
-    spinnerOffSetH = Spinbox(secondFrameContent3, from_=0, to=100000, width=20, textvariable=spinValOffSetH)
-
-    buttonCheckMonitorLayout = Button(secondFrameContent4, text="Click to get A Screenshot of How The Program See Your Monitor")
-
-    # Third frame
-    engines = engineList
-    optGoogle = []
-    fillList(google_Lang, optGoogle, "Auto-Detect")
-    optDeepl = []
-    fillList(deepl_Lang, optDeepl, "Auto-Detect")
-    langOpt = optGoogle
-
-    labelTl = Label(thirdFrame, text="Translation")
-    CBDefaultEngine = ttk.Combobox(thirdFrameContent, values=engines, state="readonly")
-    CBDefaultFrom = ttk.Combobox(thirdFrameContent, values=langOpt, state="readonly")
-    CBDefaultTo = ttk.Combobox(thirdFrameContent, values=langOpt, state="readonly")
-    labelDefaultEngine = Label(thirdFrameContent, text="Default Engine :")
-    labelDefaultFrom = Label(thirdFrameContent, text="Default From :")
-    labelDefaultTo = Label(thirdFrameContent, text="Default To :")
-
-    # Fourth frame
-    labelTesseract = Label(fourthFrame, text="Tesseract")
-    labelTesseractPath = Label(fourthFrameContent, text="Tesseract Path :")
-    textBoxTesseractPath = Text(fourthFrameContent, width=50, height=1)
-
-    # Bottom Frame
-    btnRestoreDefault = Button(bottomFrame, text="Restore Default", command=restoreDefault)
-    btnSave = Button(bottomFrame, text="Save Settings", command=saveSettings)
-
-    # ----------------------------------------------------------------------
-    def __init__(self):
-        self.root.title("Setting")
-        self.root.geometry("750x420")
-        self.root.wm_attributes('-topmost', False) # Default False
-        # self.root.wm_withdraw()
-
-        # Get settings on startup
+    def reset(self):
         tStatus, settings = fJson.readSetting()
         if tStatus == False: # If error its probably file not found, thats why we only handle the file not found error
             if settings[0] == "Setting file is not found":
@@ -504,6 +406,8 @@ class SettingUI():
             self.CBOffSetChoice.current(1)
             self.spinValOffSetX.set(str(x))
             self.spinValOffSetY.set(str(y))
+            self.checkAutoOffSetX.config(state=NORMAL)
+            self.checkAutoOffSetY.config(state=NORMAL)
 
             if offSetXY[0] == "auto":
                 self.checkAutoOffSetX.select()
@@ -548,7 +452,222 @@ class SettingUI():
             self.checkAutoOffSetH.deselect()
             self.root.setvar(name="checkVarOffSetH", value=False)
             self.spinnerOffSetH.config(state=NORMAL)
+        
+        self.CBTLChange_setting()
+        self.CBDefaultEngine.current(searchList(settings['default_Engine'], engines))
+        self.CBDefaultFrom.current(searchList(settings['default_FromOnOpen'], self.langOpt))
+        self.CBDefaultTo.current(searchList(settings['default_ToOnOpen'], self.langOpt))
+        self.textBoxTesseractPath.delete(1.0, END)
+        self.textBoxTesseractPath.insert(1.0, settings['tesseract_loc'])
 
+        print("Successfully Set Seting To Currently Saved in Setting.json")
+        # No need for mbox
+
+    def saveSettings():
+        # Check path tesseract
+        if os.path.exists(main_Menu.setting.textBoxTesseractPath.get("1.0", END).strip()) == False:
+            print("Tesseract Not Found Error")
+            Mbox("Error: Tesseract not found", "Invalid Path Provided For Tesseract.exe!", 0)
+            return
+
+        print(main_Menu.setting.checkVarOffSetX.get())
+        if main_Menu.setting.checkVarOffSetX.get():
+            x = "auto"
+        else: 
+            x = int(main_Menu.setting.spinnerOffSetX.get())
+        if main_Menu.setting.checkVarOffSetY.get():
+            y = "auto"
+        else:
+            y = int(main_Menu.setting.spinnerOffSetY.get())
+        if main_Menu.setting.checkVarOffSetW.get():
+            w = "auto"
+        else:
+            w = int(main_Menu.setting.spinnerOffSetW.get())
+        if main_Menu.setting.checkVarOffSetH.get():
+            h = "auto"
+        else:
+            h = int(main_Menu.setting.spinnerOffSetH.get())
+
+        settingToSave = { 
+            "cached": main_Menu.setting.checkVarCache.get(),
+            "offSetXYType": main_Menu.setting.CBOffSetChoice.get(),
+            "offSetXY": [x, y],
+            "offSetWH": [w, h],
+            "tesseract_loc": main_Menu.setting.textBoxTesseractPath.get("1.0", END).strip(),
+            "default_Engine": main_Menu.setting.CBDefaultEngine.get(),
+            "default_FromOnOpen": main_Menu.setting.CBDefaultFrom.get(),
+            "default_ToOnOpen": main_Menu.setting.CBDefaultTo.get()
+        }
+
+        print("-" * 50)
+        print("Setting saved!")
+        print(settingToSave)
+
+        status, dataStatus = fJson.writeSetting(settingToSave)
+        if status:
+            print("-" * 50)
+            print(dataStatus)
+            Mbox("Success", dataStatus, 0)
+        else:
+            print("-" * 50)
+            print(dataStatus)
+            Mbox("Error", dataStatus, 0)
+
+    def CBOffSetChange(self, event = ""):
+        offSets = getTheOffset()
+        xyOffSetType = self.CBOffSetChoice.get()
+
+        # Check offset or not
+        if xyOffSetType == "No Offset":
+            # Select auto
+            self.checkAutoOffSetX.select()
+            self.checkAutoOffSetY.select()
+            # Disable spinner and the selector, also set stuff in spinner to 0
+            self.checkAutoOffSetX.config(state=DISABLED)
+            self.checkAutoOffSetY.config(state=DISABLED)
+            self.spinnerOffSetX.config(state=DISABLED)
+            self.spinValOffSetX.set("0")
+            self.spinnerOffSetY.config(state=DISABLED)
+            self.spinValOffSetY.set("0")
+        else:
+            # Disselect auto
+            self.checkAutoOffSetX.select()
+            self.checkAutoOffSetY.select()
+            # Make checbtn clickable, but set auto which means spin is disabled
+            self.checkAutoOffSetX.config(state=NORMAL)
+            self.checkAutoOffSetY.config(state=NORMAL)
+            self.spinValOffSetX.set(str(offSets[0]))
+            self.spinValOffSetY.set(str(offSets[1]))
+            self.spinnerOffSetX.config(state=DISABLED)
+            self.spinnerOffSetY.config(state=DISABLED)
+
+    def validateSpinBox(event):
+        return event.isdigit()
+
+    def CBTLChange_setting(self, event = ""):
+        # Get the engine from the combobox
+        curr_Engine = self.CBDefaultEngine.get()
+
+        # Translate
+        if curr_Engine == "Google Translate":
+            self.langOpt = optGoogle
+            self.CBDefaultFrom['values'] = optGoogle
+            self.CBDefaultFrom.current(0)
+            self.CBDefaultTo['values'] = optGoogle
+            self.CBDefaultTo.current(searchList("English", optGoogle))
+        elif curr_Engine == "Deepl":
+            self.langOpt = optDeepl
+            self.CBDefaultFrom['values'] = optDeepl
+            self.CBDefaultFrom.current(0)
+            self.CBDefaultTo['values'] = optDeepl
+            self.CBDefaultTo.current(searchList("English", optDeepl))
+
+    # Frames
+    firstFrame = Frame(root)
+    firstFrame.pack(side=TOP, fill=X, expand=False)
+    firstFrameContent = Frame(root)
+    firstFrameContent.pack(side=TOP, fill=X, expand=False)
+
+    secondFrame = Frame(root)
+    secondFrame.pack(side=TOP, fill=X, expand=False)
+    secondFrameContent0 = Frame(root)
+    secondFrameContent0.pack(side=TOP, fill=X, expand=False)
+    secondFrameContent1 = Frame(root)
+    secondFrameContent1.pack(side=TOP, fill=X, expand=False)
+    secondFrameContent2 = Frame(root)
+    secondFrameContent2.pack(side=TOP, fill=X, expand=False)
+    secondFrameContent3 = Frame(root)
+    secondFrameContent3.pack(side=TOP, fill=X, expand=False)
+    secondFrameContent4 = Frame(root)
+    secondFrameContent4.pack(side=TOP, fill=X, expand=False)
+
+    thirdFrame = Frame(root)
+    thirdFrame.pack(side=TOP, fill=X, expand=False)
+    thirdFrameContent = Frame(root)
+    thirdFrameContent.pack(side=TOP, fill=X, expand=False)
+
+    fourthFrame = Frame(root)
+    fourthFrame.pack(side=TOP, fill=X, expand=False)
+    fourthFrameContent = Frame(root)
+    fourthFrameContent.pack(side=TOP, fill=X, expand=False)
+
+    bottomFrame = Frame(root)
+    bottomFrame.pack(side=BOTTOM, fill=BOTH, expand=False)
+
+    # First Frame
+    labelImg = Label(firstFrame, text="Image Setting")
+    checkVarCache = BooleanVar(root, name="checkVarCache", value=True) # So its not error
+    checkBTNCache = Checkbutton(firstFrameContent, text="Cached", variable=checkVarCache)
+    btnOpenCacheFolder = Button(firstFrameContent, text="Open Cache Folder", command=lambda: os.startfile(dir_path + r"\backend\img_cache"))
+
+    # Second Frame
+    labelMonitor = Label(secondFrame, text="Monitor Capture Offset")
+    CBOffSetChoice = ttk.Combobox(secondFrameContent0, values=["No Offset", "Custom Offset"], state="readonly")
+
+    labelCBOffsetNot = Label(secondFrameContent0, text="Capture XY Offset :")
+    labelOffSetX = Label(secondFrameContent2, text="Offset X :")
+    labelOffSetY = Label(secondFrameContent3, text="Offset Y :")
+    labelOffSetW = Label(secondFrameContent2, text="Offset W :")
+    labelOffSetH = Label(secondFrameContent3, text="Offset H :")
+
+    checkVarOffSetX = BooleanVar(root, name="checkVarOffSetX", value=True)
+    checkVarOffSetY = BooleanVar(root, name="checkVarOffSetY", value=True)
+    checkVarOffSetW = BooleanVar(root, name="checkVarOffSetW", value=True)
+    checkVarOffSetH = BooleanVar(root, name="checkVarOffSetH", value=True)
+
+    checkAutoOffSetX = Checkbutton(secondFrameContent1, text="Auto Offset X", variable=checkVarOffSetX, command=checkBtnX)
+    checkAutoOffSetY = Checkbutton(secondFrameContent1, text="Auto Offset Y", variable=checkVarOffSetY, command=checkBtnY)
+    checkAutoOffSetW = Checkbutton(secondFrameContent1, text="Auto Offset W", variable=checkVarOffSetW, command=checkBtnW)
+    checkAutoOffSetH = Checkbutton(secondFrameContent1, text="Auto Offset H", variable=checkVarOffSetH, command=checkBtnH)
+
+    spinValOffSetX = StringVar(root)
+    spinValOffSetY = StringVar(root)
+    spinValOffSetW = StringVar(root)
+    spinValOffSetH = StringVar(root)
+
+    validateDigits = (root.register(validateSpinBox), '%P')
+
+    spinnerOffSetX = Spinbox(secondFrameContent2, from_=0, to=100000, width=20, textvariable=spinValOffSetX)
+    spinnerOffSetX.configure(validate='key', validatecommand=validateDigits)
+    spinnerOffSetY = Spinbox(secondFrameContent3, from_=0, to=100000, width=20, textvariable=spinValOffSetY)
+    spinnerOffSetY.configure(validate='key', validatecommand=validateDigits)
+    spinnerOffSetW = Spinbox(secondFrameContent2, from_=0, to=100000, width=20, textvariable=spinValOffSetW)
+    spinnerOffSetW.configure(validate='key', validatecommand=validateDigits)
+    spinnerOffSetH = Spinbox(secondFrameContent3, from_=0, to=100000, width=20, textvariable=spinValOffSetH)
+    spinnerOffSetH.configure(validate='key', validatecommand=validateDigits)
+
+    buttonCheckMonitorLayout = Button(secondFrameContent4, text="Click to get A Screenshot of How The Program See Your Monitor", command=screenShotAndOpenLayout)
+
+    # Third frame
+    langOpt = optGoogle
+
+    labelTl = Label(thirdFrame, text="Translation")
+    CBDefaultEngine = ttk.Combobox(thirdFrameContent, values=engines, state="readonly")
+    CBDefaultFrom = ttk.Combobox(thirdFrameContent, values=langOpt, state="readonly")
+    CBDefaultTo = ttk.Combobox(thirdFrameContent, values=langOpt, state="readonly")
+    labelDefaultEngine = Label(thirdFrameContent, text="Default Engine :")
+    labelDefaultFrom = Label(thirdFrameContent, text="Default From :")
+    labelDefaultTo = Label(thirdFrameContent, text="Default To :")
+
+    # Fourth frame
+    labelTesseract = Label(fourthFrame, text="Tesseract")
+    labelTesseractPath = Label(fourthFrameContent, text="Tesseract Path :")
+    textBoxTesseractPath = Text(fourthFrameContent, width=77, height=1, xscrollcommand=True)
+
+    # Bottom Frame
+    btnSave = Button(bottomFrame, text="Save Settings", command=saveSettings)
+
+    # ----------------------------------------------------------------------
+    def __init__(self):
+        self.root.title("Setting")
+        self.root.geometry("727x420") # When you see it
+        self.root.wm_attributes('-topmost', False) # Default False
+        # self.root.wm_withdraw()
+
+        # Get settings on startup
+        self.reset()
+
+        # TL CB
         # Init element
         # 1
         self.labelImg.pack(side=LEFT, padx=5, pady=5, fill=X)
@@ -584,6 +703,7 @@ class SettingUI():
 
         self.labelDefaultEngine.pack(side=LEFT, padx=5, pady=5)
         self.CBDefaultEngine.pack(side=LEFT, padx=5, pady=5)
+        self.CBDefaultEngine.bind("<<ComboboxSelected>>", self.CBTLChange_setting)
 
         self.labelDefaultFrom.pack(side=LEFT, padx=5, pady=5)
         self.CBDefaultFrom.pack(side=LEFT, padx=5, pady=5)
@@ -597,8 +717,11 @@ class SettingUI():
         self.textBoxTesseractPath.pack(side=LEFT, padx=5, pady=5)
 
         # Bottom Frame
-        self.btnSave.pack(side=RIGHT, padx=5, pady=5)
-        self.btnRestoreDefault.pack(side=RIGHT, padx=5, pady=5)
+        self.btnSave.pack(side=RIGHT, padx=4, pady=5)
+        btnReset = Button(self.bottomFrame, text="Reset To Currently Stored Setting", command=self.reset)
+        btnReset.pack(side=RIGHT, padx=5, pady=5)  
+        btnRestoreDefault = Button(self.bottomFrame, text="Restore Default", command=self.restoreDefault)
+        btnRestoreDefault.pack(side=RIGHT, padx=5, pady=5)
         
         # On Close
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
@@ -705,23 +828,23 @@ class main_Menu():
         self.textBoxTop.delete(1.0, END)
         self.textBoxBottom.delete(1.0, END)
 
-    def tbChange(self, event = ""):
+    def cbTLChange(self, event = ""):
         # Get the engine from the combobox
         curr_Engine = self.CBTranslateEngine.get()
 
         # Translate
         if curr_Engine == "Google Translate":
-            self.langOpt = self.optGoogle
-            self.CBLangFrom['values'] = self.optGoogle
+            self.langOpt = optGoogle
+            self.CBLangFrom['values'] = optGoogle
             self.CBLangFrom.current(0)
-            self.CBLangTo['values'] = self.optGoogle
-            self.CBLangTo.current(searchList("English", self.optDeepl))
+            self.CBLangTo['values'] = optGoogle
+            self.CBLangTo.current(searchList("English", optGoogle))
         elif curr_Engine == "Deepl":
-            self.langOpt = self.optDeepl
-            self.CBLangFrom['values'] = self.optDeepl
+            self.langOpt = optDeepl
+            self.CBLangFrom['values'] = optDeepl
             self.CBLangFrom.current(0)
-            self.CBLangTo['values'] = self.optDeepl
-            self.CBLangTo.current(searchList("English", self.optDeepl))
+            self.CBLangTo['values'] = optDeepl
+            self.CBLangTo.current(searchList("English", optDeepl))
 
     # --- Declarations and Layout ---
     # Call the other frame
@@ -749,12 +872,8 @@ class main_Menu():
     captureOpacitySlider = ttk.Scale(topFrame1, from_=0.01, to=1.0, value=capture_UI.currOpacity, orient=HORIZONTAL, command=capture_UI.sliderOpac)
     captureOpacityLabel = Label(topFrame1, text="Capture UI Opacity: " + str(capture_UI.currOpacity))
 
-    engines = engineList
-    optGoogle = []
-    fillList(google_Lang, optGoogle, "Auto-Detect")
-    optDeepl = []
-    fillList(deepl_Lang, optDeepl, "Auto-Detect")
-    langOpt = optGoogle # Will be overwritten in innit
+    # Langoptions onstart
+    langOpt = optGoogle 
 
     labelEngines = Label(bottomFrame1, text="TL Engine:")
     CBTranslateEngine = ttk.Combobox(bottomFrame1, values=engines, state="readonly")
@@ -849,11 +968,11 @@ class main_Menu():
 
         # bottomFrame1
         self.labelEngines.pack(side=LEFT, padx=5, pady=5)
-        self.CBTranslateEngine.current(searchList(settings['default_Engine'], self.engines))
+        self.CBTranslateEngine.current(searchList(settings['default_Engine'], engines))
         self.CBTranslateEngine.pack(side=LEFT, padx=5, pady=5)
-        self.CBTranslateEngine.bind("<<ComboboxSelected>>", self.tbChange)
+        self.CBTranslateEngine.bind("<<ComboboxSelected>>", self.cbTLChange)
 
-        self.tbChange() # Update the cb
+        self.cbTLChange() # Update the cb
 
         self.labelLangFrom.pack(side=LEFT, padx=5, pady=5)
         self.CBLangFrom.current(searchList(settings['default_FromOnOpen'], self.langOpt))

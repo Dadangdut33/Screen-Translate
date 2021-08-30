@@ -59,3 +59,13 @@ def captureImg(coords, sourceLang, tesseract_Location, cached = False):
             ctypes.windll.user32.MessageBoxW(0, e, "Error", 0)
     finally:
         return is_Success, wordsGet.strip()
+
+def captureAll():
+    """Capture all screens and return the result"""
+    # Capture all screens
+    try:
+        captured = pyautogui.screenshot()
+        captured.save(dir_path + r'\img_cache\Monitor(s) Captured View'+ '.png')
+    except Exception as e:
+        print("Error: " + str(e))
+        ctypes.windll.user32.MessageBoxW(0, e, "Error", 0)

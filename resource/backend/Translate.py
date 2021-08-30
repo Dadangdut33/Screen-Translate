@@ -75,11 +75,3 @@ async def deepl_tl(text, to_lang, from_lang="auto"):
         print("-" * 50)
         print("Translation get: " + res)
         return is_Success, res
-
-async def debug():
-    print(await deepl_tl("産業技術システムは生き残るかもしれないし、崩壊するかもしれない。 それが生き残った場合、それは最終的に低レベルの身体的および心理的苦痛を達成する可能性がありますが、それは長くて非常に苦痛な調整期間を経た後にのみ、そして人間や他の多くの生物を人工製品や単なるものに永久に減らすという犠牲を払ってのみです ソーシャルマシンの歯車。",
-    "English"))
-
-# Test
-# loop = asyncio.get_event_loop()
-# loop.run_until_complete(debug())

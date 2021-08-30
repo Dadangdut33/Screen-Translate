@@ -69,6 +69,7 @@ def writeSetting(data):
         with open(dir_path + '/json/Setting.json' , 'w', encoding='utf-8') as f:
             json.dump(data, f, ensure_ascii=False, indent=4)
             status = "Setting has been changed successfully"
+            is_Success = True
     except Exception as e:
         status = e
         ctypes.windll.user32.MessageBoxW(0, "Error", e, 0)
