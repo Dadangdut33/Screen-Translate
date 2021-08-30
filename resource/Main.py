@@ -662,7 +662,7 @@ class SettingUI():
         self.root.title("Setting")
         self.root.geometry("727x420") # When you see it
         self.root.wm_attributes('-topmost', False) # Default False
-        # self.root.wm_withdraw()
+        self.root.wm_withdraw()
 
         # Get settings on startup
         self.reset()
@@ -798,8 +798,12 @@ class main_Menu():
         exit(0)
     
     # Open History Window
-    def open_History(self):
+    def open_Setting(self):
         self.setting.show()
+    
+    def open_History(self):
+        # self.history.show()
+        pass
 
     # Open Capture Window
     def open_capture_screen(self):
@@ -939,7 +943,7 @@ class main_Menu():
 
         filemenu2 = Menu(menubar, tearoff=0)
         filemenu2.add_command(label="History", command=self.open_History) # Open History Window
-        filemenu2.add_command(label="Setting") # Open Setting Window
+        filemenu2.add_command(label="Setting", command=self.open_Setting) # Open Setting Window
         menubar.add_cascade(label="View", menu=filemenu2)
 
         filemenu3 = Menu(menubar, tearoff=0)
