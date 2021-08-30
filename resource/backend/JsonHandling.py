@@ -1,6 +1,6 @@
 import json
 import os
-import ctypes
+from .Mbox import Mbox
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
 # Default Setting
@@ -42,7 +42,7 @@ def write_History(new_data, filename):
     # Debug
     except Exception as e:
         status = e
-        ctypes.windll.user32.MessageBoxW(0, "Error", e, 0)
+        Mbox("Error", e, 2)
     finally:
         return is_Success, status
 
@@ -57,7 +57,7 @@ def readHistory():
     # Debug
     except Exception as e:
         data = e
-        ctypes.windll.user32.MessageBoxW(0, "Error", e, 0)
+        Mbox("Error", e, 2)
     finally:
         return is_Success, data
 
@@ -72,7 +72,7 @@ def writeSetting(data):
             is_Success = True
     except Exception as e:
         status = e
-        ctypes.windll.user32.MessageBoxW(0, "Error", e, 0)
+        Mbox("Error", e, 2)
     finally:
         return is_Success, status
 
@@ -86,7 +86,7 @@ def setDefault():
             is_Success = True
     except Exception as e:
         status = e
-        ctypes.windll.user32.MessageBoxW(0, "Error", e, 0)
+        Mbox("Error", e, 2)
     finally:
         return is_Success, status
 
@@ -103,6 +103,6 @@ def readSetting():
         # Not found popup already handled in main
     except Exception as e:
         data = [e]
-        ctypes.windll.user32.MessageBoxW(0, "Error", e, 0)
+        Mbox("Error", e, 2)
     finally:
         return is_Success, data

@@ -1,5 +1,6 @@
 import pyautogui
 import os
+import webbrowser
 import asyncio
 import backend.Translate as tl
 import backend.Capture as capture
@@ -8,11 +9,14 @@ from backend.LangCode import *
 from tkinter import *
 from tkinter.tix import *
 import tkinter.ttk as ttk
-from Mbox import Mbox
+from backend.Mbox import Mbox
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
 # ----------------------------------------------------------------
 # public func
+def OpenUrl(url):
+    webbrowser.open_new(url)
+
 def searchList(searchFor, theList):
     index = 0
     for lang in theList:
@@ -141,15 +145,15 @@ class CaptureUI():
     # Capture the text
     def getTextAndTranslate(self, offSetXY=["auto", "auto"]):
         if(main_Menu.capUiHidden): # If Hidden
-            Mbox("Error: You need to generate the capture window", "Please generate the capture window first", 0)
+            Mbox("Error: You need to generate the capture window", "Please generate the capture window first", 2)
             print("Error Need to generate the capture window! Please generate the capture window first")
             return
         if(main_Menu.CBLangFrom.current()) == (main_Menu.CBLangTo.current()): # If Selected type invalid
-            Mbox("Error: Language target is the same as source", "Please choose a different language", 0)
+            Mbox("Error: Language target is the same as source", "Please choose a different language", 2)
             print("Error Language is the same as source! Please choose a different language")
             return
         if main_Menu.CBLangTo.get() == "Auto-Detect" or main_Menu.CBLangTo.current() == 0 or main_Menu.CBLangFrom.get() == "Auto-Detect" or main_Menu.CBLangFrom.current() == 0: # If Selected type invalid
-            Mbox("Error: Invalid Language Selected", "Can't Use Auto Detect in Capture Mode", 0)
+            Mbox("Error: Invalid Language Selected", "Can't Use Auto Detect in Capture Mode", 2)
             print("Error: Invalid Language Selected! Can't Use Auto Detect in Capture Mode")
             return
         
@@ -169,24 +173,24 @@ class CaptureUI():
                 # Show error
                 print("Error: " + settings[0])
                 print(settings[1])
-                Mbox("Error: " + settings[0], settings[1], 0)
+                Mbox("Error: " + settings[0], settings[1], 2)
                 
                 # Set Default
                 var1, var2 = fJson.setDefault()
                 if var1 : # If successfully set default
                     print("Default setting applied")
-                    Mbox("Default setting applied", "Please change your tesseract location in setting if you didn't install tesseract on default C location", 0)
+                    Mbox("Default setting applied", "Please change your tesseract location in setting if you didn't install tesseract on default C location", 2)
                 else: # If error
                     print("Error: " + var2)
-                    Mbox("An Error Occured", var2, 0)
+                    Mbox("An Error Occured", var2, 2)
                 
                 self.root.wm_deiconify()  # Show the capture window
                 return # Reject
         
         # If tesseract is not found
-        if settings['tesseract_loc'] == "" or "tesseract" in settings['tesseract_loc'] == False:
+        if os.path.exists(settings['tesseract_loc']) == False:
             self.root.wm_withdraw()  # Hide the capture window
-            x = Mbox("Error: Tesseract Not Set!", "Please set tesseract_loc in Setting.json.\nYou can set this in setting menu or modify it manually in resource/backend/json/Setting.json", 0)
+            Mbox("Error: Tesseract Not Set!", "Please set tesseract_loc in Setting.json.\nYou can set this in setting menu or modify it manually in resource/backend/json/Setting.json", 2)
             self.root.wm_deiconify()  # Show the capture window
             
             return # Reject
@@ -214,7 +218,7 @@ class CaptureUI():
 
         if is_Success == False or len(result) == 1:
             print("But Failed to capture any text!")
-            Mbox("Error", "Failed to Capture Text!", 0)
+            Mbox("Warning", "Failed to Capture Text!", 1)
         else:
             main_Menu.root.deiconify()
 
@@ -350,7 +354,7 @@ class SettingUI():
                 # Show error
                 print("Error: " + settings[0])
                 print(settings[1])
-                Mbox("Error: " + settings[0], settings[1], 0)
+                Mbox("Error: " + settings[0], settings[1], 2)
                 
                 settings = fJson.default_Setting
 
@@ -358,16 +362,16 @@ class SettingUI():
                 var1, var2 = fJson.setDefault()
                 if var1 : # If successfully set default
                     print("Default setting applied")
-                    Mbox("Default setting applied", "Please change your tesseract location in setting if you didn't install tesseract on default C location", 0)
+                    Mbox("Default setting applied", "Please change your tesseract location in setting if you didn't install tesseract on default C location", 1)
                 else: # If error
                     print("Error: " + var2)
-                    Mbox("An Error Occured", var2, 0)
+                    Mbox("An Error Occured", var2, 2)
                 
                 self.root.wm_deiconify()  # Show setting
         
         # If tesseract is not found
-        if settings['tesseract_loc'] == "" or "tesseract" in settings['tesseract_loc'] == False:
-            x = Mbox("Error: Tesseract Not Set!", "Please set tesseract_loc in Setting.json.\nYou can set this in setting menu or modify it manually in resource/backend/json/Setting.json", 0)
+        if os.path.exists(settings['tesseract_loc']) == False:
+            Mbox("Error: Tesseract Not Set!", "Please set tesseract_loc in Setting.json.\nYou can set this in setting menu or modify it manually in resource/backend/json/Setting.json", 2)
         
         # Cache checkbox
         if settings['cached'] == True:
@@ -429,7 +433,7 @@ class SettingUI():
         else:
             self.CBOffSetChoice.current(0)
             print("Error: Invalid Offset Type")
-            Mbox("Error: Invalid Offset Type", "Please do not modify the setting manually if you don't know what you are doing", 0)
+            Mbox("Error: Invalid Offset Type", "Please do not modify the setting manually if you don't know what you are doing", 2)
         
         # W H
         self.spinValOffSetW.set(str(w))
@@ -460,14 +464,14 @@ class SettingUI():
         self.textBoxTesseractPath.delete(1.0, END)
         self.textBoxTesseractPath.insert(1.0, settings['tesseract_loc'])
 
-        print("Successfully Set Seting To Currently Saved in Setting.json")
+        print("Successfully Set Seting To The One Currently Saved in Setting.json")
         # No need for mbox
 
     def saveSettings():
         # Check path tesseract
         if os.path.exists(main_Menu.setting.textBoxTesseractPath.get("1.0", END).strip()) == False:
             print("Tesseract Not Found Error")
-            Mbox("Error: Tesseract not found", "Invalid Path Provided For Tesseract.exe!", 0)
+            Mbox("Error: Tesseract not found", "Invalid Path Provided For Tesseract.exe!", 2)
             return
 
         print(main_Menu.setting.checkVarOffSetX.get())
@@ -507,11 +511,11 @@ class SettingUI():
         if status:
             print("-" * 50)
             print(dataStatus)
-            Mbox("Success", dataStatus, 0)
+            Mbox("Success", dataStatus, 1)
         else:
             print("-" * 50)
             print(dataStatus)
-            Mbox("Error", dataStatus, 0)
+            Mbox("Error", dataStatus, 2)
 
     def CBOffSetChange(self, event = ""):
         offSets = getTheOffset()
@@ -741,7 +745,7 @@ class main_Menu():
             TBottom.delete(1.0, END)
             TBottom.insert(1.0, translateResult)
         else:
-            Mbox("Error: Translation Failed", translateResult, 0)
+            Mbox("Error: Translation Failed", translateResult, 2)
 
     # Translate
     def translate(self, textOutside = ""):
@@ -759,11 +763,11 @@ class main_Menu():
         TBBot = self.textBoxBottom
 
         if(langFromObj.current()) == (langToObj.current()):
-            Mbox("Error: Language target is the same as source", "Please choose a different language", 0)
+            Mbox("Error: Language target is the same as source", "Please choose a different language", 2)
             print("Error Language is the same as source! Please choose a different language")
             return
         if langToObj.get() == "Auto-Detect" or langToObj.current() == 0:
-            Mbox("Error: Invalid Language Selected", "Please choose a valid language", 0)
+            Mbox("Error: Invalid Language Selected", "Please choose a valid language", 2)
             print("Error: Invalid Language Selected! Please choose a valid language")
             return
 
@@ -774,7 +778,7 @@ class main_Menu():
             text = textOutside
 
         if(len(text) < 2):
-            Mbox("Error: No text entered", "Please enter some text", 0)
+            Mbox("Error: No text entered", "Please enter some text", 2)
             print("Error: No text entered! Please enter some text")
             return
 
@@ -785,12 +789,12 @@ class main_Menu():
                 TBBot.delete(1.0, END)
                 TBBot.insert(1.0, translateResult)
             else:
-                Mbox("Error: Translation Failed", translateResult, 0)
+                Mbox("Error: Translation Failed", translateResult, 2)
         elif engine == "Deepl":
             loop = asyncio.get_event_loop()
             loop.run_until_complete(self.getDeeplTl(text, langTo, langFrom, TBBot))
         else:
-            Mbox("Error: Engine Not Set!", "Please Please select a correct engine", 0)
+            Mbox("Error: Engine Not Set!", "Please Please select a correct engine", 2)
             print("Please select a correct engine")
 
     # On Close
@@ -804,6 +808,32 @@ class main_Menu():
     def open_History(self):
         # self.history.show()
         pass
+
+    def open_About(self):
+        Mbox("About", "Screen-Translate is a program made by Dadangdut33, inspired by VNR, Visual Novel OCR, and QTranslate. I made this program to learn more about python. " + 
+        "This program is completely open source, you can improve it if you want, you can also tell me if there are bugs. If you are confused on how to use it you can" + 
+        " check the tutorial by pressing the tutorial in the menu bar", 0)
+
+    def open_Tutorial(self):
+        Mbox("Tutorial", "1. *First*, you need to install tesseract, you can quickly go to the download link by pressing the download tesseract in menu bar\n\n" + 
+        "2. *Then*, check the settings. Make sure tesseract path is correct\n\n" + 
+        "3. *FOR MULTI MONITOR USER*, set offset in setting. If you have multiple monitor setup, you might need to set the offset in settings. \n\nWhat you shold do in the setting window:\n- Check how the program see your monitors in settings by clicking that one button.\n" + 
+        "- You can also see how the capture area captured your images by enabling cache and then see the image in 'img_cache' directory" + 
+        "\n\n\nYou can open the tutorial linked in menubar if you are still confused.", 0)
+
+    def open_Faq(self):
+        Mbox("FAQ", "Q: Do you collect the screenshot?\nA: No, no data is stored anywhere. Image and text captured will only be use for query and the cache is only saved locally\n\n" + 
+        "Q: Is this safe?\nA: Yes, it is safe, you can check the code on the github linked, or open it yourself on your machine.\n\n" + 
+        "Q: I could not capture anything, help!?\nA: You might need to check the cache image and see wether it actually capture the stuff that you targeted or not. If not, you might " + 
+        "want to set offset in setting", 0)
+
+    def openTesLink(self):
+        Mbox("Info", "Please download the v5.0.0-alpha.20210811 Version and install all language pack", 0)
+        print("Please download the v5.0.0-alpha.20210811 Version and install all language pack")
+        OpenUrl("https://github.com/UB-Mannheim/tesseract/wiki")
+
+    def open_KnownBugs(self):
+        Mbox("Known Bugs", "- The auto offset is wrong if the resolution between monitor 1 and 2 is not the same. In this case you have to set the offset manually.", 0)
 
     # Open Capture Window
     def open_capture_screen(self):
@@ -908,7 +938,7 @@ class main_Menu():
                 # Show error
                 print("Error: " + settings[0])
                 print(settings[1])
-                Mbox("Error: " + settings[0], settings[1], 0)
+                Mbox("Error: " + settings[0], settings[1], 2)
 
                 # Set setting value to default, so program can run
                 settings = fJson.default_Setting
@@ -920,10 +950,11 @@ class main_Menu():
                     Mbox("Default setting applied", "Please change your tesseract location in setting if you didn't install tesseract on default C location", 0)
                 else: # If error
                     print("Error: " + var2)
-                    Mbox("An Error Occured", var2, 0)
+                    Mbox("An Error Occured", var2, 2)
 
-        elif settings['tesseract_loc'] == "" or "tesseract" in settings['tesseract_loc'] == False:
-            Mbox("Error: Tesseract Not Set!", "Please set tesseract_loc in Setting.json.\nYou can set this in setting menu or modify it manually in resource/backend/json/Setting.json", 0)
+        elif os.path.exists(settings['tesseract_loc']) == False:
+            print("Tesseract Not Found Error")
+            Mbox("Error: Tesseract Not Set!", "Please set tesseract_loc in Setting.json.\nYou can set this in setting menu or modify it manually in resource/backend/json/Setting.json", 2)
         
         # Menubar
         def always_on_top():
@@ -951,10 +982,14 @@ class main_Menu():
         menubar.add_cascade(label="Generate", menu=filemenu3)
 
         filemenu4 = Menu(menubar, tearoff=0)
-        filemenu4.add_command(label="Tutorials") # Open Mbox Tutorials
-        filemenu4.add_command(label="FAQ") # Open Mbox Tutorials
+        filemenu4.add_command(label="Tutorial", command=self.open_Tutorial) # Open Mbox Tutorials
+        filemenu4.add_command(label="FAQ", command=self.open_Faq) # Open FAQ
+        filemenu4.add_command(label="Known Bugs", command=self.open_KnownBugs) # Open Knownbugs
+        filemenu4.add_command(label="About", command=self.open_About) # Open Mbox About
         filemenu4.add_separator()
-        filemenu4.add_command(label="About") # Open Mbox About
+        filemenu4.add_command(label="Open Tutorial Video") # Open Mbox Tutorials
+        filemenu4.add_command(label="Open GitHub Repo", command=lambda aurl="https://github.com/Dadangdut33/Screen-Translate":OpenUrl(aurl)) # Open Mbox Tutorials
+        filemenu4.add_command(label="Download Tesseract", command=self.openTesLink) # Open Mbox Tutorials
         menubar.add_cascade(label="Help", menu=filemenu4)
 
         # Add to self.root

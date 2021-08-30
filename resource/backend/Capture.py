@@ -1,7 +1,7 @@
 import pyautogui
 import os
 import pytesseract
-import ctypes
+from .Mbox import Mbox
 from datetime import datetime
 
 # Lang Code
@@ -32,7 +32,7 @@ def captureImg(coords, sourceLang, tesseract_Location, cached = False):
         langCode = tesseract_Lang[sourceLang]
     except KeyError as e:
         print("Error: Key Error\n" + str(e))
-        ctypes.windll.user32.MessageBoxW(0, "Key Error, On Assigning Language Code.\n" + str(e), "Error: Key Error", 0)
+        Mbox("Key Error, On Assigning Language Code.\n" + str(e), "Error: Key Error", 2)
 
     is_Success = False
     wordsGet = ""
@@ -52,11 +52,11 @@ def captureImg(coords, sourceLang, tesseract_Location, cached = False):
         print("Error: " + str(e))
         wordsGet = str(e)
         if "is not installed or it's not in your PATH" in str(e):
-            ctypes.windll.user32.MessageBoxW(0, "Invalid path location for tesseract.exe, please change it in the setting!", "Error: Tesseract Could not be Found", 0)
+            Mbox("Error: Tesseract Could not be Found", "Invalid path location for tesseract.exe, please change it in the setting!", 2)
         elif "Failed loading language" in str(e):
-            ctypes.windll.user32.MessageBoxW(0, "Language data not found! It could be that the language data is not installed! Please reinstall tesseract or download the language data and put it into Tesseract-OCR\\tessdata!\n\nThe official version that is used for this program is v5.0.0-alpha.20210811. You can download it from https://github.com/UB-Mannheim/tesseract/wiki or https://digi.bib.uni-mannheim.de/tesseract/", "Error: Failed Loading Language", 0)
+            Mbox("Warning: Failed Loading Language", "Language data not found! It could be that the language data is not installed! Please reinstall tesseract or download the language data and put it into Tesseract-OCR\\tessdata!\n\nThe official version that is used for this program is v5.0.0-alpha.20210811. You can download it from https://github.com/UB-Mannheim/tesseract/wiki or https://digi.bib.uni-mannheim.de/tesseract/", 1)
         else:
-            ctypes.windll.user32.MessageBoxW(0, e, "Error", 0)
+            Mbox("Error", e, 2)
     finally:
         return is_Success, wordsGet.strip()
 
@@ -68,4 +68,4 @@ def captureAll():
         captured.save(dir_path + r'\img_cache\Monitor(s) Captured View'+ '.png')
     except Exception as e:
         print("Error: " + str(e))
-        ctypes.windll.user32.MessageBoxW(0, e, "Error", 0)
+        Mbox("Error", e, 2)
