@@ -1,6 +1,6 @@
 {
     "cached": true,
-    "offSetType": "auto",
+    "offSetXYType": "Custom Offset",
     "offSetXY": [
         "auto",
         "auto"

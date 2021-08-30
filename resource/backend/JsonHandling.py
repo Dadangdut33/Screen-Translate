@@ -1,11 +1,12 @@
 import json
 import os
+import ctypes
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
 # Default Setting
 default_Setting = { 
     "cached": True,
-    "offSetType": "auto",
+    "offSetXYType": "No Offset",
     "offSetXY": ["auto", "auto"],
     "offSetWH": ["auto", "auto"],
     "tesseract_loc": "C:\\Program Files\\Tesseract-OCR\\tesseract.exe",
@@ -41,7 +42,7 @@ def write_History(new_data, filename):
     # Debug
     except Exception as e:
         status = e
-        is_Success = False
+        ctypes.windll.user32.MessageBoxW(0, "Error", e, 0)
     finally:
         return is_Success, status
 
@@ -56,6 +57,7 @@ def readHistory():
     # Debug
     except Exception as e:
         data = e
+        ctypes.windll.user32.MessageBoxW(0, "Error", e, 0)
     finally:
         return is_Success, data
 
@@ -69,6 +71,7 @@ def writeSetting(data):
             status = "Setting has been changed successfully"
     except Exception as e:
         status = e
+        ctypes.windll.user32.MessageBoxW(0, "Error", e, 0)
     finally:
         return is_Success, status
 
@@ -82,6 +85,7 @@ def setDefault():
             is_Success = True
     except Exception as e:
         status = e
+        ctypes.windll.user32.MessageBoxW(0, "Error", e, 0)
     finally:
         return is_Success, status
 
@@ -93,9 +97,11 @@ def readSetting():
             data = json.load(f)
             is_Success = True
     # Debug
-    except FileNotFoundError:
+    except FileNotFoundError as e:
         data = ["Setting file is not found", "Setting.json coould not be loaded please do not move or delete the setting file.\n\nProgram will now automatically create and set the setting to default value"]
+        # Not found popup already handled in main
     except Exception as e:
         data = [e]
+        ctypes.windll.user32.MessageBoxW(0, "Error", e, 0)
     finally:
         return is_Success, data

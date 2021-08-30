@@ -37,7 +37,9 @@ def google_tl(text, to_lang, from_lang="auto"):
     except Exception as e:
         print(e)
     finally:
+        print("-" * 50)
         print("Query: " + text.strip())
+        print("-" * 50)
         print("Translation Get: "+ result)
         return is_Success, result
         
@@ -68,7 +70,9 @@ async def deepl_tl(text, to_lang, from_lang="auto"):
     except Exception as e:
         print(e)
     finally:
+        print("-" * 50)
         print("Query: " + text.strip())
+        print("-" * 50)
         print("Translation get: " + res)
         return is_Success, res
 

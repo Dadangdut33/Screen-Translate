@@ -11,6 +11,7 @@ import tkinter.ttk as ttk
 from Mbox import Mbox
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
+# ----------------------------------------------------------------
 # public func
 def searchList(searchFor, theList):
     index = 0
@@ -30,18 +31,74 @@ def fillList(dictFrom, listTo, insertFirst, insertSecond = ""):
     if insertSecond != "":
         listTo.insert(1, insertSecond)
 
-# -------------------------
+def offSetSettings(widthHeighOff, xyOffsetType, xyOff):
+    offSetsGet = []
+    x, y, w, h = 0, 0, 0, 0
+    if widthHeighOff[0] == "auto":
+        w = 60
+    else:
+        w = widthHeighOff[0]
+
+    if widthHeighOff[1] == "auto":
+        h = 60
+    else:
+        h = widthHeighOff[1]
+
+    #  If offset is set
+    if xyOffsetType.lower() != "no offset":
+        offsetX = pyautogui.size().width
+        offsetY = pyautogui.size().height
+        
+        # If auto
+        if xyOff[0] == "auto":
+            if(offsetX > offsetY): # Horizontal
+                x = offsetX
+            else:
+                x = 0
+        else: # if set manually
+            x = xyOff[0]
+
+        # If auto
+        if xyOff[1] == "auto":
+            if(offsetY > offsetX): # Vertical
+                y = offsetY
+            else:
+                y = 0
+        else: # if set manually
+            y = xyOff[1]
+    
+    offSetsGet.append(x)
+    offSetsGet.append(y)
+    offSetsGet.append(w)
+    offSetsGet.append(h)
+    return offSetsGet
+
+def getTheOffset():
+    tStatus, settings = fJson.readSetting()
+
+    offSetXY = settings["offSetXY"]
+    offSetWH = settings["offSetWH"]
+    xyOffSetType = settings["offSetXYType"]
+    offSets = offSetSettings(offSetWH, xyOffSetType, offSetXY)
+
+    return offSets
+
 def console():
     print("-" * 80)
     print("Welcome to Screen Translate")
     print("Use The GUI Window to start capturing and translating")
     print("This window is for debugging purposes")
 
+# ----------------------------------------------------------------
+# Public var
+
 # ----------------------------------------------------------------------
+# Classes
 class CaptureUI():
     """Capture Window"""
     root = Tk()
-    stayOnTop = True
+    alwaysOnTop = BooleanVar()
+    alwaysOnTop.set(True)
     currOpacity = 0.8
 
     # Empty for padding purposes
@@ -88,94 +145,68 @@ class CaptureUI():
             Mbox("Error: Invalid Language Selected", "Can't Use Auto Detect in Capture Mode", 0)
             print("Error: Invalid Language Selected! Can't Use Auto Detect in Capture Mode")
             return
+        
+        # Hide the Capture Window so it can detect the words better
         opacBefore = self.currOpacity
         self.root.attributes('-alpha', 0)
+        
         # Get xywh of the screen
-        x, y, w, h = self.root.winfo_x(), self.root.winfo_y(
-        ), self.root.winfo_width(), self.root.winfo_height()
+        x, y, w, h = self.root.winfo_x(), self.root.winfo_y(), self.root.winfo_width(), self.root.winfo_height()
 
         # Get settings
-        status, settings = fJson.readSetting() 
-        offSetXY = settings["offsetXY"]
-        offSetWH = settings["offsetWH"]
-        offSetType = settings["offsetType"]
-
-        # AUTO BIAR NTAR PAS SETIAP BUKA SETTING DIITUNG LAGI, JADI KALAU NANTI DI MODIFY ISINYA GA AUTO LAGI, CEK NYA ILANG, KALAU MASIH DI CEK NTAR SPINNERNYA DI DISABLE
-        # KALAU DAH GA DI CEK DAH GA DI DISABLE
-        # OFFSET SAMA KONSEPNYA
-        # ALSO ADD offset type horizontal or vertical or auto, auto will be if w > h
-        # add checkbox widget for auto x auto y also auto w auto h
-        # clicking the checbox will fill the spinner with the auto get
-        # X Y offset
-        if offSetXY[0] == "auto" and offSetXY[1] == "auto":
-            offsetX = pyautogui.size().width
-            offsetY = pyautogui.size().height
-        elif offSetXY[0] == "auto" and offSetXY[1] != "auto":
-            offsetX = pyautogui.size().width
-            offsetY = offSetXY[1]
-        elif offSetXY[0] != "auto" and offSetXY[1] == "auto":
-            offsetX = offSetXY[0]
-            offsetY = pyautogui.size().height
-        else:
-            offsetX = offSetXY[0]
-            offsetY = offSetXY[1]
-
-        # W H offset
-        if offSetWH[0] == "auto" and offSetWH[1] == "auto":
-            w += 60
-            h += 60
-        elif offSetWH[0] == "auto" and offSetWH[1] != "auto":
-            w += 60
-            h += offSetWH[1]
-        elif offSetWH[0] != "auto" and offSetWH[1] == "auto":
-            w += offSetWH[0]
-            h += 60
-        else:
-            w += offSetWH[0]
-            h += offSetWH[1]
-
-        #  Alignment offset
-        if offSetXY[1] == "auto":
-            if(offsetX > offsetY):  # Horizontal alignment
-                if(x < offsetX):
-                    x += offsetX
-            else:  # Vertical Alignment
-                if(y < offsetY):
-                    y += offsetY
-        elif offSetType.lower() == "horizontal":
-            if(x < offsetX):
-                x += offsetX
-        elif offSetType.lower() == "vertical":
-            if(y < offsetY):
-                y += offsetY
-
-        # Capture screen
-        coords = [x, y, w, h]
         tStatus, settings = fJson.readSetting()
         if tStatus == False: # If error its probably file not found, thats why we only handle the file not found error
             if settings[0] == "Setting file is not found":
+                self.root.wm_withdraw()  # Hide the capture window
+
+                # Show error
                 print("Error: " + settings[0])
                 print(settings[1])
                 Mbox("Error: " + settings[0], settings[1], 0)
+                
+                # Set Default
                 var1, var2 = fJson.setDefault()
-                if var1 :
+                if var1 : # If successfully set default
                     print("Default setting applied")
                     Mbox("Default setting applied", "Please change your tesseract location in setting if you didn't install tesseract on default C location", 0)
+                else: # If error
+                    print("Error: " + var2)
+                    Mbox("An Error Occured", var2, 0)
+                
+                self.root.wm_deiconify()  # Show the capture window
+                return # Reject
+        
+        # If tesseract is not found
         if settings['tesseract_loc'] == "" or "tesseract" in settings['tesseract_loc'] == False:
             self.root.wm_withdraw()  # Hide the capture window
-            x = Mbox("Error: Tesseract Not Set!",
-                        "Please set tesseract_loc in Setting.json.\nYou can set this in setting menu or modify it manually in resource/backend/json/Setting.json", 0)
+            x = Mbox("Error: Tesseract Not Set!", "Please set tesseract_loc in Setting.json.\nYou can set this in setting menu or modify it manually in resource/backend/json/Setting.json", 0)
             self.root.wm_deiconify()  # Show the capture window
-            return
-        
+            
+            return # Reject
+
+        # Store setting to localvar
+        offSetXY = settings["offSetXY"]
+        offSetWH = settings["offSetWH"]
+        xyOffSetType = settings["offSetXYType"]
+
+        offSets = offSetSettings(offSetWH, xyOffSetType, offSetXY)
+        x += offSets[0]
+        y += offSets[1]
+        w += offSets[2]
+        h += offSets[3]
+
         # Capture the screen
+        coords = [x, y, w, h]
+
         language = main_Menu.CBLangFrom.get()
         is_Success, result = capture.captureImg(coords, language, settings['tesseract_loc'], settings['cached'])
         self.root.attributes('-alpha', opacBefore)
         
-        print("Area Captured Successfully!\nText get: " + result) # Debug Print
+        print("Area Captured Successfully!") # Debug Print
+        print("Coordinates: " + str(coords)) # Debug Print
 
         if is_Success == False or len(result) == 1:
+            print("But Failed to capture any text!")
             Mbox("Error", "Failed to Capture Text!", 0)
         else:
             main_Menu.root.deiconify()
@@ -195,17 +226,15 @@ class CaptureUI():
         self.Hidden = False
         
         # Menubar
-        def stay_on_top():
-            if self.stayOnTop:
-                self.root.wm_attributes('-topmost', False)
-                self.stayOnTop = False
-            else:
+        def always_on_top():
+            if self.alwaysOnTop.get(): # IF ON THEN TURN IT OFF
                 self.root.wm_attributes('-topmost', True)
-                self.stayOnTop = True
+            else: # IF OFF THEN TURN IT ON
+                self.root.wm_attributes('-topmost', False)
 
         menubar = Menu(self.root)
         filemenu = Menu(menubar, tearoff=0)
-        filemenu.add_checkbutton(label="Disable Stay on Top", command=stay_on_top)
+        filemenu.add_checkbutton(label="Always on Top", onvalue=True, offvalue=False, variable=self.alwaysOnTop, command=always_on_top)
         menubar.add_cascade(label="Options", menu=filemenu)
 
         # Add to self.root
@@ -233,6 +262,42 @@ class SettingUI():
     def on_closing(self):
         self.root.wm_withdraw()
 
+    def checkBtnX():
+        offSets = getTheOffset()
+
+        if main_Menu.setting.root.getvar(name="checkVarOffSetX") == "1":
+            main_Menu.setting.spinnerOffSetX.config(state=DISABLED)
+            main_Menu.setting.spinValOffSetX.set(str(offSets[0]))
+        else:
+            main_Menu.setting.spinnerOffSetX.config(state=NORMAL)
+
+    def checkBtnY():
+        offSets = getTheOffset()
+
+        if main_Menu.setting.root.getvar(name="checkVarOffSetY") == "1":
+            main_Menu.setting.spinnerOffSetY.config(state=DISABLED)
+            main_Menu.setting.spinValOffSetY.set(str(offSets[1]))
+        else:
+            main_Menu.setting.spinnerOffSetY.config(state=NORMAL)
+
+    def checkBtnW():
+        offSets = getTheOffset()
+
+        if main_Menu.setting.root.getvar(name="checkVarOffSetW") == "1":
+            main_Menu.setting.spinnerOffSetW.config(state=DISABLED)
+            main_Menu.setting.spinValOffSetW.set(str(offSets[2]))
+        else:
+            main_Menu.setting.spinnerOffSetW.config(state=NORMAL)
+
+    def checkBtnH():
+        offSets = getTheOffset()
+
+        if main_Menu.setting.root.getvar(name="checkVarOffSetH") == "1":
+            main_Menu.setting.spinnerOffSetH.config(state=DISABLED)
+            main_Menu.setting.spinValOffSetH.set(str(offSets[3]))
+        else:
+            main_Menu.setting.spinnerOffSetH.config(state=NORMAL)
+
     def screenShotAndOpenLayout(self = ""):
         
         pass
@@ -244,13 +309,34 @@ class SettingUI():
     def saveSettings(self = ""):
         
         pass
-            
-    engines = engineList
-    optGoogle = []
-    fillList(google_Lang, optGoogle, "Auto-Detect")
-    optDeepl = []
-    fillList(deepl_Lang, optDeepl, "Auto-Detect")
-    langOpt = optGoogle
+        
+    def CBOffSetChange(self, event = ""):
+        offSets = getTheOffset()
+        xyOffSetType = self.CBOffSetChoice.get()
+
+        # Check offset or not
+        if xyOffSetType == "No Offset":
+            # Select auto
+            self.checkAutoOffSetX.select()
+            self.checkAutoOffSetY.select()
+            # Disable spinner and the selector, also set stuff in spinner to 0
+            self.checkAutoOffSetX.config(state=DISABLED)
+            self.checkAutoOffSetY.config(state=DISABLED)
+            self.spinnerOffSetX.config(state=DISABLED)
+            self.spinValOffSetX.set("0")
+            self.spinnerOffSetY.config(state=DISABLED)
+            self.spinValOffSetY.set("0")
+        else:
+            # Disselect auto
+            self.checkAutoOffSetX.select()
+            self.checkAutoOffSetY.select()
+            # Make checbtn clickable, but set auto which means spin is disabled
+            self.checkAutoOffSetX.config(state=NORMAL)
+            self.checkAutoOffSetY.config(state=NORMAL)
+            self.spinValOffSetX.set(str(offSets[0]))
+            self.spinValOffSetY.set(str(offSets[1]))
+            self.spinnerOffSetX.config(state=DISABLED)
+            self.spinnerOffSetY.config(state=DISABLED)
 
     # Frames
     firstFrame = Frame(root)
@@ -260,8 +346,10 @@ class SettingUI():
 
     secondFrame = Frame(root)
     secondFrame.pack(side=TOP, fill=X, expand=False)
-    secondFrameContent = Frame(root)
-    secondFrameContent.pack(side=TOP, fill=X, expand=False)
+    secondFrameContent0 = Frame(root)
+    secondFrameContent0.pack(side=TOP, fill=X, expand=False)
+    secondFrameContent1 = Frame(root)
+    secondFrameContent1.pack(side=TOP, fill=X, expand=False)
     secondFrameContent2 = Frame(root)
     secondFrameContent2.pack(side=TOP, fill=X, expand=False)
     secondFrameContent3 = Frame(root)
@@ -284,45 +372,60 @@ class SettingUI():
 
     # First Frame
     labelImg = Label(firstFrame, text="Image Setting")
-    checkVarCache = BooleanVar(value=True)
+    checkVarCache = BooleanVar(root, name="checkVarCache", value=True) # So its not error
     checkBTNCache = Checkbutton(firstFrameContent, text="Cached", variable=checkVarCache)
     btnOpenCacheFolder = Button(firstFrameContent, text="Open Cache Folder", command=lambda: os.startfile(dir_path + r"\backend\img_cache"))
 
     # Second Frame
-    labelMonitor = Label(secondFrame, text="Capture Offset")
-    checkVarOffSetX = BooleanVar(value=True)
-    checkVarOffSetY = BooleanVar(value=True)
-    checkVarOffSetW = BooleanVar(value=True)
-    checkVarOffSetH = BooleanVar(value=True)
-    checkDefaultOffSetX = Checkbutton(secondFrameContent, text="Default Offset X", variable=checkVarOffSetX)
-    checkDefaultOffSetY = Checkbutton(secondFrameContent, text="Default Offset Y", variable=checkVarOffSetY)
-    checkDefaultOffsetW = Checkbutton(secondFrameContent, text="Default Offset W", variable=checkVarOffSetW)
-    checkDefaultOffsetH = Checkbutton(secondFrameContent, text="Default Offset H", variable=checkVarOffSetH)
+    labelMonitor = Label(secondFrame, text="Monitor Capture Offset")
+    checkVarOffSetX = BooleanVar(root, name="checkVarOffSetX", value=True)
+    checkVarOffSetY = BooleanVar(root, name="checkVarOffSetY", value=True)
+    checkVarOffSetW = BooleanVar(root, name="checkVarOffSetW", value=True)
+    checkVarOffSetH = BooleanVar(root, name="checkVarOffSetH", value=True)
+    CBOffSetChoice = ttk.Combobox(secondFrameContent0, values=["No Offset", "Custom Offset"], state="readonly")
 
-    labelOffSetX = Label(secondFrameContent2, text="Offset X\t:")
-    labelOffSetY = Label(secondFrameContent2, text="Offset Y\t:")
-    labelOffSetW = Label(secondFrameContent3, text="Offset W\t:")
-    labelOffSetH = Label(secondFrameContent3, text="Offset H\t:")
+    labelCBOffsetNot = Label(secondFrameContent0, text="Capture XY Offset :")
+    labelOffSetX = Label(secondFrameContent2, text="Offset X :")
+    labelOffSetY = Label(secondFrameContent3, text="Offset Y :")
+    labelOffSetW = Label(secondFrameContent2, text="Offset W :")
+    labelOffSetH = Label(secondFrameContent3, text="Offset H :")
 
-    spinnerOffSetX = Spinbox(secondFrameContent2, from_=0, to=100_000, width=20)
-    spinnerOffSetY = Spinbox(secondFrameContent2, from_=0, to=100_000, width=20)
-    spinnerOffSetW = Spinbox(secondFrameContent3, from_=0, to=100_000, width=20)
-    spinnerOffSetH = Spinbox(secondFrameContent3, from_=0, to=100_000, width=20)
+    checkAutoOffSetX = Checkbutton(secondFrameContent1, text="Auto Offset X", variable=checkVarOffSetX, command=checkBtnX)
+    checkAutoOffSetY = Checkbutton(secondFrameContent1, text="Auto Offset Y", variable=checkVarOffSetY, command=checkBtnY)
+    checkAutoOffSetW = Checkbutton(secondFrameContent1, text="Auto Offset W", variable=checkVarOffSetW, command=checkBtnW)
+    checkAutoOffSetH = Checkbutton(secondFrameContent1, text="Auto Offset H", variable=checkVarOffSetH, command=checkBtnH)
+
+    spinValOffSetX = StringVar(root)
+    spinValOffSetY = StringVar(root)
+    spinValOffSetW = StringVar(root)
+    spinValOffSetH = StringVar(root)
+
+    spinnerOffSetX = Spinbox(secondFrameContent2, from_=0, to=100000, width=20, textvariable=spinValOffSetX)
+    spinnerOffSetY = Spinbox(secondFrameContent3, from_=0, to=100000, width=20, textvariable=spinValOffSetY)
+    spinnerOffSetW = Spinbox(secondFrameContent2, from_=0, to=100000, width=20, textvariable=spinValOffSetW)
+    spinnerOffSetH = Spinbox(secondFrameContent3, from_=0, to=100000, width=20, textvariable=spinValOffSetH)
 
     buttonCheckMonitorLayout = Button(secondFrameContent4, text="Click to get A Screenshot of How The Program See Your Monitor")
 
     # Third frame
+    engines = engineList
+    optGoogle = []
+    fillList(google_Lang, optGoogle, "Auto-Detect")
+    optDeepl = []
+    fillList(deepl_Lang, optDeepl, "Auto-Detect")
+    langOpt = optGoogle
+
     labelTl = Label(thirdFrame, text="Translation")
     CBDefaultEngine = ttk.Combobox(thirdFrameContent, values=engines, state="readonly")
     CBDefaultFrom = ttk.Combobox(thirdFrameContent, values=langOpt, state="readonly")
     CBDefaultTo = ttk.Combobox(thirdFrameContent, values=langOpt, state="readonly")
-    labelDefaultEngine = Label(thirdFrameContent, text="Default Engine:")
-    labelDefaultFrom = Label(thirdFrameContent, text="Default From:")
-    labelDefaultTo = Label(thirdFrameContent, text="Default To:")
+    labelDefaultEngine = Label(thirdFrameContent, text="Default Engine :")
+    labelDefaultFrom = Label(thirdFrameContent, text="Default From :")
+    labelDefaultTo = Label(thirdFrameContent, text="Default To :")
 
     # Fourth frame
     labelTesseract = Label(fourthFrame, text="Tesseract")
-    labelTesseractPath = Label(fourthFrameContent, text="Tesseract Path:")
+    labelTesseractPath = Label(fourthFrameContent, text="Tesseract Path :")
     textBoxTesseractPath = Text(fourthFrameContent, width=50, height=1)
 
     # Bottom Frame
@@ -332,16 +435,119 @@ class SettingUI():
     # ----------------------------------------------------------------------
     def __init__(self):
         self.root.title("Setting")
-        self.root.geometry("750x400")
+        self.root.geometry("750x420")
         self.root.wm_attributes('-topmost', False) # Default False
         # self.root.wm_withdraw()
 
+        # Get settings on startup
         tStatus, settings = fJson.readSetting()
-        # Ignore status, already handled in main menu
+        if tStatus == False: # If error its probably file not found, thats why we only handle the file not found error
+            if settings[0] == "Setting file is not found":
+                self.root.wm_withdraw()  # Hide setting
+
+                # Show error
+                print("Error: " + settings[0])
+                print(settings[1])
+                Mbox("Error: " + settings[0], settings[1], 0)
+                
+                settings = fJson.default_Setting
+
+                # Set Default
+                var1, var2 = fJson.setDefault()
+                if var1 : # If successfully set default
+                    print("Default setting applied")
+                    Mbox("Default setting applied", "Please change your tesseract location in setting if you didn't install tesseract on default C location", 0)
+                else: # If error
+                    print("Error: " + var2)
+                    Mbox("An Error Occured", var2, 0)
+                
+                self.root.wm_deiconify()  # Show setting
+        
+        # If tesseract is not found
+        if settings['tesseract_loc'] == "" or "tesseract" in settings['tesseract_loc'] == False:
+            x = Mbox("Error: Tesseract Not Set!", "Please set tesseract_loc in Setting.json.\nYou can set this in setting menu or modify it manually in resource/backend/json/Setting.json", 0)
+        
+        # Cache checkbox
         if settings['cached'] == True:
+            self.root.setvar(name="checkVarCache", value=True)
             self.checkBTNCache.select()
         else:
+            self.root.setvar(name="checkVarCache", value=False)
             self.checkBTNCache.deselect()
+
+        # Store setting to localvar
+        offSetXY = settings["offSetXY"]
+        offSetWH = settings["offSetWH"]
+        xyOffSetType = settings["offSetXYType"]
+
+        offSets = offSetSettings(offSetWH, xyOffSetType, offSetXY)
+        x = offSets[0]
+        y = offSets[1]
+        w = offSets[2]
+        h = offSets[3]
+
+        if xyOffSetType == "No Offset":
+            self.CBOffSetChoice.current(0)
+            self.checkAutoOffSetX.config(state=DISABLED)
+            self.checkAutoOffSetY.config(state=DISABLED)
+            self.spinnerOffSetX.config(state=DISABLED)
+            self.spinValOffSetX.set("0")
+            self.spinnerOffSetY.config(state=DISABLED)
+            self.spinValOffSetY.set("0")
+
+            self.checkAutoOffSetX.deselect()
+            self.root.setvar(name="checkVarOffSetX", value=False)
+            self.checkAutoOffSetY.deselect()
+            self.root.setvar(name="checkVarOffSetY", value=False)
+
+        elif xyOffSetType == "Custom Offset":
+            self.CBOffSetChoice.current(1)
+            self.spinValOffSetX.set(str(x))
+            self.spinValOffSetY.set(str(y))
+
+            if offSetXY[0] == "auto":
+                self.checkAutoOffSetX.select()
+                self.root.setvar(name="checkVarOffSetX", value=True)
+                self.spinnerOffSetX.config(state=DISABLED)
+            else:
+                self.checkAutoOffSetX.deselect()
+                self.root.setvar(name="checkVarOffSetX", value=False)
+                self.spinnerOffSetX.config(state=NORMAL)
+
+            if offSetXY[1] == "auto":
+                self.checkAutoOffSetY.select()
+                self.root.setvar(name="checkVarOffSetY", value=True)
+                self.spinnerOffSetY.config(state=DISABLED)
+            else:
+                self.checkAutoOffSetY.deselect()
+                self.root.setvar(name="checkVarOffSetY", value=False)
+                self.spinnerOffSetY.config(state=NORMAL)
+        else:
+            self.CBOffSetChoice.current(0)
+            print("Error: Invalid Offset Type")
+            Mbox("Error: Invalid Offset Type", "Please do not modify the setting manually if you don't know what you are doing", 0)
+        
+        # W H
+        self.spinValOffSetW.set(str(w))
+        self.spinValOffSetH.set(str(h))
+
+        if(settings["offSetWH"][0] == "auto"):
+            self.checkAutoOffSetW.select()
+            self.root.setvar(name="checkVarOffSetW", value=True)
+            self.spinnerOffSetW.config(state=DISABLED)
+        else:
+            self.checkAutoOffSetW.deselect()
+            self.root.setvar(name="checkVarOffSetW", value=False)
+            self.spinnerOffSetW.config(state=NORMAL)
+        
+        if(settings["offSetWH"][1] == "auto"):
+            self.checkAutoOffSetH.select()
+            self.root.setvar(name="checkVarOffSetH", value=True)
+            self.spinnerOffSetH.config(state=DISABLED)
+        else:
+            self.checkAutoOffSetH.deselect()
+            self.root.setvar(name="checkVarOffSetH", value=False)
+            self.spinnerOffSetH.config(state=NORMAL)
 
         # Init element
         # 1
@@ -350,11 +556,16 @@ class SettingUI():
         self.btnOpenCacheFolder.pack(side=LEFT, padx=5, pady=5)
 
         # 2
-        self.labelMonitor.pack(side=LEFT, fill=X)
-        self.checkDefaultOffSetX.pack(side=LEFT, padx=5, pady=5)
-        self.checkDefaultOffSetY.pack(side=LEFT, padx=5, pady=5)
-        self.checkDefaultOffsetW.pack(side=LEFT, padx=5, pady=5)
-        self.checkDefaultOffsetH.pack(side=LEFT, padx=5, pady=5)
+        self.labelMonitor.pack(side=LEFT, fill=X, padx=5, pady=5)
+
+        self.labelCBOffsetNot.pack(side=LEFT, padx=5, pady=5)
+        self.CBOffSetChoice.pack(side=LEFT, padx=5, pady=5)
+        self.CBOffSetChoice.bind("<<ComboboxSelected>>", self.CBOffSetChange)
+
+        self.checkAutoOffSetX.pack(side=LEFT, padx=5, pady=5)
+        self.checkAutoOffSetY.pack(side=LEFT, padx=5, pady=5)
+        self.checkAutoOffSetW.pack(side=LEFT, padx=5, pady=5)
+        self.checkAutoOffSetH.pack(side=LEFT, padx=5, pady=5)
 
         self.labelOffSetX.pack(side=LEFT, padx=5, pady=5)
         self.spinnerOffSetX.pack(side=LEFT, padx=5, pady=5)
@@ -364,7 +575,7 @@ class SettingUI():
         self.labelOffSetW.pack(side=LEFT, padx=5, pady=5)
         self.spinnerOffSetW.pack(side=LEFT, padx=5, pady=5)
         self.labelOffSetH.pack(side=LEFT, padx=5, pady=5)
-        self.spinnerOffSetH.pack(side=LEFT, padx=5, pady=5)
+        self.spinnerOffSetH.pack(side=LEFT, padx=8, pady=5)
         
         self.buttonCheckMonitorLayout.pack(side=LEFT, padx=30, pady=5)
 
@@ -518,7 +729,7 @@ class main_Menu():
     setting = SettingUI()
 
     root = Tk()
-    stayOnTop = False
+    alwaysOnTop = False
     capUiHidden = False
 
     # Frame
@@ -564,7 +775,6 @@ class main_Menu():
     textBoxBottom = Text(bottomFrame2, height = 5, width = 100, font=("Segoe UI", 10), yscrollcommand=True)
 
     # ----------------------------------------------------------------------
-    # __init__
     def __init__(self):
         self.root.title("Screen Translate - Main Menu")
         self.root.geometry("900x300")
@@ -572,30 +782,38 @@ class main_Menu():
         tStatus, settings = fJson.readSetting()
         if tStatus == False: # If error its probably file not found, thats why we only handle the file not found error
             if settings[0] == "Setting file is not found":
+                # Show error
                 print("Error: " + settings[0])
                 print(settings[1])
                 Mbox("Error: " + settings[0], settings[1], 0)
+
+                # Set setting value to default, so program can run
                 settings = fJson.default_Setting
+
+                # Set Default
                 var1, var2 = fJson.setDefault()
-                if var1 :
+                if var1 : # If successfully set default
                     print("Default setting applied")
                     Mbox("Default setting applied", "Please change your tesseract location in setting if you didn't install tesseract on default C location", 0)
+                else: # If error
+                    print("Error: " + var2)
+                    Mbox("An Error Occured", var2, 0)
+
         elif settings['tesseract_loc'] == "" or "tesseract" in settings['tesseract_loc'] == False:
-            x = Mbox("Error: Tesseract Not Set!",
-                        "Please set tesseract_loc in Setting.json.\nYou can set this in setting menu or modify it manually in resource/backend/json/Setting.json", 0)
+            Mbox("Error: Tesseract Not Set!", "Please set tesseract_loc in Setting.json.\nYou can set this in setting menu or modify it manually in resource/backend/json/Setting.json", 0)
         
         # Menubar
-        def stay_on_top():
-            if self.stayOnTop:
+        def always_on_top():
+            if self.alwaysOnTop:
                 self.root.wm_attributes('-topmost', False)
-                self.stayOnTop = False
+                self.alwaysOnTop = False
             else:
                 self.root.wm_attributes('-topmost', True)
-                self.stayOnTop = True
+                self.alwaysOnTop = True
 
         menubar = Menu(self.root)
         filemenu = Menu(menubar, tearoff=0)
-        filemenu.add_checkbutton(label="Stay on Top", command=stay_on_top)
+        filemenu.add_checkbutton(label="Always on Top", command=always_on_top)
         filemenu.add_separator()
         filemenu.add_command(label="Exit Application", command=self.root.quit)
         menubar.add_cascade(label="Options", menu=filemenu)
