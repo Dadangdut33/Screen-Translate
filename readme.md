@@ -1,5 +1,5 @@
 # About
-An OCR translator tool. Made by [me](https://github.com/Dadangdut33) by utilizing Tesseract. I made this to learn more about python.\
+An OCR translator tool. Made by [me](https://github.com/Dadangdut33) by utilizing Tesseract, compiled to .exe using pyinstaller. I made this program to learn more about python.\
 Inspired by Visual Novel Reader (VNR), [Visual Novel OCR](https://github.com/leminhyen2/Visual-Novel-OCR), and [QTranslate](https://quest-app.appspot.com/)
 
 # Requirements
@@ -41,9 +41,9 @@ You can use p2exe or many other stuff. I use pyinstaller to compile it.<br>
 Command used are
 ```
 # On Source Code Directory
-pyinstaller screentranslate.py
+pyinstaller ScreenTranslate.py
 ```
-After that you copy the folder in `copy To Compiled Folder` to dist/screentranslate. Then you can run the executable .exe file without any problem.
+After that you copy the folder in `copy To Compiled Folder` to dist/ScreenTranslate. Then you can run the executable .exe file without any problem.
 
 Read [this stackoverflow post](https://stackoverflow.com/questions/5458048/how-can-i-make-a-python-script-standalone-executable-to-run-without-any-dependen)  to learn more on how to do it.
 
