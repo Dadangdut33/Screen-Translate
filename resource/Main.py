@@ -53,14 +53,15 @@ def searchList(searchFor, theList):
             return index
         index += 1
 
-def fillList(dictFrom, listTo, insertFirst, insertSecond = ""):
+def fillList(dictFrom, listTo, insertFirst = "", insertSecond = ""):
     for item in dictFrom:
         if item == "Auto-Detect":
             continue
         listTo += [item]
 
     listTo.sort()
-    listTo.insert(0, insertFirst)
+    if insertFirst != "":
+        listTo.insert(0, insertFirst)
     if insertSecond != "":
         listTo.insert(1, insertSecond)
 
@@ -112,6 +113,7 @@ def getTheOffset(custom = ""):
     offSetXY = settings["offSetXY"]
     offSetWH = settings["offSetWH"]
     xyOffSetType = settings["offSetXYType"]
+
     if custom != "":
         offSets = offSetSettings(offSetWH, xyOffSetType, offSetXY, custom)
     else:
@@ -132,6 +134,11 @@ optGoogle = []
 fillList(google_Lang, optGoogle, "Auto-Detect")
 optDeepl = []
 fillList(deepl_Lang, optDeepl, "Auto-Detect")
+optMyMemory = []
+fillList(myMemory_Lang, optMyMemory, "Auto-Detect")
+optPons = []
+fillList(pons_Lang, optPons) # PONS HAVE NO AUTO DETECT
+
 # ----------------------------------------------------------------------
 # Classes
 class CaptureUI():
@@ -549,6 +556,11 @@ class SettingUI():
         pass
 
     def restoreDefault(self):
+        x = Mbox("Confirmation", "Are you sure you want to set the settings to default?\n\n**WARNING! CURRENT SETTING WILL BE OVERWRITTEN**", 3)
+        if x == False:
+            Mbox("Canceled", "Action Canceled", 0)
+            return
+
         # Restore Default Settings
         tStatus, settings = fJson.setDefault()
         if tStatus == True:
@@ -622,6 +634,8 @@ class SettingUI():
 
         elif xyOffSetType == "Custom Offset":
             self.CBOffSetChoice.current(1)
+            print(x)
+            print(y)
             self.spinValOffSetX.set(str(x))
             self.spinValOffSetY.set(str(y))
             self.checkAutoOffSetX.config(state=NORMAL)
@@ -735,7 +749,7 @@ class SettingUI():
             Mbox("Error", dataStatus, 2)
 
     def CBOffSetChange(self, event = ""):
-        offSets = getTheOffset()
+        offSets = getTheOffset("Custom")
         xyOffSetType = self.CBOffSetChoice.get()
 
         # Check offset or not
@@ -766,6 +780,7 @@ class SettingUI():
         return event.isdigit()
 
     def CBTLChange_setting(self, event = ""):
+        # In settings
         # Get the engine from the combobox
         curr_Engine = self.CBDefaultEngine.get()
 
@@ -782,6 +797,18 @@ class SettingUI():
             self.CBDefaultFrom.current(0)
             self.CBDefaultTo['values'] = optDeepl
             self.CBDefaultTo.current(searchList("English", optDeepl))
+        elif curr_Engine == "MyMemoryTranslator":
+            self.langOpt = optMyMemory
+            self.CBDefaultFrom['values'] = optMyMemory
+            self.CBDefaultFrom.current(0)
+            self.CBDefaultTo['values'] = optMyMemory
+            self.CBDefaultTo.current(searchList("English", optMyMemory))
+        elif curr_Engine == "PONS":
+            self.langOpt = optPons
+            self.CBDefaultFrom['values'] = optPons
+            self.CBDefaultFrom.current(0)
+            self.CBDefaultTo['values'] = optPons
+            self.CBDefaultTo.current(searchList("English", optPons))
 
     # Frames
     s = ttk.Style()
@@ -996,6 +1023,8 @@ class main_Menu():
             return
 
         # Translate
+        # --------------------------------
+        # Google Translate
         if engine == "Google Translate":
             isSuccess, translateResult = tl.google_tl(text, langTo, langFrom)
             if(isSuccess):
@@ -1013,9 +1042,51 @@ class main_Menu():
                 fJson.writeAdd_History(new_data)
             else:
                 Mbox("Error: Translation Failed", translateResult, 2)
+        # --------------------------------
+        # Deepl
         elif engine == "Deepl":
             loop = asyncio.get_event_loop()
             loop.run_until_complete(self.getDeeplTl(text, langTo, langFrom, TBBot))
+        # --------------------------------
+        # MyMemoryTranslator
+        elif engine == "MyMemoryTranslator":
+            isSuccess, translateResult = tl.memory_tl(text, langTo, langFrom)
+            if(isSuccess):
+                TBBot.delete(1.0, END)
+                TBBot.insert(1.0, translateResult)
+
+                # Write to History
+                new_data = {
+                    "from": langFrom,
+                    "to": langTo,
+                    "query": text,
+                    "result": translateResult,
+                    "engine": engine
+                }
+                fJson.writeAdd_History(new_data)
+            else:
+                Mbox("Error: Translation Failed", translateResult, 2)
+        # --------------------------------
+        # PONS
+        elif engine == "PONS":
+            isSuccess, translateResult = tl.pons_tl(text, langTo, langFrom)
+            if(isSuccess):
+                TBBot.delete(1.0, END)
+                TBBot.insert(1.0, translateResult)
+
+                # Write to History
+                new_data = {
+                    "from": langFrom,
+                    "to": langTo,
+                    "query": text,
+                    "result": translateResult,
+                    "engine": engine
+                }
+                fJson.writeAdd_History(new_data)
+            else:
+                Mbox("Error: Translation Failed", translateResult, 2)
+        # --------------------------------
+        # Wrong opts
         else:
             print("Please select a correct engine")
             Mbox("Error: Engine Not Set!", "Please Please select a correct engine", 2)
@@ -1093,6 +1164,7 @@ class main_Menu():
         self.textBoxBottom.delete(1.0, END)
 
     def cbTLChange(self, event = ""):
+        # In Main
         # Get the engine from the combobox
         curr_Engine = self.CBTranslateEngine.get()
 
@@ -1109,6 +1181,19 @@ class main_Menu():
             self.CBLangFrom.current(0)
             self.CBLangTo['values'] = optDeepl
             self.CBLangTo.current(searchList("English", optDeepl))
+        elif curr_Engine == "MyMemoryTranslator":
+            self.langOpt = optMyMemory
+            self.CBLangFrom['values'] = optMyMemory
+            self.CBLangFrom.current(0)
+            self.CBLangTo['values'] = optMyMemory
+            self.CBLangTo.current(searchList("English", optMyMemory))
+        elif curr_Engine == "PONS":
+            self.langOpt = optPons
+            self.CBLangFrom['values'] = optPons
+            self.CBLangFrom.current(0)
+            self.CBLangTo['values'] = optPons
+            self.CBLangTo.current(searchList("English", optPons))
+
 
     # --- Declarations and Layout ---
     # Call the other frame
