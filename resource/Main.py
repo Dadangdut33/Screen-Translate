@@ -2,15 +2,33 @@ import pyautogui
 import os
 import webbrowser
 import asyncio
-import backend.Translate as tl
-import backend.Capture as capture
-import backend.JsonHandling as fJson
-import subprocess
 from backend.LangCode import *
 from tkinter import *
 from tkinter.tix import *
 import tkinter.ttk as ttk
+import backend.Capture as capture
+import backend.JsonHandling as fJson
+import subprocess
 from backend.Mbox import Mbox
+try:
+    import backend.Translate as tl
+except ConnectionError as e:
+    print("Error: No Internet Connection. Please Restart With Internet Connected", str(e))
+    Mbox("Error: No Internet Connection", e, 2)
+except Exception as e:
+    print("Error", str(e))
+    Mbox("Error", e, 2)
+
+try:
+    import backend.Translate_Deepl as tl_deepl
+except ConnectionError as e:
+    print("Error: No Internet Connection. Please Restart With Internet Connected", str(e))
+    Mbox("Error: No Internet Connection", e, 2)
+except Exception as e:
+    print("Error", str(e))
+    Mbox("Error", e, 2)
+
+# Get dir path
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
 # ----------------------------------------------------------------
@@ -287,6 +305,9 @@ class HistoryUI():
     
 
     def __init__(self):
+
+        # On Close
+        self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
         pass
 
 # ----------------------------------------------------------------------
@@ -766,7 +787,7 @@ class main_Menu():
     async def getDeeplTl(self, text, langTo, langFrom, TBottom):
         """Get the translated text from deepl.com"""
 
-        isSuccess, translateResult = await tl.deepl_tl(text, langTo, langFrom)
+        isSuccess, translateResult = await tl_deepl.deepl_tl(text, langTo, langFrom)
         if(isSuccess):
             TBottom.delete(1.0, END)
             TBottom.insert(1.0, translateResult)
@@ -832,7 +853,7 @@ class main_Menu():
         self.setting.show()
     
     def open_History(self):
-        # self.history.show()
+        self.history.show()
         pass
 
     def open_About(self):
@@ -917,6 +938,7 @@ class main_Menu():
     # Call the other frame
     capture_UI = CaptureUI()
     setting = SettingUI()
+    history = HistoryUI()
 
     root = Tk()
     alwaysOnTop = False
