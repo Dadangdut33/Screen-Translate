@@ -1,5 +1,5 @@
 # About
-An OCR translator tool. Made by [me](https://github.com/Dadangdut33) by utilizing Tesseract, compiled to .exe using pyinstaller. I made this program to learn more about python.\
+An OCR translator tool. Made by [me](https://github.com/Dadangdut33) by utilizing Tesseract, compiled to .exe using pyinstaller. I made this program to learn more about python.<br><br>
 Inspired by Visual Novel Reader (VNR), [Visual Novel OCR](https://github.com/leminhyen2/Visual-Novel-OCR), and [QTranslate](https://quest-app.appspot.com/)
 
 # Requirements
