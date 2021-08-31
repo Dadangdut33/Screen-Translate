@@ -5,6 +5,7 @@ import asyncio
 import backend.Translate as tl
 import backend.Capture as capture
 import backend.JsonHandling as fJson
+import subprocess
 from backend.LangCode import *
 from tkinter import *
 from tkinter.tix import *
@@ -14,6 +15,12 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 
 # ----------------------------------------------------------------
 # public func
+def startfile(filename):
+  try:
+    os.startfile(filename)
+  except:
+    subprocess.Popen(['xdg-open', filename])
+
 def OpenUrl(url):
     webbrowser.open_new(url)
 
@@ -263,6 +270,26 @@ class CaptureUI():
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
 
 # ----------------------------------------------------------------------
+class HistoryUI():
+    """History Window"""
+    root = Tk()
+
+    # ----------------------------------------------------------------
+    # Functions
+    def show(self):
+        self.root.wm_deiconify()
+
+    def on_closing(self):
+        self.root.wm_withdraw()
+
+    # ----------------------------------------------------------------
+    # Layout
+    
+
+    def __init__(self):
+        pass
+
+# ----------------------------------------------------------------------
 class SettingUI():
     """Setting Window"""
     root = Tk()
@@ -331,7 +358,7 @@ class SettingUI():
 
     def screenShotAndOpenLayout():
         capture.captureAll()
-        os.startfile(dir_path + r"\backend\img_cache\Monitor(s) Captured View.png")
+        startfile(dir_path + r"\backend\img_cache\Monitor(s) Captured View.png")
         pass
 
     def restoreDefault(self):
@@ -599,13 +626,13 @@ class SettingUI():
     bottomFrame.pack(side=BOTTOM, fill=BOTH, expand=False)
 
     # First Frame
-    labelImg = Label(firstFrame, text="Image Setting")
+    labelImg = Label(firstFrame, text="• Image Setting")
     checkVarCache = BooleanVar(root, name="checkVarCache", value=True) # So its not error
     checkBTNCache = Checkbutton(firstFrameContent, text="Cached", variable=checkVarCache)
-    btnOpenCacheFolder = Button(firstFrameContent, text="Open Cache Folder", command=lambda: os.startfile(dir_path + r"\backend\img_cache"))
+    btnOpenCacheFolder = Button(firstFrameContent, text="Open Cache Folder", command=lambda: startfile(dir_path + r"\backend\img_cache"))
 
     # Second Frame
-    labelMonitor = Label(secondFrame, text="Monitor Capture Offset")
+    labelMonitor = Label(secondFrame, text="• Monitor Capture Offset")
     CBOffSetChoice = ttk.Combobox(secondFrameContent0, values=["No Offset", "Custom Offset"], state="readonly")
 
     labelCBOffsetNot = Label(secondFrameContent0, text="Capture XY Offset :")
@@ -645,7 +672,7 @@ class SettingUI():
     # Third frame
     langOpt = optGoogle
 
-    labelTl = Label(thirdFrame, text="Translation")
+    labelTl = Label(thirdFrame, text="• Translation")
     CBDefaultEngine = ttk.Combobox(thirdFrameContent, values=engines, state="readonly")
     CBDefaultFrom = ttk.Combobox(thirdFrameContent, values=langOpt, state="readonly")
     CBDefaultTo = ttk.Combobox(thirdFrameContent, values=langOpt, state="readonly")
@@ -654,7 +681,7 @@ class SettingUI():
     labelDefaultTo = Label(thirdFrameContent, text="Default To :")
 
     # Fourth frame
-    labelTesseract = Label(fourthFrame, text="Tesseract")
+    labelTesseract = Label(fourthFrame, text="• Tesseract OCR")
     labelTesseractPath = Label(fourthFrameContent, text="Tesseract Path :")
     textBoxTesseractPath = Text(fourthFrameContent, width=77, height=1, xscrollcommand=True)
 
@@ -736,9 +763,8 @@ class main_Menu():
     console()
 
     # --- Functions ---
-    async def getDeeplTl(self, text, langTo, langFrom):
+    async def getDeeplTl(self, text, langTo, langFrom, TBottom):
         """Get the translated text from deepl.com"""
-        TBottom = self.textBoxBottom
 
         isSuccess, translateResult = await tl.deepl_tl(text, langTo, langFrom)
         if(isSuccess):
@@ -815,17 +841,18 @@ class main_Menu():
         " check the tutorial by pressing the tutorial in the menu bar", 0)
 
     def open_Tutorial(self):
-        Mbox("Tutorial", "1. *First*, you need to install tesseract, you can quickly go to the download link by pressing the download tesseract in menu bar\n\n" + 
+        Mbox("Tutorial", r"1. *First*, make sure your screen scaling is 100%. If scaling is not 100%, the capturer won't work properly. If by any chance you don't want to set your monitor scaling to 100%, " + 
+        "you set put your own offset in  the setting" + "\n\n2. *Second*, you need to install tesseract, you can quickly go to the download link by pressing the download tesseract in menu bar\n\n" + 
         "2. *Then*, check the settings. Make sure tesseract path is correct\n\n" + 
         "3. *FOR MULTI MONITOR USER*, set offset in setting. If you have multiple monitor setup, you might need to set the offset in settings. \n\nWhat you shold do in the setting window:\n- Check how the program see your monitors in settings by clicking that one button.\n" + 
         "- You can also see how the capture area captured your images by enabling cache and then see the image in 'img_cache' directory" + 
-        "\n\n\nYou can open the tutorial linked in menubar if you are still confused.", 0)
+        "\n\n\nYou can open the tutorial or user manual linked in menubar if you are still confused.", 0)
 
     def open_Faq(self):
         Mbox("FAQ", "Q: Do you collect the screenshot?\nA: No, no data is stored anywhere. Image and text captured will only be use for query and the cache is only saved locally\n\n" + 
         "Q: Is this safe?\nA: Yes, it is safe, you can check the code on the github linked, or open it yourself on your machine.\n\n" + 
         "Q: I could not capture anything, help!?\nA: You might need to check the cache image and see wether it actually capture the stuff that you targeted or not. If not, you might " + 
-        "want to set offset in setting", 0)
+        "want to set offset in setting or change your monitor scaling to 100%", 0)
 
     def openTesLink(self):
         Mbox("Info", "Please download the v5.0.0-alpha.20210811 Version and install all language pack", 0)
@@ -833,7 +860,13 @@ class main_Menu():
         OpenUrl("https://github.com/UB-Mannheim/tesseract/wiki")
 
     def open_KnownBugs(self):
-        Mbox("Known Bugs", "- The auto offset is wrong if the resolution between monitor 1 and 2 is not the same. In this case you have to set the offset manually.", 0)
+        Mbox("Known Bugs", r"- Monitor scaling needs to be 100% or it won't capture accurately\n\n- The auto offset is wrong if the resolution between monitor 1 and 2 is not the same. It's because the auto offset calculate only the primary monitor. In this case you have to set the offset manually.", 0)
+
+    def open_UserManual(self):
+        try:
+            startfile(dir_path + r"\..\user_manual")
+        except:
+            OpenUrl("https://github.com/Dadangdut33/Screen-Translate/tree/main/user_manual")
 
     # Open Capture Window
     def open_capture_screen(self):
@@ -975,6 +1008,7 @@ class main_Menu():
         filemenu2 = Menu(menubar, tearoff=0)
         filemenu2.add_command(label="History", command=self.open_History) # Open History Window
         filemenu2.add_command(label="Setting", command=self.open_Setting) # Open Setting Window
+        filemenu2.add_command(label="Cache", command=lambda: startfile(dir_path + r"\backend\img_cache")) # Open Setting Window
         menubar.add_cascade(label="View", menu=filemenu2)
 
         filemenu3 = Menu(menubar, tearoff=0)
@@ -988,6 +1022,7 @@ class main_Menu():
         filemenu4.add_command(label="About", command=self.open_About) # Open Mbox About
         filemenu4.add_separator()
         filemenu4.add_command(label="Open Tutorial Video") # Open Mbox Tutorials
+        filemenu4.add_command(label="Open User Manual", command=self.open_UserManual) # Open Mbox Tutorials
         filemenu4.add_command(label="Open GitHub Repo", command=lambda aurl="https://github.com/Dadangdut33/Screen-Translate":OpenUrl(aurl)) # Open Mbox Tutorials
         filemenu4.add_command(label="Download Tesseract", command=self.openTesLink) # Open Mbox Tutorials
         menubar.add_cascade(label="Help", menu=filemenu4)
