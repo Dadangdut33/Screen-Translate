@@ -4,12 +4,16 @@ import webbrowser
 import asyncio
 from backend.LangCode import *
 from tkinter import *
+from tkinter import ttk
 from tkinter.tix import *
 import tkinter.ttk as ttk
 import backend.Capture as capture
 import backend.JsonHandling as fJson
 import subprocess
+import pyperclip
 from backend.Mbox import Mbox
+
+# Add try except to intercept connection error
 try:
     import backend.Translate as tl
 except ConnectionError as e:
@@ -212,10 +216,11 @@ class CaptureUI():
                 self.root.wm_deiconify()  # Show the capture window
                 return # Reject
         
+        validTesseract = "tesseract" in settings['tesseract_loc'].lower()
         # If tesseract is not found
-        if os.path.exists(settings['tesseract_loc']) == False:
+        if os.path.exists(settings['tesseract_loc']) == False or validTesseract == False:
             self.root.wm_withdraw()  # Hide the capture window
-            Mbox("Error: Tesseract Not Set!", "Please set tesseract_loc in Setting.json.\nYou can set this in setting menu or modify it manually in resource/backend/json/Setting.json", 2)
+            Mbox("Error: Tesseract Not Found!", "Please set tesseract location in Setting.json.\nYou can set this in setting menu or modify it manually in resource/backend/json/Setting.json", 2)
             self.root.wm_deiconify()  # Show the capture window
             
             return # Reject
@@ -260,6 +265,7 @@ class CaptureUI():
         self.root.geometry('500x150')
         self.root.wm_attributes('-topmost', True)
         self.Hidden = False
+        self.root.wm_withdraw()
         
         # Menubar
         def always_on_top():
@@ -295,20 +301,179 @@ class HistoryUI():
     # ----------------------------------------------------------------
     # Functions
     def show(self):
+        self.refresh()
         self.root.wm_deiconify()
 
     def on_closing(self):
         self.root.wm_withdraw()
 
+    def deleteSelected():
+        sel_Index = main_Menu.history.historyTreeView.focus()
+        if sel_Index != "":
+            x = Mbox("Confirmation", "Are you sure you want to the selected data?", 3)
+            if x == False:
+                Mbox("Canceled", "Action Canceled", 0)
+                return
+
+            dataRow = main_Menu.history.historyTreeView.item(sel_Index, 'values')
+
+            status, statusText = fJson.deleteCertainHistory(int(dataRow[0]))
+            if status == True:
+                print("Success: " + statusText)
+                Mbox("Success", statusText, 0)
+            # Error already handled in jsonHandling
+
+            # Refresh
+            main_Menu.history.refresh()
+
+    def deleteAll():
+        x = Mbox("Confirmation", "Are you sure you want to delete all history?", 3)
+        if x == False:
+            Mbox("Canceled", "Action Canceled", 0)
+            return
+
+        status, statusText = fJson.deleteAllHistory()
+        if status == True:
+            print("Success: " + statusText)
+            Mbox("Success", statusText, 0)
+        # Error already handled in jsonHandling
+
+        # Refresh
+        main_Menu.history.refresh()
+
+
+    def refresh(x = ""):
+        status, data = fJson.readHistory()
+        # Error already handled in jsonHandling
+        if status == True:
+            listData = []
+            # convert json to list, then make it a list in list... 
+            for item in data['tl_history']:
+                addToList = [item['id'], item['from'], item['to'], item['query'], item['result'], item['engine']]
+
+                listData.append(addToList)
+    
+            for i in main_Menu.history.historyTreeView.get_children():
+                main_Menu.history.historyTreeView.delete(i)
+
+            count = 0
+            for record in listData:
+                # Parent
+                parentID = count
+                main_Menu.history.historyTreeView.insert(parent='', index='end', text='', iid=count, values=(record[0], record[1] + "-" + record[2], record[3]))
+                
+                count += 1
+                # Child
+                main_Menu.history.historyTreeView.insert(parent=parentID, index='end', text='', iid=count, values=(record[0], "Using " + record[5], record[4]))
+
+                count += 1
+            # ------------------------------------------------------------
+            print("History loaded")
+        else:
+            for i in main_Menu.history.historyTreeView.get_children():
+                main_Menu.history.historyTreeView.delete(i)
+
+    def copyToClipboard():
+        sel_Index = main_Menu.history.historyTreeView.focus()
+        if sel_Index != "":
+            dataRow = main_Menu.history.historyTreeView.item(sel_Index, 'values')
+            pyperclip.copy(dataRow[2])
+
+    def copyToTranslateMenu():
+        sel_Index = main_Menu.history.historyTreeView.focus()
+        if sel_Index != '':
+            dataRow = main_Menu.history.historyTreeView.item(sel_Index, 'values')
+            main_Menu.textBoxTop.delete(1.0, END)
+            main_Menu.textBoxTop.insert(1.0, dataRow[2])
+
+    def handle_click(event):
+        if main_Menu.history.historyTreeView.identify_region(event.x, event.y) == "separator":
+            return "break"
+
     # ----------------------------------------------------------------
     # Layout
-    
+    # frameOne
+    firstFrame = Frame(root)
+    firstFrame.pack(side=TOP, fill=BOTH, padx=5, expand=False)
+    firstFrameScrollX = Frame(root)
+    firstFrameScrollX.pack(side=TOP, fill=X, padx=5, expand=False)
 
+    bottomFrame = Frame(root)
+    bottomFrame.pack(side=BOTTOM, fill=BOTH, expand=False)
+
+    # elements
+    # Treeview
+    historyTreeView = ttk.Treeview(firstFrame, columns=('Id', 'From-To', 'Query'))
+    historyTreeView['columns']=('Id', 'From-To', 'Query')
+
+    # Scrollbar
+    scrollbarY = Scrollbar(firstFrame, orient=VERTICAL)
+    scrollbarY.pack(side=RIGHT, fill=Y)
+    scrollbarX = Scrollbar(firstFrameScrollX, orient=HORIZONTAL)
+    scrollbarX.pack(side=TOP, fill=X)
+
+    scrollbarX.config(command=historyTreeView.xview)
+    scrollbarY.config(command=historyTreeView.yview)
+    historyTreeView.config(yscrollcommand=scrollbarY.set, xscrollcommand=scrollbarX.set)
+    historyTreeView.bind('<Button-1>', handle_click)
+
+    # Other stuff
+    btnCopyToClipboard = Button(bottomFrame, text="Copy to Clipboard", command=copyToClipboard)
+    btnCopyToTranslateBox = Button(bottomFrame, text="Copy to Translate Menu", command=copyToTranslateMenu)
+    btnDeleteAll = Button(bottomFrame, text="Delete All", command=deleteAll)
+    btnDeleteSelected = Button(bottomFrame, text="Delete Selected", command=deleteSelected)
+    btnRefresh = Button(bottomFrame, text="Refresh", command=refresh)
+
+    # ----------------------------------------------------------------
     def __init__(self):
+        self.root.title("History")
+        self.root.geometry("700x300")
+        self.root.wm_attributes('-topmost', False) # Default False
+        self.root.wm_withdraw()
+
+        # Init element
+        status, data = fJson.readHistory()
+
+        # Error already handled in jsonHandling
+        listData = []
+
+        # convert json to list, then make it a list in list... 
+        for item in data['tl_history']:
+            addToList = [item['id'], item['from'], item['to'], item['query'], item['result'], item['engine']]
+
+            listData.append(addToList)
+ 
+        count = 0
+        for record in listData:
+            # Parent
+            parentID = count
+            self.historyTreeView.insert(parent='', index='end', text='', iid=count, values=(record[0], record[1] + "-" + record[2], record[3]))
+            
+            count += 1
+            # Child
+            self.historyTreeView.insert(parent=parentID, index='end', text='', iid=count, values=(record[0], "Engine: " + record[5], record[4]))
+
+            count += 1
+
+        self.historyTreeView.heading('#0', text='', anchor=CENTER)
+        self.historyTreeView.heading('Id', text='Id', anchor=CENTER)
+        self.historyTreeView.heading('From-To', text='From-To', anchor=CENTER)
+        self.historyTreeView.heading('Query', text='Query', anchor="w")
+
+        self.historyTreeView.column('#0', width=20, stretch=False)
+        self.historyTreeView.column('Id', anchor=CENTER, width=50, stretch=True)
+        self.historyTreeView.column('From-To', anchor=CENTER, width=150, stretch=False)
+        self.historyTreeView.column('Query', anchor="w", width=10000, stretch=False) # Make the width ridiculuosly long so it can use the x scrollbar 
+
+        self.historyTreeView.pack(side=TOP, padx=5, pady=5, fill=BOTH, expand=False)
+        self.btnRefresh.pack(side=LEFT, fill=X, padx=10, pady=5, expand=False)
+        self.btnCopyToClipboard.pack(side=LEFT, fill=X, padx=5, pady=5, expand=False)
+        self.btnCopyToTranslateBox.pack(side=LEFT, fill=X, padx=5, pady=5, expand=False)
+        self.btnDeleteSelected.pack(side=LEFT, fill=X, padx=5, pady=5, expand=False)
+        self.btnDeleteAll.pack(side=LEFT, fill=X, padx=5, pady=5, expand=False)
 
         # On Close
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
-        pass
 
 # ----------------------------------------------------------------------
 class SettingUI():
@@ -316,66 +481,67 @@ class SettingUI():
     root = Tk()
 
     def show(self):
+        self.reset()
         self.root.wm_deiconify()
 
     def on_closing(self):
         self.root.wm_withdraw()
 
     def getCurrXYOFF(self = ""):
-        if main_Menu.setting.checkVarOffSetX.get():
-            x = int(main_Menu.setting.spinnerOffSetX.get())
+        if main_Menu.setting_UI.checkVarOffSetX.get():
+            x = int(main_Menu.setting_UI.spinnerOffSetX.get())
         else: 
             x = "auto"
-        if main_Menu.setting.checkVarOffSetY.get():
-            y = int(main_Menu.setting.spinnerOffSetY.get())
+        if main_Menu.setting_UI.checkVarOffSetY.get():
+            y = int(main_Menu.setting_UI.spinnerOffSetY.get())
         else:
             y = "auto"
-        if main_Menu.setting.checkVarOffSetW.get():
-            w = int(main_Menu.setting.spinnerOffSetW.get())
+        if main_Menu.setting_UI.checkVarOffSetW.get():
+            w = int(main_Menu.setting_UI.spinnerOffSetW.get())
         else:
             w = "auto"
-        if main_Menu.setting.checkVarOffSetH.get():
-            h = int(main_Menu.setting.spinnerOffSetH.get())
+        if main_Menu.setting_UI.checkVarOffSetH.get():
+            h = int(main_Menu.setting_UI.spinnerOffSetH.get())
         else:
             h = "auto"
 
         return [x, y, w, h]
 
     def checkBtnX():
-        offSets = getTheOffset(main_Menu.setting.getCurrXYOFF()[0])
+        offSets = getTheOffset(main_Menu.setting_UI.getCurrXYOFF()[0])
 
-        if main_Menu.setting.root.getvar(name="checkVarOffSetX") == "1":
-            main_Menu.setting.spinnerOffSetX.config(state=DISABLED)
-            main_Menu.setting.spinValOffSetX.set(str(offSets[0]))
+        if main_Menu.setting_UI.root.getvar(name="checkVarOffSetX") == "1":
+            main_Menu.setting_UI.spinnerOffSetX.config(state=DISABLED)
+            main_Menu.setting_UI.spinValOffSetX.set(str(offSets[0]))
         else:
-            main_Menu.setting.spinnerOffSetX.config(state=NORMAL)
+            main_Menu.setting_UI.spinnerOffSetX.config(state=NORMAL)
 
     def checkBtnY():
-        offSets = getTheOffset(main_Menu.setting.getCurrXYOFF()[1])
+        offSets = getTheOffset(main_Menu.setting_UI.getCurrXYOFF()[1])
 
-        if main_Menu.setting.root.getvar(name="checkVarOffSetY") == "1":
-            main_Menu.setting.spinnerOffSetY.config(state=DISABLED)
-            main_Menu.setting.spinValOffSetY.set(str(offSets[1]))
+        if main_Menu.setting_UI.root.getvar(name="checkVarOffSetY") == "1":
+            main_Menu.setting_UI.spinnerOffSetY.config(state=DISABLED)
+            main_Menu.setting_UI.spinValOffSetY.set(str(offSets[1]))
         else:
-            main_Menu.setting.spinnerOffSetY.config(state=NORMAL)
+            main_Menu.setting_UI.spinnerOffSetY.config(state=NORMAL)
 
     def checkBtnW():
-        offSets = getTheOffset(main_Menu.setting.getCurrXYOFF()[2])
+        offSets = getTheOffset(main_Menu.setting_UI.getCurrXYOFF()[2])
 
-        if main_Menu.setting.root.getvar(name="checkVarOffSetW") == "1":
-            main_Menu.setting.spinnerOffSetW.config(state=DISABLED)
-            main_Menu.setting.spinValOffSetW.set(str(offSets[2]))
+        if main_Menu.setting_UI.root.getvar(name="checkVarOffSetW") == "1":
+            main_Menu.setting_UI.spinnerOffSetW.config(state=DISABLED)
+            main_Menu.setting_UI.spinValOffSetW.set(str(offSets[2]))
         else:
-            main_Menu.setting.spinnerOffSetW.config(state=NORMAL)
+            main_Menu.setting_UI.spinnerOffSetW.config(state=NORMAL)
 
     def checkBtnH():
-        offSets = getTheOffset(main_Menu.setting.getCurrXYOFF()[3])
+        offSets = getTheOffset(main_Menu.setting_UI.getCurrXYOFF()[3])
 
-        if main_Menu.setting.root.getvar(name="checkVarOffSetH") == "1":
-            main_Menu.setting.spinnerOffSetH.config(state=DISABLED)
-            main_Menu.setting.spinValOffSetH.set(str(offSets[3]))
+        if main_Menu.setting_UI.root.getvar(name="checkVarOffSetH") == "1":
+            main_Menu.setting_UI.spinnerOffSetH.config(state=DISABLED)
+            main_Menu.setting_UI.spinValOffSetH.set(str(offSets[3]))
         else:
-            main_Menu.setting.spinnerOffSetH.config(state=NORMAL)
+            main_Menu.setting_UI.spinnerOffSetH.config(state=NORMAL)
 
     def screenShotAndOpenLayout():
         capture.captureAll()
@@ -416,10 +582,10 @@ class SettingUI():
                     Mbox("An Error Occured", var2, 2)
                 
                 self.root.wm_deiconify()  # Show setting
-        
+        validTesseract = "tesseract" in settings['tesseract_loc'].lower()
         # If tesseract is not found
-        if os.path.exists(settings['tesseract_loc']) == False:
-            Mbox("Error: Tesseract Not Set!", "Please set tesseract_loc in Setting.json.\nYou can set this in setting menu or modify it manually in resource/backend/json/Setting.json", 2)
+        if os.path.exists(settings['tesseract_loc']) == False or validTesseract == False:
+            Mbox("Error: Tesseract Not Found!", "Please set tesseract location in Setting.json.\nYou can set this in setting menu or modify it manually in resource/backend/json/Setting.json", 2)
         
         # Cache checkbox
         if settings['cached'] == True:
@@ -512,43 +678,46 @@ class SettingUI():
         self.textBoxTesseractPath.delete(1.0, END)
         self.textBoxTesseractPath.insert(1.0, settings['tesseract_loc'])
 
-        print("Successfully Set Seting To The One Currently Saved in Setting.json")
+        print("Setting Loaded")
         # No need for mbox
 
     def saveSettings():
         # Check path tesseract
-        if os.path.exists(main_Menu.setting.textBoxTesseractPath.get("1.0", END).strip()) == False:
+        tesseractPathInput = main_Menu.setting_UI.textBoxTesseractPath.get("1.0", END).strip().lower()
+        validTesseract = "tesseract" in tesseractPathInput
+        # # If tesseract is not found
+        if os.path.exists(tesseractPathInput) == False or validTesseract == False:
             print("Tesseract Not Found Error")
             Mbox("Error: Tesseract not found", "Invalid Path Provided For Tesseract.exe!", 2)
             return
 
-        print(main_Menu.setting.checkVarOffSetX.get())
-        if main_Menu.setting.checkVarOffSetX.get():
+        print(main_Menu.setting_UI.checkVarOffSetX.get())
+        if main_Menu.setting_UI.checkVarOffSetX.get():
             x = "auto"
         else: 
-            x = int(main_Menu.setting.spinnerOffSetX.get())
-        if main_Menu.setting.checkVarOffSetY.get():
+            x = int(main_Menu.setting_UI.spinnerOffSetX.get())
+        if main_Menu.setting_UI.checkVarOffSetY.get():
             y = "auto"
         else:
-            y = int(main_Menu.setting.spinnerOffSetY.get())
-        if main_Menu.setting.checkVarOffSetW.get():
+            y = int(main_Menu.setting_UI.spinnerOffSetY.get())
+        if main_Menu.setting_UI.checkVarOffSetW.get():
             w = "auto"
         else:
-            w = int(main_Menu.setting.spinnerOffSetW.get())
-        if main_Menu.setting.checkVarOffSetH.get():
+            w = int(main_Menu.setting_UI.spinnerOffSetW.get())
+        if main_Menu.setting_UI.checkVarOffSetH.get():
             h = "auto"
         else:
-            h = int(main_Menu.setting.spinnerOffSetH.get())
+            h = int(main_Menu.setting_UI.spinnerOffSetH.get())
 
         settingToSave = { 
-            "cached": main_Menu.setting.checkVarCache.get(),
-            "offSetXYType": main_Menu.setting.CBOffSetChoice.get(),
+            "cached": main_Menu.setting_UI.checkVarCache.get(),
+            "offSetXYType": main_Menu.setting_UI.CBOffSetChoice.get(),
             "offSetXY": [x, y],
             "offSetWH": [w, h],
-            "tesseract_loc": main_Menu.setting.textBoxTesseractPath.get("1.0", END).strip(),
-            "default_Engine": main_Menu.setting.CBDefaultEngine.get(),
-            "default_FromOnOpen": main_Menu.setting.CBDefaultFrom.get(),
-            "default_ToOnOpen": main_Menu.setting.CBDefaultTo.get()
+            "tesseract_loc": main_Menu.setting_UI.textBoxTesseractPath.get("1.0", END).strip(),
+            "default_Engine": main_Menu.setting_UI.CBDefaultEngine.get(),
+            "default_FromOnOpen": main_Menu.setting_UI.CBDefaultFrom.get(),
+            "default_ToOnOpen": main_Menu.setting_UI.CBDefaultTo.get()
         }
 
         print("-" * 50)
@@ -559,7 +728,7 @@ class SettingUI():
         if status:
             print("-" * 50)
             print(dataStatus)
-            Mbox("Success", dataStatus, 1)
+            Mbox("Success", dataStatus, 0)
         else:
             print("-" * 50)
             print(dataStatus)
@@ -615,45 +784,46 @@ class SettingUI():
             self.CBDefaultTo.current(searchList("English", optDeepl))
 
     # Frames
-    firstFrame = Frame(root)
-    firstFrame.pack(side=TOP, fill=X, expand=False)
-    firstFrameContent = Frame(root)
+    s = ttk.Style()
+    s.configure('TLabelframe.Label', font='arial 14 bold')
+
+    firstFrame = ttk.LabelFrame(root, text="• Image Setting")
+    firstFrame.pack(side=TOP, fill=X, expand=False, padx=5, pady=5)
+    firstFrameContent = Frame(firstFrame)
     firstFrameContent.pack(side=TOP, fill=X, expand=False)
 
-    secondFrame = Frame(root)
-    secondFrame.pack(side=TOP, fill=X, expand=False)
-    secondFrameContent0 = Frame(root)
+    secondFrame = ttk.LabelFrame(root, text="• Monitor Capture Offset")
+    secondFrame.pack(side=TOP, fill=X, expand=False, padx=5, pady=5)
+    secondFrameContent0 = Frame(secondFrame)
     secondFrameContent0.pack(side=TOP, fill=X, expand=False)
-    secondFrameContent1 = Frame(root)
+    secondFrameContent1 = Frame(secondFrame)
     secondFrameContent1.pack(side=TOP, fill=X, expand=False)
-    secondFrameContent2 = Frame(root)
+    secondFrameContent2 = Frame(secondFrame)
     secondFrameContent2.pack(side=TOP, fill=X, expand=False)
-    secondFrameContent3 = Frame(root)
+    secondFrameContent3 = Frame(secondFrame)
     secondFrameContent3.pack(side=TOP, fill=X, expand=False)
-    secondFrameContent4 = Frame(root)
+    secondFrameContent4 = Frame(secondFrame)
     secondFrameContent4.pack(side=TOP, fill=X, expand=False)
 
-    thirdFrame = Frame(root)
-    thirdFrame.pack(side=TOP, fill=X, expand=False)
-    thirdFrameContent = Frame(root)
+    thirdFrame = ttk.LabelFrame(root, text="• Translation Settings")
+    thirdFrame.pack(side=TOP, fill=X, expand=False, padx=5, pady=5)
+    thirdFrameContent = Frame(thirdFrame)
     thirdFrameContent.pack(side=TOP, fill=X, expand=False)
 
-    fourthFrame = Frame(root)
-    fourthFrame.pack(side=TOP, fill=X, expand=False)
-    fourthFrameContent = Frame(root)
+    fourthFrame = ttk.LabelFrame(root, text="• Tesseract OCR Settings")
+    fourthFrame.pack(side=TOP, fill=X, expand=False, padx=5, pady=5)
+    fourthFrameContent = Frame(fourthFrame)
     fourthFrameContent.pack(side=TOP, fill=X, expand=False)
 
     bottomFrame = Frame(root)
     bottomFrame.pack(side=BOTTOM, fill=BOTH, expand=False)
 
     # First Frame
-    labelImg = Label(firstFrame, text="• Image Setting")
     checkVarCache = BooleanVar(root, name="checkVarCache", value=True) # So its not error
     checkBTNCache = Checkbutton(firstFrameContent, text="Cached", variable=checkVarCache)
     btnOpenCacheFolder = Button(firstFrameContent, text="Open Cache Folder", command=lambda: startfile(dir_path + r"\backend\img_cache"))
 
     # Second Frame
-    labelMonitor = Label(secondFrame, text="• Monitor Capture Offset")
     CBOffSetChoice = ttk.Combobox(secondFrameContent0, values=["No Offset", "Custom Offset"], state="readonly")
 
     labelCBOffsetNot = Label(secondFrameContent0, text="Capture XY Offset :")
@@ -679,13 +849,13 @@ class SettingUI():
 
     validateDigits = (root.register(validateSpinBox), '%P')
 
-    spinnerOffSetX = Spinbox(secondFrameContent2, from_=0, to=100000, width=20, textvariable=spinValOffSetX)
+    spinnerOffSetX = Spinbox(secondFrameContent2, from_=-100000, to=100000, width=20, textvariable=spinValOffSetX)
     spinnerOffSetX.configure(validate='key', validatecommand=validateDigits)
-    spinnerOffSetY = Spinbox(secondFrameContent3, from_=0, to=100000, width=20, textvariable=spinValOffSetY)
+    spinnerOffSetY = Spinbox(secondFrameContent3, from_=-100000, to=100000, width=20, textvariable=spinValOffSetY)
     spinnerOffSetY.configure(validate='key', validatecommand=validateDigits)
-    spinnerOffSetW = Spinbox(secondFrameContent2, from_=0, to=100000, width=20, textvariable=spinValOffSetW)
+    spinnerOffSetW = Spinbox(secondFrameContent2, from_=-100000, to=100000, width=20, textvariable=spinValOffSetW)
     spinnerOffSetW.configure(validate='key', validatecommand=validateDigits)
-    spinnerOffSetH = Spinbox(secondFrameContent3, from_=0, to=100000, width=20, textvariable=spinValOffSetH)
+    spinnerOffSetH = Spinbox(secondFrameContent3, from_=-100000, to=100000, width=20, textvariable=spinValOffSetH)
     spinnerOffSetH.configure(validate='key', validatecommand=validateDigits)
 
     buttonCheckMonitorLayout = Button(secondFrameContent4, text="Click to get A Screenshot of How The Program See Your Monitor", command=screenShotAndOpenLayout)
@@ -693,7 +863,6 @@ class SettingUI():
     # Third frame
     langOpt = optGoogle
 
-    labelTl = Label(thirdFrame, text="• Translation")
     CBDefaultEngine = ttk.Combobox(thirdFrameContent, values=engines, state="readonly")
     CBDefaultFrom = ttk.Combobox(thirdFrameContent, values=langOpt, state="readonly")
     CBDefaultTo = ttk.Combobox(thirdFrameContent, values=langOpt, state="readonly")
@@ -702,7 +871,6 @@ class SettingUI():
     labelDefaultTo = Label(thirdFrameContent, text="Default To :")
 
     # Fourth frame
-    labelTesseract = Label(fourthFrame, text="• Tesseract OCR")
     labelTesseractPath = Label(fourthFrameContent, text="Tesseract Path :")
     textBoxTesseractPath = Text(fourthFrameContent, width=77, height=1, xscrollcommand=True)
 
@@ -716,19 +884,13 @@ class SettingUI():
         self.root.wm_attributes('-topmost', False) # Default False
         self.root.wm_withdraw()
 
-        # Get settings on startup
-        self.reset()
-
         # TL CB
         # Init element
         # 1
-        self.labelImg.pack(side=LEFT, padx=5, pady=5, fill=X)
         self.checkBTNCache.pack(side=LEFT, padx=5, pady=5)
         self.btnOpenCacheFolder.pack(side=LEFT, padx=5, pady=5)
 
         # 2
-        self.labelMonitor.pack(side=LEFT, fill=X, padx=5, pady=5)
-
         self.labelCBOffsetNot.pack(side=LEFT, padx=5, pady=5)
         self.CBOffSetChoice.pack(side=LEFT, padx=5, pady=5)
         self.CBOffSetChoice.bind("<<ComboboxSelected>>", self.CBOffSetChange)
@@ -751,8 +913,6 @@ class SettingUI():
         self.buttonCheckMonitorLayout.pack(side=LEFT, padx=30, pady=5)
 
         # 3
-        self.labelTl.pack(side=LEFT, padx=5, pady=5, fill=X)
-
         self.labelDefaultEngine.pack(side=LEFT, padx=5, pady=5)
         self.CBDefaultEngine.pack(side=LEFT, padx=5, pady=5)
         self.CBDefaultEngine.bind("<<ComboboxSelected>>", self.CBTLChange_setting)
@@ -764,9 +924,8 @@ class SettingUI():
         self.CBDefaultTo.pack(side=LEFT, padx=5, pady=5)
         
         # 4
-        self.labelTesseract.pack(side=LEFT, padx=5, pady=5, fill=X)
         self.labelTesseractPath.pack(side=LEFT, padx=5, pady=5)
-        self.textBoxTesseractPath.pack(side=LEFT, padx=5, pady=5)
+        self.textBoxTesseractPath.pack(side=LEFT, padx=5, pady=5, fill=X, expand=True)
 
         # Bottom Frame
         self.btnSave.pack(side=RIGHT, padx=4, pady=5)
@@ -781,8 +940,6 @@ class SettingUI():
 # ----------------------------------------------------------------------
 class main_Menu():
     """Main Menu Window"""
-    console()
-
     # --- Functions ---
     async def getDeeplTl(self, text, langTo, langFrom, TBottom):
         """Get the translated text from deepl.com"""
@@ -791,6 +948,15 @@ class main_Menu():
         if(isSuccess):
             TBottom.delete(1.0, END)
             TBottom.insert(1.0, translateResult)
+            # Write to History
+            new_data = {
+                "from": langFrom,
+                "to": langTo,
+                "query": text,
+                "result": translateResult,
+                "engine": "deepl"
+            }
+            fJson.writeAdd_History(new_data)
         else:
             Mbox("Error: Translation Failed", translateResult, 2)
 
@@ -835,14 +1001,24 @@ class main_Menu():
             if(isSuccess):
                 TBBot.delete(1.0, END)
                 TBBot.insert(1.0, translateResult)
+
+                # Write to History
+                new_data = {
+                    "from": langFrom,
+                    "to": langTo,
+                    "query": text,
+                    "result": translateResult,
+                    "engine": engine
+                }
+                fJson.writeAdd_History(new_data)
             else:
                 Mbox("Error: Translation Failed", translateResult, 2)
         elif engine == "Deepl":
             loop = asyncio.get_event_loop()
             loop.run_until_complete(self.getDeeplTl(text, langTo, langFrom, TBBot))
         else:
-            Mbox("Error: Engine Not Set!", "Please Please select a correct engine", 2)
             print("Please select a correct engine")
+            Mbox("Error: Engine Not Set!", "Please Please select a correct engine", 2)
 
     # On Close
     def on_closing(self):
@@ -850,27 +1026,27 @@ class main_Menu():
     
     # Open History Window
     def open_Setting(self):
-        self.setting.show()
+        self.setting_UI.show()
     
     def open_History(self):
         self.history.show()
         pass
 
     def open_About(self):
-        Mbox("About", "Screen-Translate is a program made by Dadangdut33, inspired by VNR, Visual Novel OCR, and QTranslate. I made this program to learn more about python. " + 
-        "This program is completely open source, you can improve it if you want, you can also tell me if there are bugs. If you are confused on how to use it you can" + 
+        Mbox("About", "Screen-Translate is a program made inspired by VNR, Visual Novel OCR, and QTranslate.\n\nI (Dadangdut33) made this program in order to learn more about python and because i want to try creating an app similar to those i mention. " + 
+        "\n\nThis program is completely open source, you can improve it if you want, you can also tell me if there are bugs. If you are confused on how to use it you can" + 
         " check the tutorial by pressing the tutorial in the menu bar", 0)
 
     def open_Tutorial(self):
-        Mbox("Tutorial", r"1. *First*, make sure your screen scaling is 100%. If scaling is not 100%, the capturer won't work properly. If by any chance you don't want to set your monitor scaling to 100%, " + 
-        "you set put your own offset in  the setting" + "\n\n2. *Second*, you need to install tesseract, you can quickly go to the download link by pressing the download tesseract in menu bar\n\n" + 
-        "2. *Then*, check the settings. Make sure tesseract path is correct\n\n" + 
-        "3. *FOR MULTI MONITOR USER*, set offset in setting. If you have multiple monitor setup, you might need to set the offset in settings. \n\nWhat you shold do in the setting window:\n- Check how the program see your monitors in settings by clicking that one button.\n" + 
+        Mbox("Tutorial", "1. *First*, make sure your screen scaling is 100%. If scaling is not 100%, the capturer won't work properly. If by any chance you don't want to set your monitor scaling to 100%, " + 
+        "you can set the xy offset in the setting" + "\n\n2. *Second*, you need to install tesseract, you can quickly go to the download link by pressing the download tesseract in menu bar\n\n" + 
+        "3. *Then*, check the settings. Make sure tesseract path is correct\n\n" + 
+        "4. *FOR MULTI MONITOR USER*, set offset in setting. If you have multiple monitor setup, you might need to set the offset in settings. \n\nWhat you shold do in the setting window:\n- Check how the program see your monitors in settings by clicking that one button.\n" + 
         "- You can also see how the capture area captured your images by enabling cache and then see the image in 'img_cache' directory" + 
         "\n\n\nYou can open the tutorial or user manual linked in menubar if you are still confused.", 0)
 
     def open_Faq(self):
-        Mbox("FAQ", "Q: Do you collect the screenshot?\nA: No, no data is stored anywhere. Image and text captured will only be use for query and the cache is only saved locally\n\n" + 
+        Mbox("FAQ", "Q: Do you collect the screenshot?\nA: No, no data is collected by me. Image and text captured will only be use for query and the cache is only saved locally\n\n" + 
         "Q: Is this safe?\nA: Yes, it is safe, you can check the code on the github linked, or open it yourself on your machine.\n\n" + 
         "Q: I could not capture anything, help!?\nA: You might need to check the cache image and see wether it actually capture the stuff that you targeted or not. If not, you might " + 
         "want to set offset in setting or change your monitor scaling to 100%", 0)
@@ -881,7 +1057,7 @@ class main_Menu():
         OpenUrl("https://github.com/UB-Mannheim/tesseract/wiki")
 
     def open_KnownBugs(self):
-        Mbox("Known Bugs", r"- Monitor scaling needs to be 100% or it won't capture accurately\n\n- The auto offset is wrong if the resolution between monitor 1 and 2 is not the same. It's because the auto offset calculate only the primary monitor. In this case you have to set the offset manually.", 0)
+        Mbox("Known Bugs", "- Monitor scaling needs to be 100% or it won't capture accurately\n\n- The auto offset is wrong if the resolution between monitor 1 and 2 is not the same. It's because the auto offset calculate only the primary monitor. In this case you have to set the offset manually.", 0)
 
     def open_UserManual(self):
         try:
@@ -937,7 +1113,7 @@ class main_Menu():
     # --- Declarations and Layout ---
     # Call the other frame
     capture_UI = CaptureUI()
-    setting = SettingUI()
+    setting_UI = SettingUI()
     history = HistoryUI()
 
     root = Tk()
@@ -984,7 +1160,12 @@ class main_Menu():
 
     # ----------------------------------------------------------------------
     def __init__(self):
-        self.root.title("Screen Translate - Main Menu")
+        # ----------------------------------------------
+        # Debug console info
+        console()
+
+        # ----------------------------------------------
+        self.root.title("Screen Translate")
         self.root.geometry("900x300")
         self.root.wm_attributes('-topmost', False) # Default False
         tStatus, settings = fJson.readSetting()
@@ -1007,10 +1188,6 @@ class main_Menu():
                     print("Error: " + var2)
                     Mbox("An Error Occured", var2, 2)
 
-        elif os.path.exists(settings['tesseract_loc']) == False:
-            print("Tesseract Not Found Error")
-            Mbox("Error: Tesseract Not Set!", "Please set tesseract_loc in Setting.json.\nYou can set this in setting menu or modify it manually in resource/backend/json/Setting.json", 2)
-        
         # Menubar
         def always_on_top():
             if self.alwaysOnTop:
@@ -1090,5 +1267,14 @@ class main_Menu():
 
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
 
-main_Menu()
-main_Menu.root.mainloop()
+        # Check setting on startup
+        self.setting_UI.reset() # Reset
+
+# ----------------------------------------------------------------
+# main function
+def main():
+    main_Menu()
+    main_Menu.root.mainloop()
+
+if __name__ == '__main__':
+    main()

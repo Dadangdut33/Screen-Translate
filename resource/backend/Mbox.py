@@ -2,11 +2,14 @@
 ##  0 : info
 ##  1 : warning
 ##  2 : error
+##  3 : Yes No
 from tkinter import messagebox
 def Mbox(title, text, style):
     if style == 0:
-        messagebox.showinfo(title, text)
+        return messagebox.showinfo(title, text) # Return ok x same as ok
     elif style == 1:
-        messagebox.showwarning(title, text)
+        return messagebox.showwarning(title, text) # Return ok x same as ok
     elif style == 2:
-        messagebox.showerror(title, text)
+        return messagebox.showerror(title, text) # Return ok x same as ok
+    elif style == 3:
+        return messagebox.askyesno(title, text) # Return True False, x can't be clicked

@@ -1,18 +1,36 @@
 {
     "tl_history": [
         {
-            "from": "en",
-            "to": "jp",
+            "id": 0,
+            "from": "English",
+            "to": "Japanese",
             "query": "apple",
             "result": "アップル",
             "engine": "deepl"
         },
         {
-            "from": "jp",
-            "to": "en",
+            "id": 1,
+            "from": "Japanese",
+            "to": "English",
             "query": "アップル",
             "result": "apple",
             "engine": "deepl"
+        },
+        {
+            "id": 2,
+            "from": "Japanese",
+            "to": "English",
+            "query": "アップル\n",
+            "result": "Apple",
+            "engine": "Google Translate"
+        },
+        {
+            "id": 3,
+            "from": "English",
+            "to": "Japanese",
+            "query": "Apple\n",
+            "result": "アップル",
+            "engine": "Google Translate"
         }
     ]
 }

@@ -29,7 +29,7 @@ def google_tl(text, to_lang, from_lang="auto"):
         to_LanguageCode_Google = google_Lang[to_lang]
         from_LanguageCode_Google =  google_Lang[from_lang]
     except KeyError as e:
-        print("Error: " + e)
+        print("Error: " + str(e))
         return is_Success, "Error Language Code Undefined"
     # --- Translate ---
     try:

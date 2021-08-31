@@ -56,7 +56,7 @@ def captureImg(coords, sourceLang, tesseract_Location, cached = False):
         elif "Failed loading language" in str(e):
             Mbox("Warning: Failed Loading Language", "Language data not found! It could be that the language data is not installed! Please reinstall tesseract or download the language data and put it into Tesseract-OCR\\tessdata!\n\nThe official version that is used for this program is v5.0.0-alpha.20210811. You can download it from https://github.com/UB-Mannheim/tesseract/wiki or https://digi.bib.uni-mannheim.de/tesseract/", 1)
         else:
-            Mbox("Error", e, 2)
+            Mbox("Error", str(e), 2)
     finally:
         return is_Success, wordsGet.strip()
 
@@ -68,4 +68,4 @@ def captureAll():
         captured.save(dir_path + r'\img_cache\Monitor(s) Captured View'+ '.png')
     except Exception as e:
         print("Error: " + str(e))
-        Mbox("Error", e, 2)
+        Mbox("Error", str(e), 2)
