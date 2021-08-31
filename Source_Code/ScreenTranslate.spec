@@ -5,7 +5,7 @@ block_cipher = None
 
 
 a = Analysis(['ScreenTranslate.py'],
-             pathex=['D:\\Coding\\Screen-Translate'],
+             pathex=['D:\\Coding\\Screen-Translate\\Source_Code'],
              binaries=[],
              datas=[],
              hiddenimports=[],

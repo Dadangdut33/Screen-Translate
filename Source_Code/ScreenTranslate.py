@@ -847,7 +847,7 @@ class SettingUI():
     # First Frame
     checkVarCache = BooleanVar(root, name="checkVarCache", value=True) # So its not error
     checkBTNCache = Checkbutton(firstFrameContent, text="Cached", variable=checkVarCache)
-    btnOpenCacheFolder = Button(firstFrameContent, text="Open Cache Folder", command=lambda: startfile(dir_path + r"\backend\img_cache"))
+    btnOpenCacheFolder = Button(firstFrameContent, text="Open Cache Folder", command=lambda: startfile(dir_path + r"\resource\img_cache"))
 
     # Second Frame
     CBOffSetChoice = ttk.Combobox(secondFrameContent0, values=["No Offset", "Custom Offset"], state="readonly")
