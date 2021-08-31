@@ -1,0 +1,1 @@
+You can delete the image manually.
