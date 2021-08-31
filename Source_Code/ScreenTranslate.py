@@ -284,7 +284,7 @@ class CaptureUI():
 
         menubar = Menu(self.root)
         filemenu = Menu(menubar, tearoff=0)
-        filemenu.add_checkbutton(label="Always on Top", onvalue=True, offvalue=False, variable=self.alwaysOnTop, command=always_on_top)
+        filemenu.add_checkbutton(label="Always on Top", onvalue=True, offvalue=False, variable=self.alwaysOnTop, command=always_on_top) # Fix Later
         menubar.add_cascade(label="Options", menu=filemenu)
 
         # Add to self.root
@@ -1045,7 +1045,7 @@ class main_Menu():
         # Deepl
         elif engine == "Deepl":
             loop = asyncio.get_event_loop()
-            loop.run_until_complete(self.getDeeplTl(text, langTo, langFrom, TBBot))
+            loop.run_until_complete(self.getDeeplTl(text, langTo, langFrom, TBBot)) # Fix later
         # --------------------------------
         # MyMemoryTranslator
         elif engine == "MyMemoryTranslator":
