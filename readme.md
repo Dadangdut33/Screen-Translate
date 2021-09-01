@@ -16,7 +16,7 @@ Inspired by Visual Novel Reader (VNR), [Visual Novel OCR](https://github.com/lem
 
 # Tutorial on How To Install and Setup
 **For User**
-1. Clone the repo
+1. Download the latest [release](https://github.com/Dadangdut33/Screen-Translate/releases/tag/release) of this program
 
 2. Install tesseract, make sure select install all language pack when prompted
 3. Open the ScreenTranslate.exe
@@ -27,11 +27,11 @@ Inspired by Visual Novel Reader (VNR), [Visual Novel OCR](https://github.com/lem
 8. Now that you have set everything, the app should be ready. Feel free to submit new issue on the github repository if you encounter any bugs.
 
 **For Dev**
-1. Clone the repo
+1. Clone the repo or download the source code of the latest release
 
 2. Install tesseract, make sure select install all language pack when prompted
 3. Install all the dependencies used for the project
-4. Run and test the source code (Source code located at Source_Code folder)
+4. Run and test the source code
 5. If everything works, you can run the app normally running the ScreenTranslate.py file or using the TempRun.bat
 
 if everything works and you have a suggestion or improvement, you can submit a pull request on the github repository. I will check if it's a good idea to add it.
