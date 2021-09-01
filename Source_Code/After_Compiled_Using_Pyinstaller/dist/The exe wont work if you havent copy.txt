@@ -1,3 +1,0 @@
-The exe wont work if you havent copied the file specified, 
-because the settings of the file is located there and 
-When it is compiled into .exe it wont work, because the directory specified does not exists.

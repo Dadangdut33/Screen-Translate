@@ -1,0 +1,68 @@
+{
+    "tl_history": [
+        {
+            "id": 0,
+            "from": "English",
+            "to": "Japanese",
+            "query": "apple",
+            "result": "アップル",
+            "engine": "deepl"
+        },
+        {
+            "id": 1,
+            "from": "Japanese",
+            "to": "English",
+            "query": "アップル",
+            "result": "apple",
+            "engine": "deepl"
+        },
+        {
+            "id": 2,
+            "from": "Japanese",
+            "to": "English",
+            "query": "アップル\n",
+            "result": "Apple",
+            "engine": "Google Translate"
+        },
+        {
+            "id": 3,
+            "from": "English",
+            "to": "Japanese",
+            "query": "Apple\n",
+            "result": "アップル",
+            "engine": "Google Translate"
+        },
+        {
+            "id": 4,
+            "from": "Japanese",
+            "to": "English",
+            "query": "こんいちわ\n",
+            "result": "Hello",
+            "engine": "Google Translate"
+        },
+        {
+            "id": 5,
+            "from": "Japanese",
+            "to": "English",
+            "query": "産業技術システムは生き残るかもるしれないし、朋壊するかゃしれない。 それが生き残った\n場合、それは最終的に低レベルの身体的および心理的苦痛を達成する可能性がありますが、\nそれは長くて非常に苦痛な調整期間を経た後にのみ、そして人間や他の多くの生物を人工製\n\n品や単なるものに永久に減らすという犠牲を払ってのみです ソーシャルマシンの普\n\n \n\n上",
+            "result": "The industrial technology system may survive or be destroyed. It survived\nIf it may eventually achieve low levels of physical and psychological distress,\nIt only after a long and very painful adjustment period, and man-made humans and many other organisms\n\nOnly at the expense of forever reducing to goods or mere things\n\n \n\nUp",
+            "engine": "Google Translate"
+        },
+        {
+            "id": 6,
+            "from": "Japanese",
+            "to": "English",
+            "query": "産業技術システムは生き残るかもるしれないし、朋壊するかゃしれない。 それが生き残った\n場合、それは最終的に低レベルの身体的および心理的苦痛を達成する可能性がありますが、\nそれは長くて非常に苦痛な調整期間を経た後にのみ、そして人間や他の多くの生物を人工製\n\n品や単なるものに永久に減らすという犠牲を払ってのみです ソーシャルマシンの普\n\n \n\n上",
+            "result": "The industrial technology system may survive or it may be destroyed. If it survives If it survives, it may eventually achieve a low level of physical and psychological suffering, but only after a long and very painful adjustment period. If it survives, it may eventually achieve a low level of physical and psychological suffering, but only after a long and very painful adjustment period, and only after it has permanently reduced humans and many other organisms to man-made products or mere objects. It is only after a long and very painful adjustment period, and only at the cost of permanently reducing humans and many other organisms to artificial products or mere Up",
+            "engine": "deepl"
+        },
+        {
+            "id": 7,
+            "from": "Japanese",
+            "to": "English",
+            "query": "産業技術システムは生き残るかもるしれないし、朋壊するかゃしれない。 それが生き残った\n場合、それは最終的に低レベルの身体的および心理的苦痛を達成する可能性がありますが、\nそれは長くて非常に苦痛な調整期間を経た後にのみ、そして人間や他の多くの生物を人工製\n\n品や単なるものに永久に減らすという犠牲を払ってのみです ソーシャルマシンの普\n\n \n\n上\n",
+            "result": "The industrial technology system may survive or it may be destroyed. If it survives If it survives, it may eventually achieve a low level of physical and psychological suffering, but only after a long and very painful adjustment period. If it survives, it may eventually achieve a low level of physical and psychological suffering, but only after a long and very painful adjustment period, and only after it has permanently reduced humans and many other organisms to man-made products or mere objects. It is only after a long and very painful adjustment period, and only at the cost of permanently reducing humans and many other organisms to artificial products or mere Up",
+            "engine": "deepl"
+        }
+    ]
+}
