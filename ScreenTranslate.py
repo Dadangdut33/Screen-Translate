@@ -53,6 +53,8 @@ def searchList(searchFor, theList):
         if lang == searchFor:
             return index
         index += 1
+    else:
+        return 0
 
 def fillList(dictFrom, listTo, insertFirst = "", insertSecond = ""):
     for item in dictFrom:
@@ -66,7 +68,7 @@ def fillList(dictFrom, listTo, insertFirst = "", insertSecond = ""):
     if insertSecond != "":
         listTo.insert(1, insertSecond)
 
-def offSetSettings(widthHeighOff, xyOffsetType, xyOff, custom=""):
+def offSetSettings(widthHeighOff, xyOffsetType, xyOff, custom = ""):
     offSetsGet = []
     x, y, w, h = 0, 0, 0, 0
     if widthHeighOff[0] == "auto":
@@ -115,9 +117,10 @@ def getTheOffset(custom = ""):
     offSetWH = settings["offSetWH"]
     xyOffSetType = settings["offSetXYType"]
 
+    # If custom
     if custom != "":
         offSets = offSetSettings(offSetWH, xyOffSetType, offSetXY, custom)
-    else:
+    else: # if not
         offSets = offSetSettings(offSetWH, xyOffSetType, offSetXY)
 
     return offSets
@@ -782,30 +785,31 @@ class SettingUI():
         # In settings
         # Get the engine from the combobox
         curr_Engine = self.CBDefaultEngine.get()
+        previous_From = self.CBDefaultFrom.get()
 
         # Translate
         if curr_Engine == "Google Translate":
             self.langOpt = optGoogle
             self.CBDefaultFrom['values'] = optGoogle
-            self.CBDefaultFrom.current(0)
+            self.CBDefaultFrom.current(searchList(previous_From, optGoogle))
             self.CBDefaultTo['values'] = optGoogle
             self.CBDefaultTo.current(searchList("English", optGoogle))
         elif curr_Engine == "Deepl":
             self.langOpt = optDeepl
             self.CBDefaultFrom['values'] = optDeepl
-            self.CBDefaultFrom.current(0)
+            self.CBDefaultFrom.current(searchList(previous_From, optDeepl))
             self.CBDefaultTo['values'] = optDeepl
             self.CBDefaultTo.current(searchList("English", optDeepl))
         elif curr_Engine == "MyMemoryTranslator":
             self.langOpt = optMyMemory
             self.CBDefaultFrom['values'] = optMyMemory
-            self.CBDefaultFrom.current(0)
+            self.CBDefaultFrom.current(searchList(previous_From, optMyMemory))
             self.CBDefaultTo['values'] = optMyMemory
             self.CBDefaultTo.current(searchList("English", optMyMemory))
         elif curr_Engine == "PONS":
             self.langOpt = optPons
             self.CBDefaultFrom['values'] = optPons
-            self.CBDefaultFrom.current(0)
+            self.CBDefaultFrom.current(searchList(previous_From, optPons))
             self.CBDefaultTo['values'] = optPons
             self.CBDefaultTo.current(searchList("English", optPons))
 
@@ -1168,30 +1172,31 @@ class main_Menu():
         # In Main
         # Get the engine from the combobox
         curr_Engine = self.CBTranslateEngine.get()
+        previous_From = self.CBLangFrom.get()
 
         # Translate
         if curr_Engine == "Google Translate":
             self.langOpt = optGoogle
             self.CBLangFrom['values'] = optGoogle
-            self.CBLangFrom.current(0)
+            self.CBLangFrom.current(searchList(previous_From, optGoogle))
             self.CBLangTo['values'] = optGoogle
             self.CBLangTo.current(searchList("English", optGoogle))
         elif curr_Engine == "Deepl":
             self.langOpt = optDeepl
             self.CBLangFrom['values'] = optDeepl
-            self.CBLangFrom.current(0)
+            self.CBLangFrom.current(searchList(previous_From, optDeepl))
             self.CBLangTo['values'] = optDeepl
             self.CBLangTo.current(searchList("English", optDeepl))
         elif curr_Engine == "MyMemoryTranslator":
             self.langOpt = optMyMemory
             self.CBLangFrom['values'] = optMyMemory
-            self.CBLangFrom.current(0)
+            self.CBLangFrom.current(searchList(previous_From, optMyMemory))
             self.CBLangTo['values'] = optMyMemory
             self.CBLangTo.current(searchList("English", optMyMemory))
         elif curr_Engine == "PONS":
             self.langOpt = optPons
             self.CBLangFrom['values'] = optPons
-            self.CBLangFrom.current(0)
+            self.CBLangFrom.current(searchList(previous_From, optPons))
             self.CBLangTo['values'] = optPons
             self.CBLangTo.current(searchList("English", optPons))
 
