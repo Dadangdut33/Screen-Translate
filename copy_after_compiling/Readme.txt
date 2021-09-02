@@ -1,1 +1,0 @@
-Copy To Dist/ScreenTranslate

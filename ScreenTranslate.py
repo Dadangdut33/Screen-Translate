@@ -267,6 +267,11 @@ class CaptureUI():
             main_Menu.textBoxTop.delete(1.0, END)
             main_Menu.textBoxTop.insert(END, result[:-1]) # Delete last character
 
+            if settings['autoCopy'] == True:
+                print("Copying text to clipboard")
+                pyperclip.copy(result[:-1].strip())
+                print("Copied successfully to clipboard!")
+
             # Run the translate function
             main_Menu.translate(main_Menu, result[:-1])
 
@@ -388,7 +393,7 @@ class HistoryUI():
         sel_Index = main_Menu.history.historyTreeView.focus()
         if sel_Index != "":
             dataRow = main_Menu.history.historyTreeView.item(sel_Index, 'values')
-            pyperclip.copy(dataRow[2])
+            pyperclip.copy(dataRow[2].strip())
 
     def copyToTranslateMenu():
         sel_Index = main_Menu.history.historyTreeView.focus()
@@ -557,7 +562,6 @@ class SettingUI():
     def screenShotAndOpenLayout():
         capture.captureAll()
         startfile(dir_path + r"\resource\img_cache\Monitor(s) Captured View.png")
-        pass
 
     def restoreDefault(self):
         x = Mbox("Confirmation", "Are you sure you want to set the settings to default?\n\n**WARNING! CURRENTLY SAVED SETTING WILL BE OVERWRITTEN**", 3)
@@ -610,6 +614,14 @@ class SettingUI():
         else:
             self.root.setvar(name="checkVarCache", value=False)
             self.checkBTNCache.deselect()
+
+        # Autocopy checkbox
+        if settings['autoCopy'] == True:
+            self.root.setvar(name="checkVarAutoCopy", value=True)
+            self.checkBTNAutoCopy.select()
+        else:
+            self.root.setvar(name="checkVarAutoCopy", value=False)
+            self.checkBTNAutoCopy.deselect()
 
         # Store setting to localvar
         offSetXY = settings["offSetXY"]
@@ -727,6 +739,7 @@ class SettingUI():
 
         settingToSave = { 
             "cached": main_Menu.setting_UI.checkVarCache.get(),
+            "autoCopy": main_Menu.setting_UI.checkVarAutoCopy.get(),
             "offSetXYType": main_Menu.setting_UI.CBOffSetChoice.get(),
             "offSetXY": [x, y],
             "offSetWH": [w, h],
@@ -786,6 +799,7 @@ class SettingUI():
         # Get the engine from the combobox
         curr_Engine = self.CBDefaultEngine.get()
         previous_From = self.CBDefaultFrom.get()
+        previous_To = self.CBDefaultTo.get()
 
         # Translate
         if curr_Engine == "Google Translate":
@@ -793,31 +807,31 @@ class SettingUI():
             self.CBDefaultFrom['values'] = optGoogle
             self.CBDefaultFrom.current(searchList(previous_From, optGoogle))
             self.CBDefaultTo['values'] = optGoogle
-            self.CBDefaultTo.current(searchList("English", optGoogle))
+            self.CBDefaultTo.current(searchList(previous_To, optGoogle))
         elif curr_Engine == "Deepl":
             self.langOpt = optDeepl
             self.CBDefaultFrom['values'] = optDeepl
             self.CBDefaultFrom.current(searchList(previous_From, optDeepl))
             self.CBDefaultTo['values'] = optDeepl
-            self.CBDefaultTo.current(searchList("English", optDeepl))
+            self.CBDefaultTo.current(searchList(previous_To, optDeepl))
         elif curr_Engine == "MyMemoryTranslator":
             self.langOpt = optMyMemory
             self.CBDefaultFrom['values'] = optMyMemory
             self.CBDefaultFrom.current(searchList(previous_From, optMyMemory))
             self.CBDefaultTo['values'] = optMyMemory
-            self.CBDefaultTo.current(searchList("English", optMyMemory))
+            self.CBDefaultTo.current(searchList(previous_To, optMyMemory))
         elif curr_Engine == "PONS":
             self.langOpt = optPons
             self.CBDefaultFrom['values'] = optPons
             self.CBDefaultFrom.current(searchList(previous_From, optPons))
             self.CBDefaultTo['values'] = optPons
-            self.CBDefaultTo.current(searchList("English", optPons))
+            self.CBDefaultTo.current(searchList(previous_To, optPons))
 
     # Frames
     s = ttk.Style()
     s.configure('TLabelframe.Label', font='arial 14 bold')
 
-    firstFrame = ttk.LabelFrame(root, text="• Image Setting")
+    firstFrame = ttk.LabelFrame(root, text="• Image / OCR Setting")
     firstFrame.pack(side=TOP, fill=X, expand=False, padx=5, pady=5)
     firstFrameContent = Frame(firstFrame)
     firstFrameContent.pack(side=TOP, fill=X, expand=False)
@@ -851,6 +865,8 @@ class SettingUI():
     # First Frame
     checkVarCache = BooleanVar(root, name="checkVarCache", value=True) # So its not error
     checkBTNCache = Checkbutton(firstFrameContent, text="Cached", variable=checkVarCache)
+    checkVarAutoCopy = BooleanVar(root, name="checkVarCopyToClip", value=True) # So its not error
+    checkBTNAutoCopy = Checkbutton(firstFrameContent, text="Auto Copy Captured Text To Clipboard", variable=checkVarAutoCopy)
     btnOpenCacheFolder = Button(firstFrameContent, text="Open Cache Folder", command=lambda: startfile(dir_path + r"\resource\img_cache"))
 
     # Second Frame
@@ -917,6 +933,7 @@ class SettingUI():
         # TL CB
         # Init element
         # 1
+        self.checkBTNAutoCopy.pack(side=LEFT, padx=5, pady=5)
         self.checkBTNCache.pack(side=LEFT, padx=5, pady=5)
         self.btnOpenCacheFolder.pack(side=LEFT, padx=5, pady=5)
 
@@ -1173,6 +1190,7 @@ class main_Menu():
         # Get the engine from the combobox
         curr_Engine = self.CBTranslateEngine.get()
         previous_From = self.CBLangFrom.get()
+        previous_To = self.CBLangTo.get()
 
         # Translate
         if curr_Engine == "Google Translate":
@@ -1180,25 +1198,25 @@ class main_Menu():
             self.CBLangFrom['values'] = optGoogle
             self.CBLangFrom.current(searchList(previous_From, optGoogle))
             self.CBLangTo['values'] = optGoogle
-            self.CBLangTo.current(searchList("English", optGoogle))
+            self.CBLangTo.current(searchList(previous_To, optGoogle))
         elif curr_Engine == "Deepl":
             self.langOpt = optDeepl
             self.CBLangFrom['values'] = optDeepl
             self.CBLangFrom.current(searchList(previous_From, optDeepl))
             self.CBLangTo['values'] = optDeepl
-            self.CBLangTo.current(searchList("English", optDeepl))
+            self.CBLangTo.current(searchList(previous_To, optDeepl))
         elif curr_Engine == "MyMemoryTranslator":
             self.langOpt = optMyMemory
             self.CBLangFrom['values'] = optMyMemory
             self.CBLangFrom.current(searchList(previous_From, optMyMemory))
             self.CBLangTo['values'] = optMyMemory
-            self.CBLangTo.current(searchList("English", optMyMemory))
+            self.CBLangTo.current(searchList(previous_To, optMyMemory))
         elif curr_Engine == "PONS":
             self.langOpt = optPons
             self.CBLangFrom['values'] = optPons
             self.CBLangFrom.current(searchList(previous_From, optPons))
             self.CBLangTo['values'] = optPons
-            self.CBLangTo.current(searchList("English", optPons))
+            self.CBLangTo.current(searchList(previous_To, optPons))
 
 
     # --- Declarations and Layout ---

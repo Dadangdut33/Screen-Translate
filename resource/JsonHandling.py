@@ -6,6 +6,7 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 # Default Setting
 default_Setting = { 
     "cached": True,
+    "autoCopy": True,
     "offSetXYType": "No Offset",
     "offSetXY": ["auto", "auto"],
     "offSetWH": ["auto", "auto"],

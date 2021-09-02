@@ -1,0 +1,10 @@
+[V1.3 Improvement + New Feature]
+- Added options to auto copy to clipboard
+- To language now carried on when changing engines (Forgot this in the last release)
+- Added readme and changelog
+
+[V1.2 Improvement]
+- From language now carried on when changing engines  
+
+[V1.0 First Release]
+- First release

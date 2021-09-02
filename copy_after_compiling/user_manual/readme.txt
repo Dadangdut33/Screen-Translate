@@ -1,3 +1,22 @@
 You can test the capture window by using that Test Doc
 
-See the tutorial on the github page for more information.
+See the picture for more information.
+
+# Links
+- Tesseract : https://github.com/UB-Mannheim/tesseract/wiki
+- Repository : https://github.com/Dadangdut33/Screen-Translate
+- Release : https://github.com/Dadangdut33/Screen-Translate/releases
+
+# Requirements
+- Tesseract, needed for the ocr. Install it with all the language pack.
+
+# Tutorial on How To Setup
+For visual instructions please take a look inside the user_manual folder
+
+1. Install tesseract, **make sure to select install all language pack when prompted**
+2. Open the ScreenTranslate.exe
+3. Check settings, make sure tesseract location is correct
+4. Set monitor scaling to 100% so that image is captured accurately (If scaling is not set to 100% you will need to set offset in setting) **(Recommended)**
+5. Set offset if on multiple monitors. **(Optional)** 
+6. Try capturing image and see if it works or not, if it doesn't, go check the image captured in img_cache folder. If it still doesn't work, try to change the offset.
+7. Now that you have set everything, the app should be ready. Feel free to submit new issue on the github repository if you encounter any bugs.

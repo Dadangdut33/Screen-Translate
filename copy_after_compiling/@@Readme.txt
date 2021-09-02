@@ -1,11 +1,8 @@
-You can test the capture window by using that Test Doc
-
-See the picture for more information.
+The instructions below are also located on user_manual directory
 
 # Links
 - Tesseract : https://github.com/UB-Mannheim/tesseract/wiki
 - Repository : https://github.com/Dadangdut33/Screen-Translate
-- Release : https://github.com/Dadangdut33/Screen-Translate/releases
 
 # Requirements
 - Tesseract, needed for the ocr. Install it with all the language pack.

@@ -1,5 +1,6 @@
 {
     "cached": true,
+    "autoCopy": true,
     "offSetXYType": "Custom Offset",
     "offSetXY": [
         "auto",
