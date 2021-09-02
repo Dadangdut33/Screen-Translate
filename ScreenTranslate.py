@@ -112,6 +112,14 @@ def offSetSettings(widthHeighOff, xyOffsetType, xyOff, custom = ""):
 
 def getTheOffset(custom = ""):
     tStatus, settings = fJson.readSetting()
+    if tStatus != True:
+        var1, var2 = fJson.setDefault()
+        if var1 : # If successfully set default
+            print("Default setting applied")
+            Mbox("Default setting applied", "Please change your tesseract location in setting if you didn't install tesseract on default C location", 1)
+        else: # If error
+            print("Error: " + var2)
+            Mbox("An Error Occured", var2, 2)
 
     offSetXY = settings["offSetXY"]
     offSetWH = settings["offSetWH"]
@@ -449,27 +457,27 @@ class HistoryUI():
 
         # Init element
         status, data = fJson.readHistory()
+        if status == True:
+            # Error already handled in jsonHandling
+            listData = []
 
-        # Error already handled in jsonHandling
-        listData = []
+            # convert json to list, then make it a list in list... 
+            for item in data['tl_history']:
+                addToList = [item['id'], item['from'], item['to'], item['query'], item['result'], item['engine']]
 
-        # convert json to list, then make it a list in list... 
-        for item in data['tl_history']:
-            addToList = [item['id'], item['from'], item['to'], item['query'], item['result'], item['engine']]
+                listData.append(addToList)
+    
+            count = 0
+            for record in listData:
+                # Parent
+                parentID = count
+                self.historyTreeView.insert(parent='', index='end', text='', iid=count, values=(record[0], record[1] + "-" + record[2], record[3].replace("\n", " ")))
+                
+                count += 1
+                # Child
+                self.historyTreeView.insert(parent=parentID, index='end', text='', iid=count, values=(record[0], "Engine: " + record[5], record[4].replace("\n", " ")))
 
-            listData.append(addToList)
- 
-        count = 0
-        for record in listData:
-            # Parent
-            parentID = count
-            self.historyTreeView.insert(parent='', index='end', text='', iid=count, values=(record[0], record[1] + "-" + record[2], record[3].replace("\n", " ")))
-            
-            count += 1
-            # Child
-            self.historyTreeView.insert(parent=parentID, index='end', text='', iid=count, values=(record[0], "Engine: " + record[5], record[4].replace("\n", " ")))
-
-            count += 1
+                count += 1
 
         self.historyTreeView.heading('#0', text='', anchor=CENTER)
         self.historyTreeView.heading('Id', text='Id', anchor=CENTER)

@@ -1,0 +1,6 @@
+I have actually made it to work if the resource file is not copied. 
+The program will automatically create the setting and history json if it doesn't exist now.
+But I recommend to still copy it.
+
+
+No need to copy this txt.

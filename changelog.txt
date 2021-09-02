@@ -1,3 +1,7 @@
+[V1.3.1 Bug fix]
+- Fix bug where program won't run if resource/json directory doesn't exist, program will now create it automatically if such directory doesn't exist.
+- Also fix bug where program won't save img if img_cache directory doesn't exist, program will now create it automatically if such directory doesn't exist.
+
 [V1.3 Improvement + New Feature]
 - Added auto copy to clipboard on setting
 - To language now carried on when changing engines (Forgot this in the last release)

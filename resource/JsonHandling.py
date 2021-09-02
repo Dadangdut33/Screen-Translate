@@ -1,7 +1,9 @@
 import json
 import os
 from .Mbox import Mbox
+from pathlib import Path
 dir_path = os.path.dirname(os.path.realpath(__file__))
+base = Path(dir_path + '/resource/json/')
 
 # Default Setting
 default_Setting = { 
@@ -15,6 +17,18 @@ default_Setting = {
     "default_FromOnOpen": "Auto-Detect",
     "default_ToOnOpen": "English"
 }
+
+# -------------------------------------------------
+# Create dir if not exists
+def createDirIfGone():
+    # Will create the dir if not exists
+    if not os.path.exists(dir_path + '/json/'):
+        try:
+            os.makedirs(dir_path + '/json/')
+        except Exception as e:
+            print("Error: " + str(e))
+            Mbox("Error: ", str(e), 2)
+            raise
 
 # -------------------------------------------------
 # Write, Append, Delete, Read, History
@@ -65,6 +79,7 @@ def writeAdd_History(new_data):
         newHistory['tl_history'].append(toAddNew)
 
         # Overwrite file
+        createDirIfGone()
         with open(dir_path + '/json/History.json','w', encoding='utf-8') as f:
             json.dump(newHistory, f, ensure_ascii=False, indent = 4)
             is_Success = True
@@ -72,6 +87,7 @@ def writeAdd_History(new_data):
 
     except FileNotFoundError: # If file not found create new History.json with the new data provided
         # No need for popup for this one
+        createDirIfGone()
         with open(dir_path + '/json/History.json', 'w', encoding='utf-8') as f:
             toAddNew = {
                 "id": 0,
@@ -99,6 +115,7 @@ def deleteAllHistory():
     is_Success = False
     status = ""
     try:
+        createDirIfGone()
         with open(dir_path + '/json/History.json', 'w', encoding='utf-8') as f:
             file_data = {
                 "tl_history": []
@@ -108,6 +125,7 @@ def deleteAllHistory():
             is_Success = True
             status = "All of The History Data Have Been Deleted Successfully"
     except FileNotFoundError: # If file not found create new History.json but empty
+        createDirIfGone()
         # No need for popup for this one
         with open(dir_path + '/json/History.json', 'w', encoding='utf-8') as f:
             file_data = {
@@ -154,12 +172,13 @@ def deleteCertainHistory(index):
             countId += 1
 
         # Overwrite file
+        createDirIfGone()
         with open(dir_path + '/json/History.json','w', encoding='utf-8') as f:
             json.dump(newHistory, f, ensure_ascii=False, indent = 4)
             is_Success = True
             status = "Selected History Has Been Deleted Successfully"
     except FileNotFoundError: # If file not found create new History.json but empty
-        # No need for popup for this one
+        createDirIfGone()
         with open(dir_path + '/json/History.json', 'w', encoding='utf-8') as f:
             file_data = {
                 "tl_history": []
@@ -180,10 +199,12 @@ def readHistory():
     is_Success = False
     data = ""
     try:
+        createDirIfGone()
         with open(dir_path + '/json/History.json', 'r', encoding='utf-8') as f:
             data = json.load(f)
             is_Success = True
     except FileNotFoundError: # If file not found create new History.json but empty
+        createDirIfGone()
         with open(dir_path + '/json/History.json', 'w', encoding='utf-8') as f:
             file_data = {
                 "tl_history": []
@@ -206,6 +227,7 @@ def writeSetting(data):
     is_Success = False
     status = ""
     try:
+        createDirIfGone()
         with open(dir_path + '/json/Setting.json' , 'w', encoding='utf-8') as f:
             json.dump(data, f, ensure_ascii=False, indent=4)
             status = "Setting has been changed successfully"
@@ -221,6 +243,7 @@ def setDefault():
     is_Success = False
     status = ""
     try:
+        createDirIfGone()
         with open(dir_path + '/json/Setting.json' , 'w', encoding='utf-8') as f:
             json.dump(default_Setting, f, ensure_ascii=False, indent=4)
             status = "Successfuly set setting to default"
@@ -236,6 +259,7 @@ def readSetting():
     is_Success = False
     data = ""
     try:
+        createDirIfGone()
         with open(dir_path + '/json/Setting.json', 'r', encoding='utf-8') as f:
             data = json.load(f)
             is_Success = True

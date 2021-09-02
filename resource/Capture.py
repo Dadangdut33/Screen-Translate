@@ -15,6 +15,16 @@ ImageGrab.grab = partial(ImageGrab.grab, all_screens=True)
 # Get Path
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
+def createPicDirIfGone():
+    # Will create the dir if not exists
+    if not os.path.exists(dir_path + '/img_cache/'):
+        try:
+            os.makedirs(dir_path + '/img_cache/')
+        except Exception as e:
+            print("Error: " + str(e))
+            Mbox("Error: ", str(e), 2)
+            raise
+
 def captureImg(coords, sourceLang, tesseract_Location, cached = False):
     """Capture Image and return text from it
 
@@ -45,6 +55,7 @@ def captureImg(coords, sourceLang, tesseract_Location, cached = False):
         wordsGet = pytesseract.image_to_string(captured, langCode)
 
         if cached:
+            createPicDirIfGone()
             captured.save(dir_path + r'\img_cache\captured_' + datetime.now().strftime('%Y-%m-%d_%H%M%S') + '.png')
             
         is_Success = True
@@ -65,6 +76,7 @@ def captureAll():
     # Capture all screens
     try:
         captured = pyautogui.screenshot()
+        createPicDirIfGone()
         captured.save(dir_path + r'\img_cache\Monitor(s) Captured View'+ '.png')
     except Exception as e:
         print("Error: " + str(e))
