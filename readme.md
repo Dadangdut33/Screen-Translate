@@ -9,7 +9,7 @@ Inspired by Visual Novel Reader (VNR), [Visual Novel OCR](https://github.com/lem
 
 **For Dev**
 - Python 3 (I am using python 3.9.6)
-- Libraries from python: os, sys, functools, json, webbrowser, subprocess, datetime, Mbox, tkinter, tkinter.ttk
+- Libraries from python: os, sys, functools, json, webbrowser, subprocess, datetime, Mbox, tkinter, pathlib 
 - External libraries: pyperclip, pytesseract, asyncio, pyautogui, pillow or known as pill, deepl_scraper_pp, deep_translator
 
 *If i miss anything please let me know.
