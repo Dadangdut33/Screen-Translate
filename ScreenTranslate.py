@@ -489,7 +489,7 @@ class HistoryUI():
         self.historyTreeView.column('Query', anchor="w", width=10000, stretch=False) # Make the width ridiculuosly long so it can use the x scrollbar 
 
         self.historyTreeView.pack(side=TOP, padx=5, pady=5, fill=BOTH, expand=False)
-        self.btnRefresh.pack(side=LEFT, fill=X, padx=10, pady=5, expand=False)
+        self.btnRefresh.pack(side=LEFT, fill=X, padx=(10, 5), pady=5, expand=False)
         self.btnCopyToClipboard.pack(side=LEFT, fill=X, padx=5, pady=5, expand=False)
         self.btnCopyToTranslateBox.pack(side=LEFT, fill=X, padx=5, pady=5, expand=False)
         self.btnDeleteSelected.pack(side=LEFT, fill=X, padx=5, pady=5, expand=False)
