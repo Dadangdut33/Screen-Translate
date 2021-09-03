@@ -5,7 +5,6 @@ import asyncio
 from resource.LangCode import *
 from tkinter import *
 from tkinter import ttk
-# from tkinter.tix import * # WHat does this even do??, error everytime on build cause of this
 import tkinter.ttk as ttk
 import resource.Capture as capture
 import resource.JsonHandling as fJson
