@@ -9,9 +9,10 @@ Inspired by Visual Novel Reader (VNR), [Visual Novel OCR](https://github.com/lem
 
 **For Dev**
 - Python 3 (I am using python 3.9.6)
-- Libraries from python: os, sys, functools, json, webbrowser, subprocess, datetime, Mbox, tkinter, pathlib 
-- External libraries: pyperclip, pytesseract, asyncio, pyautogui, pillow or known as pill, deepl_scraper_pp, deep_translator
+- Libraries from python: os, sys, functools, json, webbrowser, subprocess, datetime, Mbox, tkinter, pathlib, asyncio
+- External libraries: pyperclip, pytesseract, pyautogui, pillow, deepl_scraper_pp, deep_translator
 
+You can install them by running pip_install.bat or by installing them yourself, full details are located at [requirements.txt](https://github.com/Dadangdut33/Screen-Translate/blob/main/requirements.txt).<br>
 *If i miss anything please let me know.
 
 # Tutorial on How To Install and Setup
