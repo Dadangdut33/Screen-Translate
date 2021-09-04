@@ -84,7 +84,7 @@ def offSetSettings(widthHeighOff, xyOffsetType, xyOff, custom = ""):
     if xyOffsetType.lower() != "no offset" or custom != "":
         offsetX = pyautogui.size().width
         offsetY = pyautogui.size().height
-        
+
         # If auto
         if xyOff[0] == "auto":
             if(offsetX > offsetY): # Horizontal
@@ -102,7 +102,7 @@ def offSetSettings(widthHeighOff, xyOffsetType, xyOff, custom = ""):
                 y = 0
         else: # if set manually
             y = xyOff[1]
-    
+
     offSetsGet.append(x)
     offSetsGet.append(y)
     offSetsGet.append(w)
@@ -149,6 +149,8 @@ optMyMemory = []
 fillList(myMemory_Lang, optMyMemory, "Auto-Detect")
 optPons = []
 fillList(pons_Lang, optPons) # PONS HAVE NO AUTO DETECT
+optNone = []
+fillList(tesseract_Lang, optNone)
 
 # ----------------------------------------------------------------------
 # Classes
@@ -175,7 +177,7 @@ class CaptureUI():
     def show(self):
         main_Menu.capUiHidden = False
         self.root.wm_deiconify()
-    
+
     def on_closing(self):
         main_Menu.capUiHidden = True
         self.root.wm_withdraw()
@@ -203,11 +205,11 @@ class CaptureUI():
             Mbox("Error: Invalid Language Selected", "Can't Use Auto Detect in Capture Mode", 2)
             print("Error: Invalid Language Selected! Can't Use Auto Detect in Capture Mode")
             return
-        
+
         # Hide the Capture Window so it can detect the words better
         opacBefore = self.currOpacity
         self.root.attributes('-alpha', 0)
-        
+
         # Get xywh of the screen
         x, y, w, h = self.root.winfo_x(), self.root.winfo_y(), self.root.winfo_width(), self.root.winfo_height()
 
@@ -221,7 +223,7 @@ class CaptureUI():
                 print("Error: " + settings[0])
                 print(settings[1])
                 Mbox("Error: " + settings[0], settings[1], 2)
-                
+
                 # Set Default
                 var1, var2 = fJson.setDefault()
                 if var1 : # If successfully set default
@@ -230,17 +232,17 @@ class CaptureUI():
                 else: # If error
                     print("Error: " + var2)
                     Mbox("An Error Occured", var2, 2)
-                
+
                 self.root.wm_deiconify()  # Show the capture window
                 return # Reject
-        
+
         validTesseract = "tesseract" in settings['tesseract_loc'].lower()
         # If tesseract is not found
         if os.path.exists(settings['tesseract_loc']) == False or validTesseract == False:
             self.root.wm_withdraw()  # Hide the capture window
             Mbox("Error: Tesseract Not Found!", "Please set tesseract location in Setting.json.\nYou can set this in setting menu or modify it manually in resource/backend/json/Setting.json", 2)
             self.root.wm_deiconify()  # Show the capture window
-            
+
             return # Reject
 
         # Store setting to localvar
@@ -260,7 +262,7 @@ class CaptureUI():
         language = main_Menu.CBLangFrom.get()
         is_Success, result = capture.captureImg(coords, language, settings['tesseract_loc'], settings['cached'])
         self.root.attributes('-alpha', opacBefore)
-        
+
         print("Area Captured Successfully!") # Debug Print
         print("Coordinates: " + str(coords)) # Debug Print
 
@@ -296,7 +298,7 @@ class CaptureUI():
         self.root.wm_attributes('-topmost', True)
         self.Hidden = False
         self.root.wm_withdraw()
-        
+
         menubar = Menu(self.root)
         filemenu = Menu(menubar, tearoff=0)
         filemenu.add_checkbutton(label="Always on Top", onvalue=True, offvalue=False, variable=self.alwaysOnTop, command=self.always_on_top)
@@ -370,12 +372,12 @@ class HistoryUI():
         # Error already handled in jsonHandling
         if status == True:
             listData = []
-            # convert json to list, then make it a list in list... 
+            # convert json to list, then make it a list in list...
             for item in data['tl_history']:
                 addToList = [item['id'], item['from'], item['to'], item['query'], item['result'], item['engine']]
 
                 listData.append(addToList)
-    
+
             for i in main_Menu.history.historyTreeView.get_children():
                 main_Menu.history.historyTreeView.delete(i)
 
@@ -384,7 +386,7 @@ class HistoryUI():
                 # Parent
                 parentID = count
                 main_Menu.history.historyTreeView.insert(parent='', index='end', text='', iid=count, values=(record[0], record[1] + "-" + record[2], record[3].replace("\n", " ")))
-                
+
                 count += 1
                 # Child
                 main_Menu.history.historyTreeView.insert(parent=parentID, index='end', text='', iid=count, values=(record[0], "Using " + record[5], record[4].replace("\n", " ")))
@@ -460,18 +462,18 @@ class HistoryUI():
             # Error already handled in jsonHandling
             listData = []
 
-            # convert json to list, then make it a list in list... 
+            # convert json to list, then make it a list in list...
             for item in data['tl_history']:
                 addToList = [item['id'], item['from'], item['to'], item['query'], item['result'], item['engine']]
 
                 listData.append(addToList)
-    
+
             count = 0
             for record in listData:
                 # Parent
                 parentID = count
                 self.historyTreeView.insert(parent='', index='end', text='', iid=count, values=(record[0], record[1] + "-" + record[2], record[3].replace("\n", " ")))
-                
+
                 count += 1
                 # Child
                 self.historyTreeView.insert(parent=parentID, index='end', text='', iid=count, values=(record[0], "Engine: " + record[5], record[4].replace("\n", " ")))
@@ -486,7 +488,7 @@ class HistoryUI():
         self.historyTreeView.column('#0', width=20, stretch=False)
         self.historyTreeView.column('Id', anchor=CENTER, width=50, stretch=True)
         self.historyTreeView.column('From-To', anchor=CENTER, width=150, stretch=False)
-        self.historyTreeView.column('Query', anchor="w", width=10000, stretch=False) # Make the width ridiculuosly long so it can use the x scrollbar 
+        self.historyTreeView.column('Query', anchor="w", width=10000, stretch=False) # Make the width ridiculuosly long so it can use the x scrollbar
 
         self.historyTreeView.pack(side=TOP, padx=5, pady=5, fill=BOTH, expand=False)
         self.btnRefresh.pack(side=LEFT, fill=X, padx=(10, 5), pady=5, expand=False)
@@ -513,7 +515,7 @@ class SettingUI():
     def getCurrXYOFF(self = ""):
         if main_Menu.setting_UI.checkVarOffSetX.get():
             x = int(main_Menu.setting_UI.spinnerOffSetX.get())
-        else: 
+        else:
             x = "auto"
         if main_Menu.setting_UI.checkVarOffSetY.get():
             y = int(main_Menu.setting_UI.spinnerOffSetY.get())
@@ -581,7 +583,7 @@ class SettingUI():
         if tStatus == True:
             # Update the settings
             self.reset()
-            
+
             # Tell success
             print("Restored Default Settings")
             Mbox("Success", "Successfully Restored Value to Default Settings", 0)
@@ -596,7 +598,7 @@ class SettingUI():
                 print("Error: " + settings[0])
                 print(settings[1])
                 Mbox("Error: " + settings[0], settings[1], 2)
-                
+
                 settings = fJson.default_Setting
 
                 # Set Default
@@ -607,13 +609,13 @@ class SettingUI():
                 else: # If error
                     print("Error: " + var2)
                     Mbox("An Error Occured", var2, 2)
-                
+
                 self.root.wm_deiconify()  # Show setting
         validTesseract = "tesseract" in settings['tesseract_loc'].lower()
         # If tesseract is not found
         if os.path.exists(settings['tesseract_loc']) == False or validTesseract == False:
             Mbox("Error: Tesseract Not Found!", "Please set tesseract location in Setting.json.\nYou can set this in setting menu or modify it manually in resource/backend/json/Setting.json", 2)
-        
+
         # Cache checkbox
         if settings['cached'] == True:
             self.root.setvar(name="checkVarCache", value=True)
@@ -683,7 +685,7 @@ class SettingUI():
             self.CBOffSetChoice.current(0)
             print("Error: Invalid Offset Type")
             Mbox("Error: Invalid Offset Type", "Please do not modify the setting manually if you don't know what you are doing", 2)
-        
+
         # W H
         self.spinValOffSetW.set(str(w))
         self.spinValOffSetH.set(str(h))
@@ -696,7 +698,7 @@ class SettingUI():
             self.checkAutoOffSetW.deselect()
             self.root.setvar(name="checkVarOffSetW", value=False)
             self.spinnerOffSetW.config(state=NORMAL)
-        
+
         if(settings["offSetWH"][1] == "auto"):
             self.checkAutoOffSetH.select()
             self.root.setvar(name="checkVarOffSetH", value=True)
@@ -705,7 +707,7 @@ class SettingUI():
             self.checkAutoOffSetH.deselect()
             self.root.setvar(name="checkVarOffSetH", value=False)
             self.spinnerOffSetH.config(state=NORMAL)
-        
+
         self.CBTLChange_setting()
         self.CBDefaultEngine.current(searchList(settings['default_Engine'], engines))
         self.CBDefaultFrom.current(searchList(settings['default_FromOnOpen'], self.langOpt))
@@ -729,7 +731,7 @@ class SettingUI():
         print(main_Menu.setting_UI.checkVarOffSetX.get())
         if main_Menu.setting_UI.checkVarOffSetX.get():
             x = "auto"
-        else: 
+        else:
             x = int(main_Menu.setting_UI.spinnerOffSetX.get())
         if main_Menu.setting_UI.checkVarOffSetY.get():
             y = "auto"
@@ -744,7 +746,7 @@ class SettingUI():
         else:
             h = int(main_Menu.setting_UI.spinnerOffSetH.get())
 
-        settingToSave = { 
+        settingToSave = {
             "cached": main_Menu.setting_UI.checkVarCache.get(),
             "autoCopy": main_Menu.setting_UI.checkVarAutoCopy.get(),
             "offSetXYType": main_Menu.setting_UI.CBOffSetChoice.get(),
@@ -815,24 +817,35 @@ class SettingUI():
             self.CBDefaultFrom.current(searchList(previous_From, optGoogle))
             self.CBDefaultTo['values'] = optGoogle
             self.CBDefaultTo.current(searchList(previous_To, optGoogle))
+            self.CBDefaultTo.config(state='enabled')
         elif curr_Engine == "Deepl":
             self.langOpt = optDeepl
             self.CBDefaultFrom['values'] = optDeepl
             self.CBDefaultFrom.current(searchList(previous_From, optDeepl))
             self.CBDefaultTo['values'] = optDeepl
             self.CBDefaultTo.current(searchList(previous_To, optDeepl))
+            self.CBDefaultTo.config(state='enabled')
         elif curr_Engine == "MyMemoryTranslator":
             self.langOpt = optMyMemory
             self.CBDefaultFrom['values'] = optMyMemory
             self.CBDefaultFrom.current(searchList(previous_From, optMyMemory))
             self.CBDefaultTo['values'] = optMyMemory
             self.CBDefaultTo.current(searchList(previous_To, optMyMemory))
+            self.CBDefaultTo.config(state='enabled')
         elif curr_Engine == "PONS":
             self.langOpt = optPons
             self.CBDefaultFrom['values'] = optPons
             self.CBDefaultFrom.current(searchList(previous_From, optPons))
             self.CBDefaultTo['values'] = optPons
             self.CBDefaultTo.current(searchList(previous_To, optPons))
+            self.CBDefaultTo.config(state='enabled')
+        elif curr_Engine == "None":
+            self.langOpt = optNone
+            self.CBDefaultFrom['values'] = optNone
+            self.CBDefaultFrom.current(searchList(previous_From, optNone))
+            self.CBDefaultTo['values'] = optNone
+            self.CBDefaultTo.current(searchList(previous_To, optNone))
+            self.CBDefaultTo.config(state='disabled')
 
     # Frames
     s = ttk.Style()
@@ -963,7 +976,7 @@ class SettingUI():
         self.spinnerOffSetW.pack(side=LEFT, padx=5, pady=5)
         self.labelOffSetH.pack(side=LEFT, padx=5, pady=5)
         self.spinnerOffSetH.pack(side=LEFT, padx=8, pady=5)
-        
+
         self.buttonCheckMonitorLayout.pack(side=LEFT, padx=30, pady=5)
 
         # 3
@@ -976,7 +989,7 @@ class SettingUI():
 
         self.labelDefaultTo.pack(side=LEFT, padx=5, pady=5)
         self.CBDefaultTo.pack(side=LEFT, padx=5, pady=5)
-        
+
         # 4
         self.labelTesseractPath.pack(side=LEFT, padx=5, pady=5)
         self.textBoxTesseractPath.pack(side=LEFT, padx=5, pady=5, fill=X, expand=True)
@@ -984,10 +997,10 @@ class SettingUI():
         # Bottom Frame
         self.btnSave.pack(side=RIGHT, padx=4, pady=5)
         btnReset = Button(self.bottomFrame, text="Reset To Currently Stored Setting", command=self.reset)
-        btnReset.pack(side=RIGHT, padx=5, pady=5)  
+        btnReset.pack(side=RIGHT, padx=5, pady=5)
         btnRestoreDefault = Button(self.bottomFrame, text="Restore Default", command=self.restoreDefault)
         btnRestoreDefault.pack(side=RIGHT, padx=5, pady=5)
-        
+
         # On Close
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
 
@@ -1115,6 +1128,10 @@ class main_Menu():
             else:
                 Mbox("Error: Translation Failed", translateResult, 2)
         # --------------------------------
+        # None
+        elif engine == "None":
+            pass
+        # --------------------------------
         # Wrong opts
         else:
             print("Please select a correct engine")
@@ -1123,32 +1140,32 @@ class main_Menu():
     # On Close
     def on_closing(self):
         exit(0)
-    
+
     # Open History Window
     def open_Setting(self):
         self.setting_UI.show()
-    
+
     def open_History(self):
         self.history.show()
         pass
 
     def open_About(self):
-        Mbox("About", "Screen-Translate is a program made inspired by VNR, Visual Novel OCR, and QTranslate.\n\nI (Dadangdut33) made this program in order to learn more about python and because i want to try creating an app similar to those i mention. " + 
-        "\n\nThis program is completely open source, you can improve it if you want, you can also tell me if there are bugs. If you are confused on how to use it you can" + 
+        Mbox("About", "Screen-Translate is a program made inspired by VNR, Visual Novel OCR, and QTranslate.\n\nI (Dadangdut33) made this program in order to learn more about python and because i want to try creating an app similar to those i mention. " +
+        "\n\nThis program is completely open source, you can improve it if you want, you can also tell me if there are bugs. If you are confused on how to use it you can" +
         " check the tutorial by pressing the tutorial in the menu bar", 0)
 
     def open_Tutorial(self):
-        Mbox("Tutorial", "1. *First*, make sure your screen scaling is 100%. If scaling is not 100%, the capturer won't work properly. If by any chance you don't want to set your monitor scaling to 100%, " + 
-        "you can set the xy offset in the setting" + "\n\n2. *Second*, you need to install tesseract, you can quickly go to the download link by pressing the download tesseract in menu bar\n\n" + 
-        "3. *Then*, check the settings. Make sure tesseract path is correct\n\n" + 
-        "4. *FOR MULTI MONITOR USER*, set offset in setting. If you have multiple monitor setup, you might need to set the offset in settings. \n\nWhat you shold do in the setting window:\n- Check how the program see your monitors in settings by clicking that one button.\n" + 
-        "- You can also see how the capture area captured your images by enabling cache and then see the image in 'img_cache' directory" + 
+        Mbox("Tutorial", "1. *First*, make sure your screen scaling is 100%. If scaling is not 100%, the capturer won't work properly. If by any chance you don't want to set your monitor scaling to 100%, " +
+        "you can set the xy offset in the setting" + "\n\n2. *Second*, you need to install tesseract, you can quickly go to the download link by pressing the download tesseract in menu bar\n\n" +
+        "3. *Then*, check the settings. Make sure tesseract path is correct\n\n" +
+        "4. *FOR MULTI MONITOR USER*, set offset in setting. If you have multiple monitor setup, you might need to set the offset in settings. \n\nWhat you shold do in the setting window:\n- Check how the program see your monitors in settings by clicking that one button.\n" +
+        "- You can also see how the capture area captured your images by enabling cache and then see the image in 'img_cache' directory" +
         "\n\n\nYou can open the tutorial or user manual linked in menubar if you are still confused.", 0)
 
     def open_Faq(self):
-        Mbox("FAQ", "Q: Do you collect the screenshot?\nA: No, no data is collected by me. Image and text captured will only be use for query and the cache is only saved locally\n\n" + 
-        "Q: Is this safe?\nA: Yes, it is safe, you can check the code on the github linked, or open it yourself on your machine.\n\n" + 
-        "Q: I could not capture anything, help!?\nA: You might need to check the cache image and see wether it actually capture the stuff that you targeted or not. If not, you might " + 
+        Mbox("FAQ", "Q: Do you collect the screenshot?\nA: No, no data is collected by me. Image and text captured will only be use for query and the cache is only saved locally\n\n" +
+        "Q: Is this safe?\nA: Yes, it is safe, you can check the code on the github linked, or open it yourself on your machine.\n\n" +
+        "Q: I could not capture anything, help!?\nA: You might need to check the cache image and see wether it actually capture the stuff that you targeted or not. If not, you might " +
         "want to set offset in setting or change your monitor scaling to 100%", 0)
 
     def openTesLink(self):
@@ -1185,7 +1202,7 @@ class main_Menu():
         # The Comboboxes
         x, y = self.CBLangFrom.current(), self.CBLangTo.current()
         self.CBLangFrom.current(y)
-        self.CBLangTo.current(x) 
+        self.CBLangTo.current(x)
 
     # Clear TB
     def clearTB(self):
@@ -1206,24 +1223,35 @@ class main_Menu():
             self.CBLangFrom.current(searchList(previous_From, optGoogle))
             self.CBLangTo['values'] = optGoogle
             self.CBLangTo.current(searchList(previous_To, optGoogle))
+            self.CBLangTo.config(state='enabled')
         elif curr_Engine == "Deepl":
             self.langOpt = optDeepl
             self.CBLangFrom['values'] = optDeepl
             self.CBLangFrom.current(searchList(previous_From, optDeepl))
             self.CBLangTo['values'] = optDeepl
             self.CBLangTo.current(searchList(previous_To, optDeepl))
+            self.CBLangTo.config(state='enabled')
         elif curr_Engine == "MyMemoryTranslator":
             self.langOpt = optMyMemory
             self.CBLangFrom['values'] = optMyMemory
             self.CBLangFrom.current(searchList(previous_From, optMyMemory))
             self.CBLangTo['values'] = optMyMemory
             self.CBLangTo.current(searchList(previous_To, optMyMemory))
+            self.CBLangTo.config(state='enabled')
         elif curr_Engine == "PONS":
             self.langOpt = optPons
             self.CBLangFrom['values'] = optPons
             self.CBLangFrom.current(searchList(previous_From, optPons))
             self.CBLangTo['values'] = optPons
             self.CBLangTo.current(searchList(previous_To, optPons))
+            self.CBLangTo.config(state='enabled')
+        elif curr_Engine == "None":
+            self.langOpt = optNone
+            self.CBLangFrom['values'] = optNone
+            self.CBLangFrom.current(searchList(previous_From, optNone))
+            self.CBLangTo['values'] = optNone
+            self.CBLangTo.current(searchList(previous_To, optNone))
+            self.CBLangTo.config(state='disabled')
 
 
     # --- Declarations and Layout ---
@@ -1254,7 +1282,7 @@ class main_Menu():
     captureOpacityLabel = Label(topFrame1, text="Capture UI Opacity: " + str(capture_UI.currOpacity))
 
     # Langoptions onstart
-    langOpt = optGoogle 
+    langOpt = optGoogle
 
     labelEngines = Label(bottomFrame1, text="TL Engine:")
     CBTranslateEngine = ttk.Combobox(bottomFrame1, values=engines, state="readonly")
