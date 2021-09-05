@@ -3,8 +3,8 @@
     "autoCopy": true,
     "offSetXYType": "No Offset",
     "offSetXY": [
-        "auto",
-        "auto"
+        0,
+        0
     ],
     "offSetWH": [
         "auto",
@@ -14,5 +14,6 @@
     "default_Engine": "Google Translate",
     "default_FromOnOpen": "Japanese",
     "default_ToOnOpen": "English",
-    "capture_Hotkey": ""
+    "capture_Hotkey": "",
+    "capture_HotkeyDelay": 1000
 }

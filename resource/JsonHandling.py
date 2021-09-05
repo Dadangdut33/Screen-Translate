@@ -16,7 +16,8 @@ default_Setting = {
     "default_Engine": "Google Translate",
     "default_FromOnOpen": "Auto-Detect",
     "default_ToOnOpen": "English",
-    "capture_Hotkey": ""
+    "capture_Hotkey": "",
+    "capture_HotkeyDelay": 1000
 }
 
 class JsonHandler:

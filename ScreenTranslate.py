@@ -11,6 +11,7 @@ import subprocess
 import pyperclip
 from resource.Mbox import Mbox
 import keyboard
+import time
 from sys import exit
 
 # Add try except to intercept connection error
@@ -610,6 +611,8 @@ class SettingUI():
         offSetWH = settings["offSetWH"]
         xyOffSetType = settings["offSetXYType"]
 
+        self.spinValHotkeyDelay.set(settings["capture_HotkeyDelay"])
+
         offSets = offSetSettings(offSetWH, xyOffSetType, offSetXY)
         x = offSets[0]
         y = offSets[1]
@@ -729,7 +732,8 @@ class SettingUI():
             "default_Engine": main_Menu.setting_UI.CBDefaultEngine.get(),
             "default_FromOnOpen": main_Menu.setting_UI.CBDefaultFrom.get(),
             "default_ToOnOpen": main_Menu.setting_UI.CBDefaultTo.get(),
-            "capture_Hotkey": main_Menu.setting_UI.labelCurrentHotkey['text']
+            "capture_Hotkey": main_Menu.setting_UI.labelCurrentHotkey['text'],
+            "capture_HotkeyDelay": main_Menu.setting_UI.spinValHotkeyDelay.get()
         }
 
         # Bind hotkey
@@ -901,6 +905,8 @@ class SettingUI():
     spinValOffSetW = StringVar(root)
     spinValOffSetH = StringVar(root)
 
+    spinValHotkeyDelay = IntVar(root)
+
     validateDigits = (root.register(validateSpinBox), '%P')
 
     spinnerOffSetX = Spinbox(secondFrameContent2, from_=-100000, to=100000, width=20, textvariable=spinValOffSetX)
@@ -929,6 +935,9 @@ class SettingUI():
     textBoxTesseractPath = Text(fourthFrameContent, width=77, height=1, xscrollcommand=True)
 
     # Fifth frame
+    labelHotkeyDelay = Label(fifthFrameContent, text="Time delay (ms) : ")
+    spinnerHotkeyDelay = Spinbox(fifthFrameContent, from_=0, to=100000, width=20, textvariable=spinValHotkeyDelay)
+    spinnerHotkeyDelay.configure(validate='key', validatecommand=validateDigits)
     buttonSetHotkey = Button(fifthFrameContent, text="Click to set hotkey for capture", command=setHotkey)
     buttonClearHotkey = Button(fifthFrameContent, text="Clear", command=clearHotkey)
     labelHotkeyTip = Label(fifthFrameContent, text="Current hotkey : ")
@@ -989,6 +998,8 @@ class SettingUI():
         self.textBoxTesseractPath.pack(side=LEFT, padx=5, pady=5, fill=X, expand=True)
 
         # 5
+        self.labelHotkeyDelay.pack(side=LEFT, padx=5, pady=5)
+        self.spinnerHotkeyDelay.pack(side=LEFT, padx=5, pady=5)
         self.buttonSetHotkey.pack(side=LEFT, padx=5, pady=5)
         self.buttonClearHotkey.pack(side=LEFT, padx=5, pady=5)
         self.labelHotkeyTip.pack(side=LEFT, padx=5, pady=5)
@@ -1309,11 +1320,12 @@ class main_Menu():
     hotkeyPressed = False
 
     def hotkeyCallback(self):
-        print('test')
         self.hotkeyPressed = True
 
     def hotkeyPoll(self):
         if self.hotkeyPressed == True and self.capUiHidden == False:
+            settings = fJson.readSetting()
+            time.sleep(settings['capture_HotkeyDelay'] / 1000)
             self.capture_UI.getTextAndTranslate()
         self.hotkeyPressed = False
         self.root.after(100, self.hotkeyPoll)
