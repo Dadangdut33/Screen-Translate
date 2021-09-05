@@ -199,7 +199,7 @@ class CaptureUI():
             print("Error Need to generate the capture window! Please generate the capture window first")
             return
         # Check for the lang from and langto only if it's on translation mode
-        if main_Menu.CBTranslateEngine.get() != "None": 
+        if main_Menu.CBTranslateEngine.get() != "None":
             # If selected langfrom and langto is the same
             if(main_Menu.CBLangFrom.current()) == (main_Menu.CBLangTo.current()):
                 Mbox("Error: Language target is the same as source", "Please choose a different language", 2)
@@ -586,6 +586,9 @@ class SettingUI():
         hotkey = keyboard.read_hotkey(suppress=False)
         main_Menu.setting_UI.labelCurrentHotkey.config(text=str(hotkey))
 
+    def clearHotkey():
+        main_Menu.setting_UI.labelCurrentHotkey.config(text="")
+
     def restoreDefault(self):
         x = Mbox("Confirmation", "Are you sure you want to set the settings to default?\n\n**WARNING! CURRENTLY SAVED SETTING WILL BE OVERWRITTEN**", 3)
         if x == False:
@@ -645,7 +648,7 @@ class SettingUI():
         else:
             self.root.setvar(name="checkVarAutoCopy", value=False)
             self.checkBTNAutoCopy.deselect()
-        
+
         # Show current hotkey
         main_Menu.setting_UI.labelCurrentHotkey.config(text=settings['capture_Hotkey'])
 
@@ -970,6 +973,7 @@ class SettingUI():
 
     # Fifth frame
     buttonSetHotkey = Button(fifthFrameContent, text="Click to set hotkey for capture", command=setHotkey)
+    buttonClearHotkey = Button(fifthFrameContent, text="Clear", command=clearHotkey)
     labelHotkeyTip = Label(fifthFrameContent, text="Current hotkey : ")
     labelCurrentHotkey = Label(fifthFrameContent, text="")
 
@@ -1029,6 +1033,7 @@ class SettingUI():
 
         # 5
         self.buttonSetHotkey.pack(side=LEFT, padx=5, pady=5)
+        self.buttonClearHotkey.pack(side=LEFT, padx=5, pady=5)
         self.labelHotkeyTip.pack(side=LEFT, padx=5, pady=5)
         self.labelCurrentHotkey.pack(side=LEFT, padx=5, pady=5)
 
@@ -1348,7 +1353,7 @@ class main_Menu():
 
     def hotkeyCallback(self):
         self.hotkeyPressed = True
-    
+
     def hotkeyPoll(self):
         if self.hotkeyPressed == True and self.capUiHidden == False:
             self.capture_UI.getTextAndTranslate()
