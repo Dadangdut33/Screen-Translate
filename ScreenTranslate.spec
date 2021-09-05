@@ -5,7 +5,7 @@ block_cipher = None
 
 
 a = Analysis(['ScreenTranslate.py'],
-             pathex=['./'],
+             pathex=['D:\\Coding\\Screen-Translate'],
              binaries=[],
              datas=[],
              hiddenimports=[],
@@ -33,13 +33,11 @@ exe = EXE(pyz,
           disable_windowed_traceback=False,
           target_arch=None,
           codesign_identity=None,
-          entitlements_file=None)
+          entitlements_file=None )
 coll = COLLECT(exe,
                a.binaries,
                a.zipfiles,
-               a.datas,
-               Tree('./user_manual', prefix='user_manual/'),
-               Tree('./resource', prefix='resource/'),
+               a.datas, 
                strip=False,
                upx=True,
                upx_exclude=[],
