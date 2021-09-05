@@ -1,8 +1,3 @@
-[V1.5 Added hotkeys for capture and translate]
-- Added keybinding for the "Capture and translate" button
-- Added time delay for capturing using the keybinding
-- Minor improvement/fix to the settings loading by reducing the read/load of Setting.json
-
 [V1.4 Add Option For Not Translating]
 - Added option for not translating by using the 'none' engine 
 - Realign refresh button padding on history ui
