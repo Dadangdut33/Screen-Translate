@@ -10,7 +10,7 @@ Inspired by Visual Novel Reader (VNR), [Visual Novel OCR](https://github.com/lem
 **For Dev**
 - Python 3.5+, checked using [vermin](https://github.com/netromdk/vermin) (I am using python 3.9.6)
 - Libraries from python: os, sys, functools, json, webbrowser, subprocess, datetime, Mbox, tkinter, pathlib, asyncio
-- External libraries: pyperclip, pytesseract, pyautogui, pillow, deepl_scraper_pp, deep_translator
+- External libraries: pyperclip, pytesseract, pyautogui, pillow, deepl_scraper_pp, deep_translator, keyboard
 
 You can install them by running pip_install.bat or by installing them yourself, full details are located at [requirements.txt](https://github.com/Dadangdut33/Screen-Translate/blob/main/requirements.txt).<br>
 *If i miss anything please let me know.
@@ -23,7 +23,7 @@ You can install them by running pip_install.bat or by installing them yourself, 
 3. Open the ScreenTranslate.exe
 4. Check settings, make sure tesseract location is correct
 5. Set monitor scaling to 100% so that image is captured accurately (If scaling is not set to 100% you will need to set offset in setting) **(Recommended)**
-6. Set offset if on multiple monitors. **(Optional)** 
+6. Set offset if on multiple monitors. **(Optional)**
 7. Try capturing image and see if it works or not, if it doesn't, go check the image captured in img_cache folder. If it still doesn't work, try to change the offset.
 8. Now that you have set everything, the app should be ready. Feel free to submit new issue on the github repository if you encounter any bugs.
 
@@ -42,7 +42,7 @@ You can use [p2exe](https://www.py2exe.org/) or many other stuff. I use [pyinsta
 Command used are
 ```
 # On Source Code Directory
-pyinstaller ScreenTranslate.py
+pyinstaller ScreenTranslate.spec
 ```
 After that you copy the folder in `copy_after_compiling` to dist/ScreenTranslate. Then you can run the executable .exe file without any problem.
 

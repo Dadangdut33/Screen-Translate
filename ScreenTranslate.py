@@ -4,13 +4,14 @@ import webbrowser
 import asyncio
 from resource.LangCode import *
 from tkinter import *
-from tkinter import ttk
 import tkinter.ttk as ttk
 import resource.Capture as capture
-import resource.JsonHandling as fJson
+from resource.JsonHandling import JsonHandler
 import subprocess
 import pyperclip
 from resource.Mbox import Mbox
+import keyboard
+import time
 from sys import exit
 
 # Add try except to intercept connection error
@@ -34,6 +35,8 @@ except Exception as e:
 
 # Get dir path
 dir_path = os.path.dirname(os.path.realpath(__file__))
+
+fJson = JsonHandler()
 
 # ----------------------------------------------------------------
 # public func
@@ -110,15 +113,7 @@ def offSetSettings(widthHeighOff, xyOffsetType, xyOff, custom = ""):
     return offSetsGet
 
 def getTheOffset(custom = ""):
-    tStatus, settings = fJson.readSetting()
-    if tStatus != True:
-        var1, var2 = fJson.setDefault()
-        if var1 : # If successfully set default
-            print("Default setting applied")
-            Mbox("Default setting applied", "Please change your tesseract location in setting if you didn't install tesseract on default C location", 1)
-        else: # If error
-            print("Error: " + var2)
-            Mbox("An Error Occured", var2, 2)
+    settings = fJson.readSetting()
 
     offSetXY = settings["offSetXY"]
     offSetWH = settings["offSetWH"]
@@ -198,7 +193,7 @@ class CaptureUI():
             print("Error Need to generate the capture window! Please generate the capture window first")
             return
         # Check for the lang from and langto only if it's on translation mode
-        if main_Menu.CBTranslateEngine.get() != "None": 
+        if main_Menu.CBTranslateEngine.get() != "None":
             # If selected langfrom and langto is the same
             if(main_Menu.CBLangFrom.current()) == (main_Menu.CBLangTo.current()):
                 Mbox("Error: Language target is the same as source", "Please choose a different language", 2)
@@ -223,27 +218,7 @@ class CaptureUI():
         x, y, w, h = self.root.winfo_x(), self.root.winfo_y(), self.root.winfo_width(), self.root.winfo_height()
 
         # Get settings
-        tStatus, settings = fJson.readSetting()
-        if tStatus == False: # If error its probably file not found, thats why we only handle the file not found error
-            if settings[0] == "Setting file is not found":
-                self.root.wm_withdraw()  # Hide the capture window
-
-                # Show error
-                print("Error: " + settings[0])
-                print(settings[1])
-                Mbox("Error: " + settings[0], settings[1], 2)
-
-                # Set Default
-                var1, var2 = fJson.setDefault()
-                if var1 : # If successfully set default
-                    print("Default setting applied")
-                    Mbox("Default setting applied", "Please change your tesseract location in setting if you didn't install tesseract on default C location", 2)
-                else: # If error
-                    print("Error: " + var2)
-                    Mbox("An Error Occured", var2, 2)
-
-                self.root.wm_deiconify()  # Show the capture window
-                return # Reject
+        settings = fJson.readSetting()
 
         validTesseract = "tesseract" in settings['tesseract_loc'].lower()
         # If tesseract is not found
@@ -581,6 +556,13 @@ class SettingUI():
         capture.captureAll()
         startfile(dir_path + r"\resource\img_cache\Monitor(s) Captured View.png")
 
+    def setHotkey():
+        hotkey = keyboard.read_hotkey(suppress=False)
+        main_Menu.setting_UI.labelCurrentHotkey.config(text=str(hotkey))
+
+    def clearHotkey():
+        main_Menu.setting_UI.labelCurrentHotkey.config(text="")
+
     def restoreDefault(self):
         x = Mbox("Confirmation", "Are you sure you want to set the settings to default?\n\n**WARNING! CURRENTLY SAVED SETTING WILL BE OVERWRITTEN**", 3)
         if x == False:
@@ -598,28 +580,8 @@ class SettingUI():
             Mbox("Success", "Successfully Restored Value to Default Settings", 0)
 
     def reset(self):
-        tStatus, settings = fJson.readSetting()
-        if tStatus == False: # If error its probably file not found, thats why we only handle the file not found error
-            if settings[0] == "Setting file is not found":
-                self.root.wm_withdraw()  # Hide setting
+        settings = fJson.readSetting()
 
-                # Show error
-                print("Error: " + settings[0])
-                print(settings[1])
-                Mbox("Error: " + settings[0], settings[1], 2)
-
-                settings = fJson.default_Setting
-
-                # Set Default
-                var1, var2 = fJson.setDefault()
-                if var1 : # If successfully set default
-                    print("Default setting applied")
-                    Mbox("Default setting applied", "Please change your tesseract location in setting if you didn't install tesseract on default C location", 1)
-                else: # If error
-                    print("Error: " + var2)
-                    Mbox("An Error Occured", var2, 2)
-
-                self.root.wm_deiconify()  # Show setting
         validTesseract = "tesseract" in settings['tesseract_loc'].lower()
         # If tesseract is not found
         if os.path.exists(settings['tesseract_loc']) == False or validTesseract == False:
@@ -641,10 +603,15 @@ class SettingUI():
             self.root.setvar(name="checkVarAutoCopy", value=False)
             self.checkBTNAutoCopy.deselect()
 
+        # Show current hotkey
+        main_Menu.setting_UI.labelCurrentHotkey.config(text=settings['capture_Hotkey'])
+
         # Store setting to localvar
         offSetXY = settings["offSetXY"]
         offSetWH = settings["offSetWH"]
         xyOffSetType = settings["offSetXYType"]
+
+        self.spinValHotkeyDelay.set(settings["capture_HotkeyDelay"])
 
         offSets = offSetSettings(offSetWH, xyOffSetType, offSetXY)
         x = offSets[0]
@@ -764,8 +731,19 @@ class SettingUI():
             "tesseract_loc": main_Menu.setting_UI.textBoxTesseractPath.get("1.0", END).strip(),
             "default_Engine": main_Menu.setting_UI.CBDefaultEngine.get(),
             "default_FromOnOpen": main_Menu.setting_UI.CBDefaultFrom.get(),
-            "default_ToOnOpen": main_Menu.setting_UI.CBDefaultTo.get()
+            "default_ToOnOpen": main_Menu.setting_UI.CBDefaultTo.get(),
+            "capture_Hotkey": main_Menu.setting_UI.labelCurrentHotkey['text'],
+            "capture_HotkeyDelay": main_Menu.setting_UI.spinValHotkeyDelay.get()
         }
+
+        # Bind hotkey
+        try:
+            keyboard.unhook_all_hotkeys()
+        except AttributeError:
+            # No hotkeys to unbind
+            pass
+        if main_Menu.setting_UI.labelCurrentHotkey['text'] != '':
+            keyboard.add_hotkey(main_Menu.setting_UI.labelCurrentHotkey['text'], gui.hotkeyCallback)
 
         print("-" * 50)
         print("Setting saved!")
@@ -888,6 +866,11 @@ class SettingUI():
     fourthFrameContent = Frame(fourthFrame)
     fourthFrameContent.pack(side=TOP, fill=X, expand=False)
 
+    fifthFrame = ttk.LabelFrame(root, text="• Hotkey Settings")
+    fifthFrame.pack(side=TOP, fill=X, expand=False, padx=5, pady=5)
+    fifthFrameContent = Frame(fifthFrame)
+    fifthFrameContent.pack(side=TOP, fill=X, expand=False)
+
     bottomFrame = Frame(root)
     bottomFrame.pack(side=BOTTOM, fill=BOTH, expand=False)
 
@@ -922,6 +905,8 @@ class SettingUI():
     spinValOffSetW = StringVar(root)
     spinValOffSetH = StringVar(root)
 
+    spinValHotkeyDelay = IntVar(root)
+
     validateDigits = (root.register(validateSpinBox), '%P')
 
     spinnerOffSetX = Spinbox(secondFrameContent2, from_=-100000, to=100000, width=20, textvariable=spinValOffSetX)
@@ -949,13 +934,22 @@ class SettingUI():
     labelTesseractPath = Label(fourthFrameContent, text="Tesseract Path :")
     textBoxTesseractPath = Text(fourthFrameContent, width=77, height=1, xscrollcommand=True)
 
+    # Fifth frame
+    labelHotkeyDelay = Label(fifthFrameContent, text="Time delay (ms) : ")
+    spinnerHotkeyDelay = Spinbox(fifthFrameContent, from_=0, to=100000, width=20, textvariable=spinValHotkeyDelay)
+    spinnerHotkeyDelay.configure(validate='key', validatecommand=validateDigits)
+    buttonSetHotkey = Button(fifthFrameContent, text="Click to set hotkey for capture", command=setHotkey)
+    buttonClearHotkey = Button(fifthFrameContent, text="Clear", command=clearHotkey)
+    labelHotkeyTip = Label(fifthFrameContent, text="Current hotkey : ")
+    labelCurrentHotkey = Label(fifthFrameContent, text="")
+
     # Bottom Frame
     btnSave = Button(bottomFrame, text="Save Settings", command=saveSettings)
 
     # ----------------------------------------------------------------------
     def __init__(self):
         self.root.title("Setting")
-        self.root.geometry("727x420") # When you see it
+        self.root.geometry("727x500") # When you see it
         self.root.wm_attributes('-topmost', False) # Default False
         self.root.wm_withdraw()
 
@@ -1002,6 +996,14 @@ class SettingUI():
         # 4
         self.labelTesseractPath.pack(side=LEFT, padx=5, pady=5)
         self.textBoxTesseractPath.pack(side=LEFT, padx=5, pady=5, fill=X, expand=True)
+
+        # 5
+        self.labelHotkeyDelay.pack(side=LEFT, padx=5, pady=5)
+        self.spinnerHotkeyDelay.pack(side=LEFT, padx=5, pady=5)
+        self.buttonSetHotkey.pack(side=LEFT, padx=5, pady=5)
+        self.buttonClearHotkey.pack(side=LEFT, padx=5, pady=5)
+        self.labelHotkeyTip.pack(side=LEFT, padx=5, pady=5)
+        self.labelCurrentHotkey.pack(side=LEFT, padx=5, pady=5)
 
         # Bottom Frame
         self.btnSave.pack(side=RIGHT, padx=4, pady=5)
@@ -1315,6 +1317,19 @@ class main_Menu():
     textBoxTop = Text(topFrame2, height = 5, width = 100, font=("Segoe UI", 10), yscrollcommand=True)
     textBoxBottom = Text(bottomFrame2, height = 5, width = 100, font=("Segoe UI", 10), yscrollcommand=True)
 
+    hotkeyPressed = False
+
+    def hotkeyCallback(self):
+        self.hotkeyPressed = True
+
+    def hotkeyPoll(self):
+        if self.hotkeyPressed == True and self.capUiHidden == False:
+            settings = fJson.readSetting()
+            time.sleep(settings['capture_HotkeyDelay'] / 1000)
+            self.capture_UI.getTextAndTranslate()
+        self.hotkeyPressed = False
+        self.root.after(100, self.hotkeyPoll)
+
     # ----------------------------------------------------------------------
     def __init__(self):
         # ----------------------------------------------
@@ -1325,7 +1340,7 @@ class main_Menu():
         self.root.title("Screen Translate")
         self.root.geometry("900x300")
         self.root.wm_attributes('-topmost', False) # Default False
-        tStatus, settings = fJson.readSetting()
+        tStatus, settings = fJson.loadSetting()
         if tStatus == False: # If error its probably file not found, thats why we only handle the file not found error
             if settings[0] == "Setting file is not found":
                 # Show error
@@ -1426,11 +1441,11 @@ class main_Menu():
         # Check setting on startup
         self.setting_UI.reset() # Reset
 
-# ----------------------------------------------------------------
-# main function
-def main():
-    main_Menu()
-    main_Menu.root.mainloop()
+        # Bind hotkey
+        if settings['capture_Hotkey'] != '':
+            keyboard.add_hotkey(settings['capture_Hotkey'], self.hotkeyCallback)
+        self.root.after(100, self.hotkeyPoll)
 
 if __name__ == '__main__':
-    main()
+    gui = main_Menu()
+    gui.root.mainloop()

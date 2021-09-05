@@ -1,1 +1,0 @@
-You can delete the image manually. But, do not delete the directory.
