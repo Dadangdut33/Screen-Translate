@@ -51,7 +51,7 @@ Read [this stackoverflow post](https://stackoverflow.com/questions/5458048/how-c
 # Tutorial on How To Use
 1. Select Language
 2. Translate or Capture Image using the capture window
-3. Set offset if need (Usually when scaling is not 100% or when using multiple monitors)
+3. Set offset if needed (Usually when scaling is not 100% or when using multiple monitors)
 4. Done
 
 # Disclaimer

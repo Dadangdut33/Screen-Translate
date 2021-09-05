@@ -1,3 +1,9 @@
+[V1.4 Add Option For Not Translating]
+- Added option for not translating by using the 'none' engine 
+- Realign refresh button padding on history ui
+- Remove check on 0 as this can cause error on the first language for engine that does not have auto detect
+- Release tag will now follow the version number
+
 [V1.3.1 Bug fix]
 - Fix bug where program won't run if resource/json directory doesn't exist, program will now create it automatically if such directory doesn't exist.
 - Also fix bug where program won't save img if img_cache directory doesn't exist, program will now create it automatically if such directory doesn't exist.

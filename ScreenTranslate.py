@@ -197,14 +197,24 @@ class CaptureUI():
             Mbox("Error: You need to generate the capture window", "Please generate the capture window first", 2)
             print("Error Need to generate the capture window! Please generate the capture window first")
             return
-        if(main_Menu.CBLangFrom.current()) == (main_Menu.CBLangTo.current()): # If Selected type invalid
-            Mbox("Error: Language target is the same as source", "Please choose a different language", 2)
-            print("Error Language is the same as source! Please choose a different language")
-            return
-        if main_Menu.CBLangTo.get() == "Auto-Detect" or main_Menu.CBLangTo.current() == 0 or main_Menu.CBLangFrom.get() == "Auto-Detect" or main_Menu.CBLangFrom.current() == 0: # If Selected type invalid
-            Mbox("Error: Invalid Language Selected", "Can't Use Auto Detect in Capture Mode", 2)
-            print("Error: Invalid Language Selected! Can't Use Auto Detect in Capture Mode")
-            return
+        # Check for the lang from and langto only if it's on translation mode
+        if main_Menu.CBTranslateEngine.get() != "None": 
+            print(main_Menu.CBTranslateEngine.get() + " is selected")
+            # If selected langfrom and langto is the same
+            if(main_Menu.CBLangFrom.current()) == (main_Menu.CBLangTo.current()):
+                Mbox("Error: Language target is the same as source", "Please choose a different language", 2)
+                print("Error Language is the same as source! Please choose a different language")
+                return
+            # If selected langfrom is autodetect -> invalid
+            if main_Menu.CBLangFrom.get() == "Auto-Detect":
+                Mbox("Error: Invalid Language Selected", "Can't Use Auto Detect in Capture Mode", 2)
+                print("Error: Invalid Language Selected! Can't Use Auto Detect in Capture Mode")
+                return
+            # If selected langto is autodetect -> also invalid
+            if main_Menu.CBLangTo.get() == "Auto-Detect":
+                Mbox("Error: Invalid Language Selected", "Must specify language destination", 2)
+                print("Error: Invalid Language Selected! Must specify language destination")
+                return
 
         # Hide the Capture Window so it can detect the words better
         opacBefore = self.currOpacity
@@ -817,28 +827,28 @@ class SettingUI():
             self.CBDefaultFrom.current(searchList(previous_From, optGoogle))
             self.CBDefaultTo['values'] = optGoogle
             self.CBDefaultTo.current(searchList(previous_To, optGoogle))
-            self.CBDefaultTo.config(state='enabled')
+            self.CBDefaultTo.config(state='readonly')
         elif curr_Engine == "Deepl":
             self.langOpt = optDeepl
             self.CBDefaultFrom['values'] = optDeepl
             self.CBDefaultFrom.current(searchList(previous_From, optDeepl))
             self.CBDefaultTo['values'] = optDeepl
             self.CBDefaultTo.current(searchList(previous_To, optDeepl))
-            self.CBDefaultTo.config(state='enabled')
+            self.CBDefaultTo.config(state='readonly')
         elif curr_Engine == "MyMemoryTranslator":
             self.langOpt = optMyMemory
             self.CBDefaultFrom['values'] = optMyMemory
             self.CBDefaultFrom.current(searchList(previous_From, optMyMemory))
             self.CBDefaultTo['values'] = optMyMemory
             self.CBDefaultTo.current(searchList(previous_To, optMyMemory))
-            self.CBDefaultTo.config(state='enabled')
+            self.CBDefaultTo.config(state='readonly')
         elif curr_Engine == "PONS":
             self.langOpt = optPons
             self.CBDefaultFrom['values'] = optPons
             self.CBDefaultFrom.current(searchList(previous_From, optPons))
             self.CBDefaultTo['values'] = optPons
             self.CBDefaultTo.current(searchList(previous_To, optPons))
-            self.CBDefaultTo.config(state='enabled')
+            self.CBDefaultTo.config(state='readonly')
         elif curr_Engine == "None":
             self.langOpt = optNone
             self.CBDefaultFrom['values'] = optNone
@@ -1044,14 +1054,19 @@ class main_Menu():
         # Get Textbox
         TBBot = self.textBoxBottom
 
-        if(langFromObj.current()) == (langToObj.current()):
-            Mbox("Error: Language target is the same as source", "Please choose a different language", 2)
-            print("Error Language is the same as source! Please choose a different language")
-            return
-        if langToObj.get() == "Auto-Detect" or langToObj.current() == 0:
-            Mbox("Error: Invalid Language Selected", "Please choose a valid language", 2)
-            print("Error: Invalid Language Selected! Please choose a valid language")
-            return
+        # Only check the langfrom and langto if it is translating
+        if engine != "None":
+            print(engine + " from main")
+            # If source and destination are the same
+            if(langFromObj.current()) == (langToObj.current()):
+                Mbox("Error: Language target is the same as source", "Please choose a different language", 2)
+                print("Error Language is the same as source! Please choose a different language")
+                return
+            # If langto not set
+            if langToObj.get() == "Auto-Detect":
+                Mbox("Error: Invalid Language Selected", "Must specify language destination", 2)
+                print("Error: Invalid Language Selected! Must specify language destination")
+                return
 
         # Get the text from the textbox
         if textOutside == "":
