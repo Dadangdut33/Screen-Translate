@@ -14,7 +14,7 @@ ImageGrab.grab = partial(ImageGrab.grab, all_screens=True)
 
 # Get Path
 dir_path = os.path.dirname(os.path.realpath(__file__))
-img_cache_path = os.path.join(dir_path, 'img_cache')
+img_cache_path = os.path.join(dir_path, '../img_cache')
 
 def createPicDirIfGone():
     # Will create the dir if not exists
