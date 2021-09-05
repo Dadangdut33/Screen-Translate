@@ -2,21 +2,21 @@ import pyautogui
 import os
 import webbrowser
 import asyncio
-from src.LangCode import *
+from screen_translate.LangCode import *
 from tkinter import *
 import tkinter.ttk as ttk
-import src.Capture as capture
-from src.JsonHandling import JsonHandler
+import screen_translate.Capture as capture
+from screen_translate.JsonHandling import JsonHandler
 import subprocess
 import pyperclip
-from src.Mbox import Mbox
+from screen_translate.Mbox import Mbox
 import keyboard
 import time
 from sys import exit
 
 # Add try except to intercept connection error
 try:
-    import src.Translate as tl
+    import screen_translate.Translate as tl
 except ConnectionError as e:
     print("Error: No Internet Connection. Please Restart With Internet Connected", str(e))
     Mbox("Error: No Internet Connection", e, 2)
@@ -25,7 +25,7 @@ except Exception as e:
     Mbox("Error", e, 2)
 
 try:
-    import src.Translate_Deepl as tl_deepl
+    import screen_translate.Translate_Deepl as tl_deepl
 except ConnectionError as e:
     print("Error: No Internet Connection. Please Restart With Internet Connected", str(e))
     Mbox("Error: No Internet Connection", e, 2)
