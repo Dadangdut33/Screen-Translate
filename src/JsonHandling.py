@@ -3,7 +3,9 @@ import os
 from .Mbox import Mbox
 from pathlib import Path
 dir_path = os.path.dirname(os.path.realpath(__file__))
-base = Path(dir_path + '/resource/json/')
+jsons_path = os.path.join(dir_path, '../json/')
+history_json_path = os.path.join(dir_path, '../json/History.json')
+setting_json_path = os.path.join(dir_path, '../json/Setting.json')
 
 # Default Setting
 default_Setting = {
@@ -27,9 +29,9 @@ class JsonHandler:
     # Create dir if not exists
     def createDirIfGone(self):
         # Will create the dir if not exists
-        if not os.path.exists(dir_path + '/json/'):
+        if not os.path.exists(jsons_path):
             try:
-                os.makedirs(dir_path + '/json/')
+                os.makedirs(jsons_path)
             except Exception as e:
                 print("Error: " + str(e))
                 Mbox("Error: ", str(e), 2)
@@ -85,7 +87,7 @@ class JsonHandler:
 
             # Overwrite file
             self.createDirIfGone()
-            with open(dir_path + '/json/History.json','w', encoding='utf-8') as f:
+            with open(history_json_path,'w', encoding='utf-8') as f:
                 json.dump(newHistory, f, ensure_ascii=False, indent = 4)
                 is_Success = True
                 status = "no error"
@@ -93,7 +95,7 @@ class JsonHandler:
         except FileNotFoundError: # If file not found create new History.json with the new data provided
             # No need for popup for this one
             self.createDirIfGone()
-            with open(dir_path + '/json/History.json', 'w', encoding='utf-8') as f:
+            with open(history_json_path, 'w', encoding='utf-8') as f:
                 toAddNew = {
                     "id": 0,
                     "from": new_data['from'],
@@ -121,7 +123,7 @@ class JsonHandler:
         status = ""
         try:
             self.createDirIfGone()
-            with open(dir_path + '/json/History.json', 'w', encoding='utf-8') as f:
+            with open(history_json_path, 'w', encoding='utf-8') as f:
                 file_data = {
                     "tl_history": []
                 }
@@ -132,7 +134,7 @@ class JsonHandler:
         except FileNotFoundError: # If file not found create new History.json but empty
             self.createDirIfGone()
             # No need for popup for this one
-            with open(dir_path + '/json/History.json', 'w', encoding='utf-8') as f:
+            with open(history_json_path, 'w', encoding='utf-8') as f:
                 file_data = {
                     "tl_history": []
                 }
@@ -178,13 +180,13 @@ class JsonHandler:
 
             # Overwrite file
             self.createDirIfGone()
-            with open(dir_path + '/json/History.json','w', encoding='utf-8') as f:
+            with open(history_json_path,'w', encoding='utf-8') as f:
                 json.dump(newHistory, f, ensure_ascii=False, indent = 4)
                 is_Success = True
                 status = "Selected History Has Been Deleted Successfully"
         except FileNotFoundError: # If file not found create new History.json but empty
             self.createDirIfGone()
-            with open(dir_path + '/json/History.json', 'w', encoding='utf-8') as f:
+            with open(history_json_path, 'w', encoding='utf-8') as f:
                 file_data = {
                     "tl_history": []
                 }
@@ -205,12 +207,12 @@ class JsonHandler:
         data = ""
         try:
             self.createDirIfGone()
-            with open(dir_path + '/json/History.json', 'r', encoding='utf-8') as f:
+            with open(history_json_path, 'r', encoding='utf-8') as f:
                 data = json.load(f)
                 is_Success = True
         except FileNotFoundError: # If file not found create new History.json but empty
             self.createDirIfGone()
-            with open(dir_path + '/json/History.json', 'w', encoding='utf-8') as f:
+            with open(history_json_path, 'w', encoding='utf-8') as f:
                 file_data = {
                     "tl_history": []
                 }
@@ -233,7 +235,7 @@ class JsonHandler:
         status = ""
         try:
             self.createDirIfGone()
-            with open(dir_path + '/json/Setting.json' , 'w', encoding='utf-8') as f:
+            with open(setting_json_path, 'w', encoding='utf-8') as f:
                 json.dump(data, f, ensure_ascii=False, indent=4)
                 status = "Setting has been changed successfully"
                 is_Success = True
@@ -250,7 +252,7 @@ class JsonHandler:
         status = ""
         try:
             self.createDirIfGone()
-            with open(dir_path + '/json/Setting.json' , 'w', encoding='utf-8') as f:
+            with open(setting_json_path, 'w', encoding='utf-8') as f:
                 json.dump(default_Setting, f, ensure_ascii=False, indent=4)
                 status = "Successfully set setting to default"
                 is_Success = True
@@ -267,7 +269,7 @@ class JsonHandler:
         data = ""
         try:
             self.createDirIfGone()
-            with open(dir_path + '/json/Setting.json', 'r', encoding='utf-8') as f:
+            with open(setting_json_path, 'r', encoding='utf-8') as f:
                 data = json.load(f)
                 is_Success = True
         except FileNotFoundError as e:

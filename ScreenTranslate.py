@@ -2,21 +2,21 @@ import pyautogui
 import os
 import webbrowser
 import asyncio
-from resource.LangCode import *
+from src.LangCode import *
 from tkinter import *
 import tkinter.ttk as ttk
-import resource.Capture as capture
-from resource.JsonHandling import JsonHandler
+import src.Capture as capture
+from src.JsonHandling import JsonHandler
 import subprocess
 import pyperclip
-from resource.Mbox import Mbox
+from src.Mbox import Mbox
 import keyboard
 import time
 from sys import exit
 
 # Add try except to intercept connection error
 try:
-    import resource.Translate as tl
+    import src.Translate as tl
 except ConnectionError as e:
     print("Error: No Internet Connection. Please Restart With Internet Connected", str(e))
     Mbox("Error: No Internet Connection", e, 2)
@@ -25,7 +25,7 @@ except Exception as e:
     Mbox("Error", e, 2)
 
 try:
-    import resource.Translate_Deepl as tl_deepl
+    import src.Translate_Deepl as tl_deepl
 except ConnectionError as e:
     print("Error: No Internet Connection. Please Restart With Internet Connected", str(e))
     Mbox("Error: No Internet Connection", e, 2)
@@ -224,7 +224,7 @@ class CaptureUI():
         # If tesseract is not found
         if os.path.exists(settings['tesseract_loc']) == False or validTesseract == False:
             self.root.wm_withdraw()  # Hide the capture window
-            Mbox("Error: Tesseract Not Found!", "Please set tesseract location in Setting.json.\nYou can set this in setting menu or modify it manually in resource/backend/json/Setting.json", 2)
+            Mbox("Error: Tesseract Not Found!", "Please set tesseract location in Setting.json.\nYou can set this in setting menu or modify it manually in json/Setting.json", 2)
             self.root.wm_deiconify()  # Show the capture window
 
             return # Reject
@@ -554,7 +554,7 @@ class SettingUI():
 
     def screenShotAndOpenLayout():
         capture.captureAll()
-        startfile(dir_path + r"\resource\img_cache\Monitor(s) Captured View.png")
+        startfile(dir_path + r"\img_cache\Monitor(s) Captured View.png")
 
     def setHotkey():
         hotkey = keyboard.read_hotkey(suppress=False)
@@ -585,7 +585,7 @@ class SettingUI():
         validTesseract = "tesseract" in settings['tesseract_loc'].lower()
         # If tesseract is not found
         if os.path.exists(settings['tesseract_loc']) == False or validTesseract == False:
-            Mbox("Error: Tesseract Not Found!", "Please set tesseract location in Setting.json.\nYou can set this in setting menu or modify it manually in resource/backend/json/Setting.json", 2)
+            Mbox("Error: Tesseract Not Found!", "Please set tesseract location in Setting.json.\nYou can set this in setting menu or modify it manually in json/Setting.json", 2)
 
         # Cache checkbox
         if settings['cached'] == True:
@@ -879,7 +879,7 @@ class SettingUI():
     checkBTNCache = Checkbutton(firstFrameContent, text="Cached", variable=checkVarCache)
     checkVarAutoCopy = BooleanVar(root, name="checkVarCopyToClip", value=True) # So its not error
     checkBTNAutoCopy = Checkbutton(firstFrameContent, text="Auto Copy Captured Text To Clipboard", variable=checkVarAutoCopy)
-    btnOpenCacheFolder = Button(firstFrameContent, text="Open Cache Folder", command=lambda: startfile(dir_path + r"\resource\img_cache"))
+    btnOpenCacheFolder = Button(firstFrameContent, text="Open Cache Folder", command=lambda: startfile(dir_path + r"\img_cache"))
 
     # Second Frame
     CBOffSetChoice = ttk.Combobox(secondFrameContent0, values=["No Offset", "Custom Offset"], state="readonly")
@@ -1379,7 +1379,7 @@ class main_Menu():
         filemenu2 = Menu(menubar, tearoff=0)
         filemenu2.add_command(label="History", command=self.open_History) # Open History Window
         filemenu2.add_command(label="Setting", command=self.open_Setting) # Open Setting Window
-        filemenu2.add_command(label="Cache", command=lambda: startfile(dir_path + r"\resource\img_cache")) # Open Setting Window
+        filemenu2.add_command(label="Cache", command=lambda: startfile(dir_path + r"\img_cache")) # Open Setting Window
         menubar.add_cascade(label="View", menu=filemenu2)
 
         filemenu3 = Menu(menubar, tearoff=0)
