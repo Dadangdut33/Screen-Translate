@@ -1,5 +1,5 @@
 # Engines available
-engineList = ["Google Translate", "MyMemoryTranslator", "Deepl", "PONS"]
+engineList = ["Google Translate", "MyMemoryTranslator", "Deepl", "PONS", "None"]
 
 # List of supported languages by Tesseract OCR
 tesseract_Lang = {
