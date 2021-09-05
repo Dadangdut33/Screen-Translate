@@ -704,19 +704,23 @@ class SettingUI():
             Mbox("Error: Tesseract not found", "Invalid Path Provided For Tesseract.exe!", 2)
             return
 
-        print(main_Menu.setting_UI.checkVarOffSetX.get())
+        # Checking each checkbox for the offset of x,y,w,h
+        # x
         if main_Menu.setting_UI.checkVarOffSetX.get():
             x = "auto"
         else:
             x = int(main_Menu.setting_UI.spinnerOffSetX.get())
+        # y
         if main_Menu.setting_UI.checkVarOffSetY.get():
             y = "auto"
         else:
             y = int(main_Menu.setting_UI.spinnerOffSetY.get())
+        # w
         if main_Menu.setting_UI.checkVarOffSetW.get():
             w = "auto"
         else:
             w = int(main_Menu.setting_UI.spinnerOffSetW.get())
+        # h
         if main_Menu.setting_UI.checkVarOffSetH.get():
             h = "auto"
         else:

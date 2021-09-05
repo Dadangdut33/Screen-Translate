@@ -24,5 +24,6 @@ For visual instructions please take a look inside the user_manual folder
 # Tutorial on How To Use
 1. Select Language
 2. Translate or Capture Image using the capture window
-3. Set offset if needed (Usually when scaling is not 100% or when using multiple monitors)
-4. Done
+3. Set hotkeys and delays as needed
+4. Set offset if needed (Usually when scaling is not 100% or when using multiple monitors)
+5. Done

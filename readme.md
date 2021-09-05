@@ -44,15 +44,14 @@ Command used are
 # On Source Code Directory
 pyinstaller ScreenTranslate.spec
 ```
-After that you copy the folder in `copy_after_compiling` to dist/ScreenTranslate. Then you can run the executable .exe file without any problem.
-
 Read [this stackoverflow post](https://stackoverflow.com/questions/5458048/how-can-i-make-a-python-script-standalone-executable-to-run-without-any-dependen) to learn more on how to do it.
 
 # Tutorial on How To Use
 1. Select Language
 2. Translate or Capture Image using the capture window
-3. Set offset if needed (Usually when scaling is not 100% or when using multiple monitors)
-4. Done
+3. Set hotkeys and delays as needed
+4. Set offset if needed (Usually when scaling is not 100% or when using multiple monitors)
+5. Done
 
 # Disclaimer
 This is a free open source software, you can use it for any purpose. However, I am not responsible for any damage caused by this software. Use it at your own risk. **(Not that it will do anything to you, it's just a tool to help you translate text lol)**
