@@ -6,7 +6,7 @@ from resource.LangCode import *
 from tkinter import *
 import tkinter.ttk as ttk
 import resource.Capture as capture
-import resource.JsonHandling as fJson
+from resource.JsonHandling import JsonHandler
 import subprocess
 import pyperclip
 from resource.Mbox import Mbox
@@ -34,6 +34,8 @@ except Exception as e:
 
 # Get dir path
 dir_path = os.path.dirname(os.path.realpath(__file__))
+
+fJson = JsonHandler()
 
 # ----------------------------------------------------------------
 # public func
@@ -110,15 +112,7 @@ def offSetSettings(widthHeighOff, xyOffsetType, xyOff, custom = ""):
     return offSetsGet
 
 def getTheOffset(custom = ""):
-    tStatus, settings = fJson.readSetting()
-    if tStatus != True:
-        var1, var2 = fJson.setDefault()
-        if var1 : # If successfully set default
-            print("Default setting applied")
-            Mbox("Default setting applied", "Please change your tesseract location in setting if you didn't install tesseract on default C location", 1)
-        else: # If error
-            print("Error: " + var2)
-            Mbox("An Error Occured", var2, 2)
+    settings = fJson.readSetting()
 
     offSetXY = settings["offSetXY"]
     offSetWH = settings["offSetWH"]
@@ -223,27 +217,7 @@ class CaptureUI():
         x, y, w, h = self.root.winfo_x(), self.root.winfo_y(), self.root.winfo_width(), self.root.winfo_height()
 
         # Get settings
-        tStatus, settings = fJson.readSetting()
-        if tStatus == False: # If error its probably file not found, thats why we only handle the file not found error
-            if settings[0] == "Setting file is not found":
-                self.root.wm_withdraw()  # Hide the capture window
-
-                # Show error
-                print("Error: " + settings[0])
-                print(settings[1])
-                Mbox("Error: " + settings[0], settings[1], 2)
-
-                # Set Default
-                var1, var2 = fJson.setDefault()
-                if var1 : # If successfully set default
-                    print("Default setting applied")
-                    Mbox("Default setting applied", "Please change your tesseract location in setting if you didn't install tesseract on default C location", 2)
-                else: # If error
-                    print("Error: " + var2)
-                    Mbox("An Error Occured", var2, 2)
-
-                self.root.wm_deiconify()  # Show the capture window
-                return # Reject
+        settings = fJson.loadSetting()
 
         validTesseract = "tesseract" in settings['tesseract_loc'].lower()
         # If tesseract is not found
@@ -605,28 +579,8 @@ class SettingUI():
             Mbox("Success", "Successfully Restored Value to Default Settings", 0)
 
     def reset(self):
-        tStatus, settings = fJson.readSetting()
-        if tStatus == False: # If error its probably file not found, thats why we only handle the file not found error
-            if settings[0] == "Setting file is not found":
-                self.root.wm_withdraw()  # Hide setting
+        settings = fJson.readSetting()
 
-                # Show error
-                print("Error: " + settings[0])
-                print(settings[1])
-                Mbox("Error: " + settings[0], settings[1], 2)
-
-                settings = fJson.default_Setting
-
-                # Set Default
-                var1, var2 = fJson.setDefault()
-                if var1 : # If successfully set default
-                    print("Default setting applied")
-                    Mbox("Default setting applied", "Please change your tesseract location in setting if you didn't install tesseract on default C location", 1)
-                else: # If error
-                    print("Error: " + var2)
-                    Mbox("An Error Occured", var2, 2)
-
-                self.root.wm_deiconify()  # Show setting
         validTesseract = "tesseract" in settings['tesseract_loc'].lower()
         # If tesseract is not found
         if os.path.exists(settings['tesseract_loc']) == False or validTesseract == False:
@@ -1369,7 +1323,7 @@ class main_Menu():
         self.root.title("Screen Translate")
         self.root.geometry("900x300")
         self.root.wm_attributes('-topmost', False) # Default False
-        tStatus, settings = fJson.readSetting()
+        tStatus, settings = fJson.loadSetting()
         if tStatus == False: # If error its probably file not found, thats why we only handle the file not found error
             if settings[0] == "Setting file is not found":
                 # Show error
