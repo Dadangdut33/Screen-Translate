@@ -1223,28 +1223,28 @@ class main_Menu():
             self.CBLangFrom.current(searchList(previous_From, optGoogle))
             self.CBLangTo['values'] = optGoogle
             self.CBLangTo.current(searchList(previous_To, optGoogle))
-            self.CBLangTo.config(state='enabled')
+            self.CBLangTo.config(state='readonly')
         elif curr_Engine == "Deepl":
             self.langOpt = optDeepl
             self.CBLangFrom['values'] = optDeepl
             self.CBLangFrom.current(searchList(previous_From, optDeepl))
             self.CBLangTo['values'] = optDeepl
             self.CBLangTo.current(searchList(previous_To, optDeepl))
-            self.CBLangTo.config(state='enabled')
+            self.CBLangTo.config(state='readonly')
         elif curr_Engine == "MyMemoryTranslator":
             self.langOpt = optMyMemory
             self.CBLangFrom['values'] = optMyMemory
             self.CBLangFrom.current(searchList(previous_From, optMyMemory))
             self.CBLangTo['values'] = optMyMemory
             self.CBLangTo.current(searchList(previous_To, optMyMemory))
-            self.CBLangTo.config(state='enabled')
+            self.CBLangTo.config(state='readonly')
         elif curr_Engine == "PONS":
             self.langOpt = optPons
             self.CBLangFrom['values'] = optPons
             self.CBLangFrom.current(searchList(previous_From, optPons))
             self.CBLangTo['values'] = optPons
             self.CBLangTo.current(searchList(previous_To, optPons))
-            self.CBLangTo.config(state='enabled')
+            self.CBLangTo.config(state='readonly')
         elif curr_Engine == "None":
             self.langOpt = optNone
             self.CBLangFrom['values'] = optNone
