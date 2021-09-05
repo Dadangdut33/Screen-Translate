@@ -735,7 +735,7 @@ class SettingUI():
         # Bind hotkey
         keyboard.unhook_all_hotkeys()
         if main_Menu.setting_UI.labelCurrentHotkey['text'] != '':
-            keyboard.add_hotkey(main_Menu.setting_UI.labelCurrentHotkey['text'], main_Menu.hotkeyCallback)
+            keyboard.add_hotkey(main_Menu.setting_UI.labelCurrentHotkey['text'], gui.hotkeyCallback)
 
         print("-" * 50)
         print("Setting saved!")
@@ -1305,6 +1305,7 @@ class main_Menu():
     hotkeyPressed = False
 
     def hotkeyCallback(self):
+        print('test')
         self.hotkeyPressed = True
 
     def hotkeyPoll(self):
@@ -1429,11 +1430,6 @@ class main_Menu():
             keyboard.add_hotkey(settings['capture_Hotkey'], self.hotkeyCallback)
         self.root.after(100, self.hotkeyPoll)
 
-# ----------------------------------------------------------------
-# main function
-def main():
-    main_Menu()
-    main_Menu.root.mainloop()
-
 if __name__ == '__main__':
-    main()
+    gui = main_Menu()
+    gui.root.mainloop()
