@@ -733,7 +733,11 @@ class SettingUI():
         }
 
         # Bind hotkey
-        keyboard.unhook_all_hotkeys()
+        try:
+            keyboard.unhook_all_hotkeys()
+        except AttributeError:
+            # No hotkeys to unbind
+            pass
         if main_Menu.setting_UI.labelCurrentHotkey['text'] != '':
             keyboard.add_hotkey(main_Menu.setting_UI.labelCurrentHotkey['text'], gui.hotkeyCallback)
 

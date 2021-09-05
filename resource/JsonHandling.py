@@ -241,6 +241,7 @@ class JsonHandler:
             print("Error: " + str(e))
             Mbox("Error: ", str(e), 2)
         finally:
+            self.settingsCache = data
             return is_Success, status
 
     def setDefault(self):
@@ -257,6 +258,7 @@ class JsonHandler:
             print("Error: " + str(e))
             Mbox("Error: ", str(e), 2)
         finally:
+            self.settingsCache = default_Setting
             return is_Success, status
 
     def loadSetting(self):
