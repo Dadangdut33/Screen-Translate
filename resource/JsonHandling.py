@@ -52,7 +52,7 @@ class JsonHandler:
         status = ""
         try:
             # Get current history, ignore the status
-            x, file_data = readHistory()
+            x, file_data = self.readHistory()
 
             # Overwrite the ID and add the new data
             newHistory = {
@@ -152,7 +152,7 @@ class JsonHandler:
         status = ""
         try:
             # Get current history, ignore the status
-            x, file_data = readHistory()
+            x, file_data = self.readHistory()
 
             # Pop the selected value first
             file_data["tl_history"].pop(index)
