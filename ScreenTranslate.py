@@ -199,7 +199,6 @@ class CaptureUI():
             return
         # Check for the lang from and langto only if it's on translation mode
         if main_Menu.CBTranslateEngine.get() != "None": 
-            print(main_Menu.CBTranslateEngine.get() + " is selected")
             # If selected langfrom and langto is the same
             if(main_Menu.CBLangFrom.current()) == (main_Menu.CBLangTo.current()):
                 Mbox("Error: Language target is the same as source", "Please choose a different language", 2)
@@ -1056,7 +1055,6 @@ class main_Menu():
 
         # Only check the langfrom and langto if it is translating
         if engine != "None":
-            print(engine + " from main")
             # If source and destination are the same
             if(langFromObj.current()) == (langToObj.current()):
                 Mbox("Error: Language target is the same as source", "Please choose a different language", 2)
