@@ -217,7 +217,7 @@ class CaptureUI():
         x, y, w, h = self.root.winfo_x(), self.root.winfo_y(), self.root.winfo_width(), self.root.winfo_height()
 
         # Get settings
-        settings = fJson.loadSetting()
+        settings = fJson.readSetting()
 
         validTesseract = "tesseract" in settings['tesseract_loc'].lower()
         # If tesseract is not found
