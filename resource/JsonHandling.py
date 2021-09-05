@@ -20,8 +20,7 @@ default_Setting = {
 }
 
 class JsonHandler:
-    def __init__(self):
-        self.settingsCache = 'test'
+    settingsCache = None
 
     # -------------------------------------------------
     # Create dir if not exists

@@ -2,3 +2,4 @@ test/
 *.pyc
 build/
 dist/
+resource/img_cache/*.png
