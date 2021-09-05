@@ -11,6 +11,7 @@ import resource.JsonHandling as fJson
 import subprocess
 import pyperclip
 from resource.Mbox import Mbox
+import keyboard
 from sys import exit
 
 # Add try except to intercept connection error
@@ -572,6 +573,10 @@ class SettingUI():
         capture.captureAll()
         startfile(dir_path + r"\resource\img_cache\Monitor(s) Captured View.png")
 
+    def setHotkey():
+        hotkey = keyboard.read_hotkey(suppress=False)
+        main_Menu.setting_UI.labelCurrentHotkey.config(text=str(hotkey))
+
     def restoreDefault(self):
         x = Mbox("Confirmation", "Are you sure you want to set the settings to default?\n\n**WARNING! CURRENTLY SAVED SETTING WILL BE OVERWRITTEN**", 3)
         if x == False:
@@ -631,6 +636,9 @@ class SettingUI():
         else:
             self.root.setvar(name="checkVarAutoCopy", value=False)
             self.checkBTNAutoCopy.deselect()
+        
+        # Show current hotkey
+        main_Menu.setting_UI.labelCurrentHotkey.config(text=settings['capture_Hotkey'])
 
         # Store setting to localvar
         offSetXY = settings["offSetXY"]
@@ -755,8 +763,14 @@ class SettingUI():
             "tesseract_loc": main_Menu.setting_UI.textBoxTesseractPath.get("1.0", END).strip(),
             "default_Engine": main_Menu.setting_UI.CBDefaultEngine.get(),
             "default_FromOnOpen": main_Menu.setting_UI.CBDefaultFrom.get(),
-            "default_ToOnOpen": main_Menu.setting_UI.CBDefaultTo.get()
+            "default_ToOnOpen": main_Menu.setting_UI.CBDefaultTo.get(),
+            "capture_Hotkey": main_Menu.setting_UI.labelCurrentHotkey['text']
         }
+
+        # Bind hotkey
+        keyboard.unhook_all_hotkeys()
+        if main_Menu.setting_UI.labelCurrentHotkey['text'] != '':
+            keyboard.add_hotkey(main_Menu.setting_UI.labelCurrentHotkey['text'], main_Menu.hotkeyCallback)
 
         print("-" * 50)
         print("Setting saved!")
@@ -879,6 +893,11 @@ class SettingUI():
     fourthFrameContent = Frame(fourthFrame)
     fourthFrameContent.pack(side=TOP, fill=X, expand=False)
 
+    fifthFrame = ttk.LabelFrame(root, text="• Hotkey Settings")
+    fifthFrame.pack(side=TOP, fill=X, expand=False, padx=5, pady=5)
+    fifthFrameContent = Frame(fifthFrame)
+    fifthFrameContent.pack(side=TOP, fill=X, expand=False)
+
     bottomFrame = Frame(root)
     bottomFrame.pack(side=BOTTOM, fill=BOTH, expand=False)
 
@@ -940,13 +959,18 @@ class SettingUI():
     labelTesseractPath = Label(fourthFrameContent, text="Tesseract Path :")
     textBoxTesseractPath = Text(fourthFrameContent, width=77, height=1, xscrollcommand=True)
 
+    # Fifth frame
+    buttonSetHotkey = Button(fifthFrameContent, text="Click to set hotkey for capture", command=setHotkey)
+    labelHotkeyTip = Label(fifthFrameContent, text="Current hotkey : ")
+    labelCurrentHotkey = Label(fifthFrameContent, text="")
+
     # Bottom Frame
     btnSave = Button(bottomFrame, text="Save Settings", command=saveSettings)
 
     # ----------------------------------------------------------------------
     def __init__(self):
         self.root.title("Setting")
-        self.root.geometry("727x420") # When you see it
+        self.root.geometry("727x500") # When you see it
         self.root.wm_attributes('-topmost', False) # Default False
         self.root.wm_withdraw()
 
@@ -993,6 +1017,11 @@ class SettingUI():
         # 4
         self.labelTesseractPath.pack(side=LEFT, padx=5, pady=5)
         self.textBoxTesseractPath.pack(side=LEFT, padx=5, pady=5, fill=X, expand=True)
+
+        # 5
+        self.buttonSetHotkey.pack(side=LEFT, padx=5, pady=5)
+        self.labelHotkeyTip.pack(side=LEFT, padx=5, pady=5)
+        self.labelCurrentHotkey.pack(side=LEFT, padx=5, pady=5)
 
         # Bottom Frame
         self.btnSave.pack(side=RIGHT, padx=4, pady=5)
@@ -1302,6 +1331,17 @@ class main_Menu():
     textBoxTop = Text(topFrame2, height = 5, width = 100, font=("Segoe UI", 10), yscrollcommand=True)
     textBoxBottom = Text(bottomFrame2, height = 5, width = 100, font=("Segoe UI", 10), yscrollcommand=True)
 
+    hotkeyPressed = False
+
+    def hotkeyCallback(self):
+        self.hotkeyPressed = True
+    
+    def hotkeyPoll(self):
+        if self.hotkeyPressed == True and self.capUiHidden == False:
+            self.capture_UI.getTextAndTranslate()
+        self.hotkeyPressed = False
+        self.root.after(100, self.hotkeyPoll)
+
     # ----------------------------------------------------------------------
     def __init__(self):
         # ----------------------------------------------
@@ -1412,6 +1452,11 @@ class main_Menu():
 
         # Check setting on startup
         self.setting_UI.reset() # Reset
+
+        # Bind hotkey
+        if settings['capture_Hotkey'] != '':
+            keyboard.add_hotkey(settings['capture_Hotkey'], self.hotkeyCallback)
+        self.root.after(100, self.hotkeyPoll)
 
 # ----------------------------------------------------------------
 # main function
