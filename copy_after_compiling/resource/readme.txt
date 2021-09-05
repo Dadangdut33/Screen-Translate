@@ -1,1 +1,0 @@
-Do not delete this directory because it contains the app settings.

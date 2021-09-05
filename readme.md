@@ -42,7 +42,7 @@ You can use [p2exe](https://www.py2exe.org/) or many other stuff. I use [pyinsta
 Command used are
 ```
 # On Source Code Directory
-pyinstaller ScreenTranslate.py
+pyinstaller ScreenTranslate.spec
 ```
 After that you copy the folder in `copy_after_compiling` to dist/ScreenTranslate. Then you can run the executable .exe file without any problem.
 

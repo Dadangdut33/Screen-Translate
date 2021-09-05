@@ -4,7 +4,6 @@ import webbrowser
 import asyncio
 from resource.LangCode import *
 from tkinter import *
-from tkinter import ttk
 import tkinter.ttk as ttk
 import resource.Capture as capture
 import resource.JsonHandling as fJson
