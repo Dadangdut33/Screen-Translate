@@ -44,8 +44,6 @@ Command used are
 # On Source Code Directory
 pyinstaller ScreenTranslate.spec
 ```
-After that you can copy the `json` and `img_cache` folder to `dist/ScreenTranslate`. Then you can run the executable .exe file without any problem.
-
 Read [this stackoverflow post](https://stackoverflow.com/questions/5458048/how-can-i-make-a-python-script-standalone-executable-to-run-without-any-dependen) to learn more on how to do it.
 
 # Tutorial on How To Use
