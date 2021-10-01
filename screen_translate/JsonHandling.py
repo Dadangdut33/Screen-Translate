@@ -35,7 +35,6 @@ class JsonHandler:
             except Exception as e:
                 print("Error: " + str(e))
                 Mbox("Error: ", str(e), 2)
-                raise
 
     # -------------------------------------------------
     # Write, Append, Delete, Read, History

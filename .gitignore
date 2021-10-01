@@ -3,3 +3,4 @@ test/
 build/
 dist/
 img_cache/*.png
+.vscode/

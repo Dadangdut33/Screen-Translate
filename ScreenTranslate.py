@@ -1396,9 +1396,9 @@ class main_Menu():
         filemenu4.add_command(label="Known Bugs", command=self.open_KnownBugs) # Open Knownbugs
         filemenu4.add_command(label="About", command=self.open_About) # Open Mbox About
         filemenu4.add_separator()
-        filemenu4.add_command(label="Open User Manual", command=self.open_UserManual) # Open Mbox Tutorials
-        filemenu4.add_command(label="Open GitHub Repo", command=lambda aurl="https://github.com/Dadangdut33/Screen-Translate":OpenUrl(aurl)) # Open Mbox Tutorials
-        filemenu4.add_command(label="Download Tesseract", command=self.openTesLink) # Open Mbox Tutorials
+        filemenu4.add_command(label="Open User Manual", command=self.open_UserManual) # Open user manual folder
+        filemenu4.add_command(label="Open GitHub Repo", command=lambda aurl="https://github.com/Dadangdut33/Screen-Translate":OpenUrl(aurl)) 
+        filemenu4.add_command(label="Download Tesseract", command=self.openTesLink) # Open Mbox Downloads
         menubar.add_cascade(label="Help", menu=filemenu4)
 
         # Add to self.root
