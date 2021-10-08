@@ -23,10 +23,11 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 
 # ----------------------------------------------------------------
 def console():
-    print("-" * 80)
-    print("Welcome to Screen Translate")
-    print("Use The GUI Window to start capturing and translating")
-    print("This window is for debugging purposes")
+    print("=" * 80)
+    print("--- Welcome to Screen Translate ---")
+    print(">> Use The GUI Window to start capturing and translating")
+    print(">> You can minimize this window")
+    print(">> This window is for debugging purposes")
 
 # ----------------------------------------------------------------------
 class main_Menu():
@@ -35,6 +36,8 @@ class main_Menu():
         # ----------------------------------------------
         # Debug console info
         console()
+        print(">> Checking app version")
+        self.checkVersion(withPopup=False)
 
         # --- Declarations and Layout ---
         self.root = Tk()
@@ -86,9 +89,7 @@ class main_Menu():
 
         # Capture Opacity topFrame1
         self.captureOpacitySlider = ttk.Scale(self.topFrame1, from_=0.0, to=1.0, value=globalStuff.curCapOpacity, orient=HORIZONTAL, command=self.capture_UI.sliderOpac)
-        print(globalStuff.captureOpacityLabel_Var.get())
         self.captureOpacityLabel = Label(self.topFrame1, text=globalStuff.captureOpacityLabel_Var.get())
-        # self.captureOpacityLabel = Label(self.topFrame1, text="Capture Opacity: " + str(globalStuff.curCapOpacity))
 
         # Langoptions onstart
         self.langOpt = optGoogle
@@ -223,13 +224,13 @@ class main_Menu():
         "you can set the xy offset in the setting" + "\n\n2. *Second*, you need to install tesseract, you can quickly go to the download link by pressing the download tesseract in menu bar\n\n" +
         "3. *Then*, check the settings. Make sure tesseract path is correct\n\n" +
         "4. *FOR MULTI MONITOR USER*, set offset in setting. If you have multiple monitor setup, you might need to set the offset in settings. \n\nWhat you shold do in the setting window:\n- Check how the program see your monitors in settings by clicking that one button.\n" +
-        "- You can also see how the capture area captured your images by enabling cache and then see the image in 'img_cache' directory" +
+        "- You can also see how the capture area captured your images by enabling save capture image in settingsand then see the image in 'img_captured' directory" +
         "\n\n\nYou can open the tutorial or user manual linked in menubar if you are still confused.", 0)
 
     def open_Faq(self):
-        Mbox("FAQ", "Q: Do you collect the screenshot?\nA: No, no data is collected by me. Image and text captured will only be use for query and the cache is only saved locally\n\n" +
-        "Q: Is this safe?\nA: Yes, it is safe, you can check the code on the github linked, or open it yourself on your machine.\n\n" +
-        "Q: I could not capture anything, help!?\nA: You might need to check the cache image and see wether it actually capture the stuff that you targeted or not. If not, you might " +
+        Mbox("FAQ", "Q : Do you collect the screenshot?\nA : No, no data is collected by me. Image and text captured will only be use for query and the captured image is only saved locally\n\n" +
+        "Q : Is this safe?\nA : Yes, it is safe, you can check the code on the github linked in the menubar, or open it yourself on your machine.\n\n" +
+        "Q : I could not capture anything, help!?\nA : You might need to check the captured image and see wether it actually capture the stuff that you targeted or not. If not, you might " +
         "want to set offset in setting or change your monitor scaling to 100%", 0)
 
     def openTesLink(self):
@@ -246,21 +247,30 @@ class main_Menu():
         except:
             OpenUrl("https://github.com/Dadangdut33/Screen-Translate/tree/main/user_manual")\
 
-    def checkVersion(self):
+    def checkVersion(self, withPopup = True):
         try:
             version = requests.get("https://raw.githubusercontent.com/Dadangdut33/Screen-Translate/main/version_Release.txt").text
-            print("Current Version : " + globalStuff.version)
-            print("Latest Version  : " + version)
-            print(version == globalStuff.version)
-            if version != globalStuff.version:
-                Mbox("New Version Available", "New version is available, you can download it from the github page manually.", 0)
-            elif version == globalStuff.version:
-                Mbox("No Update", "You are using the latest version", 0)
+            num_CurrentVersion = [int(i) for i in globalStuff.version.split('.')]
+            num_LatestVersion = [int(i) for i in version.split('.')]
+
+            if sum(num_CurrentVersion) < sum(num_LatestVersion):
+                print(">> A new version is available. Please update to the latest version.\n(-) Current Version : " + globalStuff.version + "\n(+) Latest Version  : " + version)
+                if withPopup: Mbox("New Version Available", "A new version is available. Please update to the latest version by going to the release section in the repository.\n\nCurrent Version : " + globalStuff.version + "\nLatest Version  : " + version, 0)
+            elif sum(num_CurrentVersion) == sum(num_LatestVersion):
+                print(">> You are using the latest version.\n(=) Current Version : " + globalStuff.version + "\n(=) Latest Version  : " + version)
+                if withPopup: Mbox("Version Up to Date", "You are using the latest version.\nCurrent Version : " + globalStuff.version + "\nLatest Version  : " + version, 0)
+            elif sum(num_CurrentVersion) > sum(num_LatestVersion):
+                print(">> You are using a newer version than the latest version.\n(+) Current Version : " + globalStuff.version + "\n(-) Latest Version  : " + version)
+                if withPopup: Mbox("Your Version is newer than the latest version", "You are using a newer version than the latest version.\n\nCurrent Version : " + globalStuff.version + "\nLatest Version  : " + version +
+                 "\n\nThis build is probably still work in progress for further improvement", 0)
             else:
-                Mbox("Error", "Error checking version", 0)
+                print("Current Version : " + globalStuff.version)
+                print("Latest Version  : " + version)
+
         except Exception as e:
             print("Failed to check version!")
             print("Error: " + str(e))
+            if withPopup: Mbox("Failed to check version!", "Failed to check version!\n\nError: " + str(e), 0)
 
     def open_Contributor(self):
         Mbox("Contributor", "Thanks to:\n1. Dadangdut33 (Author)\n2. Laggykiller (Contributor)", 0)
