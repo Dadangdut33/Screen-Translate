@@ -196,6 +196,7 @@ class SettingUI():
 
 
     def show(self):
+        fJson.loadSetting() # read settings every time it is opened
         self.reset()
         self.root.wm_deiconify()
 
