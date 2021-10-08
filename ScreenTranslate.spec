@@ -9,7 +9,7 @@ a = Analysis(['ScreenTranslate.py'],
              binaries=[],
              datas=[
                 ('./user_manual', 'user_manual'),
-                ('./img_cache', 'img_cache'),
+                ('./img_captured', 'img_captured'),
                 ('./json', 'json'),
                 ('./user_manual/Readme.txt', '.'),
                 ('./user_manual/Changelog.txt', '.'),

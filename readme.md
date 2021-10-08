@@ -2,10 +2,23 @@
 An OCR translator tool. Made by [me](https://github.com/Dadangdut33) by utilizing Tesseract, compiled to .exe using pyinstaller. I made this program to learn more about python.<br><br>
 Inspired by Visual Novel Reader (VNR), [Visual Novel OCR](https://github.com/leminhyen2/Visual-Novel-OCR), and [QTranslate](https://quest-app.appspot.com/)
 
+# What can i use this for?
+- You can use this just to translate text from one language to another
+- You can use this to capture and translate text from documents, games, pictures, etc. As long as the text is clear enough (Tesseract might not be able to read it if it's not clear enough)
+- 
+
+# FAQ
+- **[Q]** How do i use this? \
+**[A]** You can look at the user_manual or below for more information \
+- **[Q]** Is this safe? \
+**[A]** Yes, it is completely safe. If your antivirus detect this program as a virus, it's only a false positive. If you don't believe it, you can take a look at the code yourself. \
+- **[Q]** What do you mean by a "clear enough" text? \
+**[A]** It means the text is not too blend it with the background. If the text is light the background needs to be darken, so it is easier to be read. Somewhat like that. In the future i might add some adjustment and more OCR options, so this might be fixed some day.
+
 # Requirements
 **For User**
 - **[tesseract](https://github.com/UB-Mannheim/tesseract/wiki)**, You only need to install it and its language tessdata
-- Internet connection Obviously
+- Internet connection
 
 **For Dev**
 - Python 3.5+, checked using [vermin](https://github.com/netromdk/vermin) (I am using python 3.9.6)
@@ -52,6 +65,11 @@ Read [this stackoverflow post](https://stackoverflow.com/questions/5458048/how-c
 3. Set hotkeys and delays as needed
 4. Set offset if needed (Usually when scaling is not 100% or when using multiple monitors)
 5. Done
+
+For more information you can check the [user_manual](https://github.com/Dadangdut33/Screen-Translate/tree/main/user_manual) folder
+
+# Reporting bugs
+If you encounter any bugs with the program, please report them by opening an issue on the github repository.    
 
 # Disclaimer
 This is a free open source software, you can use it for any purpose. However, I am not responsible for any damage caused by this software. Use it at your own risk. **(Not that it will do anything to you, it's just a tool to help you translate text lol)**
