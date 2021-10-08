@@ -45,12 +45,12 @@ class CaptureUI():
         self.root.config(menu=self.menubar)
 
         # Button
-        captureBtn = Button(self.topFrame, text="Capture And Translate", command=self.getTextAndTranslate)
-        captureBtn.pack(padx=5, pady=5, side=LEFT)
+        self.captureBtn = Button(self.topFrame, text="Capture And Translate", command=self.getTextAndTranslate)
+        self.captureBtn.pack(padx=5, pady=5, side=LEFT)
 
         # opacity slider # the slider will be added to main menu not here
-        opacitySlider = ttk.Scale(self.topFrame, from_=0.0, to=1.0, value=globalStuff.curCapOpacity, orient=HORIZONTAL, command=self.sliderOpac)
-        opacitySlider.pack(padx=5, pady=5, side=LEFT)
+        self.opacitySlider = ttk.Scale(self.topFrame, from_=0.0, to=1.0, value=globalStuff.curCapOpacity, orient=HORIZONTAL, command=self.sliderOpac)
+        self.opacitySlider.pack(padx=5, pady=5, side=LEFT)
 
         # On Close
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
@@ -58,6 +58,7 @@ class CaptureUI():
     # Show/Hide
     def show(self):
         globalStuff.capUiHidden = False
+        self.opacitySlider.set(globalStuff.curCapOpacity)
         self.root.wm_deiconify()
 
     def on_closing(self):
