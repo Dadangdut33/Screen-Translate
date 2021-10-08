@@ -261,7 +261,6 @@ class SettingUI():
 
     def screenShotAndOpenLayout(self):
         captureAll()
-        startfile(dir_path + r"\..\..\img_captured\Monitor(s) Captured View.png")
 
     def setHotkey(self):
         hotkey = keyboard.read_hotkey(suppress=False)

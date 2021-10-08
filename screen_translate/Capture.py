@@ -8,9 +8,12 @@ from datetime import datetime
 from .LangCode import *
 
 # Settings to capture all screens
-from PIL import Image, ImageGrab
+from PIL import ImageGrab
 from functools import partial
 ImageGrab.grab = partial(ImageGrab.grab, all_screens=True)
+
+# Public methods
+from .Public import startfile
 
 # Get Path
 dir_path = os.path.dirname(os.path.realpath(__file__))
@@ -79,6 +82,10 @@ def captureAll():
         captured = pyautogui.screenshot()
         createPicDirIfGone()
         captured.save(os.path.join(img_captured_path, 'Monitor(s) Captured View'+ '.png'))
+        startfile(dir_path + r"\..\img_captured\Monitor(s) Captured View.png")
     except Exception as e:
         print("Error: " + str(e))
-        Mbox("Error", str(e), 2)
+        if "Invalid argument" in str(e):
+            Mbox("Error image is still opened", "Please close the previous image first!", 2)
+        else:
+            Mbox("Error", str(e), 2)
