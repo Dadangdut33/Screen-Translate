@@ -204,7 +204,10 @@ class main_Menu():
     # --- Functions ---
     # On Close
     def on_closing(self):
-        exit(0)
+        # Confirmation on close
+        if Mbox("Confirmation", "Are you sure you want to exit?", 3):
+            self.root.destroy()
+            exit()
 
     # Open History Window
     def open_Setting(self):
@@ -212,7 +215,6 @@ class main_Menu():
 
     def open_History(self):
         self.history.show()
-        pass
 
     def open_About(self):
         Mbox("About", "Screen-Translate is a program made inspired by VNR, Visual Novel OCR, and QTranslate.\n\nI (Dadangdut33) made this program in order to learn more about python and because i want to try creating an app similar to those i mention. " +
