@@ -7,23 +7,23 @@ jsons_path = os.path.join(dir_path, '../json/')
 history_json_path = os.path.join(dir_path, '../json/History.json')
 setting_json_path = os.path.join(dir_path, '../json/Setting.json')
 
-# Default Setting
-default_Setting = {
-    "cached": True,
-    "autoCopy": True,
-    "offSetXYType": "No Offset",
-    "offSetXY": ["auto", "auto"],
-    "offSetWH": ["auto", "auto"],
-    "tesseract_loc": "C:\\Program Files\\Tesseract-OCR\\tesseract.exe",
-    "default_Engine": "Google Translate",
-    "default_FromOnOpen": "Auto-Detect",
-    "default_ToOnOpen": "English",
-    "capture_Hotkey": "",
-    "capture_HotkeyDelay": 1000
-}
-
 class JsonHandler:
     settingsCache = None
+
+    # Default Setting
+    default_Setting = {
+        "cached": True,
+        "autoCopy": True,
+        "offSetXYType": "No Offset",
+        "offSetXY": ["auto", "auto"],
+        "offSetWH": ["auto", "auto"],
+        "tesseract_loc": "C:\\Program Files\\Tesseract-OCR\\tesseract.exe",
+        "default_Engine": "Google Translate",
+        "default_FromOnOpen": "Auto-Detect",
+        "default_ToOnOpen": "English",
+        "capture_Hotkey": "",
+        "capture_HotkeyDelay": 1000
+    }
 
     # -------------------------------------------------
     # Create dir if not exists
@@ -252,7 +252,7 @@ class JsonHandler:
         try:
             self.createDirIfGone()
             with open(setting_json_path, 'w', encoding='utf-8') as f:
-                json.dump(default_Setting, f, ensure_ascii=False, indent=4)
+                json.dump(self.default_Setting, f, ensure_ascii=False, indent=4)
                 status = "Successfully set setting to default"
                 is_Success = True
         except Exception as e:
@@ -260,7 +260,7 @@ class JsonHandler:
             print("Error: " + str(e))
             Mbox("Error: ", str(e), 2)
         finally:
-            self.settingsCache = default_Setting
+            self.settingsCache = self.default_Setting
             return is_Success, status
 
     def loadSetting(self):
