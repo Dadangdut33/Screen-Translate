@@ -2,6 +2,7 @@ from .Mbox import Mbox
 from .LangCode import *
 
 # ----------------------------------------------------------------
+# Imports Library
 # Google Translate
 try:
     from deep_translator import GoogleTranslator
@@ -34,6 +35,9 @@ except Exception as e:
     print("Error", str(e))
     Mbox("Error", str(e), 2)
 
+# ----------------------------------------------------------------
+# TL Functions
+# Google
 def google_tl(text, to_lang, from_lang="auto"):
     """Translate Using Google Translate
 
@@ -56,11 +60,6 @@ def google_tl(text, to_lang, from_lang="auto"):
         return is_Success, "Error Language Code Undefined"
     # --- Translate ---
     try:
-        # OLD
-        # url = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl={}&tl={}&dt=t&q={}'.format(from_LanguageCode_Google, to_LanguageCode_Google, text)
-        # r = requests.get(url)
-
-        # New
         result = GoogleTranslator(source=from_LanguageCode_Google, target=to_LanguageCode_Google).translate(text.strip())
         is_Success = True
     except Exception as e:
@@ -74,6 +73,7 @@ def google_tl(text, to_lang, from_lang="auto"):
         print("Translation Get: "+ result)
         return is_Success, result
 
+# My Mermory
 def memory_tl(text, to_lang, from_lang="auto"):
     """Translate Using MyMemoryTranslator
 
@@ -109,6 +109,7 @@ def memory_tl(text, to_lang, from_lang="auto"):
         print("Translation Get: "+ result)
         return is_Success, result
 
+# PonsTranslator
 def pons_tl(text, to_lang, from_lang):
     """Translate Using PONS
 

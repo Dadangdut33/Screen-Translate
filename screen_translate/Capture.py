@@ -14,13 +14,13 @@ ImageGrab.grab = partial(ImageGrab.grab, all_screens=True)
 
 # Get Path
 dir_path = os.path.dirname(os.path.realpath(__file__))
-img_cache_path = os.path.join(dir_path, '../img_cache')
+img_captured_path = os.path.join(dir_path, '../img_captured')
 
 def createPicDirIfGone():
     # Will create the dir if not exists
-    if not os.path.exists(img_cache_path):
+    if not os.path.exists(img_captured_path):
         try:
-            os.makedirs(img_cache_path)
+            os.makedirs(img_captured_path)
         except Exception as e:
             print("Error: " + str(e))
             Mbox("Error: ", str(e), 2)
@@ -57,7 +57,7 @@ def captureImg(coords, sourceLang, tesseract_Location, cached = False):
 
         if cached:
             createPicDirIfGone()
-            captured.save(os.path.join(img_cache_path, 'captured_' + datetime.now().strftime('%Y-%m-%d_%H%M%S') + '.png'))
+            captured.save(os.path.join(img_captured_path, 'captured_' + datetime.now().strftime('%Y-%m-%d_%H%M%S') + '.png'))
             
         is_Success = True
     except Exception as e:
@@ -78,7 +78,7 @@ def captureAll():
     try:
         captured = pyautogui.screenshot()
         createPicDirIfGone()
-        captured.save(os.path.join(img_cache_path, 'Monitor(s) Captured View'+ '.png'))
+        captured.save(os.path.join(img_captured_path, 'Monitor(s) Captured View'+ '.png'))
     except Exception as e:
         print("Error: " + str(e))
         Mbox("Error", str(e), 2)

@@ -1,6 +1,8 @@
 from .Mbox import Mbox
 from .LangCode import *
 
+# ----------------------------------------------------------------
+# Imports Library
 try:
     from deepl_scraper_pp.deepl_tr import deepl_tr
 except ConnectionError as e:
@@ -10,6 +12,10 @@ except Exception as e:
     print("Error", str(e))
     Mbox("Error", str(e), 2)
 
+
+# ----------------------------------------------------------------
+# Functions
+# Deepl
 async def deepl_tl(text, to_lang, from_lang="auto"):
     """Translate Using Deepl
 
