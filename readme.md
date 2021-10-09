@@ -1,17 +1,26 @@
-# About
-An OCR translator tool. Made by [me](https://github.com/Dadangdut33) by utilizing Tesseract, compiled to .exe using pyinstaller. I made this program to learn more about python.<br><br>
+# Screen Translate - An Easy to Use OCR Translator
+<p style="text-align: center">
+    <a href="https://github.com/Dadangdut33/Screen-Translate/releases/latest"><img alt="GitHub release (latest SemVer)" src="https://img.shields.io/github/v/release/Dadangdut33/Screen-Translate"></a>
+    <a href="https://github.com/Dadangdut33/Screen-Translate/releases/latest"><img src="https://img.shields.io/github/downloads/Dadangdut33/Screen-Translate/total"></a> 
+    <a href="https://github.com/Dadangdut33/Screen-Translate/issues"><img alt="GitHub issues" src="https://img.shields.io/github/issues/Dadangdut33/Screen-Translate"></a>
+    <a href="https://github.com/Dadangdut33/Screen-Translate/pulls"><img alt="GitHub pull requests" src="https://img.shields.io/github/issues-pr/Dadangdut33/Screen-Translate"></a>
+    <a href="https://github.com/Dadangdut33/Screen-Translate/commits/main"><img alt="GitHub commits since latest release (by date)" src="https://img.shields.io/github/commits-since/Dadangdut33/Screen-Translate/latest"></a><Br>
+    <a href="https://github.com/Dadangdut33/Screen-Translate/stargazers"><img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/Dadangdut33/Screen-Translate?style=social"></a>
+    <a href="https://github.com/Dadangdut33/Screen-Translate/network/members"><img alt="GitHub forks" src="https://img.shields.io/github/forks/Dadangdut33/Screen-Translate?style=social"></a>
+</p>
+
+STL a.k.a Screen Translate is an OCR translator tool made by utilizing Tesseract and compiled to .exe using pyinstaller. 
 Inspired by Visual Novel Reader (VNR), [Visual Novel OCR](https://github.com/leminhyen2/Visual-Novel-OCR), and [QTranslate](https://quest-app.appspot.com/)
 
 # What can i use this for?
 - You can use this just to translate text from one language to another
 - You can use this to capture and translate text from documents, games, pictures, etc. As long as the text is clear enough (Tesseract might not be able to read it if it's not clear enough)
-- 
 
 # FAQ
 - **[Q]** How do i use this? \
-**[A]** You can look at the user_manual or below for more information \
+**[A]** You can look at the [user_manual](https://github.com/Dadangdut33/Screen-Translate/tree/main/user_manual) folder or below for more information
 - **[Q]** Is this safe? \
-**[A]** Yes, it is completely safe. If your antivirus detect this program as a virus, it's only a false positive. If you don't believe it, you can take a look at the code yourself. \
+**[A]** Yes, it is completely safe. If your antivirus detect this program as a virus, it's only a false positive. If you don't believe it, you can take a look at the code yourself. 
 - **[Q]** What do you mean by a "clear enough" text? \
 **[A]** It means the text is not too blend it with the background. If the text is light the background needs to be darken, so it is easier to be read. Somewhat like that. In the future i might add some adjustment and more OCR options, so this might be fixed some day.
 
@@ -31,7 +40,6 @@ You can install them by running pip_install.bat or by installing them yourself, 
 # Tutorial on How To Install and Setup
 **For User**
 1. Download the latest [release](https://github.com/Dadangdut33/Screen-Translate/releases/tag/release) of this program
-
 2. Install tesseract, **make sure to select install all language pack when prompted**
 3. Open the ScreenTranslate.exe
 4. Check settings, make sure tesseract location is correct
@@ -42,7 +50,6 @@ You can install them by running pip_install.bat or by installing them yourself, 
 
 **For Dev**
 1. Clone the repo or download the source code of the latest release
-
 2. Install tesseract, make sure select install all language pack when prompted
 3. Install all the dependencies used for the project
 4. Run and test the source code
