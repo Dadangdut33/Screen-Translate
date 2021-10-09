@@ -1,5 +1,5 @@
 # Screen Translate - An Easy to Use OCR Translator
-<p style="text-align: center">
+<p align="center">
     <a href="https://github.com/Dadangdut33/Screen-Translate/releases/latest"><img alt="GitHub release (latest SemVer)" src="https://img.shields.io/github/v/release/Dadangdut33/Screen-Translate"></a>
     <a href="https://github.com/Dadangdut33/Screen-Translate/releases/latest"><img src="https://img.shields.io/github/downloads/Dadangdut33/Screen-Translate/total"></a> 
     <a href="https://github.com/Dadangdut33/Screen-Translate/issues"><img alt="GitHub issues" src="https://img.shields.io/github/issues/Dadangdut33/Screen-Translate"></a>
@@ -9,7 +9,7 @@
     <a href="https://github.com/Dadangdut33/Screen-Translate/network/members"><img alt="GitHub forks" src="https://img.shields.io/github/forks/Dadangdut33/Screen-Translate?style=social"></a>
 </p>
 
-STL a.k.a Screen Translate is an OCR translator tool made by utilizing Tesseract and compiled to .exe using pyinstaller. 
+STL a.k.a Screen Translate is an OCR translator tool made by utilizing Tesseract. The code is then compiled to .exe by using pyinstaller. 
 Inspired by Visual Novel Reader (VNR), [Visual Novel OCR](https://github.com/leminhyen2/Visual-Novel-OCR), and [QTranslate](https://quest-app.appspot.com/)
 
 # What can i use this for?
