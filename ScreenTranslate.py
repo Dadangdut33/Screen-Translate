@@ -118,7 +118,7 @@ class main_Menu():
         self.filemenu = Menu(self.menubar, tearoff=0)
         self.filemenu.add_checkbutton(label="Always on Top", command=self.always_on_top)
         self.filemenu.add_separator()
-        self.filemenu.add_command(label="Exit Application", command=self.root.quit)
+        self.filemenu.add_command(label="Exit Application", command=self.on_closing)
         self.menubar.add_cascade(label="Options", menu=self.filemenu)
 
         self.filemenu2 = Menu(self.menubar, tearoff=0)
@@ -135,14 +135,14 @@ class main_Menu():
         self.filemenu4.add_command(label="Tutorial", command=self.open_Tutorial) # Open Mbox Tutorials
         self.filemenu4.add_command(label="FAQ", command=self.open_Faq) # Open FAQ
         self.filemenu4.add_command(label="Known Bugs", command=self.open_KnownBugs) # Open Knownbugs
-        self.filemenu4.add_command(label="About", command=self.open_About) # Open Mbox About
-        self.filemenu4.add_command(label="Contributor", command=self.open_Contributor) # Open Contributor
         self.filemenu4.add_separator()
         self.filemenu4.add_command(label="Open User Manual", command=self.open_UserManual) # Open user manual folder
         self.filemenu4.add_command(label="Open GitHub Repo", command=lambda aurl="https://github.com/Dadangdut33/Screen-Translate":OpenUrl(aurl)) 
         self.filemenu4.add_command(label="Download Tesseract", command=self.openTesLink) # Open Mbox Downloads
         self.filemenu4.add_separator()
-        self.filemenu4.add_command(label="Check Version", command=self.checkVersion) # Check version
+        self.filemenu4.add_command(label="Check For Update", command=self.checkVersion) # Check version
+        self.filemenu4.add_command(label="Contributor", command=self.open_Contributor) # Open Contributor
+        self.filemenu4.add_command(label="About STL", command=self.open_About) # Open Mbox About
         self.menubar.add_cascade(label="Help", menu=self.filemenu4)
 
         # Add to self.root
@@ -257,13 +257,13 @@ class main_Menu():
 
             if sum(num_CurrentVersion) < sum(num_LatestVersion):
                 print(">> A new version is available. Please update to the latest version.\n(-) Current Version : " + globalStuff.version + "\n(+) Latest Version  : " + version)
-                if withPopup: Mbox("New Version Available", "A new version is available. Please update to the latest version by going to the release section in the repository.\n\nCurrent Version : " + globalStuff.version + "\nLatest Version  : " + version, 0)
+                if withPopup: Mbox("New Version Available", "A newer version is available. Please update to the latest version by going to the release section in the repository.\n\nCurrent Version : " + globalStuff.version + "\nLatest Version  : " + version, 0)
             elif sum(num_CurrentVersion) == sum(num_LatestVersion):
                 print(">> You are using the latest version.\n(=) Current Version : " + globalStuff.version + "\n(=) Latest Version  : " + version)
                 if withPopup: Mbox("Version Up to Date", "You are using the latest version.\nCurrent Version : " + globalStuff.version + "\nLatest Version  : " + version, 0)
             elif sum(num_CurrentVersion) > sum(num_LatestVersion):
-                print(">> You are using a newer version than the latest version.\n(+) Current Version : " + globalStuff.version + "\n(-) Latest Version  : " + version)
-                if withPopup: Mbox("Your Version is newer than the latest version", "You are using a newer version than the latest version.\n\nCurrent Version : " + globalStuff.version + "\nLatest Version  : " + version +
+                print(">> The current version that you are using is still in development.\n(+) Current Version : " + globalStuff.version + "\n(-) Latest Version  : " + version)
+                if withPopup: Mbox("Your Version is newer than the latest version", "The current version that you are using is still in development.\n\nCurrent Version : " + globalStuff.version + "\nLatest Version  : " + version +
                  "\n\nThis build is probably still work in progress for further improvement", 0)
             else:
                 print("Current Version : " + globalStuff.version)
@@ -276,6 +276,9 @@ class main_Menu():
 
     def open_Contributor(self):
         Mbox("Contributor", "Thanks to:\n1. Dadangdut33 (Author)\n2. Laggykiller (Contributor)", 0)
+
+    def open_Whats_New(self):
+        Mbox("What's New", "now ...", 0)
 
     # Open Capture Window
     def open_capture_screen(self):
