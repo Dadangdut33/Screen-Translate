@@ -1,5 +1,5 @@
 <p align="center">
-    <img src="https://raw.github.com/Dadangdut33/Screen-Translate/main/logo.ico" alt="Screen Translate Logo">
+    <img src="https://raw.github.com/Dadangdut33/Screen-Translate/main/logo.png" alt="Screen Translate Logo">
 </p>
 
 <h1 align="center"> Screen Translate - An Easy to Use OCR Translator </h1>
