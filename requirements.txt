@@ -10,19 +10,19 @@ PyAutoGUI == 0.9.53
 # \Screen-Translate\screen_translate\Translate.py: 8,19,30
 deep_translator == 1.5.4
 
-# \Screen-Translate\test\Compiling\testing\test.py: 2
+# \Screen-Translate\screen_translate\Translate_Deepl.py: 7
 deepl_scraper_pp == 0.1.2
 
-# D:\Coding\Screen-Translate\ScreenTranslate.py: 2
-# D:\Coding\Screen-Translate\screen_translate\ui\Settings.py: 2
+# \Screen-Translate\ScreenTranslate.py: 2
+# \Screen-Translate\screen_translate\ui\Settings.py: 2
 keyboard == 0.13.5
 
-# D:\Coding\Screen-Translate\screen_translate\ui\Capture_Window.py: 7
-# D:\Coding\Screen-Translate\screen_translate\ui\History.py: 2
+# \Screen-Translate\screen_translate\ui\Capture_Window.py: 7
+# \Screen-Translate\screen_translate\ui\History.py: 2
 pyperclip == 1.8.2
 
-# D:\Coding\Screen-Translate\screen_translate\Capture.py: 3
+# \Screen-Translate\screen_translate\Capture.py: 3
 pytesseract == 0.3.8
 
-# D:\Coding\Screen-Translate\ScreenTranslate.py: 7
+# \Screen-Translate\ScreenTranslate.py: 7
 requests == 2.26.0
