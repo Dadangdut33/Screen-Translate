@@ -1,7 +1,8 @@
 <p align="center">
     <img src="https://raw.github.com/Dadangdut33/Screen-Translate/main/logo.ico" alt="Screen Translate Logo">
 </p>
-# Screen Translate - An Easy to Use OCR Translator
+
+<h1 align="center"> Screen Translate - An Easy to Use OCR Translator </h1>
 <p align="center">
     <a href="https://github.com/Dadangdut33/Screen-Translate/releases/latest"><img alt="GitHub release (latest SemVer)" src="https://img.shields.io/github/v/release/Dadangdut33/Screen-Translate"></a>
     <a href="https://github.com/Dadangdut33/Screen-Translate/releases/latest"><img src="https://img.shields.io/github/downloads/Dadangdut33/Screen-Translate/total"></a> 
