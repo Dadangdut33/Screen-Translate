@@ -1,3 +1,6 @@
+<p align="center">
+    <img src="https://raw.github.com/Dadangdut33/Screen-Translate/main/logo.ico" alt="Screen Translate Logo">
+</p>
 # Screen Translate - An Easy to Use OCR Translator
 <p align="center">
     <a href="https://github.com/Dadangdut33/Screen-Translate/releases/latest"><img alt="GitHub release (latest SemVer)" src="https://img.shields.io/github/v/release/Dadangdut33/Screen-Translate"></a>
@@ -18,7 +21,7 @@ Inspired by Visual Novel Reader (VNR), [Visual Novel OCR](https://github.com/lem
 
 # FAQ
 - **[Q]** How do i use this? \
-**[A]** You can look at the [user_manual](https://github.com/Dadangdut33/Screen-Translate/tree/main/user_manual) folder or below for more information
+**[A]** You can look at the [user_manual](https://github.com/Dadangdut33/Screen-Translate/tree/main/user_manual) folder or [below](https://github.com/Dadangdut33/Screen-Translate#tutorial-on-how-to-use) for more information
 - **[Q]** Is this safe? \
 **[A]** Yes, it is completely safe. If your antivirus detect this program as a virus, it's only a false positive. If you don't believe it, you can take a look at the code yourself. 
 - **[Q]** What do you mean by a "clear enough" text? \
@@ -77,6 +80,9 @@ For more information you can check the [user_manual](https://github.com/Dadangdu
 
 # Reporting bugs
 If you encounter any bugs with the program, please report them by opening an issue on the github repository.    
+
+# Credits
+Icons are taken from [Icons8](https://icons8.com/)
 
 # Disclaimer
 This is a free open source software, you can use it for any purpose. However, I am not responsible for any damage caused by this software. Use it at your own risk. **(Not that it will do anything to you, it's just a tool to help you translate text lol)**

@@ -43,6 +43,7 @@ class global_Stuff:
         self.langTo = None
         self.langFrom = None # THis neeeds to change everytime the user changes the language and on innit
         self.engine = None
+        self.mboxOpen = False
         self.version = "1.5.1"
 
     def hotkeyCallback(self):
@@ -274,7 +275,11 @@ def offSetSettings(widthHeighOff, xyOffsetType, xyOff, custom=""):
     return offSetsGet
 
 def OpenUrl(url):
-    webbrowser.open_new(url)
+    try:
+        webbrowser.open_new(url)
+    except Exception as e:
+        print("Error: Unable to open URL")
+        print("Details" + str(e))
 
 def searchList(searchFor, theList):
     index = 0

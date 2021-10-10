@@ -18,8 +18,9 @@ from screen_translate.ui.History import HistoryUI
 from screen_translate.ui.Settings import SettingUI
 from screen_translate.ui.Capture_Window import CaptureUI
 
-# Get dir path
+# Get path
 dir_path = os.path.dirname(os.path.realpath(__file__))
+dir_logo = dir_path + "/logo.ico"
 
 # ----------------------------------------------------------------
 def console():
@@ -72,7 +73,7 @@ class main_Menu():
         # Call the other frame
         self.capture_UI = CaptureUI()
         self.setting_UI = SettingUI()
-        self.history = HistoryUI()
+        self.history_UI = HistoryUI()
 
         # Frame
         self.topFrame1 = Frame(self.root)
@@ -132,18 +133,22 @@ class main_Menu():
         self.menubar.add_cascade(label="Generate", menu=self.filemenu3)
 
         self.filemenu4 = Menu(self.menubar, tearoff=0)
-        self.filemenu4.add_command(label="Tutorial", command=self.open_Tutorial) # Open Mbox Tutorials
-        self.filemenu4.add_command(label="FAQ", command=self.open_Faq) # Open FAQ
-        self.filemenu4.add_command(label="Known Bugs", command=self.open_KnownBugs) # Open Knownbugs
-        self.filemenu4.add_separator()
-        self.filemenu4.add_command(label="Open User Manual", command=self.open_UserManual) # Open user manual folder
-        self.filemenu4.add_command(label="Open GitHub Repo", command=lambda aurl="https://github.com/Dadangdut33/Screen-Translate":OpenUrl(aurl)) 
-        self.filemenu4.add_command(label="Download Tesseract", command=self.openTesLink) # Open Mbox Downloads
-        self.filemenu4.add_separator()
-        self.filemenu4.add_command(label="Check For Update", command=self.checkVersion) # Check version
-        self.filemenu4.add_command(label="Contributor", command=self.open_Contributor) # Open Contributor
-        self.filemenu4.add_command(label="About STL", command=self.open_About) # Open Mbox About
-        self.menubar.add_cascade(label="Help", menu=self.filemenu4)
+        self.filemenu4.add_command(label="Tesseract", command=self.openTesLink) # Open Tesseract Downloads
+        self.filemenu4.add_command(label="Icon source", command=self.openIconSource)
+        self.menubar.add_cascade(label="Get", menu=self.filemenu4)
+
+        self.filemenu5 = Menu(self.menubar, tearoff=0)
+        self.filemenu5.add_command(label="Tutorial", command=self.open_Tutorial) # Open Mbox Tutorials
+        self.filemenu5.add_command(label="FAQ", command=self.open_Faq) # Open FAQ
+        self.filemenu5.add_command(label="Known Bugs", command=self.open_KnownBugs) # Open Knownbugs
+        self.filemenu5.add_separator()
+        self.filemenu5.add_command(label="Open User Manual", command=self.open_UserManual) # Open user manual folder
+        self.filemenu5.add_command(label="Open GitHub Repo", command=lambda aurl="https://github.com/Dadangdut33/Screen-Translate":OpenUrl(aurl)) 
+        self.filemenu5.add_separator()
+        self.filemenu5.add_command(label="Check For Update", command=self.checkVersion) # Check version
+        self.filemenu5.add_command(label="Contributor", command=self.open_Contributor) # Open Contributor
+        self.filemenu5.add_command(label="About STL", command=self.open_About) # Open Mbox About
+        self.menubar.add_cascade(label="Help", menu=self.filemenu5)
 
         # Add to self.root
         self.root.config(menu=self.menubar)
@@ -200,10 +205,24 @@ class main_Menu():
         # Check opacityLabel
         self.root.after(100, self.checkOpacityLabel) # This needs better solution? idk
 
+        # --- Logo ---
+        try:
+            self.root.iconbitmap(dir_logo)
+            self.setting_UI.root.iconbitmap(dir_logo)
+            self.capture_UI.root.iconbitmap(dir_logo)
+            self.history_UI.root.iconbitmap(dir_logo)
+        except FileNotFoundError:
+            print("Error loading icon: Logo not found!")
+        except Exception as e:
+            print("Error loading icon: " + str(e))
 
     # --- Functions ---
     # On Close
     def on_closing(self):
+        if globalStuff.mboxOpen:
+            Mbox("A message box is still opened", "Please close all message box first!", 0)
+            return
+
         # Confirmation on close
         if Mbox("Confirmation", "Are you sure you want to exit?", 3):
             self.root.destroy()
@@ -214,34 +233,45 @@ class main_Menu():
         self.setting_UI.show()
 
     def open_History(self):
-        self.history.show()
+        self.history_UI.show()
 
     def open_About(self):
-        Mbox("About", "Screen-Translate is a program made inspired by VNR, Visual Novel OCR, and QTranslate.\n\nI (Dadangdut33) made this program in order to learn more about python and because i want to try creating an app similar to those i mention. " +
-        "\n\nThis program is completely open source, you can improve it if you want, you can also tell me if there are bugs. If you are confused on how to use it you can" +
-        " check the tutorial by pressing the tutorial in the menu bar", 0)
+        self.disable_MainWin_Widgets()
+        Mbox("About", "Screen Translate (STL)\nAn open source OCR Translation tool. Inspired by VNR, Visual Novel OCR, and QTranslate.\n\n" \
+        "This program is completely open source, you can improve it if you want by sending a pull request, you can also tell me if there are bugs by creating new issue in the repository. If you are confused on how to use it you can " \
+        f"check the tutorial by pressing the tutorial in the menu bar\n\nCurrent Version : {globalStuff.version}\nIcons are taken from Icons8.com", 0)
+        self.enable_MainWin_Widgets()
 
     def open_Tutorial(self):
+        self.disable_MainWin_Widgets()
         Mbox("Tutorial", "1. *First*, make sure your screen scaling is 100%. If scaling is not 100%, the capturer won't work properly. If by any chance you don't want to set your monitor scaling to 100%, " +
         "you can set the xy offset in the setting" + "\n\n2. *Second*, you need to install tesseract, you can quickly go to the download link by pressing the download tesseract in menu bar\n\n" +
         "3. *Then*, check the settings. Make sure tesseract path is correct\n\n" +
         "4. *FOR MULTI MONITOR USER*, set offset in setting. If you have multiple monitor setup, you might need to set the offset in settings. \n\nWhat you shold do in the setting window:\n- Check how the program see your monitors in settings by clicking that one button.\n" +
         "- You can also see how the capture area captured your images by enabling save capture image in settingsand then see the image in 'img_captured' directory" +
         "\n\n\nYou can open the tutorial or user manual linked in menubar if you are still confused.", 0)
+        self.enable_MainWin_Widgets()
 
     def open_Faq(self):
+        self.disable_MainWin_Widgets()
         Mbox("FAQ", "Q : Do you collect the screenshot?\nA : No, no data is collected by me. Image and text captured will only be use for query and the captured image is only saved locally\n\n" +
         "Q : Is this safe?\nA : Yes, it is safe, you can check the code on the github linked in the menubar, or open it yourself on your machine.\n\n" +
         "Q : I could not capture anything, help!?\nA : You might need to check the captured image and see wether it actually capture the stuff that you targeted or not. If not, you might " +
         "want to set offset in setting or change your monitor scaling to 100%", 0)
+        self.enable_MainWin_Widgets()
 
     def openTesLink(self):
-        Mbox("Info", "Please download the v5.0.0-alpha.20210811 Version and install all language pack", 0)
-        print("Please download the v5.0.0-alpha.20210811 Version and install all language pack")
+        Mbox("Info", "Please download the v5.0.0-alpha.20210811 Version (the latest version might be okay too) and install all language pack", 0)
+        print("Please download the v5.0.0-alpha.20210811 Version (the latest version might be okay too) and install all language pack")
         OpenUrl("https://github.com/UB-Mannheim/tesseract/wiki")
 
+    def openIconSource(self):
+        OpenUrl("https://icons8.com/")
+
     def open_KnownBugs(self):
+        self.disable_MainWin_Widgets()
         Mbox("Known Bugs", "- Monitor scaling needs to be 100% or it won't capture accurately\n\n- The auto offset is wrong if the resolution between monitor 1 and 2 is not the same. It's because the auto offset calculate only the primary monitor. In this case you have to set the offset manually.", 0)
+        self.enable_MainWin_Widgets()
 
     def open_UserManual(self):
         try:
@@ -250,6 +280,7 @@ class main_Menu():
             OpenUrl("https://github.com/Dadangdut33/Screen-Translate/tree/main/user_manual")\
 
     def checkVersion(self, withPopup = True):
+        if withPopup: self.disable_MainWin_Widgets()
         try:
             version = requests.get("https://raw.githubusercontent.com/Dadangdut33/Screen-Translate/main/version_Release.txt").text
             num_CurrentVersion = [int(i) for i in globalStuff.version.split('.')]
@@ -268,21 +299,61 @@ class main_Menu():
             else:
                 print("Current Version : " + globalStuff.version)
                 print("Latest Version  : " + version)
-
         except Exception as e:
             print("Failed to check version!")
             print("Error: " + str(e))
             if withPopup: Mbox("Failed to check version!", "Failed to check version!\n\nError: " + str(e), 0)
+        if withPopup: self.enable_MainWin_Widgets()
 
     def open_Contributor(self):
-        Mbox("Contributor", "Thanks to:\n1. Dadangdut33 (Author)\n2. Laggykiller (Contributor)", 0)
+        self.disable_MainWin_Widgets()
+        Mbox("Contributor", "Thanks to:\n1. Dadangdut33 (Author)\n2. Laggykiller (contributor)\n3. Mdika (contributor)", 0)
+        self.enable_MainWin_Widgets()
 
     def open_Whats_New(self):
+        self.disable_MainWin_Widgets()
         Mbox("What's New", "now ...", 0)
+        self.enable_MainWin_Widgets()
 
     # Open Capture Window
     def open_capture_screen(self):
         self.capture_UI.show()
+
+    # Disable widgets in main window
+    def disable_MainWin_Widgets(self):
+        globalStuff.mboxOpen = True
+        widget_Lists = self.root.winfo_children()
+
+        menuBar = widget_Lists.pop() # Last element is the menubar
+        for cat in range(1, len(menuBar.winfo_children()) + 1):
+            self.menubar.entryconfigure(cat, state=DISABLED)
+        
+        for frames in widget_Lists:
+            for child in frames.winfo_children():
+                try:
+                    child.configure(state='disabled')
+                except Exception as e:
+                    print("Error when disabling: " + str(e))
+
+    # Enable widgets in main window
+    def enable_MainWin_Widgets(self):
+        widget_Lists = self.root.winfo_children()
+
+        menuBar = widget_Lists.pop() # Last element is the menubar
+        for cat in range(1, len(menuBar.winfo_children()) + 1):
+            self.menubar.entryconfigure(cat, state=NORMAL)
+
+        for frames in widget_Lists:
+            for child in frames.winfo_children():
+                try:
+                    if (child.winfo_class() == 'TCombobox'):
+                        child.configure(state='readonly')
+                    else:
+                        child.configure(state='normal')
+                except Exception as e:
+                    print("Error when enabling: " + str(e))
+
+        globalStuff.mboxOpen = False
 
     def swapTl(self):
         # Get Before
