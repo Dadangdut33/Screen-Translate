@@ -58,7 +58,6 @@ class CaptureUI():
     # Show/Hide
     def show(self):
         globalStuff.capUiHidden = False
-        self.opacitySlider.set(globalStuff.curCapOpacity)
         self.root.wm_deiconify()
 
     def on_closing(self):
@@ -66,12 +65,18 @@ class CaptureUI():
         self.root.wm_withdraw()
 
     # Slider function
-    def sliderOpac(self, x):
+    def sliderOpac(self, x, from_=None):
         self.root.attributes('-alpha', x)
         self.opacityLabel.config(text="Opacity: " + str(round(float(x), 2)))
         globalStuff.curCapOpacity = x
 
-        globalStuff.captureOpacityLabel_Var.set("Capture UI Opacity: " + str(round(float(x), 2)))
+        # Change the label and the slider in main window
+        globalStuff.captureOpacityObject.config(text="Capture UI Opacity: " + str(round(float(x), 2)))
+        globalStuff.captureSlider_Main.config(value=x)
+
+        # If from is there, it means the slider is being slide from main window
+        if from_ is not None:
+            self.opacitySlider.set(x)
 
     # Capture the text
     def getTextAndTranslate(self, offSetXY=["auto", "auto"]):

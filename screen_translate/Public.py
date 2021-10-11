@@ -28,18 +28,29 @@ except Exception as e:
     Mbox("Error", e, 2)
 
 class global_Stuff: 
+    """
+    Class containing all the static variables for the UI. It also contains some methods
+    for the stuff to works, such as the hotkey callback, the translate method, etc.
+    
+    Stored like this in order to allow other file to use the same thing without circular import error.
+    """
     def __init__(self):
         # Create gimmick window to store global var
         self.gimmickWindow = tk.Tk()
         self.gimmickWindow.withdraw()
 
+        # Text box
         self.text_Box_Top_Var = tk.StringVar()
         self.text_Box_Bottom_Var = tk.StringVar()
+        
+        # Flag variables
         self.hotkeyPressed = False
         self.capUiHidden = False
+
+        # Capture opacities
         self.curCapOpacity = 0.8
-        self.captureOpacityLabel_Var = tk.StringVar()
-        self.captureOpacityLabel_Var.set("Capture UI Opacity: " + str(self.curCapOpacity))
+        self.captureSlider_Main = None
+        self.captureOpacityLabel_Main = None
 
         # CB TL
         self.langTo = None
@@ -58,7 +69,7 @@ class global_Stuff:
     def hotkeyCallback(self):
         self.hotkeyPressed = True
 
-        # Translate
+    # Translate
     def translate(self):
         """Translate the text"""
         # Only check the langfrom and langto if it is translating
@@ -266,7 +277,11 @@ class CreateToolTip(object):
         if tw:
             tw.destroy()
 
+# ----------------------------------------------------------------
 def startfile(filename):
+    """
+    Open a folder or file in the default application.
+    """
     try:
         os.startfile(filename)
     except:
@@ -274,6 +289,9 @@ def startfile(filename):
 
 
 def fillList(dictFrom, listTo, insertFirst="", insertSecond=""):
+    """
+    Fill a list with extra additonal items if provided. Then sort it.
+    """
     for item in dictFrom:
         if item == "Auto-Detect":
             continue
@@ -285,8 +303,11 @@ def fillList(dictFrom, listTo, insertFirst="", insertSecond=""):
     if insertSecond != "":
         listTo.insert(1, insertSecond)
 
-
+# TODO: fix offset on setting sometimes the number not showing properly when auto for some reason
 def getTheOffset(custom=""):
+    """
+    Get the offset of the monitor.
+    """
     settings = fJson.readSetting()
 
     offSetXY = settings["offSetXY"]
@@ -301,8 +322,10 @@ def getTheOffset(custom=""):
 
     return offSets
 
-
 def offSetSettings(widthHeighOff, xyOffsetType, xyOff, custom=""):
+    """
+    Calculate the offset settings for the monitor.
+    """
     offSetsGet = []
     x, y, w, h = 0, 0, 0, 0
     if widthHeighOff[0] == "auto":
@@ -345,6 +368,9 @@ def offSetSettings(widthHeighOff, xyOffsetType, xyOff, custom=""):
     return offSetsGet
 
 def OpenUrl(url):
+    """
+    To open a url in the default browser
+    """
     try:
         webbrowser.open_new(url)
     except Exception as e:
@@ -352,6 +378,10 @@ def OpenUrl(url):
         print("Details" + str(e))
 
 def searchList(searchFor, theList):
+    """ Used for CB Changing
+    Search for item in list, exist or not. If it exist return the index
+    else return 0. 
+    """
     index = 0
     for lang in theList:
         if lang == searchFor:
@@ -360,7 +390,9 @@ def searchList(searchFor, theList):
     else:
         return 0
 
-
+# ----------------------------------------------------------------------
+# --------------------------  Public Var  ------------------------------
+"""Getting all the public variables to be used in other classes/files"""
 # Public var
 engines = engineList
 optGoogle = []
