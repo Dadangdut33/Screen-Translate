@@ -17,10 +17,12 @@ from screen_translate.Mbox import Mbox
 from screen_translate.ui.History import HistoryUI
 from screen_translate.ui.Settings import SettingUI
 from screen_translate.ui.Capture_Window import CaptureUI
+from screen_translate.ui.About import AboutUI
 
 # Get path
 dir_path = os.path.dirname(os.path.realpath(__file__))
 dir_logo = dir_path + "/logo.ico"
+globalStuff.logoPath = dir_logo.replace(".ico", ".png")
 
 # ----------------------------------------------------------------
 def console():
@@ -74,6 +76,7 @@ class main_Menu():
         self.capture_UI = CaptureUI()
         self.setting_UI = SettingUI()
         self.history_UI = HistoryUI()
+        self.about_UI = AboutUI()
 
         # Frame
         self.topFrame1 = Frame(self.root)
@@ -228,17 +231,17 @@ class main_Menu():
             self.root.destroy()
             exit()
 
-    # Open History Window
+    # Open Setting Window
     def open_Setting(self):
         self.setting_UI.show()
-
+        
+    # Open History Window
     def open_History(self):
         self.history_UI.show()
 
+    # Open About Window
     def open_About(self):
-        Mbox("About", "Screen Translate (STL)\nAn open source OCR Translation tool. Inspired by VNR, Visual Novel OCR, and QTranslate.\n\n" \
-        "This program is completely open source, you can improve it if you want by sending a pull request, you can also tell me if there are bugs by creating new issue in the repository. If you are confused on how to use it you can " \
-        f"check the tutorial by pressing the tutorial in the menu bar\n\nCurrent Version : {globalStuff.version}\nIcons are taken from Icons8.com", 0, self.root)
+        self.about_UI.show()
 
     def open_Tutorial(self):
         Mbox("Tutorial", "1. *First*, make sure your screen scaling is 100%. If scaling is not 100%, the capturer won't work properly. If by any chance you don't want to set your monitor scaling to 100%, " +
@@ -269,27 +272,36 @@ class main_Menu():
         try:
             startfile(dir_path + r"\user_manual")
         except:
-            OpenUrl("https://github.com/Dadangdut33/Screen-Translate/tree/main/user_manual")\
+            OpenUrl("https://github.com/Dadangdut33/Screen-Translate/tree/main/user_manual")
 
     def checkVersion(self, withPopup = True):
         try:
             version = requests.get("https://raw.githubusercontent.com/Dadangdut33/Screen-Translate/main/version_Release.txt").text
-            num_CurrentVersion = [int(i) for i in globalStuff.version.split('.')]
-            num_LatestVersion = [int(i) for i in version.split('.')]
+            # num_CurrentVersion = [int(i) for i in globalStuff.version.split('.')]
+            # num_LatestVersion = [int(i) for i in version.split('.')]
 
-            if sum(num_CurrentVersion) < sum(num_LatestVersion):
-                print(">> A new version is available. Please update to the latest version.\n(-) Current Version : " + globalStuff.version + "\n(+) Latest Version  : " + version)
-                if withPopup: Mbox("New Version Available", "A newer version is available. Please update to the latest version by going to the release section in the repository.\n\nCurrent Version : " + globalStuff.version + "\nLatest Version  : " + version, 0, self.root)
-            elif sum(num_CurrentVersion) == sum(num_LatestVersion):
-                print(">> You are using the latest version.\n(=) Current Version : " + globalStuff.version + "\n(=) Latest Version  : " + version)
-                if withPopup: Mbox("Version Up to Date", "You are using the latest version.\nCurrent Version : " + globalStuff.version + "\nLatest Version  : " + version, 0, self.root)
-            elif sum(num_CurrentVersion) > sum(num_LatestVersion):
+            # If wip
+            if globalStuff.versionType == "wip":
+                globalStuff.newVerStatusCache = "Work in proggress"
                 print(">> The current version that you are using is still in development.\n(+) Current Version : " + globalStuff.version + "\n(-) Latest Version  : " + version)
                 if withPopup: Mbox("Your Version is newer than the latest version", "The current version that you are using is still in development.\n\nCurrent Version : " + globalStuff.version + "\nLatest Version  : " + version +
-                 "\n\nThis build is probably still work in progress for further improvement", 0, self.root)
+                    "\n\nThis build is probably still work in progress for further improvement", 0, self.root)
+
+                return
+
+            # If release
+            if globalStuff.version != version:
+                globalStuff.newVerStatusCache = "New version available!"
+                print(">> A new version is available. Please update to the latest version.\n(-) Current Version : " + globalStuff.version + "\n(+) Latest Version  : " + version)
+                if withPopup: 
+                    Mbox("New Version Available", "A newer version is available. Please update to the latest version by going to the release section in the repository.\n\nCurrent Version : " + globalStuff.version + "\nLatest Version  : " + version, 0, self.root)
+                    # Ask if user want to download the latest version or not
+                    if Mbox("Download Latest Version", "Do you want to download the latest version?", 3, self.root):
+                        OpenUrl("https://github.com/Dadangdut33/Screen-Translate/releases/latest")
             else:
-                print("Current Version : " + globalStuff.version)
-                print("Latest Version  : " + version)
+                globalStuff.newVerStatusCache = "Version up to date!"
+                print(">> You are using the latest version.\n(=) Current Version : " + globalStuff.version + "\n(=) Latest Version  : " + version)
+                if withPopup: Mbox("Version Up to Date", "You are using the latest version.\nCurrent Version : " + globalStuff.version + "\nLatest Version  : " + version, 0, self.root)
         except Exception as e:
             print("Failed to check version!")
             print("Error: " + str(e))
@@ -308,10 +320,8 @@ class main_Menu():
 
     """
     # -----------------------------------------------------------------
-    # Disabling and enabling widgets, Turns out we dont need this anymore
-    # Disable widgets in main window
+    # Disabling and enabling widgets
     def disable_MainWin_Widgets(self):
-        pass
         globalStuff.mboxOpen = True
         widget_Lists = self.root.winfo_children()
 
@@ -328,7 +338,6 @@ class main_Menu():
 
     # Enable widgets in main window
     def enable_MainWin_Widgets(self):
-        pass
         widget_Lists = self.root.winfo_children()
 
         menuBar = widget_Lists.pop() # Last element is the menubar
