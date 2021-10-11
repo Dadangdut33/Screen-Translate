@@ -32,10 +32,16 @@ class CaptureUI():
         # Always on top checkbox
         self.menubar = Menu(self.root)
         self.alwaysOnTopVar = BooleanVar()
+        self.topHidden = BooleanVar()
+        self.alwaysOnTopVar.set(False)
+
         # What happen here is that we created a hidden checkbutton to control the variable because for some reason it JUST DOES NOT WORK properly i dont know why
         # If someone found a better solution to this problem, please let me know or just create a pull request.
-        self.alwaysOnTopCheck_Hidden = Checkbutton(self.topFrame, text="Always on top", variable=self.alwaysOnTopVar, command=self.always_on_top)
+        self.alwaysOnTopCheck_Hidden = Checkbutton(self.topFrame, text="Stay on top", variable=self.alwaysOnTopVar, command=self.always_on_top)
         self.alwaysOnTopCheck_Hidden.select()
+
+        self.topHiddenCheck = Checkbutton(self.topFrame, text="Hide Top", variable=self.topHidden, command=self.show_top)
+        self.topHiddenCheck.pack(padx=5, pady=5, side=LEFT)
 
         self.filemenu = Menu(self.menubar, tearoff=0)
         self.filemenu.add_checkbutton(label="Always on Top", onvalue=True, offvalue=False, variable=self.alwaysOnTopVar, command=self.always_on_top)
@@ -54,6 +60,15 @@ class CaptureUI():
 
         # On Close
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
+
+    # show/hide top
+    def show_top(self):
+        if self.topHidden.get(): # IF ON THEN TURN IT OFF
+            self.root.overrideredirect(False)
+            self.topHidden.set(False)
+        else: # IF OFF THEN TURN IT ON
+            self.root.overrideredirect(True)
+            self.topHidden.set(True)
 
     # Show/Hide
     def show(self):
