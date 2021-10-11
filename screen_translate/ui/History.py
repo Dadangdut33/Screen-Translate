@@ -83,9 +83,9 @@ class HistoryUI():
     def deleteSelected(self):
         sel_Index = self.historyTreeView.focus()
         if sel_Index != "":
-            x = Mbox("Confirmation", "Are you sure you want to the selected data?", 3)
+            x = Mbox("Confirmation", "Are you sure you want to the selected data?", 3, self.root)
             if x == False:
-                Mbox("Canceled", "Action Canceled", 0)
+                Mbox("Canceled", "Action Canceled", 0, self.root)
                 return
 
             dataRow = self.historyTreeView.item(sel_Index, 'values')
@@ -93,22 +93,22 @@ class HistoryUI():
             status, statusText = fJson.deleteCertainHistory(int(dataRow[0]))
             if status == True:
                 print("Success: " + statusText)
-                Mbox("Success", statusText, 0)
+                Mbox("Success", statusText, 0, self.root)
             # Error already handled in jsonHandling
 
             # Refresh
             self.refresh()
 
     def deleteAll(self):
-        x = Mbox("Confirmation", "Are you sure you want to delete all history?", 3)
+        x = Mbox("Confirmation", "Are you sure you want to delete all history?", 3, self.root)
         if x == False:
-            Mbox("Canceled", "Action Canceled", 0)
+            Mbox("Canceled", "Action Canceled", 0, self.root)
             return
 
         status, statusText = fJson.deleteAllHistory()
         if status == True:
             print("Success: " + statusText)
-            Mbox("Success", statusText, 0)
+            Mbox("Success", statusText, 0, self.root)
         # Error already handled in jsonHandling
 
         # Refresh

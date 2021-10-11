@@ -270,9 +270,9 @@ class SettingUI():
         self.labelCurrentHotkey.config(text="")
 
     def restoreDefault(self):
-        x = Mbox("Confirmation", "Are you sure you want to set the settings to default?\n\n**WARNING! CURRENTLY SAVED SETTING WILL BE OVERWRITTEN**", 3)
+        x = Mbox("Confirmation", "Are you sure you want to set the settings to default?\n\n**WARNING! CURRENTLY SAVED SETTING WILL BE OVERWRITTEN**", 3, self.root)
         if x == False:
-            Mbox("Canceled", "Action Canceled", 0)
+            Mbox("Canceled", "Action Canceled", 0, self.root)
             return
 
         # Restore Default Settings
@@ -283,7 +283,7 @@ class SettingUI():
 
             # Tell success
             print("Restored Default Settings")
-            Mbox("Success", "Successfully Restored Value to Default Settings", 0)
+            Mbox("Success", "Successfully Restored Value to Default Settings", 0, self.root)
 
     def reset(self):
         settings = fJson.readSetting()
@@ -291,7 +291,7 @@ class SettingUI():
         validTesseract = "tesseract" in settings['tesseract_loc'].lower()
         # If tesseract is not found
         if os.path.exists(settings['tesseract_loc']) == False or validTesseract == False:
-            Mbox("Error: Tesseract Not Found!", "Please set tesseract location in Setting.json.\nYou can set this in setting menu or modify it manually in json/Setting.json", 2)
+            Mbox("Error: Tesseract Not Found!", "Please set tesseract location in Setting.json.\nYou can set this in setting menu or modify it manually in json/Setting.json", 2, self.root)
 
         # Cache checkbox
         if settings['cached'] == True:
@@ -366,7 +366,7 @@ class SettingUI():
         else:
             self.CBOffSetChoice.current(0)
             print("Error: Invalid Offset Type")
-            Mbox("Error: Invalid Offset Type", "Please do not modify the setting manually if you don't know what you are doing", 2)
+            Mbox("Error: Invalid Offset Type", "Please do not modify the setting manually if you don't know what you are doing", 2, self.root)
 
         # W H
         self.spinValOffSetW.set(str(w))
@@ -407,7 +407,7 @@ class SettingUI():
         # # If tesseract is not found
         if os.path.exists(tesseractPathInput) == False or validTesseract == False:
             print("Tesseract Not Found Error")
-            Mbox("Error: Tesseract not found", "Invalid Path Provided For Tesseract.exe!", 2)
+            Mbox("Error: Tesseract not found", "Invalid Path Provided For Tesseract.exe!", 2, self.root)
             return
 
         # Checking each checkbox for the offset of x,y,w,h
@@ -463,11 +463,11 @@ class SettingUI():
         if status:
             print("-" * 50)
             print(dataStatus)
-            Mbox("Success", dataStatus, 0)
+            Mbox("Success", dataStatus, 0, self.root)
         else:
             print("-" * 50)
             print(dataStatus)
-            Mbox("Error", dataStatus, 2)
+            Mbox("Error", dataStatus, 2, self.root)
 
     def CBOffSetChange(self, event = ""):
         offSets = getTheOffset("Custom")

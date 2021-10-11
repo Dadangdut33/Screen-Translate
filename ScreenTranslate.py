@@ -55,7 +55,7 @@ class main_Menu():
                 # Show error
                 print("Error: " + settings[0])
                 print(settings[1])
-                Mbox("Error: " + settings[0], settings[1], 2)
+                Mbox("Error: " + settings[0], settings[1], 2, self.root)
 
                 # Set setting value to default, so program can run
                 settings = fJson.default_Setting
@@ -64,10 +64,10 @@ class main_Menu():
                 var1, var2 = fJson.setDefault()
                 if var1 : # If successfully set default
                     print("Default setting applied")
-                    Mbox("Default setting applied", "Please change your tesseract location in setting if you didn't install tesseract on default C location", 0)
+                    Mbox("Default setting applied", "Please change your tesseract location in setting if you didn't install tesseract on default C location", 0, self.root)
                 else: # If error
                     print("Error: " + var2)
-                    Mbox("An Error Occured", var2, 2)
+                    Mbox("An Error Occured", var2, 2, self.root)
 
         # ----------------------------------------------        
         # Call the other frame
@@ -220,11 +220,11 @@ class main_Menu():
     # On Close
     def on_closing(self):
         if globalStuff.mboxOpen:
-            Mbox("A message box is still opened", "Please close all message box first!", 0)
+            Mbox("A message box is still opened", "Please close all message box first!", 0, self.root)
             return
 
         # Confirmation on close
-        if Mbox("Confirmation", "Are you sure you want to exit?", 3):
+        if Mbox("Confirmation", "Are you sure you want to exit?", 3, self.root):
             self.root.destroy()
             exit()
 
@@ -236,32 +236,26 @@ class main_Menu():
         self.history_UI.show()
 
     def open_About(self):
-        self.disable_MainWin_Widgets()
         Mbox("About", "Screen Translate (STL)\nAn open source OCR Translation tool. Inspired by VNR, Visual Novel OCR, and QTranslate.\n\n" \
         "This program is completely open source, you can improve it if you want by sending a pull request, you can also tell me if there are bugs by creating new issue in the repository. If you are confused on how to use it you can " \
-        f"check the tutorial by pressing the tutorial in the menu bar\n\nCurrent Version : {globalStuff.version}\nIcons are taken from Icons8.com", 0)
-        self.enable_MainWin_Widgets()
+        f"check the tutorial by pressing the tutorial in the menu bar\n\nCurrent Version : {globalStuff.version}\nIcons are taken from Icons8.com", 0, self.root)
 
     def open_Tutorial(self):
-        self.disable_MainWin_Widgets()
         Mbox("Tutorial", "1. *First*, make sure your screen scaling is 100%. If scaling is not 100%, the capturer won't work properly. If by any chance you don't want to set your monitor scaling to 100%, " +
         "you can set the xy offset in the setting" + "\n\n2. *Second*, you need to install tesseract, you can quickly go to the download link by pressing the download tesseract in menu bar\n\n" +
         "3. *Then*, check the settings. Make sure tesseract path is correct\n\n" +
         "4. *FOR MULTI MONITOR USER*, set offset in setting. If you have multiple monitor setup, you might need to set the offset in settings. \n\nWhat you shold do in the setting window:\n- Check how the program see your monitors in settings by clicking that one button.\n" +
         "- You can also see how the capture area captured your images by enabling save capture image in settingsand then see the image in 'img_captured' directory" +
-        "\n\n\nYou can open the tutorial or user manual linked in menubar if you are still confused.", 0)
-        self.enable_MainWin_Widgets()
+        "\n\n\nYou can open the tutorial or user manual linked in menubar if you are still confused.", 0, self.root)
 
     def open_Faq(self):
-        self.disable_MainWin_Widgets()
         Mbox("FAQ", "Q : Do you collect the screenshot?\nA : No, no data is collected by me. Image and text captured will only be use for query and the captured image is only saved locally\n\n" +
         "Q : Is this safe?\nA : Yes, it is safe, you can check the code on the github linked in the menubar, or open it yourself on your machine.\n\n" +
         "Q : I could not capture anything, help!?\nA : You might need to check the captured image and see wether it actually capture the stuff that you targeted or not. If not, you might " +
-        "want to set offset in setting or change your monitor scaling to 100%", 0)
-        self.enable_MainWin_Widgets()
+        "want to set offset in setting or change your monitor scaling to 100%", 0, self.root)
 
     def openTesLink(self):
-        Mbox("Info", "Please download the v5.0.0-alpha.20210811 Version (the latest version might be okay too) and install all language pack", 0)
+        Mbox("Info", "Please download the v5.0.0-alpha.20210811 Version (the latest version might be okay too) and install all language pack", 0, self.root)
         print("Please download the v5.0.0-alpha.20210811 Version (the latest version might be okay too) and install all language pack")
         OpenUrl("https://github.com/UB-Mannheim/tesseract/wiki")
 
@@ -269,9 +263,7 @@ class main_Menu():
         OpenUrl("https://icons8.com/")
 
     def open_KnownBugs(self):
-        self.disable_MainWin_Widgets()
-        Mbox("Known Bugs", "- Monitor scaling needs to be 100% or it won't capture accurately\n\n- The auto offset is wrong if the resolution between monitor 1 and 2 is not the same. It's because the auto offset calculate only the primary monitor. In this case you have to set the offset manually.", 0)
-        self.enable_MainWin_Widgets()
+        Mbox("Known Bugs", "- Monitor scaling needs to be 100% or it won't capture accurately\n\n- The auto offset is wrong if the resolution between monitor 1 and 2 is not the same. It's because the auto offset calculate only the primary monitor. In this case you have to set the offset manually.", 0, self.root)
 
     def open_UserManual(self):
         try:
@@ -280,7 +272,6 @@ class main_Menu():
             OpenUrl("https://github.com/Dadangdut33/Screen-Translate/tree/main/user_manual")\
 
     def checkVersion(self, withPopup = True):
-        if withPopup: self.disable_MainWin_Widgets()
         try:
             version = requests.get("https://raw.githubusercontent.com/Dadangdut33/Screen-Translate/main/version_Release.txt").text
             num_CurrentVersion = [int(i) for i in globalStuff.version.split('.')]
@@ -288,39 +279,39 @@ class main_Menu():
 
             if sum(num_CurrentVersion) < sum(num_LatestVersion):
                 print(">> A new version is available. Please update to the latest version.\n(-) Current Version : " + globalStuff.version + "\n(+) Latest Version  : " + version)
-                if withPopup: Mbox("New Version Available", "A newer version is available. Please update to the latest version by going to the release section in the repository.\n\nCurrent Version : " + globalStuff.version + "\nLatest Version  : " + version, 0)
+                if withPopup: Mbox("New Version Available", "A newer version is available. Please update to the latest version by going to the release section in the repository.\n\nCurrent Version : " + globalStuff.version + "\nLatest Version  : " + version, 0, self.root)
             elif sum(num_CurrentVersion) == sum(num_LatestVersion):
                 print(">> You are using the latest version.\n(=) Current Version : " + globalStuff.version + "\n(=) Latest Version  : " + version)
-                if withPopup: Mbox("Version Up to Date", "You are using the latest version.\nCurrent Version : " + globalStuff.version + "\nLatest Version  : " + version, 0)
+                if withPopup: Mbox("Version Up to Date", "You are using the latest version.\nCurrent Version : " + globalStuff.version + "\nLatest Version  : " + version, 0, self.root)
             elif sum(num_CurrentVersion) > sum(num_LatestVersion):
                 print(">> The current version that you are using is still in development.\n(+) Current Version : " + globalStuff.version + "\n(-) Latest Version  : " + version)
                 if withPopup: Mbox("Your Version is newer than the latest version", "The current version that you are using is still in development.\n\nCurrent Version : " + globalStuff.version + "\nLatest Version  : " + version +
-                 "\n\nThis build is probably still work in progress for further improvement", 0)
+                 "\n\nThis build is probably still work in progress for further improvement", 0, self.root)
             else:
                 print("Current Version : " + globalStuff.version)
                 print("Latest Version  : " + version)
         except Exception as e:
             print("Failed to check version!")
             print("Error: " + str(e))
-            if withPopup: Mbox("Failed to check version!", "Failed to check version!\n\nError: " + str(e), 0)
-        if withPopup: self.enable_MainWin_Widgets()
+            if withPopup: Mbox("Failed to check version!", "Failed to check version!\n\nError: " + str(e), 0, self.root)
 
     def open_Contributor(self):
-        self.disable_MainWin_Widgets()
-        Mbox("Contributor", "Thanks to:\n1. Dadangdut33 (Author)\n2. Laggykiller (contributor)\n3. Mdika (contributor)", 0)
-        self.enable_MainWin_Widgets()
+        Mbox("Contributor", "Thanks to:\n1. Dadangdut33 (Author)\n2. Laggykiller (contributor)\n3. Mdika (contributor)", 0, self.root)
 
     def open_Whats_New(self):
-        self.disable_MainWin_Widgets()
-        Mbox("What's New", "now ...", 0)
-        self.enable_MainWin_Widgets()
+        Mbox("What's New", "now ...", 0, self.root)
 
     # Open Capture Window
     def open_capture_screen(self):
         self.capture_UI.show()
 
+
+    """
+    # -----------------------------------------------------------------
+    # Disabling and enabling widgets, Turns out we dont need this anymore
     # Disable widgets in main window
     def disable_MainWin_Widgets(self):
+        pass
         globalStuff.mboxOpen = True
         widget_Lists = self.root.winfo_children()
 
@@ -337,6 +328,7 @@ class main_Menu():
 
     # Enable widgets in main window
     def enable_MainWin_Widgets(self):
+        pass
         widget_Lists = self.root.winfo_children()
 
         menuBar = widget_Lists.pop() # Last element is the menubar
@@ -354,6 +346,7 @@ class main_Menu():
                     print("Error when enabling: " + str(e))
 
         globalStuff.mboxOpen = False
+    """
 
     def swapTl(self):
         # Get Before

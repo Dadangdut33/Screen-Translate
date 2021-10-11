@@ -76,24 +76,24 @@ class CaptureUI():
     # Capture the text
     def getTextAndTranslate(self, offSetXY=["auto", "auto"]):
         if(globalStuff.capUiHidden): # If Hidden
-            Mbox("Error: You need to generate the capture window", "Please generate the capture window first", 2)
+            Mbox("Error: You need to generate the capture window", "Please generate the capture window first", 2, self.root)
             print("Error Need to generate the capture window! Please generate the capture window first")
             return
         # Check for the lang from and langto only if it's on translation mode
         if globalStuff.engine != "None":
             # If selected langfrom and langto is the same
             if(globalStuff.langFrom) == (globalStuff.langTo):
-                Mbox("Error: Language target is the same as source", "Please choose a different language", 2)
+                Mbox("Error: Language target is the same as source", "Please choose a different language", 2, self.root)
                 print("Error Language is the same as source! Please choose a different language")
                 return
             # If selected langfrom is autodetect -> invalid
             if globalStuff.langFrom == "Auto-Detect":
-                Mbox("Error: Invalid Language Selected", "Can't Use Auto Detect in Capture Mode", 2)
+                Mbox("Error: Invalid Language Selected", "Can't Use Auto Detect in Capture Mode", 2, self.root)
                 print("Error: Invalid Language Selected! Can't Use Auto Detect in Capture Mode")
                 return
             # If selected langto is autodetect -> also invalid
             if globalStuff.langTo == "Auto-Detect":
-                Mbox("Error: Invalid Language Selected", "Must specify language destination", 2)
+                Mbox("Error: Invalid Language Selected", "Must specify language destination", 2, self.root)
                 print("Error: Invalid Language Selected! Must specify language destination")
                 return
 
@@ -111,7 +111,7 @@ class CaptureUI():
         # If tesseract is not found
         if os.path.exists(settings['tesseract_loc']) == False or validTesseract == False:
             self.root.wm_withdraw()  # Hide the capture window
-            Mbox("Error: Tesseract Not Found!", "Please set tesseract location in Setting.json.\nYou can set this in setting menu or modify it manually in json/Setting.json", 2)
+            Mbox("Error: Tesseract Not Found!", "Please set tesseract location in Setting.json.\nYou can set this in setting menu or modify it manually in json/Setting.json", 2, self.root)
             self.root.wm_deiconify()  # Show the capture window
 
             return # Reject
@@ -139,7 +139,7 @@ class CaptureUI():
 
         if is_Success == False or len(result) == 1:
             print("But Failed to capture any text!")
-            Mbox("Warning", "Failed to Capture Text!", 1)
+            Mbox("Warning", "Failed to Capture Text!", 1, self.root)
         else:
             # Pass it to mainMenu
             globalStuff.text_Box_Top_Var.set(result[:-1]) # Delete last character
