@@ -342,7 +342,7 @@ class main_Menu():
     # Check version
     def checkVersion(self, withPopup = True):
         try:
-            version = requests.get("https://raw.githubusercontent.com/Dadangdut33/Screen-Translate/main/version_Release.txt").text
+            version = requests.get("https://raw.githubusercontent.com/Dadangdut33/Screen-Translate/main/version.txt").text
             # num_CurrentVersion = [int(i) for i in globalStuff.version.split('.')]
             # num_LatestVersion = [int(i) for i in version.split('.')]
 

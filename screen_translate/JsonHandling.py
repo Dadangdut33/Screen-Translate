@@ -15,7 +15,7 @@ class JsonHandler:
         "cached": True,
         "autoCopy": True,
         "offSetXYType": "No Offset",
-        "offSetXY": ["auto", "auto"],
+        "offSetXY": [0, 0],
         "offSetWH": ["auto", "auto"],
         "tesseract_loc": "C:\\Program Files\\Tesseract-OCR\\tesseract.exe",
         "default_Engine": "Google Translate",

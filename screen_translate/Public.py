@@ -303,8 +303,7 @@ def fillList(dictFrom, listTo, insertFirst="", insertSecond=""):
     if insertSecond != "":
         listTo.insert(1, insertSecond)
 
-# TODO: fix offset on setting sometimes the number not showing properly when auto for some reason
-def getTheOffset(custom=""):
+def getTheOffset(custom=None):
     """
     Get the offset of the monitor.
     """
@@ -315,14 +314,16 @@ def getTheOffset(custom=""):
     xyOffSetType = settings["offSetXYType"]
 
     # If custom
-    if custom != "":
+    if custom is not None:
+        offSetXY = ["auto", "auto"] # When custom is set, then offset auto will be checked automatically.
+
         offSets = offSetSettings(offSetWH, xyOffSetType, offSetXY, custom)
     else:  # if not
         offSets = offSetSettings(offSetWH, xyOffSetType, offSetXY)
 
     return offSets
 
-def offSetSettings(widthHeighOff, xyOffsetType, xyOff, custom=""):
+def offSetSettings(widthHeighOff, xyOffsetType, xyOff, custom=None):
     """
     Calculate the offset settings for the monitor.
     """
@@ -339,7 +340,7 @@ def offSetSettings(widthHeighOff, xyOffsetType, xyOff, custom=""):
         h = widthHeighOff[1]
 
     #  If offset is set
-    if xyOffsetType.lower() != "no offset" or custom != "":
+    if xyOffsetType.lower() != "no offset" or custom is not None:
         offsetX = pyautogui.size().width
         offsetY = pyautogui.size().height
 

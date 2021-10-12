@@ -3,14 +3,14 @@
     "autoCopy": true,
     "offSetXYType": "No Offset",
     "offSetXY": [
-        "auto",
-        "auto"
+        0,
+        0
     ],
     "offSetWH": [
         "auto",
         "auto"
     ],
-    "tesseract_loc": "C:\\Program Files\\Tesseract-OCR\\tesseract.exe",
+    "tesseract_loc": "C:/Program Files/Tesseract-OCR/tesseract.exe",
     "default_Engine": "Google Translate",
     "default_FromOnOpen": "Japanese",
     "default_ToOnOpen": "English",

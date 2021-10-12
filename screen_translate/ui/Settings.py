@@ -1,6 +1,7 @@
 import tkinter.ttk as ttk
 import keyboard
 from tkinter import *
+from tkinter import filedialog
 from ..Public import fJson, globalStuff
 from ..Public import startfile, optGoogle, optDeepl, optMyMemory, optPons, optNone, engines, getTheOffset, offSetSettings, searchList
 from ..Mbox import Mbox
@@ -60,6 +61,7 @@ class SettingUI():
         self.bottomFrame = Frame(self.root)
         self.bottomFrame.pack(side=BOTTOM, fill=BOTH, expand=False)
 
+        # ----------------------------------------------------------------
         # First Frame
         self.checkVarImg = BooleanVar(self.root, name="checkVarImg", value=True) # So its not error
         self.checkBTNCache = Checkbutton(self.firstFrameContent, text="Save Captured Image", variable=self.checkVarImg)
@@ -67,6 +69,11 @@ class SettingUI():
         self.checkBTNAutoCopy = Checkbutton(self.firstFrameContent, text="Auto Copy Captured Text To Clipboard", variable=self.checkVarAutoCopy)
         self.btnOpenImgFolder = Button(self.firstFrameContent, text="Open Captured Image Folder", command=lambda: startfile(dir_path + r"\..\..\img_captured"))
 
+        self.checkBTNAutoCopy.pack(side=LEFT, padx=5, pady=5)
+        self.checkBTNCache.pack(side=LEFT, padx=5, pady=5)
+        self.btnOpenImgFolder.pack(side=LEFT, padx=5, pady=5)
+
+        # ----------------------------------------------------------------
         # Second Frame
         self.CBOffSetChoice = ttk.Combobox(self.secondFrameContent_0, values=["No Offset", "Custom Offset"], state="readonly")
 
@@ -106,40 +113,6 @@ class SettingUI():
 
         self.buttonCheckMonitorLayout = Button(self.secondFrameContent_4, text="Click to get A Screenshot of How The Program See Your Monitor", command=self.screenShotAndOpenLayout)
 
-        # Third frame
-        self.langOpt = optGoogle
-
-        self.CBDefaultEngine = ttk.Combobox(self.thirdFrameContent, values=engines, state="readonly")
-        self.CBDefaultFrom = ttk.Combobox(self.thirdFrameContent, values=self.langOpt, state="readonly")
-        self.CBDefaultTo = ttk.Combobox(self.thirdFrameContent, values=self.langOpt, state="readonly")
-        self.labelDefaultEngine = Label(self.thirdFrameContent, text="Default Engine :")
-        self.labelDefaultFrom = Label(self.thirdFrameContent, text="Default From :")
-        self.labelDefaultTo = Label(self.thirdFrameContent, text="Default To :")
-
-        # Fourth frame
-        self.labelTesseractPath = Label(self.fourthFrameContent, text="Tesseract Path :")
-        self.textBoxTesseractPath = Text(self.fourthFrameContent, width=77, height=1, xscrollcommand=True)
-
-        # Fifth frame
-        self.labelHotkeyDelay = Label(self.fifthFrameContent, text="Time delay (ms) : ")
-        self.spinnerHotkeyDelay = Spinbox(self.fifthFrameContent, from_=0, to=100000, width=20, textvariable=self.spinValHotkeyDelay)
-        self.spinnerHotkeyDelay.configure(validate='key', validatecommand=self.validateDigits)
-        self.buttonSetHotkey = Button(self.fifthFrameContent, text="Click to set hotkey for capture", command=self.setHotkey)
-        self.buttonClearHotkey = Button(self.fifthFrameContent, text="Clear", command=self.clearHotkey)
-        self.labelHotkeyTip = Label(self.fifthFrameContent, text="Current hotkey : ")
-        self.labelCurrentHotkey = Label(self.fifthFrameContent, text="")
-
-        # Bottom Frame
-        self.btnSave = Button(self.bottomFrame, text="Save Settings", command=self.saveSettings)
-
-        # TL CB
-        # Init element
-        # 1
-        self.checkBTNAutoCopy.pack(side=LEFT, padx=5, pady=5)
-        self.checkBTNCache.pack(side=LEFT, padx=5, pady=5)
-        self.btnOpenImgFolder.pack(side=LEFT, padx=5, pady=5)
-
-        # 2
         self.labelCBOffsetNot.pack(side=LEFT, padx=5, pady=5)
         self.CBOffSetChoice.pack(side=LEFT, padx=5, pady=5)
         self.CBOffSetChoice.bind("<<ComboboxSelected>>", self.CBOffSetChange)
@@ -161,7 +134,17 @@ class SettingUI():
 
         self.buttonCheckMonitorLayout.pack(side=LEFT, padx=30, pady=5)
 
-        # 3
+        # ----------------------------------------------------------------
+        # Third frame
+        self.langOpt = optGoogle
+
+        self.CBDefaultEngine = ttk.Combobox(self.thirdFrameContent, values=engines, state="readonly")
+        self.CBDefaultFrom = ttk.Combobox(self.thirdFrameContent, values=self.langOpt, state="readonly")
+        self.CBDefaultTo = ttk.Combobox(self.thirdFrameContent, values=self.langOpt, state="readonly")
+        self.labelDefaultEngine = Label(self.thirdFrameContent, text="Default Engine :")
+        self.labelDefaultFrom = Label(self.thirdFrameContent, text="Default From :")
+        self.labelDefaultTo = Label(self.thirdFrameContent, text="Default To :")
+
         self.labelDefaultEngine.pack(side=LEFT, padx=5, pady=5)
         self.CBDefaultEngine.pack(side=LEFT, padx=5, pady=5)
         self.CBDefaultEngine.bind("<<ComboboxSelected>>", self.CBTLChange_setting)
@@ -172,11 +155,27 @@ class SettingUI():
         self.labelDefaultTo.pack(side=LEFT, padx=5, pady=5)
         self.CBDefaultTo.pack(side=LEFT, padx=5, pady=5)
 
-        # 4
+        # ----------------------------------------------------------------
+        # Fourth frame
+        self.labelTesseractPath = Label(self.fourthFrameContent, text="Tesseract Path :")
+        self.textBoxTesseractPath = Entry(self.fourthFrameContent, width=70, xscrollcommand=True)
+        self.textBoxTesseractPath.bind("<Key>", lambda event: self.allowedKey(event)) # Disable textbox input
+        self.btnSearchTesseract = ttk.Button(self.fourthFrameContent, text="...", command=self.searchTesseract)
+
         self.labelTesseractPath.pack(side=LEFT, padx=5, pady=5)
         self.textBoxTesseractPath.pack(side=LEFT, padx=5, pady=5, fill=X, expand=True)
+        self.btnSearchTesseract.pack(side=LEFT, padx=5, pady=5)
 
-        # 5
+        # ----------------------------------------------------------------
+        # Fifth frame
+        self.labelHotkeyDelay = Label(self.fifthFrameContent, text="Time delay (ms) : ")
+        self.spinnerHotkeyDelay = Spinbox(self.fifthFrameContent, from_=0, to=100000, width=20, textvariable=self.spinValHotkeyDelay)
+        self.spinnerHotkeyDelay.configure(validate='key', validatecommand=self.validateDigits)
+        self.buttonSetHotkey = Button(self.fifthFrameContent, text="Click to set hotkey for capture", command=self.setHotkey)
+        self.buttonClearHotkey = Button(self.fifthFrameContent, text="Clear", command=self.clearHotkey)
+        self.labelHotkeyTip = Label(self.fifthFrameContent, text="Current hotkey : ")
+        self.labelCurrentHotkey = Label(self.fifthFrameContent, text="")
+
         self.labelHotkeyDelay.pack(side=LEFT, padx=5, pady=5)
         self.spinnerHotkeyDelay.pack(side=LEFT, padx=5, pady=5)
         self.buttonSetHotkey.pack(side=LEFT, padx=5, pady=5)
@@ -184,16 +183,44 @@ class SettingUI():
         self.labelHotkeyTip.pack(side=LEFT, padx=5, pady=5)
         self.labelCurrentHotkey.pack(side=LEFT, padx=5, pady=5)
 
+        # ----------------------------------------------------------------
         # Bottom Frame
+        self.btnSave = ttk.Button(self.bottomFrame, text="Save Settings", command=self.saveSettings)
         self.btnSave.pack(side=RIGHT, padx=4, pady=5)
-        self.btnReset = Button(self.bottomFrame, text="Reset To Currently Stored Setting", command=self.reset)
+        self.btnReset = ttk.Button(self.bottomFrame, text="Reset To Currently Stored Setting", command=self.reset)
         self.btnReset.pack(side=RIGHT, padx=5, pady=5)
-        self.btnRestoreDefault = Button(self.bottomFrame, text="Restore Default", command=self.restoreDefault)
+        self.btnRestoreDefault = ttk.Button(self.bottomFrame, text="Restore Default", command=self.restoreDefault)
         self.btnRestoreDefault.pack(side=RIGHT, padx=5, pady=5)
 
         # On Close
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
 
+
+    # Allowed keys
+    def allowedKey(self, event):
+        key = event.keysym
+        allowed = False
+
+        if key.lower() in ['left', 'right']: # Arrow left right
+            allowed = True
+            return
+        if (4 == event.state and key == 'a'): # Ctrl + a
+            allowed = True
+            return
+        if (4 == event.state and key == 'c'): # Ctrl + c
+            allowed = True
+            return
+        
+        if not allowed:
+            return "break"
+
+    def searchTesseract(self):
+        self.tesseract_path = filedialog.askopenfilename(initialdir="/", title="Select file", filetypes=(
+            ("tesseract.exe", "*.exe"),
+        ))
+        if self.tesseract_path != "":
+            self.textBoxTesseractPath.delete(0, END)
+            self.textBoxTesseractPath.insert(0, self.tesseract_path)
 
     def show(self):
         fJson.loadSetting() # read settings every time it is opened
@@ -394,16 +421,18 @@ class SettingUI():
         self.CBDefaultEngine.current(searchList(settings['default_Engine'], engines))
         self.CBDefaultFrom.current(searchList(settings['default_FromOnOpen'], self.langOpt))
         self.CBDefaultTo.current(searchList(settings['default_ToOnOpen'], self.langOpt))
-        self.textBoxTesseractPath.delete(1.0, END)
-        self.textBoxTesseractPath.insert(1.0, settings['tesseract_loc'])
+        self.textBoxTesseractPath.delete(0, END)
+        self.textBoxTesseractPath.insert(0, settings['tesseract_loc'])
 
         print("Setting Loaded")
         # No need for mbox
 
     def saveSettings(self):
         # Check path tesseract
-        tesseractPathInput = self.textBoxTesseractPath.get("1.0", END).strip().lower()
-        validTesseract = "tesseract" in tesseractPathInput
+        tesseractPathInput = self.textBoxTesseractPath.get().strip().lower()
+        # Get the exe name or the last / in tesseract path
+        tesseractPath = tesseractPathInput.split("/")[-1]
+        validTesseract = "tesseract" in tesseractPath.lower()
         # # If tesseract is not found
         if os.path.exists(tesseractPathInput) == False or validTesseract == False:
             print("Tesseract Not Found Error")
@@ -438,7 +467,7 @@ class SettingUI():
             "offSetXYType": self.CBOffSetChoice.get(),
             "offSetXY": [x, y],
             "offSetWH": [w, h],
-            "tesseract_loc": self.textBoxTesseractPath.get("1.0", END).strip(),
+            "tesseract_loc": self.textBoxTesseractPath.get().strip(),
             "default_Engine": self.CBDefaultEngine.get(),
             "default_FromOnOpen": self.CBDefaultFrom.get(),
             "default_ToOnOpen": self.CBDefaultTo.get(),
@@ -476,8 +505,8 @@ class SettingUI():
         # Check offset or not
         if xyOffSetType == "No Offset":
             # Select auto
-            self.checkAutoOffSetX.select()
-            self.checkAutoOffSetY.select()
+            self.checkAutoOffSetX.deselect()
+            self.checkAutoOffSetY.deselect()
             # Disable spinner and the selector, also set stuff in spinner to 0
             self.checkAutoOffSetX.config(state=DISABLED)
             self.checkAutoOffSetY.config(state=DISABLED)
