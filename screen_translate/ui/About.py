@@ -35,13 +35,18 @@ class AboutUI():
         self.bottomRight.pack(side=RIGHT, fill=BOTH, expand=True)
 
         # Top frame
-        self.canvasImg = Canvas(self.topFrame, width = 98, height = 98, bg="white")      
-        self.canvasImg.pack(side=TOP, padx=5, pady=5) 
-        self.imgObj = Image.open(globalStuff.logoPath)
-        self.imgObj = self.imgObj.resize((100, 100), Image.ANTIALIAS)
+        try: # Try catch the logo so if logo not found it can still run
+            self.canvasImg = Canvas(self.topFrame, width = 98, height = 98, bg="white")      
+            self.canvasImg.pack(side=TOP, padx=5, pady=5) 
+            self.imgObj = Image.open(globalStuff.logoPath)
+            self.imgObj = self.imgObj.resize((100, 100), Image.ANTIALIAS)
 
-        self.img = ImageTk.PhotoImage(self.imgObj, master=self.canvasImg)
-        self.canvasImg.create_image(2, 50, anchor=W, image=self.img)
+            self.img = ImageTk.PhotoImage(self.imgObj, master=self.canvasImg)
+            self.canvasImg.create_image(2, 50, anchor=W, image=self.img)
+        except:
+            self.logoNotFoud = Label(self.topFrame, text="Fail To Load Logo, Logo not found", bg="white", fg="red")
+            self.logoNotFoud.pack(side=TOP, padx=5, pady=5)
+            self.root.geometry('375x325')
 
         self.titleLabel = Label(self.topFrame, text="Screen Translate", bg="white", font=("Helvetica", 12, BOLD))
         self.titleLabel.pack(padx=5, pady=2, side=TOP)
