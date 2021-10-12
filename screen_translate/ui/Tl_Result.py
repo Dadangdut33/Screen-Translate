@@ -23,7 +23,8 @@ class Detached_Tl_Result():
         self.menubar = Menu(self.root)
         self.alwaysOnTopVar = BooleanVar()
         self.topHidden = BooleanVar()
-        self.alwaysOnTopVar.set(False)
+        self.alwaysOnTopVar.set(True)
+        self.root.wm_attributes('-topmost', True)
 
         # Same method as in the capture window
         self.alwaysOnTopCheck_Hidden = Checkbutton(self.topFrame, text="Stay on top", variable=self.alwaysOnTopVar, command=self.always_on_top)
@@ -58,10 +59,10 @@ class Detached_Tl_Result():
     # Stay on top
     def always_on_top(self):
         if self.alwaysOnTopVar.get(): # IF ON THEN TURN IT OFF
-            self.root.wm_attributes('-topmost', True)
+            self.root.wm_attributes('-topmost', False)
             self.alwaysOnTopVar.set(False)
         else: # IF OFF THEN TURN IT ON
-            self.root.wm_attributes('-topmost', False)
+            self.root.wm_attributes('-topmost', True)
             self.alwaysOnTopVar.set(True)
 
     # Show/Hide

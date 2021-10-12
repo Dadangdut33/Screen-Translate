@@ -32,7 +32,8 @@ class CaptureUI():
         self.menubar = Menu(self.root)
         self.alwaysOnTopVar = BooleanVar()
         self.topHidden = BooleanVar()
-        self.alwaysOnTopVar.set(False)
+        self.alwaysOnTopVar.set(True)
+        self.root.wm_attributes('-topmost', True)
 
         # What happen here is that we created a hidden checkbutton to control the variable because for some reason it JUST DOES NOT WORK properly i dont know why
         # If someone found a better solution to this problem, please let me know or just create a pull request.
@@ -174,8 +175,8 @@ class CaptureUI():
     # Menubar
     def always_on_top(self):
         if self.alwaysOnTopVar.get(): # IF ON THEN TURN IT OFF
-            self.root.wm_attributes('-topmost', True)
+            self.root.wm_attributes('-topmost', False)
             self.alwaysOnTopVar.set(False)
         else: # IF OFF THEN TURN IT ON
-            self.root.wm_attributes('-topmost', False)
+            self.root.wm_attributes('-topmost', True)
             self.alwaysOnTopVar.set(True)
