@@ -18,12 +18,25 @@ from screen_translate.ui.History import HistoryUI
 from screen_translate.ui.Settings import SettingUI
 from screen_translate.ui.Capture_Window import CaptureUI
 from screen_translate.ui.About import AboutUI
+from screen_translate.ui.Tl_From import Detached_Tl_Query
+from screen_translate.ui.Tl_Result import Detached_Tl_Result
 
-# Get path
+# ----------------------------------------------------------------
+# Paths
 dir_path = os.path.dirname(os.path.realpath(__file__))
 dir_img_captured = dir_path + r"\img_captured"
 dir_logo = dir_path + "/logo.ico"
 globalStuff.logoPath = dir_logo.replace(".ico", ".png")
+
+# ----------------------------------------------------------------
+""" For future features
+TODO: 
+- Add more OCR options
+- Add tl result window setting (color, background, font, etc)
+- Change the layout of settings window, divide panel for some category
+- Add disable history in setting
+- Find better way to use the hotkey instead of checking it every 100ms
+"""
 
 # ----------------------------------------------------------------
 def console():
@@ -49,7 +62,8 @@ class main_Menu():
         self.root.geometry("900x300")
         self.root.wm_attributes('-topmost', False) # Default False
         self.alwaysOnTop = False
-        self.capUiHidden = True
+        globalStuff.capUiHidden = True
+        globalStuff.main_Ui = self.root
 
         # --- Load settings ---
         tStatus, settings = fJson.loadSetting()
@@ -78,6 +92,8 @@ class main_Menu():
         self.setting_UI = SettingUI()
         self.history_UI = HistoryUI()
         self.about_UI = AboutUI()
+        self.query_Detached_Window_UI = Detached_Tl_Query()
+        self.result_Detached_Window_UI = Detached_Tl_Result()
 
         # Set hotkeyPressed as false
         globalStuff.hotkeyPressed = False
@@ -121,7 +137,7 @@ class main_Menu():
 
         # Translation Textbox topFrame2 & bottomFrame2
         self.textBoxTop = TextWithVar(self.topFrame2, textvariable=globalStuff.text_Box_Top_Var, height = 4, width = 100, font=("Segoe UI", 10), yscrollcommand=True)
-        self.textBoxBottom = TextWithVar(self.bottomFrame2, textvariable=globalStuff.text_Box_Bottom_Var, borderwidth=1,  height = 5, width = 100, font=("Segoe UI", 10), yscrollcommand=True)
+        self.textBoxBottom = TextWithVar(self.bottomFrame2, textvariable=globalStuff.text_Box_Bottom_Var, height = 5, width = 100, font=("Segoe UI", 10), yscrollcommand=True)
 
         self.menubar = Menu(self.root)
         self.filemenu = Menu(self.menubar, tearoff=0)
@@ -138,6 +154,8 @@ class main_Menu():
 
         self.filemenu3 = Menu(self.menubar, tearoff=0)
         self.filemenu3.add_command(label="Capture Window", command=self.open_Capture_Screen) # Open Capture Screen Window
+        self.filemenu3.add_command(label="Query Box", command=self.open_Query_Box)
+        self.filemenu3.add_command(label="Result Box", command=self.open_Result_Box)
         self.menubar.add_cascade(label="Generate", menu=self.filemenu3)
 
         self.filemenu4 = Menu(self.menubar, tearoff=0)
@@ -232,9 +250,15 @@ class main_Menu():
     # --- Functions ---
     # On Close
     def on_closing(self):
+        """
+        Confirmation on close
+        """
+
+        """ # This is not needed anymore
         if globalStuff.mboxOpen:
             Mbox("A message box is still opened", "Please close all message box first!", 0, self.root)
             return
+        """
 
         # Confirmation on close
         if Mbox("Confirmation", "Are you sure you want to exit?", 3, self.root):
@@ -249,6 +273,14 @@ class main_Menu():
     def open_History(self, event=None):
         self.history_UI.show()
 
+    # Open result box
+    def open_Result_Box(self, event=None):
+        self.result_Detached_Window_UI.show()
+
+    # Open query box
+    def open_Query_Box(self, event=None):
+        self.query_Detached_Window_UI.show()
+
     # Open About Window
     def open_About(self, event=None):
         self.about_UI.show()
@@ -259,7 +291,7 @@ class main_Menu():
 
     # Hotkey
     def hotkeyPoll(self):
-        if globalStuff.hotkeyPressed == True and self.capUiHidden == False:
+        if globalStuff.hotkeyPressed == True and globalStuff.capUiHidden == False:
             settings = fJson.readSetting()
             time.sleep(settings['capture_HotkeyDelay'] / 1000)
             self.capture_UI.getTextAndTranslate()

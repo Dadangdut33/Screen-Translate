@@ -39,13 +39,16 @@ class global_Stuff:
         self.gimmickWindow = tk.Tk()
         self.gimmickWindow.withdraw()
 
+        # Reference main ui
+        self.main_Ui = None
+
         # Text box
         self.text_Box_Top_Var = tk.StringVar()
         self.text_Box_Bottom_Var = tk.StringVar()
         
         # Flag variables
         self.hotkeyPressed = False
-        self.capUiHidden = False
+        self.capUiHidden = True
 
         # Capture opacities
         self.curCapOpacity = 0.8
@@ -59,8 +62,8 @@ class global_Stuff:
         self.mboxOpen = False
         
         # Version
-        self.version = "1.5.1"
-        self.versionType = "wip"
+        self.version = "1.6"
+        self.versionType = "release"
         self.newVerStatusCache = None
 
         # Logo
@@ -76,12 +79,12 @@ class global_Stuff:
         if self.engine != "None":
             # If source and destination are the same
             if(self.langFrom) == (self.langTo):
-                Mbox("Error: Language target is the same as source", "Please choose a different language", 2)
+                Mbox("Error: Language target is the same as source", "Please choose a different language", 2, self.main_Ui)
                 print("Error Language is the same as source! Please choose a different language")
                 return
             # If langto not set
             if self.langTo == "Auto-Detect":
-                Mbox("Error: Invalid Language Selected", "Must specify language destination", 2)
+                Mbox("Error: Invalid Language Selected", "Must specify language destination", 2, self.main_Ui)
                 print("Error: Invalid Language Selected! Must specify language destination")
                 return
 
@@ -89,7 +92,7 @@ class global_Stuff:
         query = self.text_Box_Top_Var.get()
 
         if(len(query) < 1):
-            Mbox("Error: No text entered", "Please enter some text", 2)
+            Mbox("Error: No text entered", "Please enter some text", 2, self.main_Ui)
             print("Error: No text entered! Please enter some text")
             return
 
@@ -123,7 +126,7 @@ class global_Stuff:
         # Wrong opts
         else:
             print("Please select a correct engine")
-            Mbox("Error: Engine Not Set!", "Please Please select a correct engine", 2)
+            Mbox("Error: Engine Not Set!", "Please Please select a correct engine", 2, self.main_Ui)
 
     # Get Deepl TL
     async def getDeeplTl(self, text, langTo, langFrom):
@@ -148,7 +151,25 @@ class global_Stuff:
             }
             fJson.writeAdd_History(new_data)
         else:
-            Mbox("Error: Translation Failed", translateResult, 2)
+            Mbox("Error: Translation Failed", translateResult, 2, self.main_Ui)
+
+    # Allowed keys
+    def allowedKey(self, event):
+        key = event.keysym
+        allowed = False
+
+        if key.lower() in ['left', 'right']: # Arrow left right
+            allowed = True
+            return
+        if (4 == event.state and key == 'a'): # Ctrl + a
+            allowed = True
+            return
+        if (4 == event.state and key == 'c'): # Ctrl + c
+            allowed = True
+            return
+        
+        if not allowed:
+            return "break"
 
 # ------------------------------
 # TextWithVar, taken from: https://stackoverflow.com/questions/21507178/tkinter-text-binding-a-variable-to-widget-text-contents

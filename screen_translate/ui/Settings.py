@@ -159,7 +159,7 @@ class SettingUI():
         # Fourth frame
         self.labelTesseractPath = Label(self.fourthFrameContent, text="Tesseract Path :")
         self.textBoxTesseractPath = Entry(self.fourthFrameContent, width=70, xscrollcommand=True)
-        self.textBoxTesseractPath.bind("<Key>", lambda event: self.allowedKey(event)) # Disable textbox input
+        self.textBoxTesseractPath.bind("<Key>", lambda event: globalStuff.allowedKey(event)) # Disable textbox input
         self.btnSearchTesseract = ttk.Button(self.fourthFrameContent, text="...", command=self.searchTesseract)
 
         self.labelTesseractPath.pack(side=LEFT, padx=5, pady=5)
@@ -194,25 +194,6 @@ class SettingUI():
 
         # On Close
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
-
-
-    # Allowed keys
-    def allowedKey(self, event):
-        key = event.keysym
-        allowed = False
-
-        if key.lower() in ['left', 'right']: # Arrow left right
-            allowed = True
-            return
-        if (4 == event.state and key == 'a'): # Ctrl + a
-            allowed = True
-            return
-        if (4 == event.state and key == 'c'): # Ctrl + c
-            allowed = True
-            return
-        
-        if not allowed:
-            return "break"
 
     def searchTesseract(self):
         self.tesseract_path = filedialog.askopenfilename(initialdir="/", title="Select file", filetypes=(

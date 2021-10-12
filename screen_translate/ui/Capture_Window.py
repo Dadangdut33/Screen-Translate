@@ -15,7 +15,6 @@ class CaptureUI():
         self.root = Tk()
         self.root.title('Text Capture Area')
         self.root.geometry('500x150')
-        globalStuff.capUiHidden = True
         self.root.wm_withdraw()
 
         globalStuff.curCapOpacity = 0.8
@@ -41,10 +40,10 @@ class CaptureUI():
         self.alwaysOnTopCheck_Hidden.select()
 
         self.topHiddenCheck = Checkbutton(self.topFrame, text="Hide Top", variable=self.topHidden, command=self.show_top)
-        self.topHiddenCheck.pack(padx=5, pady=5, side=LEFT)
 
         self.filemenu = Menu(self.menubar, tearoff=0)
         self.filemenu.add_checkbutton(label="Always on Top", onvalue=True, offvalue=False, variable=self.alwaysOnTopVar, command=self.always_on_top)
+        self.filemenu.add_checkbutton(label="Hide Top", onvalue=True, offvalue=False, variable=self.topHidden, command=self.show_top)
         self.menubar.add_cascade(label="Options", menu=self.filemenu)
 
         # Add to self.root
