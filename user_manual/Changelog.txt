@@ -1,3 +1,11 @@
+[V1.6 Added optional separate window for the translation]
+- There are now 2 additional window, 1 for the query and 1 for the result that you can generate in the generate menu
+- You can now check for update in the check for update and in the about window
+- App now have a logo thanks to Mdika
+- App now have 2 version, 1 with console window and 1 without it. There is no major difference between the 2. The only difference is that the one with console window is more useful for debugging
+- File size has been reduced. The app now only includes the necessary module/library on build
+- The ui source code have been restructured to make it more readable and easier to maintain
+
 [V1.5 Added hotkeys for capture and translate]
 - Added keybinding for the "Capture and translate" button
 - Added time delay for capturing using the keybinding

@@ -4,3 +4,4 @@ build/
 dist/
 img_captured/*.png
 .vscode/
+STL_Venv/

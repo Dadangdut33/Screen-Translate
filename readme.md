@@ -54,19 +54,41 @@ You can install them by running pip_install.bat or by installing them yourself, 
 
 **For Dev**
 1. Clone the repo or download the source code of the latest release
-2. Install tesseract, make sure select install all language pack when prompted
-3. Install all the dependencies used for the project
-4. Run and test the source code
+2. Install all the dependencies used for the project and also setup your own virtualenviroment if needed.
+```
+# On source code directory
+# Create a virtualenviroment with the name STL_Venv
+python -m venv STL_Venv
+
+# Activate the virtualenviroment
+source projectName/bin/activate
+
+# Install the dependencies
+pip install -r requirements.txt
+```
+3. Install tesseract, make sure select install all language pack when prompted
+4. 4. Run and test the source code
 5. If everything works, you can run the app normally running the ScreenTranslate.py file or using the TempRun.bat
 
 if everything works and you have a suggestion or improvement, you can submit a pull request on the github repository. I will check if it's a good idea to add it.
 
 # How To Compile It To .exe Yourself
 You can use [p2exe](https://www.py2exe.org/) or many other stuff. I use [pyinstaller](https://www.pyinstaller.org/) to compile it.<br>
-Command used are
+There are 2 options for compiling, command used are: 
 ```
 # On Source Code Directory
-pyinstaller ScreenTranslate.spec
+# With console window
+pyinstaller ScreenTranslate_Console.spec
+
+# No console window
+pyinstaller ScreenTranslate_NoConsole.spec
+
+# If installing using virtualenviroment
+# With console window
+pyinstaller --paths STL_Venv/lib/site-packages ScreenTranslate_Console.spec
+
+# No console window
+pyinstaller --paths STL_Venv/lib/site-packages ScreenTranslate_NoConsole.spec
 ```
 Read [this stackoverflow post](https://stackoverflow.com/questions/5458048/how-can-i-make-a-python-script-standalone-executable-to-run-without-any-dependen) to learn more on how to do it.
 
