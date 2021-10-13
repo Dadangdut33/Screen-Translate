@@ -18,7 +18,7 @@ class HistoryUI():
         # Layout
         # frameOne
         self.firstFrame = Frame(self.root)
-        self.firstFrame.pack(side=TOP, fill=BOTH, padx=5, expand=False)
+        self.firstFrame.pack(side=TOP, fill=BOTH, padx=5, expand=True)
         self.firstFrameScrollX = Frame(self.root)
         self.firstFrameScrollX.pack(side=TOP, fill=X, padx=5, expand=False)
 
@@ -61,7 +61,7 @@ class HistoryUI():
         self.historyTreeView.column('From-To', anchor=CENTER, width=150, stretch=False)
         self.historyTreeView.column('Query', anchor="w", width=10000, stretch=False) # Make the width ridiculuosly long so it can use the x scrollbar
 
-        self.historyTreeView.pack(side=TOP, padx=5, pady=5, fill=BOTH, expand=False)
+        self.historyTreeView.pack(side=TOP, padx=5, pady=5, fill=BOTH, expand=True)
         self.btnRefresh.pack(side=LEFT, fill=X, padx=(10, 5), pady=5, expand=False)
         self.btnCopyToClipboard.pack(side=LEFT, fill=X, padx=5, pady=5, expand=False)
         self.btnCopyToTranslateBox.pack(side=LEFT, fill=X, padx=5, pady=5, expand=False)
