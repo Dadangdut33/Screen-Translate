@@ -17,7 +17,7 @@ class JsonHandler:
         "offSetXYType": "No Offset",
         "offSetXY": [0, 0],
         "offSetWH": ["auto", "auto"],
-        "tesseract_loc": "C:\\Program Files\\Tesseract-OCR\\tesseract.exe",
+        "tesseract_loc": "C:/Program Files/Tesseract-OCR/tesseract.exe",
         "default_Engine": "Google Translate",
         "default_FromOnOpen": "Auto-Detect",
         "default_ToOnOpen": "English",

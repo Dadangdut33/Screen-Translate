@@ -51,7 +51,7 @@ class CaptureUI():
         self.root.config(menu=self.menubar)
 
         # Button
-        self.captureBtn = Button(self.topFrame, text="Capture And Translate", command=self.getTextAndTranslate)
+        self.captureBtn = ttk.Button(self.topFrame, text="Capture And Translate", command=self.getTextAndTranslate)
         self.captureBtn.pack(padx=5, pady=5, side=LEFT)
 
         # opacity slider # the slider will be added to main menu not here

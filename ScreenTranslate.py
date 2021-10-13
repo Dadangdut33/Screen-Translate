@@ -185,8 +185,8 @@ class main_Menu():
         self.root.bind("<F4>", self.open_Img_Captured)
 
         # topFrame1
-        self.translateOnly_Btn = Button(self.topFrame1, text="Translate", command=globalStuff.translate)
-        self.captureNTranslate_Btn = Button(self.topFrame1, text="Capture And Translate", command=self.capture_UI.getTextAndTranslate)
+        self.translateOnly_Btn = ttk.Button(self.topFrame1, text="Translate", command=globalStuff.translate)
+        self.captureNTranslate_Btn = ttk.Button(self.topFrame1, text="Capture And Translate", command=self.capture_UI.getTextAndTranslate)
         self.translateOnly_Btn.pack(side=LEFT, padx=5, pady=5)
         self.captureNTranslate_Btn.pack(side=LEFT, padx=5, pady=5)
 
@@ -213,8 +213,8 @@ class main_Menu():
         self.CBLangTo.bind("<<ComboboxSelected>>", self.langChanged)
 
         # Button bottomFrame1
-        self.clearBtn = Button(self.bottomFrame1, text="Clear", command=self.clearTB)
-        self.swapBtn = Button(self.bottomFrame1, text="Swap", command=self.swapTl)
+        self.clearBtn = ttk.Button(self.bottomFrame1, text="Clear", command=self.clearTB)
+        self.swapBtn = ttk.Button(self.bottomFrame1, text="Swap", command=self.swapTl)
         self.swapBtn.pack(side=LEFT, padx=5, pady=5)
         self.clearBtn.pack(side=LEFT, padx=5, pady=5)
 
