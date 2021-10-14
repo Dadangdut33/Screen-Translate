@@ -74,6 +74,7 @@ class CaptureUI():
     def show(self):
         globalStuff.capUiHidden = False
         self.root.wm_deiconify()
+        self.sliderOpac(0.8, "main")
 
     def on_closing(self):
         globalStuff.capUiHidden = True
