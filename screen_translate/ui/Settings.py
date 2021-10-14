@@ -86,8 +86,6 @@ class SettingUI():
         self.checkVarOffSetW = BooleanVar(self.root, name="checkVarOffSetW", value=True)
         self.checkVarOffSetH = BooleanVar(self.root, name="checkVarOffSetH", value=True)
 
-        # CHANGE CHEECKBUTTON TO USE TTK. CONTROL USING VAR
-
         self.checkAutoOffSetX = ttk.Checkbutton(self.secondFrameContent_1, text="Auto Offset X", variable=self.checkVarOffSetX, command=self.checkBtnX)
         self.checkAutoOffSetY = ttk.Checkbutton(self.secondFrameContent_1, text="Auto Offset Y", variable=self.checkVarOffSetY, command=self.checkBtnY)
         self.checkAutoOffSetW = ttk.Checkbutton(self.secondFrameContent_1, text="Auto Offset W", variable=self.checkVarOffSetW, command=self.checkBtnW)

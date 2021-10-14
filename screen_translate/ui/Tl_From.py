@@ -22,19 +22,19 @@ class Detached_Tl_Query():
         # Always on top checkbox
         self.menubar = Menu(self.root)
         self.alwaysOnTopVar = BooleanVar()
-        self.topHidden = BooleanVar()
         self.alwaysOnTopVar.set(True)
+        self.topHiddenVar = BooleanVar()
         self.root.wm_attributes('-topmost', True)
 
         # Same method as in the capture window
         self.alwaysOnTopCheck_Hidden = Checkbutton(self.topFrame, text="Stay on top", variable=self.alwaysOnTopVar, command=self.always_on_top)
         self.alwaysOnTopCheck_Hidden.select()
 
-        self.topHiddenCheck = Checkbutton(self.topFrame, text="Hide Top", variable=self.topHidden, command=self.show_top)
+        self.topHiddenCheck = Checkbutton(self.topFrame, text="Hide Top", variable=self.topHiddenVar, command=self.show_top)
 
         self.filemenu = Menu(self.menubar, tearoff=0)
         self.filemenu.add_checkbutton(label="Always on Top", onvalue=True, offvalue=False, variable=self.alwaysOnTopVar, command=self.always_on_top)
-        self.filemenu.add_checkbutton(label="Hide Top", onvalue=True, offvalue=False, variable=self.topHidden, command=self.show_top)
+        self.filemenu.add_checkbutton(label="Hide Top", onvalue=True, offvalue=False, variable=self.topHiddenVar, command=self.show_top)
         self.menubar.add_cascade(label="Options", menu=self.filemenu)
 
         # Add to self.root
@@ -49,12 +49,12 @@ class Detached_Tl_Query():
 
     # show/hide top
     def show_top(self):
-        if self.topHidden.get(): # IF ON THEN TURN IT OFF
+        if self.topHiddenVar.get(): # IF ON THEN TURN IT OFF
             self.root.overrideredirect(False)
-            self.topHidden.set(False)
+            self.topHiddenVar.set(False)
         else: # IF OFF THEN TURN IT ON
             self.root.overrideredirect(True)
-            self.topHidden.set(True)
+            self.topHiddenVar.set(True)
 
     # Stay on top
     def always_on_top(self):
