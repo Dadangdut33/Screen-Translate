@@ -98,16 +98,20 @@ class SettingUI():
 
         self.spinValHotkeyDelay = IntVar(self.root)
 
-        self.validateDigits = (self.root.register(self.validateSpinBox), '%P')
+        self.validateDigits_Offset_X = (self.root.register(self.validateSpinBox_Offset_X), '%P')
+        self.validateDigits_Offset_Y = (self.root.register(self.validateSpinBox_Offset_Y), '%P')
+        self.validateDigits_Offset_W = (self.root.register(self.validateSpinBox_Offset_W), '%P')
+        self.validateDigits_Offset_H = (self.root.register(self.validateSpinBox_Offset_H), '%P')
+        self.validateDigits_Delay = (self.root.register(self.validateSpinBox_Delay), '%P')
 
         self.spinnerOffSetX = ttk.Spinbox(self.secondFrameContent_2, from_=-100000, to=100000, width=20, textvariable=self.spinValOffSetX)
-        self.spinnerOffSetX.configure(validate='key', validatecommand=self.validateDigits)
+        self.spinnerOffSetX.configure(validate='key', validatecommand=self.validateDigits_Offset_X)
         self.spinnerOffSetY = ttk.Spinbox(self.secondFrameContent_3, from_=-100000, to=100000, width=20, textvariable=self.spinValOffSetY)
-        self.spinnerOffSetY.configure(validate='key', validatecommand=self.validateDigits)
+        self.spinnerOffSetY.configure(validate='key', validatecommand=self.validateDigits_Offset_Y)
         self.spinnerOffSetW = ttk.Spinbox(self.secondFrameContent_2, from_=-100000, to=100000, width=20, textvariable=self.spinValOffSetW)
-        self.spinnerOffSetW.configure(validate='key', validatecommand=self.validateDigits)
+        self.spinnerOffSetW.configure(validate='key', validatecommand=self.validateDigits_Offset_W)
         self.spinnerOffSetH = ttk.Spinbox(self.secondFrameContent_3, from_=-100000, to=100000, width=20, textvariable=self.spinValOffSetH)
-        self.spinnerOffSetH.configure(validate='key', validatecommand=self.validateDigits)
+        self.spinnerOffSetH.configure(validate='key', validatecommand=self.validateDigits_Offset_H)
 
         self.buttonCheckMonitorLayout = ttk.Button(self.secondFrameContent_4, text="Click to get A Screenshot of How The Program See Your Monitor", command=self.screenShotAndOpenLayout)
 
@@ -168,7 +172,7 @@ class SettingUI():
         # Fifth frame
         self.labelHotkeyDelay = Label(self.fifthFrameContent, text="Time delay (ms) : ")
         self.spinnerHotkeyDelay = ttk.Spinbox(self.fifthFrameContent, from_=0, to=100000, width=20, textvariable=self.spinValHotkeyDelay)
-        self.spinnerHotkeyDelay.configure(validate='key', validatecommand=self.validateDigits)
+        self.spinnerHotkeyDelay.configure(validate='key', validatecommand=self.validateDigits_Delay)
         self.buttonSetHotkey = ttk.Button(self.fifthFrameContent, text="Click to set hotkey for capture", command=self.setHotkey)
         self.buttonClearHotkey = ttk.Button(self.fifthFrameContent, text="Clear", command=self.clearHotkey)
         self.labelHotkeyTip = Label(self.fifthFrameContent, text="Current hotkey : ")
@@ -494,8 +498,64 @@ class SettingUI():
             self.spinnerOffSetX.config(state=DISABLED)
             self.spinnerOffSetY.config(state=DISABLED)
 
-    def validateSpinBox(self, event):
-        return event.isdigit()
+    # ----------------------------------------------------------------
+    # Spinbox validation
+    def validateSpinBox_Offset_X(self, event):
+        return self.spinboxValidation(event, 'x')
+
+    def validateSpinBox_Offset_Y(self, event):
+        return self.spinboxValidation(event, 'y')
+
+    def validateSpinBox_Offset_W(self, event):
+        return self.spinboxValidation(event, 'w')
+    
+    def validateSpinBox_Offset_H(self, event):
+        return self.spinboxValidation(event, 'h')
+
+
+    def validateSpinBox_Delay(self, event):
+        if event.isdigit():
+            # Check value no more than 200
+            if int(event) > 100000:
+                self.queue_spinbox_var.set(100000)
+                return False
+            else:
+                return event.isdigit()
+        else:
+            return False
+
+
+    def spinboxValidation(self, event, type):
+        typeDict = {'x': self.spinnerOffSetX, 'y': self.spinnerOffSetY, 'w': self.spinnerOffSetW, 'h': self.spinnerOffSetH}
+        typeGet = typeDict[type]
+
+        try:
+            event = int(event)
+            # Make the number stay positive on checking
+            isNegative = False
+            if event < 0:
+                event *= -1
+                isNegative = True
+
+            # Fetching minimum and maximum value of the spinbox
+            minval = int(self.root.nametowidget(typeGet).config('from')[4])
+            maxval = int(self.root.nametowidget(typeGet).config('to')[4])
+
+            # check if the number is within the range
+            if event not in range(minval, maxval):
+                # if not, set the value to the nearest limit
+                if isNegative:
+                    event *= -1
+                if event < minval:
+                    typeGet.set(minval)
+                else:
+                    typeGet.set(maxval)
+                return False
+
+            # if all is well, return True
+            return True
+        except: # Except means that number is not a digit
+            return False
 
     def CBTLChange_setting(self, event = ""):
         # In settings
