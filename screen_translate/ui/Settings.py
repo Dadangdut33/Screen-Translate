@@ -529,14 +529,12 @@ class SettingUI():
         typeDict = {'x': self.spinnerOffSetX, 'y': self.spinnerOffSetY, 'w': self.spinnerOffSetW, 'h': self.spinnerOffSetH}
         typeGet = typeDict[type]
 
+        if event == "":
+            typeGet.set(0)
+            return False
+
         try:
             event = int(event)
-            # Make the number stay positive on checking
-            isNegative = False
-            if event < 0:
-                event *= -1
-                isNegative = True
-
             # Fetching minimum and maximum value of the spinbox
             minval = int(self.root.nametowidget(typeGet).config('from')[4])
             maxval = int(self.root.nametowidget(typeGet).config('to')[4])
@@ -544,8 +542,6 @@ class SettingUI():
             # check if the number is within the range
             if event not in range(minval, maxval):
                 # if not, set the value to the nearest limit
-                if isNegative:
-                    event *= -1
                 if event < minval:
                     typeGet.set(minval)
                 else:
