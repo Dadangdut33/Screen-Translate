@@ -372,7 +372,6 @@ class main_Menu():
             except Exception as e:
                 print("Error: " + str(e))
                 Mbox("Error", str(e), 0, self.root)
-                pass
 
     # Check version
     def checkVersion(self, withPopup = True):
