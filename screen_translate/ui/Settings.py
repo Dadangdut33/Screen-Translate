@@ -514,10 +514,14 @@ class SettingUI():
 
 
     def validateSpinBox_Delay(self, event):
+        if event == "":
+            self.spinnerHotkeyDelay.set(0)
+            return False
+
         if event.isdigit():
             # Check value no more than 200
             if int(event) > 100000:
-                self.queue_spinbox_var.set(100000)
+                self.spinnerHotkeyDelay.set(100000)
                 return False
             else:
                 return event.isdigit()
