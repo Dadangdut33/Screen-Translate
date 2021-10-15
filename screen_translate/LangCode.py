@@ -221,7 +221,7 @@ myMemory_Lang = {
     "English": "en",
     "Esperanto": "eo",
     "Estonian": "et",
-    "Filipino": "tl",
+    "Filipino (Tagalog)": "tl",
     "Finnish": "fi",
     "French": "fr",
     "Galician": "gl",

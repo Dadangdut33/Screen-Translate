@@ -89,14 +89,14 @@ def memory_tl(text, to_lang, from_lang="auto"):
     result = ""
     # --- Get lang code --- 
     try:
-        to_LanguageCode_Google = google_Lang[to_lang]
-        from_LanguageCode_Google =  google_Lang[from_lang]
+        to_LanguageCode_Memory = myMemory_Lang[to_lang]
+        from_LanguageCode_Memory =  myMemory_Lang[from_lang]
     except KeyError as e:
         print("Error: " + str(e))
         return is_Success, "Error Language Code Undefined"
     # --- Translate ---
     try:
-        result = MyMemoryTranslator(source=from_LanguageCode_Google, target=to_LanguageCode_Google).translate(text.strip())
+        result = MyMemoryTranslator(source=from_LanguageCode_Memory, target=to_LanguageCode_Memory).translate(text.strip())
         is_Success = True
     except Exception as e:
         print(str(e))
@@ -125,14 +125,14 @@ def pons_tl(text, to_lang, from_lang):
     result = ""
     # --- Get lang code --- 
     try:
-        to_LanguageCode_Google = google_Lang[to_lang]
-        from_LanguageCode_Google =  google_Lang[from_lang]
+        to_LanguageCode_Pons = pons_Lang[to_lang]
+        from_LanguageCode_Pons =  pons_Lang[from_lang]
     except KeyError as e:
         print("Error: " + str(e))
         return is_Success, "Error Language Code Undefined"
     # --- Translate ---
     try:
-        result = PonsTranslator(source=from_LanguageCode_Google, target=to_LanguageCode_Google).translate(text.strip())
+        result = PonsTranslator(source=from_LanguageCode_Pons, target=to_LanguageCode_Pons).translate(text.strip())
         is_Success = True
     except Exception as e:
         print(str(e))
