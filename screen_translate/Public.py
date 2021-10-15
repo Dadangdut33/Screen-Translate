@@ -156,20 +156,17 @@ class global_Stuff:
     # Allowed keys
     def allowedKey(self, event):
         key = event.keysym
-        allowed = False
 
+        # Allow 
         if key.lower() in ['left', 'right']: # Arrow left right
-            allowed = True
             return
         if (4 == event.state and key == 'a'): # Ctrl + a
-            allowed = True
             return
         if (4 == event.state and key == 'c'): # Ctrl + c
-            allowed = True
             return
         
-        if not allowed:
-            return "break"
+        # If not allowed
+        return "break"
 
 # ------------------------------
 # TextWithVar, taken from: https://stackoverflow.com/questions/21507178/tkinter-text-binding-a-variable-to-widget-text-contents
