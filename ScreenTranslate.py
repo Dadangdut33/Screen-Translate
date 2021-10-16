@@ -111,34 +111,74 @@ class main_Menu():
         self.bottomFrame2 = Frame(self.root)
         self.bottomFrame2.pack(side=BOTTOM, fill=BOTH, expand=True)
 
-        # Capture Opacity topFrame1
+        # --- Top Frame 1 ---
+        # Button
+        self.translateOnly_Btn = ttk.Button(self.topFrame1, text="Translate", command=globalStuff.translate)
+        self.captureNTranslate_Btn = ttk.Button(self.topFrame1, text="Capture And Translate", command=self.capture_UI.getTextAndTranslate)
+        self.translateOnly_Btn.pack(side=LEFT, padx=5, pady=5)
+        self.captureNTranslate_Btn.pack(side=LEFT, padx=5, pady=5)
+
+        # Opacity
         self.captureOpacitySlider = ttk.Scale(self.topFrame1, from_=0.0, to=1.0, value=globalStuff.curCapOpacity, orient=HORIZONTAL, command=self.opacChange)
         globalStuff.captureSlider_Main = self.captureOpacitySlider
+        self.captureOpacitySlider.pack(side=LEFT, padx=5, pady=5)
 
         self.captureOpacityLabel = Label(self.topFrame1, text="Capture UI Opacity: " + str(globalStuff.curCapOpacity))
         globalStuff.captureOpacityObject = self.captureOpacityLabel
+        self.captureOpacityLabel.pack(side=LEFT, padx=5, pady=5)
 
+        # --- Top Frame 2 ---
+        # TB
+        # Translation Textbox (Query/Source)
+        self.tbTopBg = Frame(self.topFrame2, bg="#7E7E7E")
+        self.tbTopBg.pack(side=TOP, fill=BOTH, expand=True, padx=5, pady=5)
+
+        self.textBoxTop = TextWithVar(self.tbTopBg, textvariable=globalStuff.text_Box_Top_Var, height = 4, width = 100, font=("Segoe UI", 10), yscrollcommand=True, relief=FLAT)
+        self.textBoxTop.pack(padx=1, pady=1, fill=BOTH, expand=True)
+
+        # --- Bottom Frame 1 ---
         # Langoptions onstart
         self.langOpt = optGoogle
 
         self.labelEngines = Label(self.bottomFrame1, text="TL Engine:")
+        self.labelEngines.pack(side=LEFT, padx=5, pady=5)
+
         self.CBTranslateEngine = ttk.Combobox(self.bottomFrame1, values=engines, state="readonly")
+        self.CBTranslateEngine.current(searchList(settings['default_Engine'], engines))
+        self.CBTranslateEngine.pack(side=LEFT, padx=5, pady=5)
+        self.CBTranslateEngine.bind("<<ComboboxSelected>>", self.cbTLChange)
 
         self.labelLangFrom = Label(self.bottomFrame1, text="From:")
+        self.labelLangFrom.pack(side=LEFT, padx=5, pady=5)
+
         self.CBLangFrom = ttk.Combobox(self.bottomFrame1, values=self.langOpt, state="readonly")
+        self.CBLangFrom.current(searchList(settings['default_FromOnOpen'], self.langOpt))
+        self.CBLangFrom.pack(side=LEFT, padx=5, pady=5)
+        self.CBLangFrom.bind("<<ComboboxSelected>>", self.langChanged)
 
         self.labelLangTo = Label(self.bottomFrame1, text="To:")
+        self.labelLangTo.pack(side=LEFT, padx=5, pady=5)
+
         self.CBLangTo = ttk.Combobox(self.bottomFrame1, values=self.langOpt, state="readonly")
+        self.CBLangTo.current(searchList(settings['default_ToOnOpen'], self.langOpt)) # Default to English
+        self.CBLangTo.pack(side=LEFT, padx=5, pady=5)
+        self.CBLangTo.bind("<<ComboboxSelected>>", self.langChanged)
 
-        self.translateOnly_Btn = Button()
-        self.captureNTranslate_Btn = Button()
-        self.clearBtn = Button()
-        self.swapBtn = Button()
+        self.clearBtn = ttk.Button(self.bottomFrame1, text="Clear", command=self.clearTB)
+        self.swapBtn = ttk.Button(self.bottomFrame1, text="Swap", command=self.swapTl)
+        self.swapBtn.pack(side=LEFT, padx=5, pady=5)
+        self.clearBtn.pack(side=LEFT, padx=5, pady=5)
 
-        # Translation Textbox topFrame2 & bottomFrame2
-        self.textBoxTop = TextWithVar(self.topFrame2, textvariable=globalStuff.text_Box_Top_Var, height = 4, width = 100, font=("Segoe UI", 10), yscrollcommand=True)
-        self.textBoxBottom = TextWithVar(self.bottomFrame2, textvariable=globalStuff.text_Box_Bottom_Var, height = 5, width = 100, font=("Segoe UI", 10), yscrollcommand=True)
+        # --- Bottom Frame 2 ---
+        # TB
+        # Translation Textbox (Result)
+        self.tbBottomBg = Frame(self.bottomFrame2, bg="#7E7E7E")
+        self.tbBottomBg.pack(side=BOTTOM, fill=BOTH, expand=True, padx=5, pady=5)
 
+        self.textBoxBottom = TextWithVar(self.tbBottomBg, textvariable=globalStuff.text_Box_Bottom_Var, height = 5, width = 100, font=("Segoe UI", 10), yscrollcommand=True, relief=FLAT)
+        self.textBoxBottom.pack(padx=1, pady=1, fill=BOTH, expand=True)
+
+        # Menubar
         self.menubar = Menu(self.root)
         self.filemenu = Menu(self.menubar, tearoff=0)
         self.filemenu.add_checkbutton(label="Always on Top", command=self.always_on_top)
@@ -153,7 +193,7 @@ class main_Menu():
         self.menubar.add_cascade(label="View", menu=self.filemenu2)
 
         self.filemenu3 = Menu(self.menubar, tearoff=0)
-        self.filemenu3.add_command(label="Capture Window", command=self.open_Capture_Screen) # Open Capture Screen Window
+        self.filemenu3.add_command(label="Capture Window", command=self.open_Capture_Screen, accelerator="F5") # Open Capture Screen Window
         self.filemenu3.add_command(label="Query Box", command=self.open_Query_Box)
         self.filemenu3.add_command(label="Result Box", command=self.open_Result_Box)
         self.menubar.add_cascade(label="Generate", menu=self.filemenu3)
@@ -179,48 +219,13 @@ class main_Menu():
 
         # Add to self.root
         self.root.config(menu=self.menubar)
+        
+        # Bind key shortcut
         self.root.bind("<F1>", self.open_About)
         self.root.bind("<F2>", self.open_Setting)
         self.root.bind("<F3>", self.open_History)
         self.root.bind("<F4>", self.open_Img_Captured)
-
-        # topFrame1
-        self.translateOnly_Btn = ttk.Button(self.topFrame1, text="Translate", command=globalStuff.translate)
-        self.captureNTranslate_Btn = ttk.Button(self.topFrame1, text="Capture And Translate", command=self.capture_UI.getTextAndTranslate)
-        self.translateOnly_Btn.pack(side=LEFT, padx=5, pady=5)
-        self.captureNTranslate_Btn.pack(side=LEFT, padx=5, pady=5)
-
-        # topFrame1
-        self.captureOpacitySlider.pack(side=LEFT, padx=5, pady=5)
-        self.captureOpacityLabel.pack(side=LEFT, padx=5, pady=5)
-
-        # bottomFrame1
-        self.labelEngines.pack(side=LEFT, padx=5, pady=5)
-        self.CBTranslateEngine.current(searchList(settings['default_Engine'], engines))
-        self.CBTranslateEngine.pack(side=LEFT, padx=5, pady=5)
-        self.CBTranslateEngine.bind("<<ComboboxSelected>>", self.cbTLChange)
-
-        self.cbTLChange() # Update the cb
-
-        self.labelLangFrom.pack(side=LEFT, padx=5, pady=5)
-        self.CBLangFrom.current(searchList(settings['default_FromOnOpen'], self.langOpt))
-        self.CBLangFrom.pack(side=LEFT, padx=5, pady=5)
-        self.CBLangFrom.bind("<<ComboboxSelected>>", self.langChanged)
-
-        self.labelLangTo.pack(side=LEFT, padx=5, pady=5)
-        self.CBLangTo.current(searchList(settings['default_ToOnOpen'], self.langOpt)) # Default to English
-        self.CBLangTo.pack(side=LEFT, padx=5, pady=5)
-        self.CBLangTo.bind("<<ComboboxSelected>>", self.langChanged)
-
-        # Button bottomFrame1
-        self.clearBtn = ttk.Button(self.bottomFrame1, text="Clear", command=self.clearTB)
-        self.swapBtn = ttk.Button(self.bottomFrame1, text="Swap", command=self.swapTl)
-        self.swapBtn.pack(side=LEFT, padx=5, pady=5)
-        self.clearBtn.pack(side=LEFT, padx=5, pady=5)
-
-        # Translation Textbox topFrame2 bottomFrame
-        self.textBoxTop.pack(padx=5, pady=5, fill=BOTH, expand=True)
-        self.textBoxBottom.pack(padx=5, pady=5, fill=BOTH, expand=True)
+        self.root.bind("<F5>", self.open_Capture_Screen)
 
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
 
@@ -231,10 +236,9 @@ class main_Menu():
         if settings['capture_Hotkey'] != '':
             keyboard.add_hotkey(settings['capture_Hotkey'], globalStuff.hotkeyCallback)
         self.root.after(100, self.hotkeyPoll)
+        
+        self.cbTLChange() # Update the cb
         self.langChanged() # Update the value in global var
-
-        # Check opacityLabel
-        # self.root.after(100, self.checkOpacityLabel) # This needs better solution? idk
 
         # --- Logo ---
         try:
@@ -358,7 +362,7 @@ class main_Menu():
         Mbox("Contributor", "Thanks to:\n1. Dadangdut33 (Author)\n2. Laggykiller (contributor)\n3. Mdika (contributor)", 0, self.root)
 
     # Open Capture Window
-    def open_Capture_Screen(self):
+    def open_Capture_Screen(self, event=None):
         self.capture_UI.show()
 
     # Open changelog
