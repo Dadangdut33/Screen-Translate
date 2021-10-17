@@ -35,7 +35,7 @@ class SettingUI():
         self.frameLeftBg.pack(side=LEFT, fill=Y, padx=5, pady=5)
 
         # Listbox for the category list
-        self.listboxCat = Listbox(self.frameLeftBg, selectmode=SINGLE)
+        self.listboxCat = Listbox(self.frameLeftBg, selectmode=SINGLE, exportselection=False)
         self.listboxCat.pack(side=LEFT, fill=BOTH, padx=5, pady=5)
 
         self.listboxCat.insert(1, "Capturing/Offset")
