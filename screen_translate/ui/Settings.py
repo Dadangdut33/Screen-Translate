@@ -17,86 +17,104 @@ class SettingUI():
     def __init__(self):
         self.root = Tk()
         self.root.title("Setting")
-        self.root.geometry("727x500") # When you see it
+        self.root.geometry("915x350")
         self.root.wm_attributes('-topmost', False) # Default False
         self.root.wm_withdraw()
+        self.root.resizable(False, False)
 
-        # Frames
+        # ----------------------------------------------------------------------
+        # Main frame
+        self.mainFrameTop = Frame(self.root)
+        self.mainFrameTop.pack(side=TOP, fill=BOTH, expand=True)
 
-        self.firstFrame = LabelFrame(self.root, text="• Image / OCR Setting")
-        self.firstFrame.pack(side=TOP, fill=X, expand=False, padx=5, pady=5)
-        self.firstFrameContent = Frame(self.firstFrame)
-        self.firstFrameContent.pack(side=TOP, fill=X, expand=False)
+        self.mainFrameBot = Frame(self.root, bg="#7E7E7E")
+        self.mainFrameBot.pack(side=BOTTOM, fill=X, pady=(5, 0), padx=5)
+        
+        # Left frame for categorization
+        self.frameLeftBg = LabelFrame(self.mainFrameTop, text="Options", labelanchor=N)
+        self.frameLeftBg.pack(side=LEFT, fill=Y, padx=5, pady=5)
 
-        self.secondFrame = LabelFrame(self.root, text="• Monitor Capture Offset")
-        self.secondFrame.pack(side=TOP, fill=X, expand=False, padx=5, pady=5)
-        self.secondFrameContent_0 = Frame(self.secondFrame)
-        self.secondFrameContent_0.pack(side=TOP, fill=X, expand=False)
-        self.secondFrameContent_1 = Frame(self.secondFrame)
-        self.secondFrameContent_1.pack(side=TOP, fill=X, expand=False)
-        self.secondFrameContent_2 = Frame(self.secondFrame)
-        self.secondFrameContent_2.pack(side=TOP, fill=X, expand=False)
-        self.secondFrameContent_3 = Frame(self.secondFrame)
-        self.secondFrameContent_3.pack(side=TOP, fill=X, expand=False)
-        self.secondFrameContent_4 = Frame(self.secondFrame)
-        self.secondFrameContent_4.pack(side=TOP, fill=X, expand=False)
+        # Listbox for the category list
+        self.listboxCat = Listbox(self.frameLeftBg, selectmode=SINGLE)
+        self.listboxCat.pack(side=LEFT, fill=BOTH, padx=5, pady=5)
 
-        self.thirdFrame = LabelFrame(self.root, text="• Translation Settings")
-        self.thirdFrame.pack(side=TOP, fill=X, expand=False, padx=5, pady=5)
-        self.thirdFrameContent = Frame(self.thirdFrame)
-        self.thirdFrameContent.pack(side=TOP, fill=X, expand=False)
+        self.listboxCat.insert(1, "Capturing/Offset")
+        self.listboxCat.insert(2, "OCR Engine")
+        self.listboxCat.insert(3, "Translate")
+        self.listboxCat.insert(4, "Hotkey")
+        self.listboxCat.insert(5, "Query/Result Box")
 
-        self.fourthFrame = LabelFrame(self.root, text="• Tesseract OCR Settings")
-        self.fourthFrame.pack(side=TOP, fill=X, expand=False, padx=5, pady=5)
-        self.fourthFrameContent = Frame(self.fourthFrame)
-        self.fourthFrameContent.pack(side=TOP, fill=X, expand=False)
+        # Bind the listbox to the function
+        self.listboxCat.bind("<<ListboxSelect>>", self.onSelect)
 
-        self.fifthFrame = LabelFrame(self.root, text="• Hotkey Settings")
-        self.fifthFrame.pack(side=TOP, fill=X, expand=False, padx=5, pady=5)
-        self.fifthFrameContent = Frame(self.fifthFrame)
-        self.fifthFrameContent.pack(side=TOP, fill=X, expand=False)
+        # ----------------------------------------------------------------------
+        # Capturing/OCR
+        self.frameCapture = Frame(self.mainFrameTop)
+        self.frameCapture.pack(side=LEFT, fill=BOTH, padx=5, pady=5)
 
-        self.bottomFrame = Frame(self.root)
-        self.bottomFrame.pack(side=BOTTOM, fill=BOTH, expand=False)
+        # [Img/OCR Setting]
+        self.fLabelCapture_1 = LabelFrame(self.frameCapture, text="• Capturing Setting", width=750, height=55)
+        self.fLabelCapture_1.pack(side=TOP, fill=X, expand=False, padx=5, pady=5)
+        self.fLabelCapture_1.pack_propagate(0)
+        self.content_Cap_1 = Frame(self.fLabelCapture_1)
+        self.content_Cap_1.pack(side=TOP, fill=X, expand=False)
 
-        # ----------------------------------------------------------------
-        # First Frame
         self.checkVarImgSaved = BooleanVar(self.root, name="checkVarImg", value=True) # So its not error
-        self.checkBTNSaved = ttk.Checkbutton(self.firstFrameContent, text="Save Captured Image", variable=self.checkVarImgSaved)
+        self.checkBTNSaved = ttk.Checkbutton(self.content_Cap_1, text="Save Captured Image", variable=self.checkVarImgSaved)
         self.checkVarAutoCopy = BooleanVar(self.root, name="checkVarCopyToClip", value=True) # So its not error
-        self.checkBTNAutoCopy = ttk.Checkbutton(self.firstFrameContent, text="Auto Copy Captured Text To Clipboard", variable=self.checkVarAutoCopy)
-        self.btnOpenImgFolder = ttk.Button(self.firstFrameContent, text="Open Captured Image Folder", command=lambda: startfile(dir_path + r"\..\..\img_captured"))
+        self.checkBTNAutoCopy = ttk.Checkbutton(self.content_Cap_1, text="Auto Copy Captured Text To Clipboard", variable=self.checkVarAutoCopy)
+        self.btnOpenImgFolder = ttk.Button(self.content_Cap_1, text="Open Captured Image Folder", command=lambda: startfile(dir_path + r"\..\..\img_captured"))
 
         self.checkBTNAutoCopy.pack(side=LEFT, padx=5, pady=5)
         self.checkBTNSaved.pack(side=LEFT, padx=5, pady=5)
         self.btnOpenImgFolder.pack(side=LEFT, padx=5, pady=5)
 
-        # ----------------------------------------------------------------
-        # Second Frame
-        self.CBOffSetChoice = ttk.Combobox(self.secondFrameContent_0, values=["No Offset", "Custom Offset"], state="readonly")
+        # [Offset]
+        self.fLabelCapture_2 = LabelFrame(self.frameCapture, text="• Monitor Capture Offset", width=750, height=150)
+        self.fLabelCapture_2.pack(side=TOP, fill=X, expand=False, padx=5, pady=5)
+        self.fLabelCapture_2.pack_propagate(0)
+        self.content_Cap_2_1 = Frame(self.fLabelCapture_2)
+        self.content_Cap_2_1.pack(side=TOP, fill=X, expand=False)
+        self.content_Cap_2_2 = Frame(self.fLabelCapture_2)
+        self.content_Cap_2_2.pack(side=TOP, fill=X, expand=False)
+        self.content_Cap_2_3 = Frame(self.fLabelCapture_2)
+        self.content_Cap_2_3.pack(side=TOP, fill=X, expand=False)
+        self.content_Cap_2_4 = Frame(self.fLabelCapture_2)
+        self.content_Cap_2_4.pack(side=TOP, fill=X, expand=False)
 
-        self.labelCBOffsetNot = Label(self.secondFrameContent_0, text="Capture XY Offset :")
-        self.labelOffSetX = Label(self.secondFrameContent_2, text="Offset X :")
-        self.labelOffSetY = Label(self.secondFrameContent_3, text="Offset Y :")
-        self.labelOffSetW = Label(self.secondFrameContent_2, text="Offset W :")
-        self.labelOffSetH = Label(self.secondFrameContent_3, text="Offset H :")
+        self.labelCBOffsetNot = Label(self.content_Cap_2_1, text="Capture XY Offset :")
+        self.labelCBOffsetNot.pack(side=LEFT, padx=5, pady=5)
 
-        self.checkVarOffSetX = BooleanVar(self.root, name="checkVarOffSetX", value=True)
-        self.checkVarOffSetY = BooleanVar(self.root, name="checkVarOffSetY", value=True)
-        self.checkVarOffSetW = BooleanVar(self.root, name="checkVarOffSetW", value=True)
-        self.checkVarOffSetH = BooleanVar(self.root, name="checkVarOffSetH", value=True)
+        self.CBOffSetChoice = ttk.Combobox(self.content_Cap_2_1, values=["No Offset", "Custom Offset"], state="readonly")
+        self.CBOffSetChoice.pack(side=LEFT, padx=5, pady=5)
+        self.CBOffSetChoice.bind("<<ComboboxSelected>>", self.CBOffSetChange)
 
-        self.checkAutoOffSetX = ttk.Checkbutton(self.secondFrameContent_1, text="Auto Offset X", variable=self.checkVarOffSetX, command=self.checkBtnX)
-        self.checkAutoOffSetY = ttk.Checkbutton(self.secondFrameContent_1, text="Auto Offset Y", variable=self.checkVarOffSetY, command=self.checkBtnY)
-        self.checkAutoOffSetW = ttk.Checkbutton(self.secondFrameContent_1, text="Auto Offset W", variable=self.checkVarOffSetW, command=self.checkBtnW)
-        self.checkAutoOffSetH = ttk.Checkbutton(self.secondFrameContent_1, text="Auto Offset H", variable=self.checkVarOffSetH, command=self.checkBtnH)
+        self.buttonCheckMonitorLayout = ttk.Button(self.content_Cap_2_1, text="Click to get A Screenshot of How The Program See Your Monitor", command=self.screenShotAndOpenLayout)
+        self.buttonCheckMonitorLayout.pack(side=LEFT, padx=5, pady=5)
 
-        self.spinValOffSetX = StringVar(self.root)
-        self.spinValOffSetY = StringVar(self.root)
-        self.spinValOffSetW = StringVar(self.root)
-        self.spinValOffSetH = StringVar(self.root)
+        self.checkVarOffSetX = BooleanVar(self.root, value=True)
+        self.checkVarOffSetY = BooleanVar(self.root, value=True)
+        self.checkVarOffSetW = BooleanVar(self.root, value=True)
+        self.checkVarOffSetH = BooleanVar(self.root, value=True)
 
-        self.spinValHotkeyDelay = IntVar(self.root)
+        self.checkAutoOffSetX = ttk.Checkbutton(self.content_Cap_2_2, text="Auto Offset X", variable=self.checkVarOffSetX, command=self.checkBtnX)
+        self.checkAutoOffSetX.pack(side=LEFT, padx=5, pady=5)
+        self.checkAutoOffSetY = ttk.Checkbutton(self.content_Cap_2_2, text="Auto Offset Y", variable=self.checkVarOffSetY, command=self.checkBtnY)
+        self.checkAutoOffSetY.pack(side=LEFT, padx=5, pady=5)
+        self.checkAutoOffSetW = ttk.Checkbutton(self.content_Cap_2_2, text="Auto Offset W", variable=self.checkVarOffSetW, command=self.checkBtnW)
+        self.checkAutoOffSetW.pack(side=LEFT, padx=5, pady=5)
+        self.checkAutoOffSetH = ttk.Checkbutton(self.content_Cap_2_2, text="Auto Offset H", variable=self.checkVarOffSetH, command=self.checkBtnH)
+        self.checkAutoOffSetH.pack(side=LEFT, padx=5, pady=5)
+
+        self.spinValOffSetX = IntVar(self.root)
+        self.spinValOffSetY = IntVar(self.root)
+        self.spinValOffSetW = IntVar(self.root)
+        self.spinValOffSetH = IntVar(self.root)
+
+        self.labelOffSetX = Label(self.content_Cap_2_3, text="Offset X :")
+        self.labelOffSetY = Label(self.content_Cap_2_4, text="Offset Y :")
+        self.labelOffSetW = Label(self.content_Cap_2_3, text="Offset W :")
+        self.labelOffSetH = Label(self.content_Cap_2_4, text="Offset H :")
 
         self.validateDigits_Offset_X = (self.root.register(self.validateSpinBox_Offset_X), '%P')
         self.validateDigits_Offset_Y = (self.root.register(self.validateSpinBox_Offset_Y), '%P')
@@ -104,107 +122,136 @@ class SettingUI():
         self.validateDigits_Offset_H = (self.root.register(self.validateSpinBox_Offset_H), '%P')
         self.validateDigits_Delay = (self.root.register(self.validateSpinBox_Delay), '%P')
 
-        self.spinnerOffSetX = ttk.Spinbox(self.secondFrameContent_2, from_=-100000, to=100000, width=20, textvariable=self.spinValOffSetX)
+        self.spinnerOffSetX = ttk.Spinbox(self.content_Cap_2_3, from_=-100000, to=100000, width=20, textvariable=self.spinValOffSetX)
         self.spinnerOffSetX.configure(validate='key', validatecommand=self.validateDigits_Offset_X)
-        self.spinnerOffSetY = ttk.Spinbox(self.secondFrameContent_3, from_=-100000, to=100000, width=20, textvariable=self.spinValOffSetY)
+        self.spinnerOffSetY = ttk.Spinbox(self.content_Cap_2_4, from_=-100000, to=100000, width=20, textvariable=self.spinValOffSetY)
         self.spinnerOffSetY.configure(validate='key', validatecommand=self.validateDigits_Offset_Y)
-        self.spinnerOffSetW = ttk.Spinbox(self.secondFrameContent_2, from_=-100000, to=100000, width=20, textvariable=self.spinValOffSetW)
+        self.spinnerOffSetW = ttk.Spinbox(self.content_Cap_2_3, from_=-100000, to=100000, width=20, textvariable=self.spinValOffSetW)
         self.spinnerOffSetW.configure(validate='key', validatecommand=self.validateDigits_Offset_W)
-        self.spinnerOffSetH = ttk.Spinbox(self.secondFrameContent_3, from_=-100000, to=100000, width=20, textvariable=self.spinValOffSetH)
+        self.spinnerOffSetH = ttk.Spinbox(self.content_Cap_2_4, from_=-100000, to=100000, width=20, textvariable=self.spinValOffSetH)
         self.spinnerOffSetH.configure(validate='key', validatecommand=self.validateDigits_Offset_H)
-
-        self.buttonCheckMonitorLayout = ttk.Button(self.secondFrameContent_4, text="Click to get A Screenshot of How The Program See Your Monitor", command=self.screenShotAndOpenLayout)
-
-        self.labelCBOffsetNot.pack(side=LEFT, padx=5, pady=5)
-        self.CBOffSetChoice.pack(side=LEFT, padx=5, pady=5)
-        self.CBOffSetChoice.bind("<<ComboboxSelected>>", self.CBOffSetChange)
-
-        self.checkAutoOffSetX.pack(side=LEFT, padx=5, pady=5)
-        self.checkAutoOffSetY.pack(side=LEFT, padx=5, pady=5)
-        self.checkAutoOffSetW.pack(side=LEFT, padx=5, pady=5)
-        self.checkAutoOffSetH.pack(side=LEFT, padx=5, pady=5)
 
         self.labelOffSetX.pack(side=LEFT, padx=5, pady=5)
         self.spinnerOffSetX.pack(side=LEFT, padx=5, pady=5)
         self.labelOffSetY.pack(side=LEFT, padx=5, pady=5)
         self.spinnerOffSetY.pack(side=LEFT, padx=5, pady=5)
-
         self.labelOffSetW.pack(side=LEFT, padx=5, pady=5)
         self.spinnerOffSetW.pack(side=LEFT, padx=5, pady=5)
         self.labelOffSetH.pack(side=LEFT, padx=5, pady=5)
         self.spinnerOffSetH.pack(side=LEFT, padx=8, pady=5)
 
-        self.buttonCheckMonitorLayout.pack(side=LEFT, padx=30, pady=5)
+        # ----------------------------------------------------------------------
+        # OCR Engine
+        self.frameEngine = Frame(self.mainFrameTop)
+        self.frameEngine.pack(side=LEFT, fill=BOTH, padx=5, pady=5)
 
-        # ----------------------------------------------------------------
-        # Third frame
+        self.fLabelEngine_1 = LabelFrame(self.frameEngine, text="• Tesseract OCR Settings", width=750, height=55)
+        self.fLabelEngine_1.pack(side=TOP, fill=X, expand=False, padx=5, pady=5)
+        self.fLabelEngine_1.pack_propagate(0)
+        self.content_Engine_1 = Frame(self.fLabelEngine_1)
+        self.content_Engine_1.pack(side=TOP, fill=X, expand=False)
+
+        self.labelTesseractPath = Label(self.content_Engine_1, text="Tesseract Path :")
+        self.labelTesseractPath.pack(side=LEFT, padx=5, pady=5)
+
+        self.textBoxTesseractPath = ttk.Entry(self.content_Engine_1, width=70, xscrollcommand=True)
+        self.textBoxTesseractPath.bind("<Key>", lambda event: globalStuff.allowedKey(event)) # Disable textbox input
+        self.textBoxTesseractPath.pack(side=LEFT, padx=5, pady=5, fill=X, expand=True)
+
+        self.btnSearchTesseract = ttk.Button(self.content_Engine_1, text="...", command=self.searchTesseract)
+        self.btnSearchTesseract.pack(side=LEFT, padx=5, pady=5)
+
+        # ----------------------------------------------------------------------
+        # Translate
+        self.frameTranslate = Frame(self.mainFrameTop)
+        self.frameTranslate.pack(side=LEFT, fill=BOTH, padx=5, pady=5)
+        
+        self.fLabelTl_1 = LabelFrame(self.frameTranslate, text="• Translation Settings", width=750, height=55)
+        self.fLabelTl_1.pack(side=TOP, fill=X, expand=False, padx=5, pady=5)
+        self.fLabelTl_1.pack_propagate(0)
+        self.content_Tl_1 = Frame(self.fLabelTl_1)
+        self.content_Tl_1.pack(side=TOP, fill=X, expand=False)
+
         self.langOpt = optGoogle
-
-        self.CBDefaultEngine = ttk.Combobox(self.thirdFrameContent, values=engines, state="readonly")
-        self.CBDefaultFrom = ttk.Combobox(self.thirdFrameContent, values=self.langOpt, state="readonly")
-        self.CBDefaultTo = ttk.Combobox(self.thirdFrameContent, values=self.langOpt, state="readonly")
-        self.labelDefaultEngine = Label(self.thirdFrameContent, text="Default Engine :")
-        self.labelDefaultFrom = Label(self.thirdFrameContent, text="Default From :")
-        self.labelDefaultTo = Label(self.thirdFrameContent, text="Default To :")
-
+        self.labelDefaultEngine = Label(self.content_Tl_1, text="Default TL Engine :")
         self.labelDefaultEngine.pack(side=LEFT, padx=5, pady=5)
+
+        self.CBDefaultEngine = ttk.Combobox(self.content_Tl_1, values=engines, state="readonly")
         self.CBDefaultEngine.pack(side=LEFT, padx=5, pady=5)
         self.CBDefaultEngine.bind("<<ComboboxSelected>>", self.CBTLChange_setting)
 
+        self.labelDefaultFrom = Label(self.content_Tl_1, text="Default From :")
         self.labelDefaultFrom.pack(side=LEFT, padx=5, pady=5)
+        self.CBDefaultFrom = ttk.Combobox(self.content_Tl_1, values=self.langOpt, state="readonly")
         self.CBDefaultFrom.pack(side=LEFT, padx=5, pady=5)
 
+        self.labelDefaultTo = Label(self.content_Tl_1, text="Default To :")
         self.labelDefaultTo.pack(side=LEFT, padx=5, pady=5)
+        self.CBDefaultTo = ttk.Combobox(self.content_Tl_1, values=self.langOpt, state="readonly")
         self.CBDefaultTo.pack(side=LEFT, padx=5, pady=5)
 
-        # ----------------------------------------------------------------
-        # Fourth frame
-        self.labelTesseractPath = Label(self.fourthFrameContent, text="Tesseract Path :")
-        self.textBoxTesseractPath = ttk.Entry(self.fourthFrameContent, width=70, xscrollcommand=True)
-        self.textBoxTesseractPath.bind("<Key>", lambda event: globalStuff.allowedKey(event)) # Disable textbox input
-        self.btnSearchTesseract = ttk.Button(self.fourthFrameContent, text="...", command=self.searchTesseract)
+        # ----------------------------------------------------------------------
+        # Hotkey
+        self.frameHotkey = Frame(self.mainFrameTop)
+        self.frameHotkey.pack(side=LEFT, fill=BOTH, padx=5, pady=5)
+        
+        self.fLabelHotkey_1 = LabelFrame(self.frameHotkey, text="• Hotkey Settings", width=750, height=55)
+        self.fLabelHotkey_1.pack(side=TOP, fill=X, expand=False, padx=5, pady=5)
+        self.fLabelHotkey_1.pack_propagate(0)
+        self.content_Hotkey_1 = Frame(self.fLabelHotkey_1)
+        self.content_Hotkey_1.pack(side=TOP, fill=X, expand=False)
 
-        self.labelTesseractPath.pack(side=LEFT, padx=5, pady=5)
-        self.textBoxTesseractPath.pack(side=LEFT, padx=5, pady=5, fill=X, expand=True)
-        self.btnSearchTesseract.pack(side=LEFT, padx=5, pady=5)
+        self.spinValHotkeyDelay = IntVar(self.root)
 
-        # ----------------------------------------------------------------
-        # Fifth frame
-        self.labelHotkeyDelay = Label(self.fifthFrameContent, text="Time delay (ms) : ")
-        self.spinnerHotkeyDelay = ttk.Spinbox(self.fifthFrameContent, from_=0, to=100000, width=20, textvariable=self.spinValHotkeyDelay)
-        self.spinnerHotkeyDelay.configure(validate='key', validatecommand=self.validateDigits_Delay)
-        self.buttonSetHotkey = ttk.Button(self.fifthFrameContent, text="Click to set hotkey for capture", command=self.setHotkey)
-        self.buttonClearHotkey = ttk.Button(self.fifthFrameContent, text="Clear", command=self.clearHotkey)
-        self.labelHotkeyTip = Label(self.fifthFrameContent, text="Current hotkey : ")
-        self.labelCurrentHotkey = Label(self.fifthFrameContent, text="")
-
+        self.labelHotkeyDelay = Label(self.content_Hotkey_1, text="Time delay (ms) : ")
         self.labelHotkeyDelay.pack(side=LEFT, padx=5, pady=5)
+        
+        self.spinnerHotkeyDelay = ttk.Spinbox(self.content_Hotkey_1, from_=0, to=100000, width=20, textvariable=self.spinValHotkeyDelay)
+        self.spinnerHotkeyDelay.configure(validate='key', validatecommand=self.validateDigits_Delay)
         self.spinnerHotkeyDelay.pack(side=LEFT, padx=5, pady=5)
+        
+        self.buttonSetHotkey = ttk.Button(self.content_Hotkey_1, text="Click to set hotkey for capture", command=self.setHotkey)
         self.buttonSetHotkey.pack(side=LEFT, padx=5, pady=5)
+        
+        self.buttonClearHotkey = ttk.Button(self.content_Hotkey_1, text="Clear", command=self.clearHotkey)
         self.buttonClearHotkey.pack(side=LEFT, padx=5, pady=5)
+        
+        self.labelHotkeyTip = Label(self.content_Hotkey_1, text="Current hotkey : ")
         self.labelHotkeyTip.pack(side=LEFT, padx=5, pady=5)
+
+        self.labelCurrentHotkey = Label(self.content_Hotkey_1, text="")
         self.labelCurrentHotkey.pack(side=LEFT, padx=5, pady=5)
+
+        # ----------------------------------------------------------------------
+        # TODO Query and result box
 
         # ----------------------------------------------------------------
         # Bottom Frame
+        # Create a bottom frame to hold the buttons
+        self.bottomFrame = Frame(self.mainFrameBot)
+        self.bottomFrame.pack(side=BOTTOM, fill=X, pady=(1,0))
+
+        # Create the buttons
         self.btnSave = ttk.Button(self.bottomFrame, text="Save Settings", command=self.saveSettings)
         self.btnSave.pack(side=RIGHT, padx=4, pady=5)
+        
         self.btnReset = ttk.Button(self.bottomFrame, text="Reset To Currently Stored Setting", command=self.reset)
         self.btnReset.pack(side=RIGHT, padx=5, pady=5)
+
         self.btnRestoreDefault = ttk.Button(self.bottomFrame, text="Restore Default", command=self.restoreDefault)
         self.btnRestoreDefault.pack(side=RIGHT, padx=5, pady=5)
 
+        # ----------------------------------------------------------------
         # On Close
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
 
-    def searchTesseract(self):
-        self.tesseract_path = filedialog.askopenfilename(initialdir="/", title="Select file", filetypes=(
-            ("tesseract.exe", "*.exe"),
-        ))
-        if self.tesseract_path != "":
-            self.textBoxTesseractPath.delete(0, END)
-            self.textBoxTesseractPath.insert(0, self.tesseract_path)
+        self.hideAllFrame()
+        self.listboxCat.select_set(0)
+        self.showFrame(self.frameCapture)
 
+    # ----------------------------------------------------------------
+    # Functions
+    # ----------------------------------------------------------------
     def show(self):
         fJson.loadSetting() # read settings every time it is opened
         self.reset()
@@ -213,74 +260,33 @@ class SettingUI():
     def on_closing(self):
         self.root.wm_withdraw()
 
-    def getCurrXYOFF(self = ""):
-        if self.checkVarOffSetX.get():
-            x = int(self.spinnerOffSetX.get())
-        else:
-            x = "auto"
-        if self.checkVarOffSetY.get():
-            y = int(self.spinnerOffSetY.get())
-        else:
-            y = "auto"
-        if self.checkVarOffSetW.get():
-            w = int(self.spinnerOffSetW.get())
-        else:
-            w = "auto"
-        if self.checkVarOffSetH.get():
-            h = int(self.spinnerOffSetH.get())
-        else:
-            h = "auto"
+    def onSelect(self, event):
+        if self.listboxCat.curselection() != ():
+            self.hideAllFrame()
 
-        return [x, y, w, h]
+            if self.listboxCat.curselection()[0] == 0:
+                self.showFrame(self.frameCapture)
+            
+            elif self.listboxCat.curselection()[0] == 1:
+                self.showFrame(self.frameEngine)
+            
+            elif self.listboxCat.curselection()[0] == 2:
+                self.showFrame(self.frameTranslate)
+            
+            elif self.listboxCat.curselection()[0] == 3:
+                self.showFrame(self.frameHotkey)
 
-    def checkBtnOffSet(self):
-        pass
+            elif self.listboxCat.curselection()[0] == 4:
+                print("test")
 
-    def checkBtnX(self):
-        offSets = getTheOffset(self.getCurrXYOFF()[0])
+    def hideAllFrame(self):
+        self.frameCapture.pack_forget()
+        self.frameEngine.pack_forget()
+        self.frameTranslate.pack_forget()
+        self.frameHotkey.pack_forget()
 
-        if self.root.getvar(name="checkVarOffSetX") == "1":
-            self.spinnerOffSetX.config(state=DISABLED)
-            self.spinValOffSetX.set(str(offSets[0]))
-        else:
-            self.spinnerOffSetX.config(state=NORMAL)
-
-    def checkBtnY(self):
-        offSets = getTheOffset(self.getCurrXYOFF()[1])
-
-        if self.root.getvar(name="checkVarOffSetY") == "1":
-            self.spinnerOffSetY.config(state=DISABLED)
-            self.spinValOffSetY.set(str(offSets[1]))
-        else:
-            self.spinnerOffSetY.config(state=NORMAL)
-
-    def checkBtnW(self):
-        offSets = getTheOffset(self.getCurrXYOFF()[2])
-
-        if self.root.getvar(name="checkVarOffSetW") == "1":
-            self.spinnerOffSetW.config(state=DISABLED)
-            self.spinValOffSetW.set(str(offSets[2]))
-        else:
-            self.spinnerOffSetW.config(state=NORMAL)
-
-    def checkBtnH(self):
-        offSets = getTheOffset(self.getCurrXYOFF()[3])
-
-        if self.root.getvar(name="checkVarOffSetH") == "1":
-            self.spinnerOffSetH.config(state=DISABLED)
-            self.spinValOffSetH.set(str(offSets[3]))
-        else:
-            self.spinnerOffSetH.config(state=NORMAL)
-
-    def screenShotAndOpenLayout(self):
-        captureAll()
-
-    def setHotkey(self):
-        hotkey = keyboard.read_hotkey(suppress=False)
-        self.labelCurrentHotkey.config(text=str(hotkey))
-
-    def clearHotkey(self):
-        self.labelCurrentHotkey.config(text="")
+    def showFrame(self, frame):
+        frame.pack(side=LEFT, fill=BOTH, padx=5, pady=5)
 
     def restoreDefault(self):
         x = Mbox("Confirmation", "Are you sure you want to set the settings to default?\n\n**WARNING! CURRENTLY SAVED SETTING WILL BE OVERWRITTEN**", 3, self.root)
@@ -307,49 +313,50 @@ class SettingUI():
             Mbox("Error: Tesseract Not Found!", "Please set tesseract location in Setting.json.\nYou can set this in setting menu or modify it manually in json/Setting.json", 2, self.root)
 
         # Cache checkbox
-        if settings['cached'] == True:
+        try:
+            self.checkVarImgSaved.set(settings['cached'])
+        except Exception as e:
+            print("Error: Invalid Autocopy Options")
+            Mbox("Error: Invalid Autocopy Options", "Please do not modify the setting manually if you don't know what you are doing", 2, self.root)
             self.checkVarImgSaved.set(True)
-        else:
-            self.checkVarImgSaved.set(False)
 
         # Autocopy checkbox
-        if settings['autoCopy'] == True:
+        try:
+            self.checkVarAutoCopy.set(settings['autoCopy'])
+        except Exception as e:
+            print("Error: Invalid Autocopy Options")
+            Mbox("Error: Invalid Autocopy Options", "Please do not modify the setting manually if you don't know what you are doing", 2, self.root)
             self.checkVarAutoCopy.set(True)
-        else:
-            self.checkVarAutoCopy.set(False)
 
         # Show current hotkey
         self.labelCurrentHotkey.config(text=settings['capture_Hotkey'])
+
+        self.spinValHotkeyDelay.set(settings["capture_HotkeyDelay"])
 
         # Store setting to localvar
         offSetXY = settings["offSetXY"]
         offSetWH = settings["offSetWH"]
         xyOffSetType = settings["offSetXYType"]
 
-        self.spinValHotkeyDelay.set(settings["capture_HotkeyDelay"])
-
         offSets = offSetSettings(offSetWH, xyOffSetType, offSetXY)
-        x = offSets[0]
-        y = offSets[1]
-        w = offSets[2]
-        h = offSets[3]
+        x, y, w, h = offSets[0], offSets[1], offSets[2], offSets[3]
 
         if xyOffSetType == "No Offset":
             self.CBOffSetChoice.current(0)
             self.checkAutoOffSetX.config(state=DISABLED)
             self.checkAutoOffSetY.config(state=DISABLED)
             self.spinnerOffSetX.config(state=DISABLED)
-            self.spinValOffSetX.set("0")
+            self.spinValOffSetX.set(0)
             self.spinnerOffSetY.config(state=DISABLED)
-            self.spinValOffSetY.set("0")
+            self.spinValOffSetY.set(0)
 
             self.checkVarOffSetX.set(False)
             self.checkVarOffSetY.set(False)
 
         elif xyOffSetType == "Custom Offset":
             self.CBOffSetChoice.current(1)
-            self.spinValOffSetX.set(str(x))
-            self.spinValOffSetY.set(str(y))
+            self.spinValOffSetX.set(x)
+            self.spinValOffSetY.set(y)
             self.checkAutoOffSetX.config(state=NORMAL)
             self.checkAutoOffSetY.config(state=NORMAL)
 
@@ -399,6 +406,7 @@ class SettingUI():
         print("Setting Loaded")
         # No need for mbox
 
+    # Save settings
     def saveSettings(self):
         # Check path tesseract
         tesseractPathInput = self.textBoxTesseractPath.get().strip().lower()
@@ -470,93 +478,86 @@ class SettingUI():
             print(dataStatus)
             Mbox("Error", dataStatus, 2, self.root)
 
-    def CBOffSetChange(self, event = ""):
-        offSets = getTheOffset("Custom")
-        xyOffSetType = self.CBOffSetChoice.get()
+    # --------------------------------------------------
+    # Offset capturing settings
+    def checkBtnX(self):
+        """
+        Set the state & value for x spinner
+        """
+        offType = self.spinnerOffSetX.get() if self.checkVarOffSetX.get() else "auto" 
+        offSets = getTheOffset(offType)
 
-        # Check offset or not
-        if xyOffSetType == "No Offset":
-            # Select auto
-            self.checkVarOffSetX.set(False)
-            self.checkVarOffSetY.set(False)
-            # Disable spinner and the selector, also set stuff in spinner to 0
-            self.checkAutoOffSetX.config(state=DISABLED)
-            self.checkAutoOffSetY.config(state=DISABLED)
+        if self.checkVarOffSetX.get():
             self.spinnerOffSetX.config(state=DISABLED)
-            self.spinValOffSetX.set("0")
-            self.spinnerOffSetY.config(state=DISABLED)
-            self.spinValOffSetY.set("0")
+            self.spinValOffSetX.set(offSets[0])
         else:
-            # Disselect auto
-            self.checkVarOffSetX.set(True)
-            self.checkVarOffSetY.set(True)
-            # Make checbtn clickable, but set auto which means spin is disabled
-            self.checkAutoOffSetX.config(state=NORMAL)
-            self.checkAutoOffSetY.config(state=NORMAL)
-            self.spinValOffSetX.set(str(offSets[0]))
-            self.spinValOffSetY.set(str(offSets[1]))
-            self.spinnerOffSetX.config(state=DISABLED)
+            self.spinnerOffSetX.config(state=NORMAL)
+
+    def checkBtnY(self):
+        """
+        Set the state & value for y spinner
+        """
+        offType = self.spinnerOffSetY.get() if self.checkVarOffSetY.get() else "auto"
+        offSets = getTheOffset(offType)
+
+        if self.checkVarOffSetY.get():
             self.spinnerOffSetY.config(state=DISABLED)
+            self.spinValOffSetY.set(offSets[1])
+        else:
+            self.spinnerOffSetY.config(state=NORMAL)
+
+    def checkBtnW(self):
+        """
+        Set the state & value for w spinner
+        """
+        offType = self.spinnerOffSetW.get() if self.checkVarOffSetW.get() else "auto"
+        offSets = getTheOffset(offType)
+
+        if self.checkVarOffSetW.get():
+            self.spinnerOffSetW.config(state=DISABLED)
+            self.spinValOffSetW.set(offSets[2])
+        else:
+            self.spinnerOffSetW.config(state=NORMAL)
+
+    def checkBtnH(self):
+        """
+        Set the state & value for h spinner
+        """
+        offType = self.spinnerOffSetH.get() if self.checkVarOffSetH.get() else "auto"
+        offSets = getTheOffset(offType)
+
+        if self.checkVarOffSetH.get():
+            self.spinnerOffSetH.config(state=DISABLED)
+            self.spinValOffSetH.set(offSets[3])
+        else:
+            self.spinnerOffSetH.config(state=NORMAL)
+    # ----------------------------------------------------------------
+    # Engine
+    # Search for tesseract
+    def searchTesseract(self):
+        self.tesseract_path = filedialog.askopenfilename(initialdir="/", title="Select file", filetypes=(
+            ("tesseract.exe", "*.exe"),
+        ))
+        if self.tesseract_path != "":
+            self.textBoxTesseractPath.delete(0, END)
+            self.textBoxTesseractPath.insert(0, self.tesseract_path)
 
     # ----------------------------------------------------------------
-    # Spinbox validation
-    def validateSpinBox_Offset_X(self, event):
-        return self.spinboxValidation(event, 'x')
+    # Hotkey
+    def setHotkey(self):
+        hotkey = keyboard.read_hotkey(suppress=False)
+        self.labelCurrentHotkey.config(text=str(hotkey))
 
-    def validateSpinBox_Offset_Y(self, event):
-        return self.spinboxValidation(event, 'y')
+    def clearHotkey(self):
+        self.labelCurrentHotkey.config(text="")
 
-    def validateSpinBox_Offset_W(self, event):
-        return self.spinboxValidation(event, 'w')
-    
-    def validateSpinBox_Offset_H(self, event):
-        return self.spinboxValidation(event, 'h')
+    # ----------------------------------------------------------------
+    # Capture
+    def screenShotAndOpenLayout(self):
+        captureAll()
 
-
-    def validateSpinBox_Delay(self, event):
-        if event == "":
-            self.spinnerHotkeyDelay.set(0)
-            return False
-
-        if event.isdigit():
-            # Check value no more than 200
-            if int(event) > 100000:
-                self.spinnerHotkeyDelay.set(100000)
-                return False
-            else:
-                return event.isdigit()
-        else:
-            return False
-
-
-    def spinboxValidation(self, event, type):
-        typeDict = {'x': self.spinnerOffSetX, 'y': self.spinnerOffSetY, 'w': self.spinnerOffSetW, 'h': self.spinnerOffSetH}
-        typeGet = typeDict[type]
-
-        if event == "":
-            typeGet.set(0)
-            return False
-
-        try:
-            event = int(event)
-            # Fetching minimum and maximum value of the spinbox
-            minval = int(self.root.nametowidget(typeGet).config('from')[4])
-            maxval = int(self.root.nametowidget(typeGet).config('to')[4])
-
-            # check if the number is within the range
-            if event not in range(minval, maxval):
-                # if not, set the value to the nearest limit
-                if event < minval:
-                    typeGet.set(minval)
-                else:
-                    typeGet.set(maxval)
-                return False
-
-            # if all is well, return True
-            return True
-        except: # Except means that number is not a digit
-            return False
-
+    # ----------------------------------------------------------------
+    # CB Settings
     def CBTLChange_setting(self, event = ""):
         # In settings
         # Get the engine from the combobox
@@ -600,3 +601,88 @@ class SettingUI():
             self.CBDefaultTo['values'] = optNone
             self.CBDefaultTo.current(searchList(previous_To, optNone))
             self.CBDefaultTo.config(state='disabled')
+
+    def CBOffSetChange(self, event = ""):
+        offSets = getTheOffset("Custom")
+        xyOffSetType = self.CBOffSetChoice.get()
+
+        # Check offset or not
+        if xyOffSetType == "No Offset":
+            # Select auto
+            self.checkVarOffSetX.set(False)
+            self.checkVarOffSetY.set(False)
+            # Disable spinner and the selector, also set stuff in spinner to 0
+            self.checkAutoOffSetX.config(state=DISABLED)
+            self.checkAutoOffSetY.config(state=DISABLED)
+            self.spinnerOffSetX.config(state=DISABLED)
+            self.spinnerOffSetY.config(state=DISABLED)
+            self.spinValOffSetX.set(0)
+            self.spinValOffSetY.set(0)
+        else:
+            # Disselect auto
+            self.checkVarOffSetX.set(True)
+            self.checkVarOffSetY.set(True)
+            # Make checbtn clickable, but set auto which means spin is disabled
+            self.checkAutoOffSetX.config(state=NORMAL)
+            self.checkAutoOffSetY.config(state=NORMAL)
+            self.spinValOffSetX.set(offSets[0])
+            self.spinValOffSetY.set(offSets[1])
+            self.spinnerOffSetX.config(state=DISABLED)
+            self.spinnerOffSetY.config(state=DISABLED)
+
+    # ----------------------------------------------------------------
+    # Spinbox validation
+    def validateSpinBox_Offset_X(self, event):
+        return self.spinboxValidation(event, 'x')
+
+    def validateSpinBox_Offset_Y(self, event):
+        return self.spinboxValidation(event, 'y')
+
+    def validateSpinBox_Offset_W(self, event):
+        return self.spinboxValidation(event, 'w')
+    
+    def validateSpinBox_Offset_H(self, event):
+        return self.spinboxValidation(event, 'h')
+
+    def validateSpinBox_Delay(self, event):
+        if event == "":
+            self.spinnerHotkeyDelay.set(0)
+            return False
+
+        if event.isdigit():
+            # Check value no more than 200
+            if int(event) > 100000:
+                self.spinnerHotkeyDelay.set(100000)
+                return False
+            else:
+                return event.isdigit()
+        else:
+            return False
+
+    def spinboxValidation(self, event, type):
+        typeDict = {'x': self.spinnerOffSetX, 'y': self.spinnerOffSetY, 'w': self.spinnerOffSetW, 'h': self.spinnerOffSetH}
+        typeGet = typeDict[type]
+
+        if event == "":
+            typeGet.set(0)
+            return False
+
+        try:
+            event = int(event)
+            # Fetching minimum and maximum value of the spinbox
+            minval = int(self.root.nametowidget(typeGet).config('from')[4])
+            maxval = int(self.root.nametowidget(typeGet).config('to')[4])
+
+            # check if the number is within the range
+            if event not in range(minval, maxval):
+                # if not, set the value to the nearest limit
+                if event < minval:
+                    typeGet.set(minval)
+                else:
+                    typeGet.set(maxval)
+                return False
+
+            # if all is well, return True
+            return True
+        except: # Except means that number is not a digit
+            return False

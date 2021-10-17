@@ -27,6 +27,9 @@ except Exception as e:
     print("Error", str(e))
     Mbox("Error", e, 2)
 
+# ---------------------------------------------------------------
+# --------------------- Public Classes --------------------------
+# ---------------------------------------------------------------
 class global_Stuff: 
     """
     Class containing all the static variables for the UI. It also contains some methods
@@ -168,7 +171,7 @@ class global_Stuff:
         # If not allowed
         return "break"
 
-# ------------------------------
+# ---------------------------------------------------------------
 # TextWithVar, taken from: https://stackoverflow.com/questions/21507178/tkinter-text-binding-a-variable-to-widget-text-contents
 class TextWithVar(tk.Text):
     '''A text widget that accepts a 'textvariable' option'''
@@ -234,6 +237,8 @@ class TextWithVar(tk.Text):
         if self._textvariable is not None:
             self._textvariable.set(self.get("1.0", "end-1c"))
 
+# ---------------------------------------------------------------
+# Tooltip
 """ tk_ToolTip_class101.py
 gives a Tkinter widget a tooltip as the mouse is above the widget
 tested with Python27 and Python34  by  vegaseat  09sep2014
@@ -294,8 +299,9 @@ class CreateToolTip(object):
         self.tw= None
         if tw:
             tw.destroy()
-
-# ----------------------------------------------------------------
+# ---------------------------------------------------------------
+# --------------------- Public Functions ------------------------
+# ---------------------------------------------------------------
 def startfile(filename):
     """
     Open a folder or file in the default application.
@@ -345,17 +351,10 @@ def offSetSettings(widthHeighOff, xyOffsetType, xyOff, custom=None):
     """
     Calculate the offset settings for the monitor.
     """
-    offSetsGet = []
     x, y, w, h = 0, 0, 0, 0
-    if widthHeighOff[0] == "auto":
-        w = 60
-    else:
-        w = widthHeighOff[0]
 
-    if widthHeighOff[1] == "auto":
-        h = 60
-    else:
-        h = widthHeighOff[1]
+    w = 60 if widthHeighOff[0] == "auto" else widthHeighOff[0]
+    h = 60 if widthHeighOff[1] == "auto" else widthHeighOff[1]
 
     #  If offset is set
     if xyOffsetType.lower() != "no offset" or custom is not None:
@@ -380,10 +379,7 @@ def offSetSettings(widthHeighOff, xyOffsetType, xyOff, custom=None):
         else:  # if set manually
             y = xyOff[1]
 
-    offSetsGet.append(x)
-    offSetsGet.append(y)
-    offSetsGet.append(w)
-    offSetsGet.append(h)
+    offSetsGet = [x, y, w, h]
     return offSetsGet
 
 def OpenUrl(url):
@@ -411,6 +407,7 @@ def searchList(searchFor, theList):
 
 # ----------------------------------------------------------------------
 # --------------------------  Public Var  ------------------------------
+# ----------------------------------------------------------------------
 """Getting all the public variables to be used in other classes/files"""
 # Public var
 engines = engineList
@@ -425,6 +422,6 @@ fillList(pons_Lang, optPons)  # PONS HAVE NO AUTO DETECT
 optNone = []
 fillList(tesseract_Lang, optNone)
 
-# Create an object for the classes here
+# Create an object for the classes needed here
 fJson = JsonHandler()
 globalStuff = global_Stuff()
