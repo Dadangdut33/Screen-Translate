@@ -21,9 +21,7 @@
             "family": "Segoe UI",
             "size": 10,
             "weight": "normal",
-            "slant": "roman",
-            "underline": 0,
-            "overstrike": 0
+            "slant": "roman"
         },
         "bg": "#FFFFFF",
         "fg": "#000000"
@@ -33,9 +31,7 @@
             "family": "Segoe UI",
             "size": 10,
             "weight": "normal",
-            "slant": "roman",
-            "underline": 0,
-            "overstrike": 0
+            "slant": "roman"
         },
         "bg": "#FFFFFF",
         "fg": "#000000"
