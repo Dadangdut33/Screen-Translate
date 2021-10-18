@@ -22,7 +22,18 @@ class JsonHandler:
         "default_FromOnOpen": "Auto-Detect",
         "default_ToOnOpen": "English",
         "capture_Hotkey": "",
-        "capture_HotkeyDelay": 1000
+        "capture_HotkeyDelay": 1000,
+        "Query_Box": {
+            "font": {'family': 'Segoe UI', 'size': 10, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0},
+            "bg": "#FFFFFF",
+            "fg": "#000000",
+        },
+        "Result_Box": {
+            "font": {'family': 'Segoe UI', 'size': 10, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0},
+            "bg": "#FFFFFF",
+            "fg": "#000000",
+        },
+        "checkUpdateOnStart": True
     }
 
     # -------------------------------------------------
