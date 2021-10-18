@@ -24,12 +24,12 @@ class JsonHandler:
         "capture_Hotkey": "",
         "capture_HotkeyDelay": 1000,
         "Query_Box": {
-            "font": {'family': 'Segoe UI', 'size': 10, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0},
+            "font": {'family': 'Segoe UI', 'size': 10, 'weight': 'normal', 'slant': 'roman'},
             "bg": "#FFFFFF",
             "fg": "#000000",
         },
         "Result_Box": {
-            "font": {'family': 'Segoe UI', 'size': 10, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0},
+            "font": {'family': 'Segoe UI', 'size': 10, 'weight': 'normal', 'slant': 'roman'},
             "bg": "#FFFFFF",
             "fg": "#000000",
         },
