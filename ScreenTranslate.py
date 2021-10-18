@@ -255,11 +255,12 @@ class main_Menu():
             print("Error loading icon: " + str(e))
 
         #TODO: Add setting to check for update on startup or not
-        try:
-            print(">> Checking app version")
-            self.checkVersion(withPopup=False)
-        except Exception as e:
-            print("Error checking version: " + str(e))
+        if settings['checkUpdateOnStart']:
+            try:
+                print(">> Checking app version")
+                self.checkVersion(withPopup=False, onStart=True)
+            except Exception as e:
+                print("Error checking version: " + str(e))
 
     # --- Functions ---
     # On Close
@@ -385,7 +386,7 @@ class main_Menu():
                 Mbox("Error", str(e), 0, self.root)
 
     # Check version
-    def checkVersion(self, withPopup = True):
+    def checkVersion(self, withPopup = True, onStart = False):
         try:
             version = requests.get("https://raw.githubusercontent.com/Dadangdut33/Screen-Translate/main/version.txt").text
             # num_CurrentVersion = [int(i) for i in globalStuff.version.split('.')]
@@ -404,7 +405,7 @@ class main_Menu():
             if globalStuff.version != version:
                 globalStuff.newVerStatusCache = "New version available!"
                 print(">> A new version is available. Please update to the latest version.\n(-) Current Version : " + globalStuff.version + "\n(+) Latest Version  : " + version)
-                if withPopup: 
+                if withPopup or onStart: 
                     Mbox("New Version Available", "A newer version is available. Please update to the latest version by going to the release section in the repository.\n\nCurrent Version : " + globalStuff.version + "\nLatest Version  : " + version, 0, self.root)
                     # Ask if user want to download the latest version or not
                     if Mbox("Download Latest Version", "Do you want to download the latest version?", 3, self.root):
