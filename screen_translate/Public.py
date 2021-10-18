@@ -252,7 +252,7 @@ class CreateToolTip(object):
     create a tooltip for a given widget
     """
     def __init__(self, widget, text='widget info'):
-        self.waittime = 300     #miliseconds
+        self.waittime = 250     #miliseconds
         self.wraplength = 180   #pixels
         self.widget = widget
         self.text = text
@@ -286,6 +286,8 @@ class CreateToolTip(object):
         y += self.widget.winfo_rooty() + 20
         # creates a toplevel window
         self.tw = tk.Toplevel(self.widget)
+        # Make it stay on top
+        self.tw.wm_attributes('-topmost', True)
         # Leaves only the label and removes the app window
         self.tw.wm_overrideredirect(True)
         self.tw.wm_geometry("+%d+%d" % (x, y))
