@@ -53,8 +53,6 @@ class main_Menu():
         # ----------------------------------------------
         # Debug console info
         console()
-        print(">> Checking app version")
-        self.checkVersion(withPopup=False)
 
         # --- Declarations and Layout ---
         self.root = Tk()
@@ -194,8 +192,8 @@ class main_Menu():
 
         self.filemenu3 = Menu(self.menubar, tearoff=0)
         self.filemenu3.add_command(label="Capture Window", command=self.open_Capture_Screen, accelerator="F5") # Open Capture Screen Window
-        self.filemenu3.add_command(label="Query Box", command=self.open_Query_Box)
-        self.filemenu3.add_command(label="Result Box", command=self.open_Result_Box)
+        self.filemenu3.add_command(label="Query Box", command=self.open_Query_Box, accelerator="F6")
+        self.filemenu3.add_command(label="Result Box", command=self.open_Result_Box, accelerator="F7")
         self.menubar.add_cascade(label="Generate", menu=self.filemenu3)
 
         self.filemenu4 = Menu(self.menubar, tearoff=0)
@@ -226,6 +224,8 @@ class main_Menu():
         self.root.bind("<F3>", self.open_History)
         self.root.bind("<F4>", self.open_Img_Captured)
         self.root.bind("<F5>", self.open_Capture_Screen)
+        self.root.bind("<F6>", self.open_Query_Box)
+        self.root.bind("<F7>", self.open_Result_Box)
 
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
 
@@ -253,6 +253,13 @@ class main_Menu():
             print("Error loading icon: Logo not found!")
         except Exception as e:
             print("Error loading icon: " + str(e))
+
+        #TODO: Add setting to check for update on startup or not
+        try:
+            print(">> Checking app version")
+            self.checkVersion(withPopup=False)
+        except Exception as e:
+            print("Error checking version: " + str(e))
 
     # --- Functions ---
     # On Close
