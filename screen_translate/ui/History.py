@@ -83,14 +83,21 @@ class HistoryUI():
     def deleteSelected(self):
         sel_Index = self.historyTreeView.focus()
         if sel_Index != "":
-            x = Mbox("Confirmation", "Are you sure you want to the selected data?", 3, self.root)
-            if x == False:
-                Mbox("Canceled", "Action Canceled", 0, self.root)
-                return
+            if Mbox("Confirmation", "Are you sure you want to the selected data?", 3, self.root):
+                dataRow = self.historyTreeView.item(sel_Index, 'values')
 
-            dataRow = self.historyTreeView.item(sel_Index, 'values')
+                status, statusText = fJson.deleteCertainHistory(int(dataRow[0]))
+                if status == True:
+                    print("Success: " + statusText)
+                    Mbox("Success", statusText, 0, self.root)
+                # Error already handled in jsonHandling
 
-            status, statusText = fJson.deleteCertainHistory(int(dataRow[0]))
+                # Refresh
+                self.refresh()
+
+    def deleteAll(self):
+        if Mbox("Confirmation", "Are you sure you want to delete all history?", 3, self.root):
+            status, statusText = fJson.deleteAllHistory()
             if status == True:
                 print("Success: " + statusText)
                 Mbox("Success", statusText, 0, self.root)
@@ -98,22 +105,6 @@ class HistoryUI():
 
             # Refresh
             self.refresh()
-
-    def deleteAll(self):
-        x = Mbox("Confirmation", "Are you sure you want to delete all history?", 3, self.root)
-        if x == False:
-            Mbox("Canceled", "Action Canceled", 0, self.root)
-            return
-
-        status, statusText = fJson.deleteAllHistory()
-        if status == True:
-            print("Success: " + statusText)
-            Mbox("Success", statusText, 0, self.root)
-        # Error already handled in jsonHandling
-
-        # Refresh
-        self.refresh()
-
 
     def refresh(self):
         status, data = fJson.readHistory()
@@ -152,11 +143,15 @@ class HistoryUI():
             dataRow = self.historyTreeView.item(sel_Index, 'values')
             pyperclip.copy(dataRow[2].strip())
 
+            Mbox("Success", "Copied to clipboard", 0, self.root)
+
     def copyToTranslateMenu(self):
         sel_Index = self.historyTreeView.focus()
         if sel_Index != '':
             dataRow = self.historyTreeView.item(sel_Index, 'values')
             globalStuff.text_Box_Top_Var.set(dataRow[2]) # Hint: ('2', 'Japanese-English', 'こんにちは')
+
+            Mbox("Success", "Copied to translate menu", 0, self.root)
 
     def handle_click(self, event):
         if self.historyTreeView.identify_region(event.x, event.y) == "separator":

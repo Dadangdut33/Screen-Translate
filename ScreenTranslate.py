@@ -32,8 +32,6 @@ globalStuff.logoPath = dir_logo.replace(".ico", ".png")
 """ For future features
 TODO: 
 - Add more OCR options
-- Add tl result window setting (color, background, font, etc)
-- Change the layout of settings window, divide panel for some category
 - Add disable history in setting
 - Find better way to use the hotkey instead of checking it every 100ms
 """

@@ -110,27 +110,34 @@ class global_Stuff:
             print("Error: No text entered! Please enter some text")
             return
 
+        try:
+            historyIsSaved = fJson.readSetting()['saveHistory']
+        except Exception as e:
+            print("Error: Could not read saveHistory setting", str(e))
+            Mbox("Error: Could not read saveHistory setting", "Please do not edit Setting.json manually\n\n" + str(e), 2, self.main_Ui)
+            historyIsSaved = True
+
         # Translate
         # --------------------------------
         # Google Translate
         if self.engine == "Google Translate":
             isSuccess, translateResult = google_tl(query, self.langTo, self.langFrom)
-            self.saveToHistory(isSuccess, query, translateResult)
+            self.fillTextBoxAndSaveHistory(isSuccess, query, translateResult, historyIsSaved)
         # --------------------------------
         # Deepl
         elif self.engine == "Deepl":
             loop = asyncio.get_event_loop()
-            loop.run_until_complete(self.getDeeplTl(query, self.langTo, self.langFrom))
+            loop.run_until_complete(self.getDeeplTl(query, self.langTo, self.langFrom, historyIsSaved))
         # --------------------------------
         # MyMemoryTranslator
         elif self.engine == "MyMemoryTranslator":
             isSuccess, translateResult = memory_tl(query, self.langTo, self.langFrom)
-            self.saveToHistory(isSuccess, query, translateResult)
+            self.fillTextBoxAndSaveHistory(isSuccess, query, translateResult, historyIsSaved)
         # --------------------------------
         # PONS
         elif self.engine == "PONS":
             isSuccess, translateResult = pons_tl(query, self.langTo, self.langFrom)
-            self.saveToHistory(isSuccess, query, translateResult)
+            self.fillTextBoxAndSaveHistory(isSuccess, query, translateResult, historyIsSaved)
 
         # --------------------------------
         # None
@@ -140,30 +147,30 @@ class global_Stuff:
         # Wrong opts
         else:
             print("Please select a correct engine")
-            Mbox("Error: Engine Not Set!", "Please Please select a correct engine", 2, self.main_Ui)
+            Mbox("Error: Engine Not Set!", "Please select a correct engine", 2, self.main_Ui)
 
     # Get Deepl TL
-    async def getDeeplTl(self, text, langTo, langFrom):
+    async def getDeeplTl(self, text, langTo, langFrom, saveToHistory):
         """Get the translated text from deepl.com"""
 
         isSuccess, translateResult = await deepl_tl(text, langTo, langFrom)
-        self.saveToHistory(isSuccess, text, translateResult)
+        self.fillTextBoxAndSaveHistory(isSuccess, text, translateResult, saveToHistory)
 
     # Save to History
-    def saveToHistory(self, isSuccess, query, translateResult):
+    def fillTextBoxAndSaveHistory(self, isSuccess, query, translateResult, saveToHistory):
         """Save the text to history"""
         if(isSuccess):
             self.text_Box_Bottom_Var.set(translateResult)
-
-            # Write to History
-            new_data = {
-                "from": self.langFrom,
-                "to": self.langTo,
-                "query": query,
-                "result": translateResult,
-                "engine": self.engine
-            }
-            fJson.writeAdd_History(new_data)
+            if saveToHistory:
+                # Write to History
+                new_data = {
+                    "from": self.langFrom,
+                    "to": self.langTo,
+                    "query": query,
+                    "result": translateResult,
+                    "engine": self.engine
+                }
+                fJson.writeAdd_History(new_data)
         else:
             Mbox("Error: Translation Failed", translateResult, 2, self.main_Ui)
 
