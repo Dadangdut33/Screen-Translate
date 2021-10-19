@@ -1,6 +1,9 @@
+import json
 from tkinter import *
 from tkinter import ttk, colorchooser
-from ..Public import globalStuff, TextWithVar, fJson, CreateToolTip
+
+from screen_translate.Mbox import Mbox
+from screen_translate.Public import globalStuff, TextWithVar, fJson, CreateToolTip
 from tkfontchooser import askfont
 
 # Classes
@@ -60,13 +63,20 @@ class Detached_Tl_Result():
         self.reset_To_Current_Button = ttk.Button(self.settingFrame_2, text="Reset to Current", command=self.reset_To_Current)
         self.reset_To_Current_Button.pack(padx=5, pady=5, side=LEFT)
 
+        # Hint label
+        self.hintLabel = Label(self.settingFrame_2, text="❓")
+        self.hintLabel.pack(padx=5, pady=5, side=LEFT)
+        CreateToolTip(self.hintLabel, "Changes you made here will not be saved unless you save it in the setting menu")
+
         # Textbox bg color
         self.textboxBgColor = StringVar()
         self.textboxBgColor.set(settings['Result_Box']['bg'])
+        globalStuff.resultBg = self.textboxBgColor
 
         # Textbox fg color
         self.textboxFgColor = StringVar()
         self.textboxFgColor.set(settings['Result_Box']['fg'])
+        globalStuff.resultFg = self.textboxFgColor
 
         # Textbox bg color Label
         self.textboxBgColorLabel = Label(self.settingFrame, text="BG color: " + self.textboxBgColor.get())
@@ -81,13 +91,16 @@ class Detached_Tl_Result():
         CreateToolTip(self.textboxFgColorLabel, "Click to change textbox foreground color")
 
         # textbox font label
-        self.tbQueryFont = settings['Result_Box']['font']
-        font_str = "%(family)s %(size)i %(weight)s %(slant)s" % self.tbQueryFont
+        self.tbResultFont = StringVar()
+        self.tbResultFont.set(settings['Result_Box']['font'])
+        self.tbResultFontDict = json.loads(self.tbResultFont.get().replace("'", '"'))
+        font_str = "%(family)s %(size)i %(weight)s %(slant)s" % self.tbResultFontDict
+        globalStuff.resultFont = self.tbResultFont
         
         self.tbFontLabel = Label(self.settingFrame, text="Font: " + font_str)
         self.tbFontLabel.pack(padx=5, pady=5, side=LEFT)
         self.tbFontLabel.bind("<Button-1>", self.fontChooser)
-        CreateToolTip(self.tbFontLabel, "Click to change textbox font (Underline and overstrike is ignored)")
+        CreateToolTip(self.tbFontLabel, "Click to change textbox font (Underline and strikethrough is ignored)")
 
         # Menu bar
         # Same method as in the capture window
@@ -104,10 +117,10 @@ class Detached_Tl_Result():
         self.root.config(menu=self.menubar)
 
         # Textbox in topframe2
-        self.textBoxTlQuery = TextWithVar(self.tbFrame, textvariable=globalStuff.text_Box_Bottom_Var, height = 5, width = 100, yscrollcommand=True, background=self.textboxBgColor.get())
-        self.textBoxTlQuery.bind("<Key>", lambda event: globalStuff.allowedKey(event)) # Disable textbox input
-        self.textBoxTlQuery.config(font=(self.tbQueryFont['family'], self.tbQueryFont['size'], self.tbQueryFont['weight'], self.tbQueryFont['slant']))
-        self.textBoxTlQuery.pack(side=LEFT, fill=BOTH, expand=True)
+        self.textBoxTlResult = TextWithVar(self.tbFrame, textvariable=globalStuff.text_Box_Bottom_Var, height = 5, width = 100, yscrollcommand=True, background=self.textboxBgColor.get())
+        self.textBoxTlResult.bind("<Key>", lambda event: globalStuff.allowedKey(event)) # Disable textbox input
+        self.textBoxTlResult.config(font=(self.tbResultFontDict['family'], self.tbResultFontDict['size'], self.tbResultFontDict['weight'], self.tbResultFontDict['slant']))
+        self.textBoxTlResult.pack(side=LEFT, fill=BOTH, expand=True)
 
         # On Close
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
@@ -136,6 +149,7 @@ class Detached_Tl_Result():
     # Show/Hide
     def show(self):
         self.root.attributes('-alpha', 1)
+        self.opacitySlider.set(1)
         self.root.wm_deiconify()
 
     def on_closing(self):
@@ -160,35 +174,44 @@ class Detached_Tl_Result():
 
     # Reset
     def reset_Default(self):
-        self.root.attributes('-alpha', 1)
-        self.sliderOpac(1, "outside")
-        self.textboxBgColor.set('#FFFFFF')
-        self.textboxFgColor.set('#000000')
-        self.textboxBgColorLabel.config(text="BG color: " + self.textboxBgColor.get())
-        self.textboxFgColorLabel.config(text="FG color: " + self.textboxFgColor.get())
-        self.textBoxTlQuery.config(background=self.textboxBgColor.get())
-        self.textBoxTlQuery.config(foreground=self.textboxFgColor.get())
-        self.tbQueryFont = {'family': 'Segoe UI', 'size': 10, 'weight': 'normal', 'slant': 'roman'}
-        font_str = "%(family)s %(size)i %(weight)s %(slant)s" % self.tbQueryFont
-        self.tbFontLabel.configure(text='Font: ' + font_str)
-        self.textBoxTlQuery.config(font=(self.tbQueryFont['family'], self.tbQueryFont['size'], self.tbQueryFont['weight'], self.tbQueryFont['slant']))
+        # Ask for confirmation first
+        if Mbox("Reset Default", "Are you sure you want to reset to default settings?", 3, parent=self.root):
+            self.root.attributes('-alpha', 1)
+            self.sliderOpac(1, "outside")
+            self.textboxBgColor.set('#FFFFFF')
+            self.textboxFgColor.set('#000000')
+            self.textboxBgColorLabel.config(text="BG color: " + self.textboxBgColor.get())
+            self.textboxFgColorLabel.config(text="FG color: " + self.textboxFgColor.get())
+            self.textBoxTlResult.config(background=self.textboxBgColor.get())
+            self.textBoxTlResult.config(foreground=self.textboxFgColor.get())
+
+            self.tbResultFont.set({"family": "Segoe UI", "size": 10, "weight": "normal", "slant": "roman"})
+            self.tbResultFontDict = json.loads(self.tbResultFont.get().replace("'", '"'))
+            font_str = "%(family)s %(size)i %(weight)s %(slant)s" % self.tbResultFontDict
+            self.tbFontLabel.configure(text='Font: ' + font_str)
+            self.textBoxTlResult.config(font=(self.tbResultFontDict['family'], self.tbResultFontDict['size'], self.tbResultFontDict['weight'], self.tbResultFontDict['slant']))
+            globalStuff.main.setting_UI.updateLbl()
 
     def reset_To_Current(self):
-        self.root.attributes('-alpha', 1)
-        self.sliderOpac(1, "outside")
-        settings = fJson.readSetting()
+        # Ask for confirmation first
+        if Mbox("Reset To Currently Saved", "Are you sure you want to reset to current settings?", 3, parent=self.root):
+            self.root.attributes('-alpha', 1)
+            self.sliderOpac(1, "outside")
+            settings = fJson.readSetting()
 
-        self.textboxBgColor.set(settings["Result_Box"]["bg"])
-        self.textboxFgColor.set(settings["Result_Box"]["fg"])
-        self.textboxBgColorLabel.config(text="BG color: " + self.textboxBgColor.get())
-        self.textboxFgColorLabel.config(text="FG color: " + self.textboxFgColor.get())
-        self.textBoxTlQuery.config(background=self.textboxBgColor.get())
-        self.textBoxTlQuery.config(foreground=self.textboxFgColor.get())
+            self.textboxBgColor.set(settings["Result_Box"]["bg"])
+            self.textboxFgColor.set(settings["Result_Box"]["fg"])
+            self.textboxBgColorLabel.config(text="BG color: " + self.textboxBgColor.get())
+            self.textboxFgColorLabel.config(text="FG color: " + self.textboxFgColor.get())
+            self.textBoxTlResult.config(background=self.textboxBgColor.get())
+            self.textBoxTlResult.config(foreground=self.textboxFgColor.get())
 
-        self.tbQueryFont = settings["Result_Box"]["font"]
-        font_str = "%(family)s %(size)i %(weight)s %(slant)s" % self.tbQueryFont
-        self.tbFontLabel.configure(text='Font: ' + font_str)
-        self.textBoxTlQuery.config(font=(self.tbQueryFont['family'], self.tbQueryFont['size'], self.tbQueryFont['weight'], self.tbQueryFont['slant']))
+            self.tbResultFont.set(settings["Result_Box"]["font"])
+            self.tbResultFontDict = json.loads(self.tbResultFont.get().replace("'", '"'))
+            font_str = "%(family)s %(size)i %(weight)s %(slant)s" % self.tbResultFontDict
+            self.tbFontLabel.configure(text='Font: ' + font_str)
+            self.textBoxTlResult.config(font=(self.tbResultFontDict['family'], self.tbResultFontDict['size'], self.tbResultFontDict['weight'], self.tbResultFontDict['slant']))
+            globalStuff.main.setting_UI.updateLbl()
 
     # Bg Color chooser
     def bgColorChooser(self, event=None):
@@ -196,7 +219,8 @@ class Detached_Tl_Result():
         if colorGet[1] != None:
             self.textboxBgColor.set(colorGet[1])
             self.textboxBgColorLabel.config(text="BG color: " + self.textboxBgColor.get())
-            self.textBoxTlQuery.config(background=self.textboxBgColor.get())
+            self.textBoxTlResult.config(background=self.textboxBgColor.get())
+            globalStuff.main.setting_UI.updateLbl()
     
     # Fg Color chooser
     def fgColorChooser(self, event=None):
@@ -204,13 +228,28 @@ class Detached_Tl_Result():
         if colorGet[1] != None:
             self.textboxFgColor.set(colorGet[1])
             self.textboxFgColorLabel.config(text="FG color: " + self.textboxFgColor.get())
-            self.textBoxTlQuery.config(foreground=self.textboxFgColor.get())
+            self.textBoxTlResult.config(foreground=self.textboxFgColor.get())
+            globalStuff.main.setting_UI.updateLbl()
 
     # Font Chooser
     def fontChooser(self, event=None):
-        fontGet = askfont(self.root, title="Choose a font", text="Preview プレビュー معاينة 预览", family=self.tbQueryFont['family'], size=self.tbQueryFont['size'], weight=self.tbQueryFont['weight'], slant=self.tbQueryFont['slant'])
+        fontGet = askfont(self.root, title="Choose a font", text="Preview プレビュー معاينة 预览", family=self.tbResultFontDict['family'], size=self.tbResultFontDict['size'], weight=self.tbResultFontDict['weight'], slant=self.tbResultFontDict['slant'])
         if fontGet:
-            self.tbQueryFont = fontGet
-            self.textBoxTlQuery.config(font=(fontGet['family'], fontGet['size'], fontGet['weight'], fontGet['slant']))
-            font_str = "%(family)s %(size)i %(weight)s %(slant)s" % self.tbQueryFont
+            self.tbResultFont.set(fontGet)
+            self.tbResultFontDict = json.loads(self.tbResultFont.get().replace("'", '"'))
+            self.textBoxTlResult.config(font=(self.tbResultFontDict['family'], self.tbResultFontDict['size'], self.tbResultFontDict['weight'], self.tbResultFontDict['slant']))
+            font_str = "%(family)s %(size)i %(weight)s %(slant)s" % self.tbResultFontDict
             self.tbFontLabel.configure(text='Font: ' + font_str)
+            globalStuff.main.setting_UI.updateLbl()
+
+    def updateStuff(self):
+        self.textboxBgColorLabel.config(text="BG color: " + self.textboxBgColor.get())
+        self.textBoxTlResult.config(background=self.textboxBgColor.get())
+
+        self.textboxFgColorLabel.config(text="FG color: " + self.textboxFgColor.get())
+        self.textBoxTlResult.config(foreground=self.textboxFgColor.get())
+
+        self.tbResultFontDict = json.loads(self.tbResultFont.get().replace("'", '"'))
+        font_str = "%(family)s %(size)i %(weight)s %(slant)s" % self.tbResultFontDict
+        self.tbFontLabel.configure(text='Font: ' + font_str)
+        self.textBoxTlResult.config(font=(self.tbResultFontDict['family'], self.tbResultFontDict['size'], self.tbResultFontDict['weight'], self.tbResultFontDict['slant']))

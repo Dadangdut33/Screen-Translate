@@ -4,9 +4,9 @@ import asyncio
 import os
 import pyautogui
 import webbrowser
-from .JsonHandling import JsonHandler
-from .LangCode import *
-from .Mbox import Mbox
+from screen_translate.JsonHandling import JsonHandler
+from screen_translate.LangCode import *
+from screen_translate.Mbox import Mbox
 
 # Add try except to intercept connection error
 try:
@@ -43,6 +43,7 @@ class global_Stuff:
         self.gimmickWindow.withdraw()
 
         # Reference main ui
+        self.main = None
         self.main_Ui = None
 
         # Text box
@@ -71,6 +72,16 @@ class global_Stuff:
 
         # Logo
         self.logoPath = None
+
+        # Query box
+        self.queryBg = None
+        self.queryFg = None
+        self.queryFont = None
+
+        # Result box
+        self.resultBg = None
+        self.resultFg = None
+        self.resultFont = None
 
     def hotkeyCallback(self):
         self.hotkeyPressed = True

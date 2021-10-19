@@ -1,7 +1,7 @@
 from tkinter.font import BOLD
 import tkinter.ttk as ttk
 from tkinter import *
-from ..Public import globalStuff, OpenUrl, CreateToolTip
+from screen_translate.Public import globalStuff, OpenUrl, CreateToolTip
 from PIL import Image, ImageTk
 
 # Classes

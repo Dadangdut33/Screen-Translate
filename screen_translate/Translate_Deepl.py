@@ -1,5 +1,5 @@
-from .Mbox import Mbox
-from .LangCode import *
+from screen_translate.Mbox import Mbox
+from screen_translate.LangCode import *
 
 # ----------------------------------------------------------------
 # Imports Library

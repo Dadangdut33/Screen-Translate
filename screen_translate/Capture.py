@@ -1,11 +1,11 @@
 import pyautogui
 import os
 import pytesseract
-from .Mbox import Mbox
+from screen_translate.Mbox import Mbox
 from datetime import datetime
 
 # Lang Code
-from .LangCode import *
+from screen_translate.LangCode import *
 
 # Settings to capture all screens
 from PIL import ImageGrab
@@ -13,7 +13,7 @@ from functools import partial
 ImageGrab.grab = partial(ImageGrab.grab, all_screens=True)
 
 # Public methods
-from .Public import startfile
+from screen_translate.Public import startfile
 
 # Get Path
 dir_path = os.path.dirname(os.path.realpath(__file__))

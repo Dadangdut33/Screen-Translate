@@ -1,11 +1,15 @@
+import json
+from tkinter import colorchooser
 import tkinter.ttk as ttk
 import keyboard
 from tkinter import *
 from tkinter import filedialog
-from ..Public import fJson, globalStuff
-from ..Public import startfile, optGoogle, optDeepl, optMyMemory, optPons, optNone, engines, getTheOffset, offSetSettings, searchList
-from ..Mbox import Mbox
-from ..Capture import captureAll
+
+from tkfontchooser import askfont
+from screen_translate.Public import CreateToolTip, fJson, globalStuff
+from screen_translate.Public import startfile, optGoogle, optDeepl, optMyMemory, optPons, optNone, engines, getTheOffset, offSetSettings, searchList
+from screen_translate.Mbox import Mbox
+from screen_translate.Capture import captureAll
 import os
 # Get dir path
 dir_path = os.path.dirname(os.path.realpath(__file__))
@@ -43,6 +47,7 @@ class SettingUI():
         self.listboxCat.insert(3, "Translate")
         self.listboxCat.insert(4, "Hotkey")
         self.listboxCat.insert(5, "Query/Result Box")
+        self.listboxCat.insert(6, "Other")
 
         # Bind the listbox to the function
         self.listboxCat.bind("<<ListboxSelect>>", self.onSelect)
@@ -54,14 +59,14 @@ class SettingUI():
 
         # [Img/OCR Setting]
         self.fLabelCapture_1 = LabelFrame(self.frameCapture, text="• Capturing Setting", width=750, height=55)
-        self.fLabelCapture_1.pack(side=TOP, fill=X, expand=False, padx=5, pady=5)
+        self.fLabelCapture_1.pack(side=TOP, fill=X, expand=False, padx=5, pady=(0, 5))
         self.fLabelCapture_1.pack_propagate(0)
         self.content_Cap_1 = Frame(self.fLabelCapture_1)
         self.content_Cap_1.pack(side=TOP, fill=X, expand=False)
 
-        self.checkVarImgSaved = BooleanVar(self.root, name="checkVarImg", value=True) # So its not error
+        self.checkVarImgSaved = BooleanVar(self.root, value=True) # So its not error
         self.checkBTNSaved = ttk.Checkbutton(self.content_Cap_1, text="Save Captured Image", variable=self.checkVarImgSaved)
-        self.checkVarAutoCopy = BooleanVar(self.root, name="checkVarCopyToClip", value=True) # So its not error
+        self.checkVarAutoCopy = BooleanVar(self.root, value=True) # So its not error
         self.checkBTNAutoCopy = ttk.Checkbutton(self.content_Cap_1, text="Auto Copy Captured Text To Clipboard", variable=self.checkVarAutoCopy)
         self.btnOpenImgFolder = ttk.Button(self.content_Cap_1, text="Open Captured Image Folder", command=lambda: startfile(dir_path + r"\..\..\img_captured"))
 
@@ -146,7 +151,7 @@ class SettingUI():
         self.frameEngine.pack(side=LEFT, fill=BOTH, padx=5, pady=5)
 
         self.fLabelEngine_1 = LabelFrame(self.frameEngine, text="• Tesseract OCR Settings", width=750, height=55)
-        self.fLabelEngine_1.pack(side=TOP, fill=X, expand=False, padx=5, pady=5)
+        self.fLabelEngine_1.pack(side=TOP, fill=X, expand=False, padx=5, pady=(0, 5))
         self.fLabelEngine_1.pack_propagate(0)
         self.content_Engine_1 = Frame(self.fLabelEngine_1)
         self.content_Engine_1.pack(side=TOP, fill=X, expand=False)
@@ -166,11 +171,15 @@ class SettingUI():
         self.frameTranslate = Frame(self.mainFrameTop)
         self.frameTranslate.pack(side=LEFT, fill=BOTH, padx=5, pady=5)
         
-        self.fLabelTl_1 = LabelFrame(self.frameTranslate, text="• Translation Settings", width=750, height=55)
-        self.fLabelTl_1.pack(side=TOP, fill=X, expand=False, padx=5, pady=5)
+        self.fLabelTl_1 = LabelFrame(self.frameTranslate, text="• Translation Settings", width=750, height=80)
+        self.fLabelTl_1.pack(side=TOP, fill=X, expand=False, padx=5, pady=(0, 5))
         self.fLabelTl_1.pack_propagate(0)
+
         self.content_Tl_1 = Frame(self.fLabelTl_1)
         self.content_Tl_1.pack(side=TOP, fill=X, expand=False)
+
+        self.content_Tl_2 = Frame(self.fLabelTl_1)
+        self.content_Tl_2.pack(side=TOP, fill=X, expand=False)
 
         self.langOpt = optGoogle
         self.labelDefaultEngine = Label(self.content_Tl_1, text="Default TL Engine :")
@@ -190,13 +199,21 @@ class SettingUI():
         self.CBDefaultTo = ttk.Combobox(self.content_Tl_1, values=self.langOpt, state="readonly")
         self.CBDefaultTo.pack(side=LEFT, padx=5, pady=5)
 
+        self.labelSaveToHistory = Label(self.content_Tl_2, text="Save to History :")
+        self.labelSaveToHistory.pack(side=LEFT, padx=5, pady=5)
+
+        self.saveToHistoryVar = BooleanVar(self.root, value=True)
+        self.checkSaveToHistory = ttk.Checkbutton(self.content_Tl_2, variable=self.saveToHistoryVar)
+        self.checkSaveToHistory.pack(side=LEFT, padx=5, pady=5)
+
+
         # ----------------------------------------------------------------------
         # Hotkey
         self.frameHotkey = Frame(self.mainFrameTop)
         self.frameHotkey.pack(side=LEFT, fill=BOTH, padx=5, pady=5)
         
-        self.fLabelHotkey_1 = LabelFrame(self.frameHotkey, text="• Hotkey Settings", width=750, height=55)
-        self.fLabelHotkey_1.pack(side=TOP, fill=X, expand=False, padx=5, pady=5)
+        self.fLabelHotkey_1 = LabelFrame(self.frameHotkey, text="• Capture Hotkey Settings", width=750, height=55)
+        self.fLabelHotkey_1.pack(side=TOP, fill=X, expand=False, padx=5, pady=(0, 5))
         self.fLabelHotkey_1.pack_propagate(0)
         self.content_Hotkey_1 = Frame(self.fLabelHotkey_1)
         self.content_Hotkey_1.pack(side=TOP, fill=X, expand=False)
@@ -223,7 +240,104 @@ class SettingUI():
         self.labelCurrentHotkey.pack(side=LEFT, padx=5, pady=5)
 
         # ----------------------------------------------------------------------
-        # TODO Query and result box
+        # Query/Result box
+        self.frameQueryResult = Frame(self.mainFrameTop)
+        self.frameQueryResult.pack(side=LEFT, fill=BOTH, padx=5, pady=5)
+
+        self.fLabelQuery = LabelFrame(self.frameQueryResult, text="• Query Box", width=750, height=110)
+        self.fLabelQuery.pack(side=TOP, fill=X, expand=False, padx=5, pady=(0, 5))
+        self.fLabelQuery.pack_propagate(0)
+
+        self.fQueryContent_1 = Frame(self.fLabelQuery)
+        self.fQueryContent_1.pack(side=TOP, fill=X, expand=False)
+
+        self.fQueryContent_2 = Frame(self.fLabelQuery)
+        self.fQueryContent_2.pack(side=TOP, fill=X, expand=False)
+
+        self.fQueryContent_3 = Frame(self.fLabelQuery)
+        self.fQueryContent_3.pack(side=TOP, fill=X, expand=False)
+
+        self.queryBgVar = globalStuff.queryBg
+        self.queryBg = Label(self.fQueryContent_1, text="Textbox Bg Color : ")
+        self.queryBg.pack(side=LEFT, padx=5, pady=5)
+        self.queryBg.bind("<Button-1>", lambda event: self.bgColorChooser(label=self.queryBg, 
+        theVar=self.queryBgVar, destination=globalStuff.main.query_Detached_Window_UI))
+        CreateToolTip(self.queryBg, "Click to choose query textbox background color")
+
+        self.hintLabelQuery = Label(self.fQueryContent_1, text="❓")
+        self.hintLabelQuery.pack(padx=5, pady=5, side=RIGHT)
+        CreateToolTip(self.hintLabelQuery, "Click on the label to change the value of the settings")
+
+        self.queryFgVar = globalStuff.queryFg
+        self.queryFg = Label(self.fQueryContent_2, text="Textbox Fg Color : ")
+        self.queryFg.pack(side=LEFT, padx=5, pady=5)
+        self.queryFg.bind("<Button-1>", lambda event: self.fgColorChooser(label=self.queryFg,
+        theVar=self.queryFgVar, destination=globalStuff.main.query_Detached_Window_UI))
+        CreateToolTip(self.queryFg, "Click to choose query textbox foreground color")
+
+        self.queryFontVar = globalStuff.queryFont
+        self.queryFontDict = json.loads(self.queryFontVar.get().replace("'", '"'))
+        self.queryFont = Label(self.fQueryContent_3, text="Textbox Font : ")
+        self.queryFont.pack(side=LEFT, padx=5, pady=5)
+        self.queryFont.bind("<Button-1>", lambda event: self.fontChooser(label=self.queryFont,
+        theVar=self.queryFontVar, theDict=self.queryFontDict, destination=globalStuff.main.query_Detached_Window_UI))
+        CreateToolTip(self.queryFont, "Click to choose query textbox font")
+
+        self.fLabelResult = LabelFrame(self.frameQueryResult, text="• Result Box", width=750, height=110)
+        self.fLabelResult.pack(side=TOP, fill=X, expand=False, padx=5, pady=5)
+        self.fLabelResult.pack_propagate(0)
+
+        self.fResultContent_1 = Frame(self.fLabelResult)
+        self.fResultContent_1.pack(side=TOP, fill=X, expand=False)
+
+        self.fResultContent_2 = Frame(self.fLabelResult)
+        self.fResultContent_2.pack(side=TOP, fill=X, expand=False)
+
+        self.fResultContent_3 = Frame(self.fLabelResult)
+        self.fResultContent_3.pack(side=TOP, fill=X, expand=False)
+
+        self.resultBgVar = globalStuff.resultBg
+        self.resultBg = Label(self.fResultContent_1, text="Textbox Bg Color : ")
+        self.resultBg.pack(side=LEFT, padx=5, pady=5)
+        self.resultBg.bind("<Button-1>", lambda event: self.bgColorChooser(label=self.resultBg,
+        theVar=self.resultBgVar, destination=globalStuff.main.result_Detached_Window_UI))
+        CreateToolTip(self.resultBg, "Click to choose result textbox background color")
+
+        self.hintLabelResult = Label(self.fResultContent_1, text="❓")
+        self.hintLabelResult.pack(padx=5, pady=5, side=RIGHT)
+        CreateToolTip(self.hintLabelResult, "Click on the label to change the value of the settings")
+
+        self.resultFgVar = globalStuff.resultFg
+        self.resultFg = Label(self.fResultContent_2, text="Textbox Fg Color : ")
+        self.resultFg.pack(side=LEFT, padx=5, pady=5)
+        self.resultFg.bind("<Button-1>", lambda event: self.fgColorChooser(label=self.resultFg,
+        theVar=self.resultFgVar, destination=globalStuff.main.result_Detached_Window_UI))
+        CreateToolTip(self.resultFg, "Click to choose result textbox foreground color")
+
+        self.resultFontVar = globalStuff.resultFont
+        self.resultFontDict = json.loads(self.resultFontVar.get().replace("'", '"'))
+        self.resultFont = Label(self.fResultContent_3, text="Textbox Font : ")
+        self.resultFont.pack(side=LEFT, padx=5, pady=5)
+        self.resultFont.bind("<Button-1>", lambda event: self.fontChooser(label=self.resultFont,
+        theVar=self.resultFontVar, theDict=self.resultFontDict, destination=globalStuff.main.result_Detached_Window_UI))
+        CreateToolTip(self.resultFont, "Click to choose result textbox font")
+
+        # ----------------------------------------------------------------------
+        # Other
+        self.frameOther = Frame(self.mainFrameTop)
+        self.frameOther.pack(side=LEFT, fill=BOTH, padx=5, pady=5)
+
+        self.fLabelOther = LabelFrame(self.frameOther, text="• Other Settings", width=750, height=55)
+        self.fLabelOther.pack(side=TOP, fill=X, expand=False, padx=5, pady=(0, 5))
+        self.fLabelOther.pack_propagate(0)
+
+        self.fOtherContent_1 = Frame(self.fLabelOther)
+        self.fOtherContent_1.pack(side=TOP, fill=X, expand=False)
+
+        # Checkbox for check for update
+        self.checkUpdateVar = BooleanVar(self.root, value=True)
+        self.checkUpdateBox = ttk.Checkbutton(self.fOtherContent_1, text="Check for update on app start", variable=self.checkUpdateVar)
+        self.checkUpdateBox.pack(side=LEFT, padx=5, pady=5)
 
         # ----------------------------------------------------------------
         # Bottom Frame
@@ -277,13 +391,18 @@ class SettingUI():
                 self.showFrame(self.frameHotkey)
 
             elif self.listboxCat.curselection()[0] == 4:
-                print("test")
+                self.showFrame(self.frameQueryResult)
+
+            elif self.listboxCat.curselection()[0] == 5:
+                self.showFrame(self.frameOther)
 
     def hideAllFrame(self):
         self.frameCapture.pack_forget()
         self.frameEngine.pack_forget()
         self.frameTranslate.pack_forget()
         self.frameHotkey.pack_forget()
+        self.frameQueryResult.pack_forget()
+        self.frameOther.pack_forget()
 
     def showFrame(self, frame):
         frame.pack(side=LEFT, fill=BOTH, padx=5, pady=5)
@@ -316,8 +435,8 @@ class SettingUI():
         try:
             self.checkVarImgSaved.set(settings['cached'])
         except Exception as e:
-            print("Error: Invalid Autocopy Options")
-            Mbox("Error: Invalid Autocopy Options", "Please do not modify the setting manually if you don't know what you are doing", 2, self.root)
+            print("Error: Invalid Image Saving Options")
+            Mbox("Error: Invalid Image Saving Options", "Please do not modify the setting manually if you don't know what you are doing", 2, self.root)
             self.checkVarImgSaved.set(True)
 
         # Autocopy checkbox
@@ -327,6 +446,44 @@ class SettingUI():
             print("Error: Invalid Autocopy Options")
             Mbox("Error: Invalid Autocopy Options", "Please do not modify the setting manually if you don't know what you are doing", 2, self.root)
             self.checkVarAutoCopy.set(True)
+
+        # Save to history checkbox
+        try:
+            self.saveToHistoryVar.set(settings['saveHistory'])
+        except Exception as e:
+            print(e)
+            print("Error: Invalid History Saving Options")
+            Mbox("Error: Invalid History Saving Options", "Please do not modify the setting manually if you don't know what you are doing", 2, self.root)
+            self.saveToHistoryVar.set(True)
+
+        # Check for update checkbox
+        try:
+            self.checkUpdateVar.set(settings['checkUpdateOnStart'])
+        except Exception as e:
+            print("Error: Invalid Update Checking Options")
+            Mbox("Error: Invalid Update Checking Options", "Please do not modify the setting manually if you don't know what you are doing", 2, self.root)
+            self.checkUpdateVar.set(True)
+
+        # Set label value for query and result box
+        # Query
+        self.queryFontVar.set(settings['Query_Box']['font'])
+        self.queryFontDict = json.loads(self.queryFontVar.get().replace("'", '"'))
+        self.queryBgVar.set(settings['Query_Box']['bg'])
+        self.queryFgVar.set(settings['Query_Box']['fg'])
+        query_font_str = "%(family)s %(size)i %(weight)s %(slant)s" % self.queryFontDict
+        self.queryBg.config(text="Textbox Bg Color : " + self.queryBgVar.get())
+        self.queryFg.config(text="Textbox Fg Color : " + self.queryFgVar.get())
+        self.queryFont.config(text="Textbox Font : " + query_font_str)
+
+        # Result
+        self.resultFontVar.set(settings['Result_Box']['font'])
+        self.resultFontDict = json.loads(self.resultFontVar.get().replace("'", '"'))
+        self.resultBgVar.set(settings['Result_Box']['bg'])
+        self.resultFgVar.set(settings['Result_Box']['fg'])
+        result_font_str = "%(family)s %(size)i %(weight)s %(slant)s" % self.resultFontDict
+        self.resultBg.config(text="Textbox Bg Color : " + self.resultBgVar.get())
+        self.resultFg.config(text="Textbox Fg Color : " + self.resultFgVar.get())
+        self.resultFont.config(text="Textbox Font : " + result_font_str)
 
         # Show current hotkey
         self.labelCurrentHotkey.config(text=settings['capture_Hotkey'])
@@ -403,6 +560,8 @@ class SettingUI():
         self.textBoxTesseractPath.delete(0, END)
         self.textBoxTesseractPath.insert(0, settings['tesseract_loc'])
 
+        globalStuff.main.query_Detached_Window_UI.updateStuff()
+        globalStuff.main.result_Detached_Window_UI.updateStuff()
         print("Setting Loaded")
         # No need for mbox
 
@@ -441,6 +600,9 @@ class SettingUI():
         else:
             h = int(self.spinnerOffSetH.get())
 
+        self.queryFontDict = json.loads(self.queryFontVar.get().replace("'", '"'))
+        self.resultFontDict = json.loads(self.resultFontVar.get().replace("'", '"'))
+
         settingToSave = {
             "cached": self.checkVarImgSaved.get(),
             "autoCopy": self.checkVarAutoCopy.get(),
@@ -452,7 +614,33 @@ class SettingUI():
             "default_FromOnOpen": self.CBDefaultFrom.get(),
             "default_ToOnOpen": self.CBDefaultTo.get(),
             "capture_Hotkey": self.labelCurrentHotkey['text'],
-            "capture_HotkeyDelay": self.spinValHotkeyDelay.get()
+            "capture_HotkeyDelay": self.spinValHotkeyDelay.get(),
+            "Query_Box": {
+                "font": {
+                    "family": self.queryFontDict['family'],
+                    "size": self.queryFontDict['size'],
+                    "weight": self.queryFontDict['weight'],
+                    "slant": self.queryFontDict['slant'],
+                    "underline": self.queryFontDict['underline'],
+                    "overstrike": self.queryFontDict['overstrike']
+                },
+                "bg": self.queryBgVar.get(),
+                "fg": self.queryFgVar.get(),
+            },
+            "Result_Box": {
+                "font": {
+                    "family": self.resultFontDict['family'],
+                    "size": self.resultFontDict['size'],
+                    "weight": self.resultFontDict['weight'],
+                    "slant": self.resultFontDict['slant'],
+                    "underline": self.resultFontDict['underline'],
+                    "overstrike": self.resultFontDict['overstrike']
+                },
+                "bg": self.resultBgVar.get(),
+                "fg": self.resultFgVar.get(),
+            },
+            "saveHistory": self.saveToHistoryVar.get(),
+            "checkUpdateOnStart": self.checkUpdateVar.get()
         }
 
         # Bind hotkey
@@ -686,3 +874,48 @@ class SettingUI():
             return True
         except: # Except means that number is not a digit
             return False
+
+    # Bg Color chooser
+    def bgColorChooser(self, event=None, label=None, theVar=None, destination=None):
+        colorGet = colorchooser.askcolor(color=theVar.get(), title="Choose a color")
+        if colorGet[1] != None:
+            theVar.set(colorGet[1])
+            label.config(text="Textbox BG color: " + theVar.get())
+            destination.updateStuff()
+    
+    # Fg Color chooser
+    def fgColorChooser(self, event=None, label=None, theVar=None, destination=None):
+        colorGet = colorchooser.askcolor(color=theVar.get(), title="Choose a color")
+        if colorGet[1] != None:
+            theVar.set(colorGet[1])
+            label.config(text="Textbox FG color: " + theVar.get())
+            destination.updateStuff()
+
+    # Font Chooser
+    def fontChooser(self, event=None, label=None, theVar=None, theDict=None, destination=None):
+        fontGet = askfont(self.root, title="Choose a font", text="Preview プレビュー معاينة 预览", family=theDict['family'], size=theDict['size'], weight=theDict['weight'], slant=theDict['slant'])
+        if fontGet:
+            # print(globalStuff.queryFont.get())
+            # print(theVar.get())
+            theVar.set(fontGet)
+            # print(globalStuff.queryFont.get())
+            # print(theVar.get())
+            theDict = json.loads(theVar.get().replace("'", '"'))
+            font_str = "%(family)s %(size)i %(weight)s %(slant)s" % theDict
+            label.configure(text='Textbox Font : ' + font_str)
+            destination.updateStuff()
+    
+    # Update lbl
+    def updateLbl(self):
+        self.queryFontDict = json.loads(self.queryFontVar.get().replace("'", '"'))
+        query_font_str = "%(family)s %(size)i %(weight)s %(slant)s" % self.queryFontDict
+        self.queryBg.config(text="Textbox Bg Color : " + self.queryBgVar.get())
+        self.queryFg.config(text="Textbox Fg Color : " + self.queryFgVar.get())
+        self.queryFont.config(text="Textbox Font : " + query_font_str)
+
+        # Result
+        self.resultFontDict = json.loads(self.resultFontVar.get().replace("'", '"'))
+        result_font_str = "%(family)s %(size)i %(weight)s %(slant)s" % self.resultFontDict
+        self.resultBg.config(text="Textbox Bg Color : " + self.resultBgVar.get())
+        self.resultFg.config(text="Textbox Fg Color : " + self.resultFgVar.get())
+        self.resultFont.config(text="Textbox Font : " + result_font_str)

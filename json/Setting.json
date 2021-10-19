@@ -40,5 +40,6 @@
         "bg": "#FFFFFF",
         "fg": "#000000"
     },
+    "saveHistory": true,
     "checkUpdateOnStart": true
 }

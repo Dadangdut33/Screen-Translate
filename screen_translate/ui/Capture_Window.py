@@ -1,9 +1,9 @@
 import tkinter.ttk as ttk
 from tkinter import *
-from ..Public import fJson, globalStuff
-from ..Public import offSetSettings
-from ..Mbox import Mbox
-from ..Capture import captureImg
+from screen_translate.Public import fJson, globalStuff
+from screen_translate.Public import offSetSettings
+from screen_translate.Mbox import Mbox
+from screen_translate.Capture import captureImg
 import pyperclip
 import os
 

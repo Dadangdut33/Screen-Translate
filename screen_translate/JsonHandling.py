@@ -1,7 +1,6 @@
 import json
 import os
-from .Mbox import Mbox
-from pathlib import Path
+from screen_translate.Mbox import Mbox
 dir_path = os.path.dirname(os.path.realpath(__file__))
 jsons_path = os.path.join(dir_path, '../json/')
 history_json_path = os.path.join(dir_path, '../json/History.json')
@@ -24,15 +23,30 @@ class JsonHandler:
         "capture_Hotkey": "",
         "capture_HotkeyDelay": 1000,
         "Query_Box": {
-            "font": {'family': 'Segoe UI', 'size': 10, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0},
+            "font": {
+                "family": "Segoe UI", 
+                "size": 10, 
+                "weight": "normal", 
+                "slant": "roman", 
+                "underline": 0, 
+                "overstrike": 0
+            },
             "bg": "#FFFFFF",
             "fg": "#000000",
         },
         "Result_Box": {
-            "font": {'family': 'Segoe UI', 'size': 10, 'weight': 'normal', 'slant': 'roman', 'underline': 0, 'overstrike': 0},
+            "font": {
+                "family": "Segoe UI", 
+                "size": 10, 
+                "weight": "normal", 
+                "slant": "roman", 
+                "underline": 0, 
+                "overstrike": 0
+            },
             "bg": "#FFFFFF",
             "fg": "#000000",
         },
+        "saveHistory": True,
         "checkUpdateOnStart": True
     }
 

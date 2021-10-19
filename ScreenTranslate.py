@@ -61,6 +61,7 @@ class main_Menu():
         self.root.wm_attributes('-topmost', False) # Default False
         self.alwaysOnTop = False
         globalStuff.capUiHidden = True
+        globalStuff.main = self
         globalStuff.main_Ui = self.root
 
         # --- Load settings ---
@@ -86,12 +87,13 @@ class main_Menu():
 
         # ----------------------------------------------        
         # Call the other frame
+        # Load order is important because some widgets are dependent on others
         self.capture_UI = CaptureUI()
+        self.query_Detached_Window_UI = Detached_Tl_Query()
+        self.result_Detached_Window_UI = Detached_Tl_Result()
         self.setting_UI = SettingUI()
         self.history_UI = HistoryUI()
         self.about_UI = AboutUI()
-        self.query_Detached_Window_UI = Detached_Tl_Query()
-        self.result_Detached_Window_UI = Detached_Tl_Result()
 
         # Set hotkeyPressed as false
         globalStuff.hotkeyPressed = False
@@ -254,7 +256,6 @@ class main_Menu():
         except Exception as e:
             print("Error loading icon: " + str(e))
 
-        #TODO: Add setting to check for update on startup or not
         if settings['checkUpdateOnStart']:
             try:
                 print(">> Checking app version")

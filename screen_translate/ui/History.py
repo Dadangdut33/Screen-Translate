@@ -1,8 +1,8 @@
 import tkinter.ttk as ttk
 import pyperclip
 from tkinter import *
-from ..Public import fJson, globalStuff
-from ..Mbox import Mbox
+from screen_translate.Public import fJson, globalStuff
+from screen_translate.Mbox import Mbox
 
 # ----------------------------------------------------------------------
 class HistoryUI():
@@ -31,9 +31,9 @@ class HistoryUI():
         self.historyTreeView['columns']=('Id', 'From-To', 'Query')
 
         # Scrollbar
-        self.scrollbarY = Scrollbar(self.firstFrame, orient=VERTICAL)
+        self.scrollbarY = ttk.Scrollbar(self.firstFrame, orient=VERTICAL)
         self.scrollbarY.pack(side=RIGHT, fill=Y)
-        self.scrollbarX = Scrollbar(self.firstFrameScrollX, orient=HORIZONTAL)
+        self.scrollbarX = ttk.Scrollbar(self.firstFrameScrollX, orient=HORIZONTAL)
         self.scrollbarX.pack(side=TOP, fill=X)
 
         self.scrollbarX.config(command=self.historyTreeView.xview)
