@@ -1,7 +1,6 @@
 import tkinter.ttk as ttk
 from tkinter import *
-from screen_translate.Public import fJson, globalStuff
-from screen_translate.Public import offSetSettings
+from screen_translate.Public import fJson, getTheOffset, globalStuff
 from screen_translate.Mbox import Mbox
 from screen_translate.Capture import captureImg
 import pyperclip
@@ -137,22 +136,23 @@ class CaptureUI():
 
             return # Reject
 
-        # Store setting to localvar
-        offSetXY = settings["offSetXY"]
-        offSetWH = settings["offSetWH"]
-        xyOffSetType = settings["offSetXYType"]
-
-        offSets = offSetSettings(offSetWH, xyOffSetType, offSetXY)
+        # Offsets
+        offSets = getTheOffset()
         x += offSets[0]
         y += offSets[1]
         w += offSets[2]
         h += offSets[3]
 
-        # Capture the screen
+        # Store the coords
         coords = [x, y, w, h]
 
+        # Set language
         language = globalStuff.langFrom
+
+        # Capture the img
         is_Success, result = captureImg(coords, language, settings['tesseract_loc'], settings['cached'])
+        
+        # Set opac to before
         self.root.attributes('-alpha', opacBefore)
 
         print("Area Captured Successfully!") # Debug Print

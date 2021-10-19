@@ -7,7 +7,7 @@ from tkinter import filedialog
 
 from tkfontchooser import askfont
 from screen_translate.Public import CreateToolTip, fJson, globalStuff
-from screen_translate.Public import startfile, optGoogle, optDeepl, optMyMemory, optPons, optNone, engines, getTheOffset, offSetSettings, searchList
+from screen_translate.Public import startfile, optGoogle, optDeepl, optMyMemory, optPons, optNone, engines, getTheOffset, searchList
 from screen_translate.Mbox import Mbox
 from screen_translate.Capture import captureAll
 import os
@@ -102,15 +102,6 @@ class SettingUI():
         self.checkVarOffSetW = BooleanVar(self.root, value=True)
         self.checkVarOffSetH = BooleanVar(self.root, value=True)
 
-        self.checkAutoOffSetX = ttk.Checkbutton(self.content_Cap_2_2, text="Auto Offset X", variable=self.checkVarOffSetX, command=self.checkBtnX)
-        self.checkAutoOffSetX.pack(side=LEFT, padx=5, pady=5)
-        self.checkAutoOffSetY = ttk.Checkbutton(self.content_Cap_2_2, text="Auto Offset Y", variable=self.checkVarOffSetY, command=self.checkBtnY)
-        self.checkAutoOffSetY.pack(side=LEFT, padx=5, pady=5)
-        self.checkAutoOffSetW = ttk.Checkbutton(self.content_Cap_2_2, text="Auto Offset W", variable=self.checkVarOffSetW, command=self.checkBtnW)
-        self.checkAutoOffSetW.pack(side=LEFT, padx=5, pady=5)
-        self.checkAutoOffSetH = ttk.Checkbutton(self.content_Cap_2_2, text="Auto Offset H", variable=self.checkVarOffSetH, command=self.checkBtnH)
-        self.checkAutoOffSetH.pack(side=LEFT, padx=5, pady=5)
-
         self.spinValOffSetX = IntVar(self.root)
         self.spinValOffSetY = IntVar(self.root)
         self.spinValOffSetW = IntVar(self.root)
@@ -135,6 +126,15 @@ class SettingUI():
         self.spinnerOffSetW.configure(validate='key', validatecommand=self.validateDigits_Offset_W)
         self.spinnerOffSetH = ttk.Spinbox(self.content_Cap_2_4, from_=-100000, to=100000, width=20, textvariable=self.spinValOffSetH)
         self.spinnerOffSetH.configure(validate='key', validatecommand=self.validateDigits_Offset_H)
+
+        self.checkAutoOffSetX = ttk.Checkbutton(self.content_Cap_2_2, text="Auto Offset X", variable=self.checkVarOffSetX, command=lambda: self.checkBtnOffset(self.spinnerOffSetX, self.spinValOffSetX, self.checkVarOffSetX, "x"))
+        self.checkAutoOffSetX.pack(side=LEFT, padx=5, pady=5)
+        self.checkAutoOffSetY = ttk.Checkbutton(self.content_Cap_2_2, text="Auto Offset Y", variable=self.checkVarOffSetY, command=lambda: self.checkBtnOffset(self.spinnerOffSetY, self.spinValOffSetY, self.checkVarOffSetY, "y"))
+        self.checkAutoOffSetY.pack(side=LEFT, padx=5, pady=5)
+        self.checkAutoOffSetW = ttk.Checkbutton(self.content_Cap_2_2, text="Auto Offset W", variable=self.checkVarOffSetW, command=lambda: self.checkBtnOffset(self.spinnerOffSetW, self.spinValOffSetW, self.checkVarOffSetW, "w"))
+        self.checkAutoOffSetW.pack(side=LEFT, padx=5, pady=5)
+        self.checkAutoOffSetH = ttk.Checkbutton(self.content_Cap_2_2, text="Auto Offset H", variable=self.checkVarOffSetH, command=lambda: self.checkBtnOffset(self.spinnerOffSetH, self.spinValOffSetH, self.checkVarOffSetH, "h"))
+        self.checkAutoOffSetH.pack(side=LEFT, padx=5, pady=5)
 
         self.labelOffSetX.pack(side=LEFT, padx=5, pady=5)
         self.spinnerOffSetX.pack(side=LEFT, padx=5, pady=5)
@@ -375,6 +375,11 @@ class SettingUI():
         self.root.wm_withdraw()
 
     def onSelect(self, event):
+        """On Select for frame changing
+
+        Args:
+            event ([type]): Ignored click event
+        """
         if self.listboxCat.curselection() != ():
             self.hideAllFrame()
 
@@ -397,6 +402,9 @@ class SettingUI():
                 self.showFrame(self.frameOther)
 
     def hideAllFrame(self):
+        """
+        Hide all frames
+        """
         self.frameCapture.pack_forget()
         self.frameEngine.pack_forget()
         self.frameTranslate.pack_forget()
@@ -405,9 +413,17 @@ class SettingUI():
         self.frameOther.pack_forget()
 
     def showFrame(self, frame):
+        """Change frame for each setting
+
+        Args:
+            frame ([type]): The frame that will be displayed
+        """
         frame.pack(side=LEFT, fill=BOTH, padx=5, pady=5)
 
     def restoreDefault(self):
+        """
+        Restore default settings
+        """
         x = Mbox("Confirmation", "Are you sure you want to set the settings to default?\n\n**WARNING! CURRENTLY SAVED SETTING WILL BE OVERWRITTEN**", 3, self.root)
         if x == False:
             Mbox("Canceled", "Action Canceled", 0, self.root)
@@ -424,7 +440,10 @@ class SettingUI():
             Mbox("Success", "Successfully Restored Value to Default Settings", 0, self.root)
 
     def reset(self):
-        settings = fJson.readSetting()
+        """
+        Reset the settings to currently stored settings
+        """
+        status, settings = fJson.loadSetting()
 
         validTesseract = "tesseract" in settings['tesseract_loc'].lower()
         # If tesseract is not found
@@ -492,24 +511,25 @@ class SettingUI():
 
         # Store setting to localvar
         offSetXY = settings["offSetXY"]
-        offSetWH = settings["offSetWH"]
         xyOffSetType = settings["offSetXYType"]
 
-        offSets = offSetSettings(offSetWH, xyOffSetType, offSetXY)
-        x, y, w, h = offSets[0], offSets[1], offSets[2], offSets[3]
+        # Get offset
+        x, y, w, h = getTheOffset()
 
+        # If cb no offset
         if xyOffSetType == "No Offset":
             self.CBOffSetChoice.current(0)
             self.checkAutoOffSetX.config(state=DISABLED)
             self.checkAutoOffSetY.config(state=DISABLED)
             self.spinnerOffSetX.config(state=DISABLED)
-            self.spinValOffSetX.set(0)
             self.spinnerOffSetY.config(state=DISABLED)
+            self.spinValOffSetX.set(0)
             self.spinValOffSetY.set(0)
 
             self.checkVarOffSetX.set(False)
             self.checkVarOffSetY.set(False)
 
+        # If cb custom offset
         elif xyOffSetType == "Custom Offset":
             self.CBOffSetChoice.current(1)
             self.spinValOffSetX.set(x)
@@ -536,8 +556,8 @@ class SettingUI():
             Mbox("Error: Invalid Offset Type", "Please do not modify the setting manually if you don't know what you are doing", 2, self.root)
 
         # W H
-        self.spinValOffSetW.set(str(w))
-        self.spinValOffSetH.set(str(h))
+        self.spinValOffSetW.set(w)
+        self.spinValOffSetH.set(h)
 
         if(settings["offSetWH"][0] == "auto"):
             self.checkVarOffSetW.set(True)
@@ -580,25 +600,10 @@ class SettingUI():
 
         # Checking each checkbox for the offset of x,y,w,h
         # x
-        if self.checkVarOffSetX.get():
-            x = "auto"
-        else:
-            x = int(self.spinnerOffSetX.get())
-        # y
-        if self.checkVarOffSetY.get():
-            y = "auto"
-        else:
-            y = int(self.spinnerOffSetY.get())
-        # w
-        if self.checkVarOffSetW.get():
-            w = "auto"
-        else:
-            w = int(self.spinnerOffSetW.get())
-        # h
-        if self.checkVarOffSetH.get():
-            h = "auto"
-        else:
-            h = int(self.spinnerOffSetH.get())
+        x = int(self.spinnerOffSetX.get()) if self.checkVarOffSetX.get() == False else "auto"
+        y = int(self.spinnerOffSetY.get()) if self.checkVarOffSetY.get() == False else "auto"
+        w = int(self.spinnerOffSetW.get()) if self.checkVarOffSetW.get() == False else "auto"
+        h = int(self.spinnerOffSetH.get()) if self.checkVarOffSetH.get() == False else "auto"
 
         self.queryFontDict = json.loads(self.queryFontVar.get().replace("'", '"'))
         self.resultFontDict = json.loads(self.resultFontVar.get().replace("'", '"'))
@@ -668,57 +673,26 @@ class SettingUI():
 
     # --------------------------------------------------
     # Offset capturing settings
-    def checkBtnX(self):
+    def checkBtnOffset(self, theSpinner, theSpinVal, theCheckVar, theReturnType):
+        """Set the state & value for each spinner
+
+        Args:
+            theSpinner ([type]): [The spinner that is to be set]
+            theSpinVal ([type]): [The variable that controls the spinner]
+            theCheckVar ([type]): [The checkbox variable that controls the spinner]
+            theReturnType ([type]): [The type of return value]
         """
-        Set the state & value for x spinner
-        """
-        offType = self.spinnerOffSetX.get() if self.checkVarOffSetX.get() else "auto" 
+        offType = theSpinner.get() if theCheckVar.get() else "auto" 
         offSets = getTheOffset(offType)
 
-        if self.checkVarOffSetX.get():
-            self.spinnerOffSetX.config(state=DISABLED)
-            self.spinValOffSetX.set(offSets[0])
+        ret = {"x": offSets[0], "y": offSets[1], "w": offSets[2], "h": offSets[3]}
+
+        if theCheckVar.get():
+            theSpinner.config(state=DISABLED)
+            theSpinVal.set(ret[theReturnType])
         else:
-            self.spinnerOffSetX.config(state=NORMAL)
+            theSpinner.config(state=NORMAL)
 
-    def checkBtnY(self):
-        """
-        Set the state & value for y spinner
-        """
-        offType = self.spinnerOffSetY.get() if self.checkVarOffSetY.get() else "auto"
-        offSets = getTheOffset(offType)
-
-        if self.checkVarOffSetY.get():
-            self.spinnerOffSetY.config(state=DISABLED)
-            self.spinValOffSetY.set(offSets[1])
-        else:
-            self.spinnerOffSetY.config(state=NORMAL)
-
-    def checkBtnW(self):
-        """
-        Set the state & value for w spinner
-        """
-        offType = self.spinnerOffSetW.get() if self.checkVarOffSetW.get() else "auto"
-        offSets = getTheOffset(offType)
-
-        if self.checkVarOffSetW.get():
-            self.spinnerOffSetW.config(state=DISABLED)
-            self.spinValOffSetW.set(offSets[2])
-        else:
-            self.spinnerOffSetW.config(state=NORMAL)
-
-    def checkBtnH(self):
-        """
-        Set the state & value for h spinner
-        """
-        offType = self.spinnerOffSetH.get() if self.checkVarOffSetH.get() else "auto"
-        offSets = getTheOffset(offType)
-
-        if self.checkVarOffSetH.get():
-            self.spinnerOffSetH.config(state=DISABLED)
-            self.spinValOffSetH.set(offSets[3])
-        else:
-            self.spinnerOffSetH.config(state=NORMAL)
     # ----------------------------------------------------------------
     # Engine
     # Search for tesseract
