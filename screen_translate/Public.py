@@ -2,11 +2,11 @@ import tkinter as tk
 import subprocess
 import asyncio
 import os
-import pyautogui
 import webbrowser
 from screen_translate.JsonHandling import JsonHandler
 from screen_translate.LangCode import *
 from screen_translate.Mbox import Mbox
+from screeninfo import get_monitors
 
 # Add try except to intercept connection error
 try:
@@ -378,13 +378,30 @@ def offSetSettings(widthHeighOff, xyOffsetType, xyOff, custom=None):
 
     #  If offset is set
     if xyOffsetType.lower() != "no offset" or custom is not None:
-        offsetX = pyautogui.size().width
-        offsetY = pyautogui.size().height
+        totalMonitor = len(get_monitors())
+        totalX = 0
+        totalY = 0
+        index = 0
+        primaryIn = 0
+        mData = []
+        for m in get_monitors():
+            mData.append(m)
+            totalX += abs(m.x)
+            totalY += abs(m.y)
+            if m.is_primary:
+                primaryIn = index
+            index += 1
 
         # If auto
         if xyOff[0] == "auto":
-            if(offsetX > offsetY):  # Horizontal
-                x = offsetX
+            if totalMonitor > 1:
+                if(totalX > totalY):  # Horizontal
+                    if primaryIn != 0: # Make sure its not the first monitor
+                        x = abs(mData[primaryIn - 1].x)
+                    else:
+                        x = 0
+                else:
+                    x = 0
             else:
                 x = 0
         else:  # if set manually
@@ -392,8 +409,14 @@ def offSetSettings(widthHeighOff, xyOffsetType, xyOff, custom=None):
 
         # If auto
         if xyOff[1] == "auto":
-            if(offsetY > offsetX):  # Vertical
-                y = offsetY
+            if totalMonitor > 1:
+                if(totalY > totalX):  # Vertical
+                    if primaryIn != 0:
+                        y = abs(mData[primaryIn - 1].y)
+                    else:
+                        y = 0
+                else:
+                    y = 0
             else:
                 y = 0
         else:  # if set manually

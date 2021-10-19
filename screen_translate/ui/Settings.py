@@ -120,12 +120,19 @@ class SettingUI():
 
         self.spinnerOffSetX = ttk.Spinbox(self.content_Cap_2_3, from_=-100000, to=100000, width=20, textvariable=self.spinValOffSetX)
         self.spinnerOffSetX.configure(validate='key', validatecommand=self.validateDigits_Offset_X)
+        self.spinnerOffSetX.bind("<MouseWheel>", lambda event: self.disableScrollWheel(event, self.spinnerOffSetX))
+
         self.spinnerOffSetY = ttk.Spinbox(self.content_Cap_2_4, from_=-100000, to=100000, width=20, textvariable=self.spinValOffSetY)
         self.spinnerOffSetY.configure(validate='key', validatecommand=self.validateDigits_Offset_Y)
+        self.spinnerOffSetY.bind("<MouseWheel>", lambda event: self.disableScrollWheel(event, self.spinnerOffSetY))
+
         self.spinnerOffSetW = ttk.Spinbox(self.content_Cap_2_3, from_=-100000, to=100000, width=20, textvariable=self.spinValOffSetW)
         self.spinnerOffSetW.configure(validate='key', validatecommand=self.validateDigits_Offset_W)
+        self.spinnerOffSetW.bind("<MouseWheel>", lambda event: self.disableScrollWheel(event, self.spinnerOffSetW))
+
         self.spinnerOffSetH = ttk.Spinbox(self.content_Cap_2_4, from_=-100000, to=100000, width=20, textvariable=self.spinValOffSetH)
         self.spinnerOffSetH.configure(validate='key', validatecommand=self.validateDigits_Offset_H)
+        self.spinnerOffSetH.bind("<MouseWheel>", lambda event: self.disableScrollWheel(event, theSpinner=self.spinnerOffSetH))
 
         self.checkAutoOffSetX = ttk.Checkbutton(self.content_Cap_2_2, text="Auto Offset X", variable=self.checkVarOffSetX, command=lambda: self.checkBtnOffset(self.spinnerOffSetX, self.spinValOffSetX, self.checkVarOffSetX, "x"))
         self.checkAutoOffSetX.pack(side=LEFT, padx=5, pady=5)
@@ -373,6 +380,10 @@ class SettingUI():
 
     def on_closing(self):
         self.root.wm_withdraw()
+
+    def disableScrollWheel(self, event=None, theSpinner=None):
+        if theSpinner["state"] == "disabled":
+            return 'break'
 
     def onSelect(self, event):
         """On Select for frame changing

@@ -91,7 +91,6 @@ class main_Menu():
         self.result_Detached_Window_UI = Detached_Tl_Result()
         self.setting_UI = SettingUI()
         self.history_UI = HistoryUI()
-        self.about_UI = AboutUI()
 
         # Set hotkeyPressed as false
         globalStuff.hotkeyPressed = False
@@ -240,6 +239,17 @@ class main_Menu():
         self.cbTLChange() # Update the cb
         self.langChanged() # Update the value in global var
 
+        # Check for Update
+        if settings['checkUpdateOnStart']:
+            try:
+                print(">> Checking app version")
+                self.checkVersion(withPopup=False, onStart=True)
+            except Exception as e:
+                print("Error checking version: " + str(e))
+
+        # Calling other frame
+        self.about_UI = AboutUI() # about needs to be intialized only after checking for update
+
         # --- Logo ---
         try:
             self.root.iconbitmap(dir_logo)
@@ -253,13 +263,6 @@ class main_Menu():
             print("Error loading icon: Logo not found!")
         except Exception as e:
             print("Error loading icon: " + str(e))
-
-        if settings['checkUpdateOnStart']:
-            try:
-                print(">> Checking app version")
-                self.checkVersion(withPopup=False, onStart=True)
-            except Exception as e:
-                print("Error checking version: " + str(e))
 
     # --- Functions ---
     # On Close
@@ -388,8 +391,6 @@ class main_Menu():
     def checkVersion(self, withPopup = True, onStart = False):
         try:
             version = requests.get("https://raw.githubusercontent.com/Dadangdut33/Screen-Translate/main/version.txt").text
-            # num_CurrentVersion = [int(i) for i in globalStuff.version.split('.')]
-            # num_LatestVersion = [int(i) for i in version.split('.')]
 
             # If wip
             if globalStuff.versionType == "wip":
