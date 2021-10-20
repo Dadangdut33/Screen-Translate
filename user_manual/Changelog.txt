@@ -1,5 +1,8 @@
 # Changelog
-Latest V1.7
+Latest V1.7.1
+
+[V1.7.1 Added option to show or not show alert if no text is get]
+- By default, the app will now ignore the alert if no text is get. You can set alert to show again by going into setting
 
 [V1.7 OCR Enhancement and setting window improvement]
 - Fix the language code bug

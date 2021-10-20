@@ -66,7 +66,7 @@ class global_Stuff:
         self.mboxOpen = False
         
         # Version
-        self.version = "1.7"
+        self.version = "1.7.1"
         self.versionType = "release"
         self.newVerStatusCache = None
 
@@ -105,9 +105,21 @@ class global_Stuff:
         # Get the text from the textbox
         query = self.text_Box_Top_Var.get()
 
+        # Read settings
+        try: 
+            showAlert = fJson.readSetting()["show_no_text_alert"]
+        except Exception as e:
+            print("Error: Couldn't read show alert setting. Using default value")
+            Mbox("Error: Could not read saveHistory setting", "Please do not edit Setting.json manually\n\n" + str(e), 2, self.main_Ui)
+            showAlert = False
+
+        # If the text is empty
         if(len(query) < 1):
-            Mbox("Error: No text entered", "Please enter some text", 2, self.main_Ui)
             print("Error: No text entered! Please enter some text")
+            # If show alert is true then show a message box alert, else dont show any popup
+            if showAlert:
+                Mbox("Error: No text entered", "Please enter some text", 2, self.main_Ui)
+                
             return
 
         try:

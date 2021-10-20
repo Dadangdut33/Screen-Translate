@@ -251,12 +251,13 @@ class SettingUI():
         self.CBDefaultTo = ttk.Combobox(self.content_Tl_1, values=self.langOpt, state="readonly")
         self.CBDefaultTo.pack(side=LEFT, padx=5, pady=5)
 
-        self.labelSaveToHistory = Label(self.content_Tl_2, text="Save to History :")
-        self.labelSaveToHistory.pack(side=LEFT, padx=5, pady=5)
-
         self.saveToHistoryVar = BooleanVar(self.root, value=True)
-        self.checkSaveToHistory = ttk.Checkbutton(self.content_Tl_2, variable=self.saveToHistoryVar)
+        self.checkSaveToHistory = ttk.Checkbutton(self.content_Tl_2, variable=self.saveToHistoryVar, text="Save to History")
         self.checkSaveToHistory.pack(side=LEFT, padx=5, pady=5)
+
+        self.showNoTextAlertVar = BooleanVar(self.root, value=True)
+        self.checkShowNoTextAlert = ttk.Checkbutton(self.content_Tl_2, variable=self.showNoTextAlertVar, text="Show No Text Entered Alert")
+        self.checkShowNoTextAlert.pack(side=LEFT, padx=5, pady=5)
 
         # ----------------------------------------------------------------------
         # Hotkey
@@ -532,6 +533,14 @@ class SettingUI():
             Mbox("Error: Invalid History Saving Options", "Please do not modify the setting manually if you don't know what you are doing", 2, self.root)
             self.saveToHistoryVar.set(True)
 
+        # Show no text alert checkbox
+        try:
+            self.showNoTextAlertVar.set(settings['show_no_text_alert'])
+        except Exception:
+            print("Error: Invalid Show No Text Alert Options")
+            Mbox("Error: Invalid Show No Text Alert Options", "Please do not modify the setting manually if you don't know what you are doing", 2, self.root)
+            self.showNoTextAlertVar.set(False)
+
         # Check for update checkbox
         try:
             self.checkUpdateVar.set(settings['checkUpdateOnStart'])
@@ -722,7 +731,8 @@ class SettingUI():
             "enhance_Capture" : {
                 "cv2_Contour": self.checkVarCV2.get(),
                 "grayscale": self.checkVarGrayscale.get(),
-            }
+            },
+            "show_no_text_alert": self.showNoTextAlertVar.get()
         }
 
         # Bind hotkey
