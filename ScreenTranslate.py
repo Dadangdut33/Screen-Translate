@@ -378,7 +378,7 @@ class main_Menu():
     def open_Changelog(self):
         try:
             startfile(dir_path + r"\user_manual\changelog.txt")
-        except:
+        except Exception:
             Mbox("Error", "Changelog file not found\n\nProgram will now try open the one in the repository instead of the local copy.", 0, self.root)
             try:
                 OpenUrl("https://github.com/Dadangdut33/Screen-Translate/blob/main/user_manual/Changelog.txt")
