@@ -1,7 +1,4 @@
-You can test the capture window by using that Test Doc
-
-See the picture for more information.
-
+Readme File
 # Links
 - Tesseract : https://github.com/UB-Mannheim/tesseract/wiki
 - Repository : https://github.com/Dadangdut33/Screen-Translate
