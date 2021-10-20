@@ -150,7 +150,7 @@ class CaptureUI():
         language = globalStuff.langFrom
 
         # Capture the img
-        is_Success, result = captureImg(coords, language, settings['tesseract_loc'], settings['cached'])
+        is_Success, result = captureImg(coords, language, settings['tesseract_loc'], settings['cached'], settings['enhance_Capture']['cv2_Contour'], settings['enhance_Capture']['grayscale'])
         
         # Set opac to before
         self.root.attributes('-alpha', opacBefore)
