@@ -1,8 +1,5 @@
-You can test the capture window by using that Test Doc
-
-See the picture for more information.
-
-# Links
+Readme File
+# Necessary Links
 - Tesseract : https://github.com/UB-Mannheim/tesseract/wiki
 - Repository : https://github.com/Dadangdut33/Screen-Translate
 - Release : https://github.com/Dadangdut33/Screen-Translate/releases
@@ -12,7 +9,6 @@ See the picture for more information.
 
 # Tutorial on How To Setup
 For visual instructions please take a look inside the user_manual folder
-
 1. Install tesseract, **make sure to select install all language pack when prompted**
 2. Open the ScreenTranslate.exe
 3. Check settings, make sure tesseract location is correct
