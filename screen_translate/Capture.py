@@ -1,6 +1,8 @@
+import numpy as np
 import pyautogui
 import os
 import pytesseract
+import cv2
 from screen_translate.Mbox import Mbox
 from datetime import datetime
 
@@ -8,7 +10,7 @@ from datetime import datetime
 from screen_translate.LangCode import *
 
 # Settings to capture all screens
-from PIL import ImageGrab
+from PIL import ImageGrab, Image
 from functools import partial
 ImageGrab.grab = partial(ImageGrab.grab, all_screens=True)
 
@@ -29,7 +31,7 @@ def createPicDirIfGone():
             Mbox("Error: ", str(e), 2)
             raise
 
-def captureImg(coords, sourceLang, tesseract_Location, cached = False):
+def captureImg(coords, sourceLang, tesseract_Location, saveImg = False, enhance_WithCv2 = False, grayScale = False):
     """Capture Image and return text from it
 
     Args:
@@ -47,20 +49,77 @@ def captureImg(coords, sourceLang, tesseract_Location, cached = False):
     except KeyError as e:
         print("Error: Key Error\n" + str(e))
         Mbox("Key Error, On Assigning Language Code.\n" + str(e), "Error: Key Error", 2)
+        return False, "Error: Key Error"
 
     is_Success = False
     wordsGet = ""
     try:
         # Capture the designated location
         captured = pyautogui.screenshot(region=(coords[0], coords[1], coords[2], coords[3]))
-        pytesseract.pytesseract.tesseract_cmd = tesseract_Location
         
-        # Get the text from the image 
-        wordsGet = pytesseract.image_to_string(captured, langCode)
+        # Set tesseract_Location
+        pytesseract.pytesseract.tesseract_cmd = tesseract_Location
 
-        if cached:
-            createPicDirIfGone()
-            captured.save(os.path.join(img_captured_path, 'captured_' + datetime.now().strftime('%Y-%m-%d_%H%M%S') + '.png'))
+        # Enhance with cv2 if selected
+        if enhance_WithCv2:
+            # Convert captured img to cv2 format
+            open_cv_image = np.array(captured) 
+            # Convert RGB to BGR 
+            open_cv_image = open_cv_image[:, :, ::-1].copy()
+
+            # Convert the image to gray scale
+            grayImg = cv2.cvtColor(open_cv_image, cv2.COLOR_BGR2GRAY)
+            
+            # Performing OTSU threshold
+            ret, thresh = cv2.threshold(grayImg, 0, 255, cv2.THRESH_OTSU | cv2.THRESH_BINARY_INV)
+
+            # Specify structure shape and kernel size. 
+            # Kernel size increases or decreases the area 
+            # of the rectangle to be detected.
+            # A smaller value like (10, 10) will detect 
+            # each word instead of a sentence.
+            rectKernel = cv2.getStructuringElement(cv2.MORPH_RECT, (18, 18))
+
+            # Applying dilation on the threshold image
+            dilation = cv2.dilate(thresh, rectKernel, iterations = 1)
+
+            # Finding contours in the image based on dilation
+            contours, hierarchy = cv2.findContours(dilation, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+
+            # Create a copy of captured image
+            if grayScale:
+                imgCopy = grayImg
+            else:
+                imgCopy = open_cv_image.copy()
+
+            # Looping through the identified contours
+            # Then rectangular part is cropped and passed on
+            # to pytesseract for extracting text from it
+            # Extracted text is then written into the text file
+            for cnt in contours:
+                x, y, w, h = cv2.boundingRect(cnt)
+                # Drawing a rectangle on copied image
+                rect = cv2.rectangle(imgCopy, (x, y), (x + w, y + h), (0, 255, 0), 2)
+
+                # Cropping the text block for giving input to OCR
+                cropped = imgCopy[y:y + h, x:x + w]
+                
+                # Apply OCR on the cropped image
+                text = pytesseract.image_to_string(cropped, langCode)
+
+                # Append the text into the wordsGet variable
+                wordsGet += text + " "
+
+            if saveImg:
+                createPicDirIfGone()
+                captured.save(os.path.join(img_captured_path, 'captured_' + datetime.now().strftime('%Y-%m-%d_%H%M%S') + '.png'))
+        else:
+            # Get the text from the image 
+            wordsGet = pytesseract.image_to_string(captured, langCode)
+
+            if saveImg:
+                createPicDirIfGone()
+                captured.save(os.path.join(img_captured_path, 'captured_' + datetime.now().strftime('%Y-%m-%d_%H%M%S') + '.png'))
             
         is_Success = True
     except Exception as e:

@@ -13,7 +13,7 @@
     <a href="https://github.com/Dadangdut33/Screen-Translate/network/members"><img alt="GitHub forks" src="https://img.shields.io/github/forks/Dadangdut33/Screen-Translate?style=social"></a>
 </p>
 
-STL a.k.a Screen Translate is an OCR translator tool made by utilizing Tesseract. The code is then compiled to .exe by using pyinstaller. 
+STL a.k.a Screen Translate is an OCR translator tool made by utilizing Tesseract and opencv-python. The code is then compiled to .exe by using pyinstaller. 
 Inspired by Visual Novel Reader (VNR), [Visual Novel OCR](https://github.com/leminhyen2/Visual-Novel-OCR), and [QTranslate](https://quest-app.appspot.com/)
 
 # What can i use this for?
@@ -61,7 +61,7 @@ You can install them by running pip_install.bat or by installing them yourself, 
 python -m venv STL_Venv
 
 # Activate the virtualenviroment
-source projectName/bin/activate
+source STL_Venv/bin/activate
 
 # Install the dependencies
 pip install -r requirements.txt
