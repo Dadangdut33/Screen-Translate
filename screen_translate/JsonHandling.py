@@ -51,7 +51,7 @@ class JsonHandler:
         "enhance_Capture" : {
             "cv2_Contour": True,
             "grayscale": False,
-            "backgroundIsLight": True
+            "background": "Light"
         },
         "show_no_text_alert": False
     }

@@ -83,6 +83,9 @@ class global_Stuff:
         self.resultFg = None
         self.resultFont = None
 
+        # Bg type
+        self.bgType = None
+
     def hotkeyCallback(self):
         self.hotkeyPressed = True
 

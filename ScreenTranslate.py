@@ -85,6 +85,7 @@ class main_Menu():
         # ----------------------------------------------        
         # Call the other frame
         # Load order is important because some widgets are dependent on others
+        # Keep in mind that settings are already loaded
         self.capture_UI = CaptureUI()
         self.query_Detached_Window_UI = Detached_Tl_Query()
         self.result_Detached_Window_UI = Detached_Tl_Result()

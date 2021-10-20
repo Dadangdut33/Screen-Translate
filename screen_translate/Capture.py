@@ -30,11 +30,7 @@ def createPicDirIfGone():
             print("Error: " + str(e))
             Mbox("Error: ", str(e), 2)
 
-def removeNewLine(text):
-    """Remove new line from the text"""
-    return text.replace('\n', '')
-
-def captureImg(coords, sourceLang, tesseract_Location, saveImg = False, enhance_WithCv2 = False, grayScale = False, backgroundIsLight = False):
+def captureImg(coords, sourceLang, tesseract_Location, saveImg = False, enhance_WithCv2 = False, grayScale = False, background = "Light"):
     """Capture Image and return text from it
 
     Args:
@@ -75,7 +71,7 @@ def captureImg(coords, sourceLang, tesseract_Location, saveImg = False, enhance_
 
             # cv2.imshow("Gray", grayImg)
 
-            if backgroundIsLight:
+            if background == "Light":
                 threshType = cv2.THRESH_BINARY_INV
             else:
                 threshType = cv2.THRESH_BINARY
@@ -123,7 +119,7 @@ def captureImg(coords, sourceLang, tesseract_Location, saveImg = False, enhance_
                 text = pytesseract.image_to_string(cropped, langCode)
 
                 # Append the text into wordsarr
-                wordsGet += removeNewLine(text) + "\n"
+                wordsGet += text.strip() + "\n"
 
             if saveImg:
                 createPicDirIfGone()

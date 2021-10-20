@@ -178,6 +178,15 @@ class SettingUI():
         self.checkVarCV2 = BooleanVar(self.root, value=True)
         self.checkVarGrayscale = BooleanVar(self.root, value=False)
 
+        self.labelCBBackground = Label(self.content_Cap_3_1, text="Background :")
+        self.labelCBBackground.pack(side=LEFT, padx=5, pady=5)
+        CreateToolTip(self.labelCBBackground, "Background type of the area that will be captured. This variable is used only if detect contour using CV2 is checked.")
+
+        self.CBBackgroundType = ttk.Combobox(self.content_Cap_3_1, values=['Light', 'Dark'], state="readonly")
+        self.CBBackgroundType.pack(side=LEFT, padx=5, pady=5)
+        CreateToolTip(self.CBBackgroundType, "Background type of the area that will be captured. This variable is used only if detect contour using CV2 is checked.")
+        self.CBBackgroundType.bind("<<ComboboxSelected>>", self.on_cb_change)
+
         self.checkCV2 = ttk.Checkbutton(self.content_Cap_3_1, text="Detect Contour using CV2", variable=self.checkVarCV2)
         self.checkCV2.pack(side=LEFT, padx=5, pady=5)
         CreateToolTip(self.checkCV2, text="Enhance the OCR by applying filters and outlining the contour of the words.")
@@ -254,10 +263,12 @@ class SettingUI():
         self.saveToHistoryVar = BooleanVar(self.root, value=True)
         self.checkSaveToHistory = ttk.Checkbutton(self.content_Tl_2, variable=self.saveToHistoryVar, text="Save to History")
         self.checkSaveToHistory.pack(side=LEFT, padx=5, pady=5)
+        CreateToolTip(self.checkSaveToHistory, text="Save the translation to history")
 
         self.showNoTextAlertVar = BooleanVar(self.root, value=True)
         self.checkShowNoTextAlert = ttk.Checkbutton(self.content_Tl_2, variable=self.showNoTextAlertVar, text="Show No Text Entered Alert")
         self.checkShowNoTextAlert.pack(side=LEFT, padx=5, pady=5)
+        CreateToolTip(self.checkShowNoTextAlert, text="Show alert when no text is entered")
 
         # ----------------------------------------------------------------------
         # Hotkey
@@ -289,6 +300,7 @@ class SettingUI():
         
         self.labelHotkeyTip = Label(self.content_Hotkey_1, text="Current hotkey : ")
         self.labelHotkeyTip.pack(side=LEFT, padx=5, pady=5)
+        CreateToolTip(self.labelHotkeyTip, text="Currently set hotkey for capturing")
 
         self.labelCurrentHotkey = Label(self.content_Hotkey_1, text="")
         self.labelCurrentHotkey.pack(side=LEFT, padx=5, pady=5)
@@ -565,6 +577,9 @@ class SettingUI():
             Mbox("Error: Invalid Grayscale Options", "Please do not modify the setting manually if you don't know what you are doing", 2, self.root)
             self.checkVarGrayscale.set(True)
 
+        # Check for cb background
+        self.CBBackgroundType.current(searchList(settings['enhance_Capture']['background'], ["Light", "Dark"]))
+
         # Set label value for query and result box
         # Query
         self.queryFontVar.set(settings['Query_Box']['font'])
@@ -731,6 +746,7 @@ class SettingUI():
             "enhance_Capture" : {
                 "cv2_Contour": self.checkVarCV2.get(),
                 "grayscale": self.checkVarGrayscale.get(),
+                "background": self.CBBackgroundType.get()
             },
             "show_no_text_alert": self.showNoTextAlertVar.get()
         }
@@ -806,6 +822,16 @@ class SettingUI():
         captureAll()
 
     # ----------------------------------------------------------------
+    # CB Background
+    # changeCb
+    def changeCb(self):
+        self.CBBackgroundType.current(searchList(globalStuff.bgType.get(), ['Light', 'Dark']))
+
+    # On cb change
+    def on_cb_change(self, event):
+        globalStuff.bgType.set(self.CBBackgroundType.get())
+        globalStuff.main.capture_UI.changeCb()
+
     # CB Settings
     def CBTLChange_setting(self, event = ""):
         # In settings

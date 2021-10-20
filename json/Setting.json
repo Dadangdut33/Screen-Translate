@@ -1,10 +1,10 @@
 {
-    "cached": true,
+    "cached": false,
     "autoCopy": true,
-    "offSetXYType": "No Offset",
+    "offSetXYType": "Custom Offset",
     "offSetXY": [
-        0,
-        0
+        "auto",
+        "auto"
     ],
     "offSetWH": [
         "auto",
@@ -40,11 +40,12 @@
         "bg": "#FFFFFF",
         "fg": "#000000"
     },
-    "saveHistory": true,
+    "saveHistory": false,
     "checkUpdateOnStart": true,
     "enhance_Capture": {
         "cv2_Contour": true,
-        "grayscale": false
+        "grayscale": false,
+        "background": "Light"
     },
     "show_no_text_alert": false
 }

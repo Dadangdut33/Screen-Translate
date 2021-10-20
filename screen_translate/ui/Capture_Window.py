@@ -1,6 +1,6 @@
 import tkinter.ttk as ttk
 from tkinter import *
-from screen_translate.Public import fJson, getTheOffset, globalStuff
+from screen_translate.Public import fJson, getTheOffset, globalStuff, searchList
 from screen_translate.Mbox import Mbox
 from screen_translate.Capture import captureImg
 import pyperclip
@@ -13,7 +13,7 @@ class CaptureUI():
     def __init__(self):
         self.root = Tk()
         self.root.title('Text Capture Area')
-        self.root.geometry('500x150')
+        self.root.geometry('600x150')
         self.root.wm_withdraw()
 
         globalStuff.curCapOpacity = 0.8
@@ -56,6 +56,26 @@ class CaptureUI():
         # opacity slider # the slider will be added to main menu not here
         self.opacitySlider = ttk.Scale(self.topFrame, from_=0.0, to=1.0, value=globalStuff.curCapOpacity, orient=HORIZONTAL, command=self.sliderOpac)
         self.opacitySlider.pack(padx=5, pady=5, side=LEFT)
+
+        # Background type
+        globalStuff.bgType = StringVar(self.root)
+
+        # Background type label
+        self.bgTypeLabel = Label(self.topFrame, text="Background Type: ")
+        self.bgTypeLabel.pack(padx=5, pady=5, side=LEFT)
+
+        # Background type combobox
+        self.CBBgType = ttk.Combobox(self.topFrame, values=["Light", "Dark"], state="readonly")
+        self.CBBgType.pack(padx=5, pady=5, side=LEFT)
+        self.CBBgType.bind("<<ComboboxSelected>>", self.on_cb_change)
+
+        settings = fJson.readSetting()
+        index = searchList(settings['enhance_Capture']['background'], ["Light", "Dark"])
+        self.CBBgType.current(index)
+        if index == 0:
+            globalStuff.bgType.set("Light")
+        else:
+            globalStuff.bgType.set("Dark")
 
         # On Close
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
@@ -151,7 +171,7 @@ class CaptureUI():
 
         # Capture the img
         is_Success, result = captureImg(coords, language, settings['tesseract_loc'], settings['cached'], settings['enhance_Capture']['cv2_Contour'], 
-        settings['enhance_Capture']['grayscale'], settings['enhance_Capture']['backgroundIsLight'])
+        settings['enhance_Capture']['grayscale'], globalStuff.bgType.get())
         
         # Set opac to before
         self.root.attributes('-alpha', opacBefore)
@@ -182,3 +202,12 @@ class CaptureUI():
         else: # IF OFF THEN TURN IT ON
             self.root.wm_attributes('-topmost', True)
             self.alwaysOnTopVar.set(True)
+
+    # changeCb
+    def changeCb(self):
+        self.CBBgType.current(searchList(globalStuff.bgType.get(), ['Light', 'Dark']))
+
+    # On cb change
+    def on_cb_change(self, event):
+        globalStuff.bgType.set(self.CBBgType.get())
+        globalStuff.main.setting_UI.changeCb()
