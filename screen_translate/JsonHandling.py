@@ -47,7 +47,11 @@ class JsonHandler:
             "fg": "#000000",
         },
         "saveHistory": True,
-        "checkUpdateOnStart": True
+        "checkUpdateOnStart": True,
+        "enhance_Capture" : {
+            "cv2_Contour": True,
+            "grayscale": False
+        }
     }
 
     # -------------------------------------------------

@@ -32,7 +32,6 @@ globalStuff.logoPath = dir_logo.replace(".ico", ".png")
 """ For future features
 TODO: 
 - Add more OCR options
-- Add disable history in setting
 - Find better way to use the hotkey instead of checking it every 100ms
 """
 

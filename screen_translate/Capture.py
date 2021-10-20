@@ -114,6 +114,15 @@ def captureImg(coords, sourceLang, tesseract_Location, saveImg = False, enhance_
                 createPicDirIfGone()
                 captured.save(os.path.join(img_captured_path, 'captured_' + datetime.now().strftime('%Y-%m-%d_%H%M%S') + '.png'))
         else:
+            if grayScale:
+                # Convert captured img to cv2 format
+                open_cv_image = np.array(captured) 
+                # Convert RGB to BGR 
+                open_cv_image = open_cv_image[:, :, ::-1].copy()
+
+                # Convert the image to gray scale
+                captured = cv2.cvtColor(open_cv_image, cv2.COLOR_BGR2GRAY)
+
             # Get the text from the image 
             wordsGet = pytesseract.image_to_string(captured, langCode)
 
