@@ -441,10 +441,15 @@ def searchList(searchFor, theList):
     else return 0. 
     """
     index = 0
+    found = False
     for lang in theList:
         if lang == searchFor:
-            return index
+            found = True
+            break
         index += 1
+    
+    if found:
+        return index
     else:
         return 0
 

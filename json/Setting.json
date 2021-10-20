@@ -41,5 +41,9 @@
         "fg": "#000000"
     },
     "saveHistory": true,
-    "checkUpdateOnStart": true
+    "checkUpdateOnStart": true,
+    "enhance_Capture": {
+        "cv2_Contour": true,
+        "grayscale": false
+    }
 }

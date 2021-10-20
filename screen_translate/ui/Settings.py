@@ -65,19 +65,24 @@ class SettingUI():
         self.content_Cap_1.pack(side=TOP, fill=X, expand=False)
 
         self.checkVarImgSaved = BooleanVar(self.root, value=True) # So its not error
-        self.checkBTNSaved = ttk.Checkbutton(self.content_Cap_1, text="Save Captured Image", variable=self.checkVarImgSaved)
         self.checkVarAutoCopy = BooleanVar(self.root, value=True) # So its not error
-        self.checkBTNAutoCopy = ttk.Checkbutton(self.content_Cap_1, text="Auto Copy Captured Text To Clipboard", variable=self.checkVarAutoCopy)
-        self.btnOpenImgFolder = ttk.Button(self.content_Cap_1, text="Open Captured Image Folder", command=lambda: startfile(dir_path + r"\..\..\img_captured"))
 
+        self.checkBTNAutoCopy = ttk.Checkbutton(self.content_Cap_1, text="Auto Copy Captured Text To Clipboard", variable=self.checkVarAutoCopy)
         self.checkBTNAutoCopy.pack(side=LEFT, padx=5, pady=5)
+        CreateToolTip(self.checkBTNAutoCopy, "Copy the captured text to clipboard automatically")
+
+        self.checkBTNSaved = ttk.Checkbutton(self.content_Cap_1, text="Save Captured Image", variable=self.checkVarImgSaved)
         self.checkBTNSaved.pack(side=LEFT, padx=5, pady=5)
+        CreateToolTip(self.checkBTNSaved, "Save the captured image to img_captured folder")
+
+        self.btnOpenImgFolder = ttk.Button(self.content_Cap_1, text="Open Captured Image Folder", command=lambda: startfile(dir_path + r"\..\..\img_captured"))
         self.btnOpenImgFolder.pack(side=LEFT, padx=5, pady=5)
 
         # [Offset]
         self.fLabelCapture_2 = LabelFrame(self.frameCapture, text="• Monitor Capture Offset", width=750, height=150)
         self.fLabelCapture_2.pack(side=TOP, fill=X, expand=False, padx=5, pady=5)
         self.fLabelCapture_2.pack_propagate(0)
+
         self.content_Cap_2_1 = Frame(self.fLabelCapture_2)
         self.content_Cap_2_1.pack(side=TOP, fill=X, expand=False)
         self.content_Cap_2_2 = Frame(self.fLabelCapture_2)
@@ -89,6 +94,7 @@ class SettingUI():
 
         self.labelCBOffsetNot = Label(self.content_Cap_2_1, text="Capture XY Offset :")
         self.labelCBOffsetNot.pack(side=LEFT, padx=5, pady=5)
+        CreateToolTip(self.labelCBOffsetNot, "The offset mode")
 
         self.CBOffSetChoice = ttk.Combobox(self.content_Cap_2_1, values=["No Offset", "Custom Offset"], state="readonly")
         self.CBOffSetChoice.pack(side=LEFT, padx=5, pady=5)
@@ -97,42 +103,14 @@ class SettingUI():
         self.buttonCheckMonitorLayout = ttk.Button(self.content_Cap_2_1, text="Click to get A Screenshot of How The Program See Your Monitor", command=self.screenShotAndOpenLayout)
         self.buttonCheckMonitorLayout.pack(side=LEFT, padx=5, pady=5)
 
+        self.hintLabelOffset = Label(self.content_Cap_2_1, text="❓")
+        self.hintLabelOffset.pack(side=RIGHT, padx=5, pady=5)
+        CreateToolTip(self.hintLabelOffset, "Set the offset for capturing image. Usually needed if on multiple monitor or if monitor scaling is not 100%")
+
         self.checkVarOffSetX = BooleanVar(self.root, value=True)
         self.checkVarOffSetY = BooleanVar(self.root, value=True)
         self.checkVarOffSetW = BooleanVar(self.root, value=True)
         self.checkVarOffSetH = BooleanVar(self.root, value=True)
-
-        self.spinValOffSetX = IntVar(self.root)
-        self.spinValOffSetY = IntVar(self.root)
-        self.spinValOffSetW = IntVar(self.root)
-        self.spinValOffSetH = IntVar(self.root)
-
-        self.labelOffSetX = Label(self.content_Cap_2_3, text="Offset X :")
-        self.labelOffSetY = Label(self.content_Cap_2_4, text="Offset Y :")
-        self.labelOffSetW = Label(self.content_Cap_2_3, text="Offset W :")
-        self.labelOffSetH = Label(self.content_Cap_2_4, text="Offset H :")
-
-        self.validateDigits_Offset_X = (self.root.register(self.validateSpinBox_Offset_X), '%P')
-        self.validateDigits_Offset_Y = (self.root.register(self.validateSpinBox_Offset_Y), '%P')
-        self.validateDigits_Offset_W = (self.root.register(self.validateSpinBox_Offset_W), '%P')
-        self.validateDigits_Offset_H = (self.root.register(self.validateSpinBox_Offset_H), '%P')
-        self.validateDigits_Delay = (self.root.register(self.validateSpinBox_Delay), '%P')
-
-        self.spinnerOffSetX = ttk.Spinbox(self.content_Cap_2_3, from_=-100000, to=100000, width=20, textvariable=self.spinValOffSetX)
-        self.spinnerOffSetX.configure(validate='key', validatecommand=self.validateDigits_Offset_X)
-        self.spinnerOffSetX.bind("<MouseWheel>", lambda event: self.disableScrollWheel(event, self.spinnerOffSetX))
-
-        self.spinnerOffSetY = ttk.Spinbox(self.content_Cap_2_4, from_=-100000, to=100000, width=20, textvariable=self.spinValOffSetY)
-        self.spinnerOffSetY.configure(validate='key', validatecommand=self.validateDigits_Offset_Y)
-        self.spinnerOffSetY.bind("<MouseWheel>", lambda event: self.disableScrollWheel(event, self.spinnerOffSetY))
-
-        self.spinnerOffSetW = ttk.Spinbox(self.content_Cap_2_3, from_=-100000, to=100000, width=20, textvariable=self.spinValOffSetW)
-        self.spinnerOffSetW.configure(validate='key', validatecommand=self.validateDigits_Offset_W)
-        self.spinnerOffSetW.bind("<MouseWheel>", lambda event: self.disableScrollWheel(event, self.spinnerOffSetW))
-
-        self.spinnerOffSetH = ttk.Spinbox(self.content_Cap_2_4, from_=-100000, to=100000, width=20, textvariable=self.spinValOffSetH)
-        self.spinnerOffSetH.configure(validate='key', validatecommand=self.validateDigits_Offset_H)
-        self.spinnerOffSetH.bind("<MouseWheel>", lambda event: self.disableScrollWheel(event, theSpinner=self.spinnerOffSetH))
 
         self.checkAutoOffSetX = ttk.Checkbutton(self.content_Cap_2_2, text="Auto Offset X", variable=self.checkVarOffSetX, command=lambda: self.checkBtnOffset(self.spinnerOffSetX, self.spinValOffSetX, self.checkVarOffSetX, "x"))
         self.checkAutoOffSetX.pack(side=LEFT, padx=5, pady=5)
@@ -143,14 +121,74 @@ class SettingUI():
         self.checkAutoOffSetH = ttk.Checkbutton(self.content_Cap_2_2, text="Auto Offset H", variable=self.checkVarOffSetH, command=lambda: self.checkBtnOffset(self.spinnerOffSetH, self.spinValOffSetH, self.checkVarOffSetH, "h"))
         self.checkAutoOffSetH.pack(side=LEFT, padx=5, pady=5)
 
+        self.spinValOffSetX = IntVar(self.root)
+        self.spinValOffSetY = IntVar(self.root)
+        self.spinValOffSetW = IntVar(self.root)
+        self.spinValOffSetH = IntVar(self.root)
+
+        self.validateDigits_Offset_X = (self.root.register(lambda event: self.validateSpinbox_Offset(event, 'x')), '%P')
+        self.validateDigits_Offset_Y = (self.root.register(lambda event: self.validateSpinbox_Offset(event, 'y')), '%P')
+        self.validateDigits_Offset_W = (self.root.register(lambda event: self.validateSpinbox_Offset(event, 'w')), '%P')
+        self.validateDigits_Offset_H = (self.root.register(lambda event: self.validateSpinbox_Offset(event, 'h')), '%P')
+
+        self.labelOffSetX = Label(self.content_Cap_2_3, text="Offset X :")
         self.labelOffSetX.pack(side=LEFT, padx=5, pady=5)
+        CreateToolTip(self.labelOffSetX, "The X Coordinates offset of the capture window")
+
+        self.spinnerOffSetX = ttk.Spinbox(self.content_Cap_2_3, from_=-100000, to=100000, width=20, textvariable=self.spinValOffSetX)
         self.spinnerOffSetX.pack(side=LEFT, padx=5, pady=5)
+        self.spinnerOffSetX.configure(validate='key', validatecommand=self.validateDigits_Offset_X)
+        self.spinnerOffSetX.bind("<MouseWheel>", lambda event: self.disableScrollWheel(event, self.spinnerOffSetX))
+
+        self.labelOffSetY = Label(self.content_Cap_2_4, text="Offset Y :")
         self.labelOffSetY.pack(side=LEFT, padx=5, pady=5)
+        CreateToolTip(self.labelOffSetY, "Y Coordinates offset of the capture window")
+
+        self.spinnerOffSetY = ttk.Spinbox(self.content_Cap_2_4, from_=-100000, to=100000, width=20, textvariable=self.spinValOffSetY)
         self.spinnerOffSetY.pack(side=LEFT, padx=5, pady=5)
+        self.spinnerOffSetY.configure(validate='key', validatecommand=self.validateDigits_Offset_Y)
+        self.spinnerOffSetY.bind("<MouseWheel>", lambda event: self.disableScrollWheel(event, self.spinnerOffSetY))
+
+        self.labelOffSetW = Label(self.content_Cap_2_3, text="Offset W :")
         self.labelOffSetW.pack(side=LEFT, padx=5, pady=5)
+        CreateToolTip(self.labelOffSetW, "Width offset of the capture window")
+
+        self.spinnerOffSetW = ttk.Spinbox(self.content_Cap_2_3, from_=-100000, to=100000, width=20, textvariable=self.spinValOffSetW)
         self.spinnerOffSetW.pack(side=LEFT, padx=5, pady=5)
+        self.spinnerOffSetW.configure(validate='key', validatecommand=self.validateDigits_Offset_W)
+        self.spinnerOffSetW.bind("<MouseWheel>", lambda event: self.disableScrollWheel(event, self.spinnerOffSetW))
+
+        self.labelOffSetH = Label(self.content_Cap_2_4, text="Offset H :")
         self.labelOffSetH.pack(side=LEFT, padx=5, pady=5)
+        CreateToolTip(self.labelOffSetH, "Height offset of the capture window")
+
+        self.spinnerOffSetH = ttk.Spinbox(self.content_Cap_2_4, from_=-100000, to=100000, width=20, textvariable=self.spinValOffSetH)
         self.spinnerOffSetH.pack(side=LEFT, padx=8, pady=5)
+        self.spinnerOffSetH.configure(validate='key', validatecommand=self.validateDigits_Offset_H)
+        self.spinnerOffSetH.bind("<MouseWheel>", lambda event: self.disableScrollWheel(event, theSpinner=self.spinnerOffSetH))
+
+        # [Ocr enhancement]
+        self.fLabelCapture_3 = LabelFrame(self.frameCapture, text="• OCR Enhancement", width=750, height=55)
+        self.fLabelCapture_3.pack(side=TOP, fill=X, expand=False, padx=5, pady=5)
+        self.fLabelCapture_3.pack_propagate(0)
+
+        self.content_Cap_3_1 = Frame(self.fLabelCapture_3)
+        self.content_Cap_3_1.pack(side=TOP, fill=X, expand=False)
+
+        self.checkVarCV2 = BooleanVar(self.root, value=True)
+        self.checkVarGrayscale = BooleanVar(self.root, value=False)
+
+        self.checkCV2 = ttk.Checkbutton(self.content_Cap_3_1, text="Detect Contour using CV2", variable=self.checkVarCV2)
+        self.checkCV2.pack(side=LEFT, padx=5, pady=5)
+        CreateToolTip(self.checkCV2, text="Enhance the OCR by applying filters and outlining the contour of the words.")
+
+        self.checkGrayscale = ttk.Checkbutton(self.content_Cap_3_1, text="Grayscale", variable=self.checkVarGrayscale)
+        self.checkGrayscale.pack(side=LEFT, padx=5, pady=5)
+        CreateToolTip(self.checkGrayscale, text="Enhance the OCR by making the picture grayscale.")
+        
+        self.hintLabelEnhance = Label(self.content_Cap_3_1, text="❓")
+        self.hintLabelEnhance.pack(side=RIGHT, padx=5, pady=5)
+        CreateToolTip(self.hintLabelEnhance, text="You can experiment with the option to increase the accuracy of tesseract OCR. The saved picture will not be affected by the options")
 
         # ----------------------------------------------------------------------
         # OCR Engine
@@ -165,10 +203,12 @@ class SettingUI():
 
         self.labelTesseractPath = Label(self.content_Engine_1, text="Tesseract Path :")
         self.labelTesseractPath.pack(side=LEFT, padx=5, pady=5)
+        CreateToolTip(self.content_Engine_1, "Tesseract.exe location")
 
         self.textBoxTesseractPath = ttk.Entry(self.content_Engine_1, width=70, xscrollcommand=True)
         self.textBoxTesseractPath.bind("<Key>", lambda event: globalStuff.allowedKey(event)) # Disable textbox input
         self.textBoxTesseractPath.pack(side=LEFT, padx=5, pady=5, fill=X, expand=True)
+        CreateToolTip(self.textBoxTesseractPath, "Tesseract.exe location")
 
         self.btnSearchTesseract = ttk.Button(self.content_Engine_1, text="...", command=self.searchTesseract)
         self.btnSearchTesseract.pack(side=LEFT, padx=5, pady=5)
@@ -191,6 +231,7 @@ class SettingUI():
         self.langOpt = optGoogle
         self.labelDefaultEngine = Label(self.content_Tl_1, text="Default TL Engine :")
         self.labelDefaultEngine.pack(side=LEFT, padx=5, pady=5)
+        CreateToolTip(self.labelDefaultEngine, text="The default translation engine on program startup")
 
         self.CBDefaultEngine = ttk.Combobox(self.content_Tl_1, values=engines, state="readonly")
         self.CBDefaultEngine.pack(side=LEFT, padx=5, pady=5)
@@ -198,11 +239,15 @@ class SettingUI():
 
         self.labelDefaultFrom = Label(self.content_Tl_1, text="Default From :")
         self.labelDefaultFrom.pack(side=LEFT, padx=5, pady=5)
+        CreateToolTip(self.labelDefaultFrom, text="The default language to translate from on program startup")
+
         self.CBDefaultFrom = ttk.Combobox(self.content_Tl_1, values=self.langOpt, state="readonly")
         self.CBDefaultFrom.pack(side=LEFT, padx=5, pady=5)
 
         self.labelDefaultTo = Label(self.content_Tl_1, text="Default To :")
         self.labelDefaultTo.pack(side=LEFT, padx=5, pady=5)
+        CreateToolTip(self.labelDefaultTo, text="The default language to translate to on program startup")
+
         self.CBDefaultTo = ttk.Combobox(self.content_Tl_1, values=self.langOpt, state="readonly")
         self.CBDefaultTo.pack(side=LEFT, padx=5, pady=5)
 
@@ -212,7 +257,6 @@ class SettingUI():
         self.saveToHistoryVar = BooleanVar(self.root, value=True)
         self.checkSaveToHistory = ttk.Checkbutton(self.content_Tl_2, variable=self.saveToHistoryVar)
         self.checkSaveToHistory.pack(side=LEFT, padx=5, pady=5)
-
 
         # ----------------------------------------------------------------------
         # Hotkey
@@ -229,7 +273,9 @@ class SettingUI():
 
         self.labelHotkeyDelay = Label(self.content_Hotkey_1, text="Time delay (ms) : ")
         self.labelHotkeyDelay.pack(side=LEFT, padx=5, pady=5)
+        CreateToolTip(self.labelHotkeyDelay, text="The time delay to capture when the hotkey is pressed")
         
+        self.validateDigits_Delay = (self.root.register(self.validateSpinBox_Delay), '%P')
         self.spinnerHotkeyDelay = ttk.Spinbox(self.content_Hotkey_1, from_=0, to=100000, width=20, textvariable=self.spinValHotkeyDelay)
         self.spinnerHotkeyDelay.configure(validate='key', validatecommand=self.validateDigits_Delay)
         self.spinnerHotkeyDelay.pack(side=LEFT, padx=5, pady=5)
@@ -345,6 +391,7 @@ class SettingUI():
         self.checkUpdateVar = BooleanVar(self.root, value=True)
         self.checkUpdateBox = ttk.Checkbutton(self.fOtherContent_1, text="Check for update on app start", variable=self.checkUpdateVar)
         self.checkUpdateBox.pack(side=LEFT, padx=5, pady=5)
+        CreateToolTip(self.checkUpdateBox, "Check for update on app start. You can also check manually by going to help in menubar")
 
         # ----------------------------------------------------------------
         # Bottom Frame
@@ -382,7 +429,7 @@ class SettingUI():
         self.root.wm_withdraw()
 
     def disableScrollWheel(self, event=None, theSpinner=None):
-        if theSpinner["state"] == "disabled":
+        if str(theSpinner["state"]) == "disabled":
             return 'break'
 
     def onSelect(self, event):
@@ -464,7 +511,7 @@ class SettingUI():
         # Cache checkbox
         try:
             self.checkVarImgSaved.set(settings['cached'])
-        except Exception as e:
+        except Exception:
             print("Error: Invalid Image Saving Options")
             Mbox("Error: Invalid Image Saving Options", "Please do not modify the setting manually if you don't know what you are doing", 2, self.root)
             self.checkVarImgSaved.set(True)
@@ -472,7 +519,7 @@ class SettingUI():
         # Autocopy checkbox
         try:
             self.checkVarAutoCopy.set(settings['autoCopy'])
-        except Exception as e:
+        except Exception:
             print("Error: Invalid Autocopy Options")
             Mbox("Error: Invalid Autocopy Options", "Please do not modify the setting manually if you don't know what you are doing", 2, self.root)
             self.checkVarAutoCopy.set(True)
@@ -480,8 +527,7 @@ class SettingUI():
         # Save to history checkbox
         try:
             self.saveToHistoryVar.set(settings['saveHistory'])
-        except Exception as e:
-            print(e)
+        except Exception:
             print("Error: Invalid History Saving Options")
             Mbox("Error: Invalid History Saving Options", "Please do not modify the setting manually if you don't know what you are doing", 2, self.root)
             self.saveToHistoryVar.set(True)
@@ -489,10 +535,26 @@ class SettingUI():
         # Check for update checkbox
         try:
             self.checkUpdateVar.set(settings['checkUpdateOnStart'])
-        except Exception as e:
+        except Exception:
             print("Error: Invalid Update Checking Options")
             Mbox("Error: Invalid Update Checking Options", "Please do not modify the setting manually if you don't know what you are doing", 2, self.root)
             self.checkUpdateVar.set(True)
+
+        # Check for cv2 checkbox
+        try:
+            self.checkVarCV2.set(settings['enhance_Capture']['cv2_Contour'])
+        except Exception:
+            print("Error: Invalid OpenCV Options")
+            Mbox("Error: Invalid OpenCV Options", "Please do not modify the setting manually if you don't know what you are doing", 2, self.root)
+            self.checkVarCv2.set(True)
+
+        # Check for grayscale
+        try:
+            self.checkVarGrayscale.set(settings['enhance_Capture']['grayscale'])
+        except Exception:
+            print("Error: Invalid Grayscale Options")
+            Mbox("Error: Invalid Grayscale Options", "Please do not modify the setting manually if you don't know what you are doing", 2, self.root)
+            self.checkVarGrayscale.set(True)
 
         # Set label value for query and result box
         # Query
@@ -656,7 +718,11 @@ class SettingUI():
                 "fg": self.resultFgVar.get(),
             },
             "saveHistory": self.saveToHistoryVar.get(),
-            "checkUpdateOnStart": self.checkUpdateVar.get()
+            "checkUpdateOnStart": self.checkUpdateVar.get(),
+            "enhance_Capture" : {
+                "cv2_Contour": self.checkVarCV2.get(),
+                "grayscale": self.checkVarGrayscale.get(),
+            }
         }
 
         # Bind hotkey
@@ -805,18 +871,6 @@ class SettingUI():
 
     # ----------------------------------------------------------------
     # Spinbox validation
-    def validateSpinBox_Offset_X(self, event):
-        return self.spinboxValidation(event, 'x')
-
-    def validateSpinBox_Offset_Y(self, event):
-        return self.spinboxValidation(event, 'y')
-
-    def validateSpinBox_Offset_W(self, event):
-        return self.spinboxValidation(event, 'w')
-    
-    def validateSpinBox_Offset_H(self, event):
-        return self.spinboxValidation(event, 'h')
-
     def validateSpinBox_Delay(self, event):
         if event == "":
             self.spinnerHotkeyDelay.set(0)
@@ -832,7 +886,7 @@ class SettingUI():
         else:
             return False
 
-    def spinboxValidation(self, event, type):
+    def validateSpinbox_Offset(self, event, type):
         typeDict = {'x': self.spinnerOffSetX, 'y': self.spinnerOffSetY, 'w': self.spinnerOffSetW, 'h': self.spinnerOffSetH}
         typeGet = typeDict[type]
 
@@ -880,11 +934,7 @@ class SettingUI():
     def fontChooser(self, event=None, label=None, theVar=None, theDict=None, destination=None):
         fontGet = askfont(self.root, title="Choose a font", text="Preview プレビュー معاينة 预览", family=theDict['family'], size=theDict['size'], weight=theDict['weight'], slant=theDict['slant'])
         if fontGet:
-            # print(globalStuff.queryFont.get())
-            # print(theVar.get())
             theVar.set(fontGet)
-            # print(globalStuff.queryFont.get())
-            # print(theVar.get())
             theDict = json.loads(theVar.get().replace("'", '"'))
             font_str = "%(family)s %(size)i %(weight)s %(slant)s" % theDict
             label.configure(text='Textbox Font : ' + font_str)
