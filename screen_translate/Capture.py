@@ -29,7 +29,6 @@ def createPicDirIfGone():
         except Exception as e:
             print("Error: " + str(e))
             Mbox("Error: ", str(e), 2)
-            raise
 
 def captureImg(coords, sourceLang, tesseract_Location, saveImg = False, enhance_WithCv2 = False, grayScale = False):
     """Capture Image and return text from it

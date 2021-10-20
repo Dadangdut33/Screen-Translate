@@ -10,7 +10,7 @@ from screeninfo import get_monitors
 
 # Add try except to intercept connection error
 try:
-    from .Translate import *
+    from screen_translate.Translate import *
 except ConnectionError as e:
     print("Error: No Internet Connection. Please Restart With Internet Connected", str(e))
     Mbox("Error: No Internet Connection", e, 2)
@@ -19,7 +19,7 @@ except Exception as e:
     Mbox("Error", e, 2)
 
 try:
-    from .Translate_Deepl import *
+    from screen_translate.Translate_Deepl import *
 except ConnectionError as e:
     print("Error: No Internet Connection. Please Restart With Internet Connected", str(e))
     Mbox("Error: No Internet Connection", e, 2)
@@ -328,7 +328,7 @@ def startfile(filename):
     """
     try:
         os.startfile(filename)
-    except:
+    except Exception:
         subprocess.Popen(['xdg-open', filename])
 
 

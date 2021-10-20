@@ -857,7 +857,7 @@ class SettingUI():
 
             # if all is well, return True
             return True
-        except: # Except means that number is not a digit
+        except Exception: # Except means that number is not a digit
             return False
 
     # Bg Color chooser

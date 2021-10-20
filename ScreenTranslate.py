@@ -363,7 +363,7 @@ class main_Menu():
     def open_UserManual(self):
         try:
             startfile(dir_path + r"\user_manual")
-        except:
+        except Exception:
             OpenUrl("https://github.com/Dadangdut33/Screen-Translate/tree/main/user_manual")
 
     # Open contributor

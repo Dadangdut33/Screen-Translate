@@ -43,7 +43,7 @@ class AboutUI():
 
             self.img = ImageTk.PhotoImage(self.imgObj, master=self.canvasImg)
             self.canvasImg.create_image(2, 50, anchor=W, image=self.img)
-        except:
+        except Exception:
             self.logoNotFoud = Label(self.topFrame, text="Fail To Load Logo, Logo not found", bg="white", fg="red")
             self.logoNotFoud.pack(side=TOP, padx=5, pady=5)
             self.root.geometry('375x325')
