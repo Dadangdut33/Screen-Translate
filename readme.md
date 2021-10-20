@@ -8,7 +8,7 @@
     <a href="https://lgtm.com/projects/g/Dadangdut33/Screen-Translate/context:python"><img alt="Language grade: Python" src="https://img.shields.io/lgtm/grade/python/g/Dadangdut33/Screen-Translate.svg?logo=lgtm&logoWidth=18"/></a>
     <a href="https://github.com/Dadangdut33/Screen-Translate/issues"><img alt="GitHub issues" src="https://img.shields.io/github/issues/Dadangdut33/Screen-Translate"></a>
     <a href="https://github.com/Dadangdut33/Screen-Translate/pulls"><img alt="GitHub pull requests" src="https://img.shields.io/github/issues-pr/Dadangdut33/Screen-Translate"></a>
-    <a href="https://github.com/Dadangdut33/Screen-Translate/releases/latest"><img src="https://img.shields.io/github/downloads/Dadangdut33/Screen-Translate/total"></a> 
+    <a href="https://github.com/Dadangdut33/Screen-Translate/releases/latest"><img src="https://img.shields.io/github/downloads/Dadangdut33/Screen-Translate/total"></a> <br>
     <a href="https://github.com/Dadangdut33/Screen-Translate/releases/latest"><img alt="GitHub release (latest SemVer)" src="https://img.shields.io/github/v/release/Dadangdut33/Screen-Translate"></a>
     <a href="https://github.com/Dadangdut33/Screen-Translate/commits/main"><img alt="GitHub commits since latest release (by date)" src="https://img.shields.io/github/commits-since/Dadangdut33/Screen-Translate/latest"></a><Br>
     <a href="https://github.com/Dadangdut33/Screen-Translate/stargazers"><img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/Dadangdut33/Screen-Translate?style=social"></a>
