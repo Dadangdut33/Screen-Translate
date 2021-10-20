@@ -10,7 +10,7 @@ from datetime import datetime
 from screen_translate.LangCode import *
 
 # Settings to capture all screens
-from PIL import ImageGrab, Image
+from PIL import ImageGrab
 from functools import partial
 ImageGrab.grab = partial(ImageGrab.grab, all_screens=True)
 
@@ -30,7 +30,11 @@ def createPicDirIfGone():
             print("Error: " + str(e))
             Mbox("Error: ", str(e), 2)
 
-def captureImg(coords, sourceLang, tesseract_Location, saveImg = False, enhance_WithCv2 = False, grayScale = False):
+def removeNewLine(text):
+    """Remove new line from the text"""
+    return text.replace('\n', '')
+
+def captureImg(coords, sourceLang, tesseract_Location, saveImg = False, enhance_WithCv2 = False, grayScale = False, backgroundIsLight = False):
     """Capture Image and return text from it
 
     Args:
@@ -68,9 +72,18 @@ def captureImg(coords, sourceLang, tesseract_Location, saveImg = False, enhance_
 
             # Convert the image to gray scale
             grayImg = cv2.cvtColor(open_cv_image, cv2.COLOR_BGR2GRAY)
-            
+
+            # cv2.imshow("Gray", grayImg)
+
+            if backgroundIsLight:
+                threshType = cv2.THRESH_BINARY_INV
+            else:
+                threshType = cv2.THRESH_BINARY
+
             # Performing OTSU threshold
-            ret, thresh = cv2.threshold(grayImg, 0, 255, cv2.THRESH_OTSU | cv2.THRESH_BINARY_INV)
+            ret, thresh = cv2.threshold(grayImg, 0, 255, cv2.THRESH_OTSU | threshType)
+
+            # cv2.imshow("Thresh", thresh)
 
             # Specify structure shape and kernel size. 
             # Kernel size increases or decreases the area 
@@ -81,6 +94,8 @@ def captureImg(coords, sourceLang, tesseract_Location, saveImg = False, enhance_
 
             # Applying dilation on the threshold image
             dilation = cv2.dilate(thresh, rectKernel, iterations = 1)
+
+            # cv2.imshow("Dilation", dilation)
 
             # Finding contours in the image based on dilation
             contours, hierarchy = cv2.findContours(dilation, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
@@ -95,10 +110,11 @@ def captureImg(coords, sourceLang, tesseract_Location, saveImg = False, enhance_
             # Then rectangular part is cropped and passed on
             # to pytesseract for extracting text from it
             # Extracted text is then written into the text file
-            for cnt in contours:
+            for cnt in contours[::-1]:  # Reverse the array because it actually starts from the bottom
                 x, y, w, h = cv2.boundingRect(cnt)
                 # Drawing a rectangle on copied image
-                rect = cv2.rectangle(imgCopy, (x, y), (x + w, y + h), (0, 255, 0), 2)
+                # rect = cv2.rectangle(imgCopy, (x, y), (x + w, y + h), (0, 255, 0), 2)
+                # cv2.imshow("Rect", rect)
 
                 # Cropping the text block for giving input to OCR
                 cropped = imgCopy[y:y + h, x:x + w]
@@ -106,8 +122,8 @@ def captureImg(coords, sourceLang, tesseract_Location, saveImg = False, enhance_
                 # Apply OCR on the cropped image
                 text = pytesseract.image_to_string(cropped, langCode)
 
-                # Append the text into the wordsGet variable
-                wordsGet += text + " "
+                # Append the text into wordsarr
+                wordsGet += removeNewLine(text) + "\n"
 
             if saveImg:
                 createPicDirIfGone()

@@ -50,7 +50,8 @@ class JsonHandler:
         "checkUpdateOnStart": True,
         "enhance_Capture" : {
             "cv2_Contour": True,
-            "grayscale": False
+            "grayscale": False,
+            "backgroundIsLight": True
         },
         "show_no_text_alert": False
     }

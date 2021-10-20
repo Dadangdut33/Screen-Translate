@@ -1,3 +1,5 @@
+__all__ = ['engineList', 'tesseract_Lang', 'google_Lang', 'myMemory_Lang', 'deepl_Lang', 'pons_Lang']
+
 # Engines available
 engineList = ["Google Translate", "MyMemoryTranslator", "Deepl", "PONS", "None"]
 
