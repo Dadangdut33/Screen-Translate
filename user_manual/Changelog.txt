@@ -1,5 +1,9 @@
 # Changelog
-Latest V1.7.1
+Latest V1.7.2
+
+[V1.7.2 Bug fix and background option]
+- Fix reversed word 
+- Added option to choose wether the background that is gonna be captured is light or dark
 
 [V1.7.1 Added option to show or not show alert if no text is get]
 - By default, the app will now ignore the alert if no text is get. You can set alert to show again by going into setting

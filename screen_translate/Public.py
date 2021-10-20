@@ -66,7 +66,7 @@ class global_Stuff:
         self.mboxOpen = False
         
         # Version
-        self.version = "1.7.1"
+        self.version = "1.7.2"
         self.versionType = "release"
         self.newVerStatusCache = None
 
