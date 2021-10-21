@@ -35,6 +35,8 @@ except Exception as e:
     print("Error", str(e))
     Mbox("Error", str(e), 2)
 
+__all__ = ["google_tl", "memory_tl", "pons_tl"]
+
 # ----------------------------------------------------------------
 # TL Functions
 # Google
