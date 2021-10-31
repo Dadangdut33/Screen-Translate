@@ -37,11 +37,7 @@ Inspired by Visual Novel Reader (VNR), [Visual Novel OCR](https://github.com/lem
 
 **For Dev**
 - Python 3.5+, checked using [vermin](https://github.com/netromdk/vermin) (I am using python 3.9.6)
-- Libraries from python: os, sys, functools, json, webbrowser, subprocess, datetime, Mbox, tkinter, pathlib, asyncio
-- External libraries: pyperclip, pytesseract, pyautogui, pillow, deepl_scraper_pp, deep_translator, keyboard
-
-You can install them by running pip_install.bat or by installing them yourself, full details are located at [requirements.txt](https://github.com/Dadangdut33/Screen-Translate/blob/main/requirements.txt).<br>
-*If i miss anything please let me know.
+- Install [the dependencies](https://github.com/Dadangdut33/Screen-Translate/blob/main/requirements.txt) You can install them by running `pip_install.bat` or by typing `pip install -r requirements.txt` installing them yourself.
 
 # Tutorial on How To Install and Setup
 **For User**
@@ -56,7 +52,7 @@ You can install them by running pip_install.bat or by installing them yourself, 
 
 **For Dev**
 1. Clone the repo or download the source code of the latest release
-2. Install all the dependencies used for the project and also setup your own virtualenviroment if needed.
+2. Setup virtualenviroment if needed then Install all the dependencies for the project.
 ```
 # On source code directory
 # Create a virtualenviroment with the name STL_Venv
@@ -69,7 +65,7 @@ source STL_Venv/bin/activate
 pip install -r requirements.txt
 ```
 3. Install tesseract, make sure select install all language pack when prompted
-4. 4. Run and test the source code
+4. Run and test the source code
 5. If everything works, you can run the app normally running the ScreenTranslate.py file or using the TempRun.bat
 
 if everything works and you have a suggestion or improvement, you can submit a pull request on the github repository. I will check if it's a good idea to add it.
@@ -86,6 +82,7 @@ pyinstaller ScreenTranslate_Console.spec
 pyinstaller ScreenTranslate_NoConsole.spec
 
 # If installing using virtualenviroment
+# Change STL_Venv to your virtualenviroment name
 # With console window
 pyinstaller --paths STL_Venv/lib/site-packages ScreenTranslate_Console.spec
 
