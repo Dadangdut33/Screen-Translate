@@ -270,13 +270,6 @@ class main_Menu():
         """
         Confirmation on close
         """
-
-        """ # This is not needed anymore
-        if globalStuff.mboxOpen:
-            Mbox("A message box is still opened", "Please close all message box first!", 0, self.root)
-            return
-        """
-
         # Confirmation on close
         if Mbox("Confirmation", "Are you sure you want to exit?", 3, self.root):
             self.root.destroy()
@@ -419,44 +412,6 @@ class main_Menu():
             print("Error: " + str(e))
             if withPopup: Mbox("Failed to check version!", "Failed to check version!\n\nError: " + str(e), 0, self.root)
 
-    """
-    # -----------------------------------------------------------------
-    # Disabling and enabling widgets
-    def disable_MainWin_Widgets(self):
-        globalStuff.mboxOpen = True
-        widget_Lists = self.root.winfo_children()
-
-        menuBar = widget_Lists.pop() # Last element is the menubar
-        for cat in range(1, len(menuBar.winfo_children()) + 1):
-            self.menubar.entryconfigure(cat, state=DISABLED)
-        
-        for frames in widget_Lists:
-            for child in frames.winfo_children():
-                try:
-                    child.configure(state='disabled')
-                except Exception as e:
-                    print("Error when disabling: " + str(e))
-
-    # Enable widgets in main window
-    def enable_MainWin_Widgets(self):
-        widget_Lists = self.root.winfo_children()
-
-        menuBar = widget_Lists.pop() # Last element is the menubar
-        for cat in range(1, len(menuBar.winfo_children()) + 1):
-            self.menubar.entryconfigure(cat, state=NORMAL)
-
-        for frames in widget_Lists:
-            for child in frames.winfo_children():
-                try:
-                    if (child.winfo_class() == 'TCombobox'):
-                        child.configure(state='readonly')
-                    else:
-                        child.configure(state='normal')
-                except Exception as e:
-                    print("Error when enabling: " + str(e))
-
-        globalStuff.mboxOpen = False
-    """
     # -----------------------------------------------------------------
     # Widgets functions
     def swapTl(self):
