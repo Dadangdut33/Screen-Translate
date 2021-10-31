@@ -114,7 +114,7 @@ class CaptureUI():
             self.opacitySlider.set(x)
 
     # Capture the text
-    def getTextAndTranslate(self, offSetXY=["auto", "auto"]):
+    def getTextAndTranslate(self):
         if(globalStuff.capUiHidden): # If Hidden
             Mbox("Error: You need to generate the capture window", "Please generate the capture window first", 2, self.root)
             print("Error Need to generate the capture window! Please generate the capture window first")
@@ -181,7 +181,7 @@ class CaptureUI():
 
         if is_Success == False or len(result) == 1:
             print("But Failed to capture any text!")
-            Mbox("Warning", "Failed to Capture Text!", 1, self.root)
+            if settings['show_no_text_alert']: Mbox("Warning", "Failed to Capture Text!", 1, self.root)
         else:
             # Pass it to mainMenu
             globalStuff.text_Box_Top_Var.set(result[:-1]) # Delete last character
