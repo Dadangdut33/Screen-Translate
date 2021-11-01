@@ -1,6 +1,6 @@
 import tkinter.ttk as ttk
 from tkinter import *
-from screen_translate.Public import fJson, getTheOffset, _StoredGlobal, searchList
+from screen_translate.Public import CreateToolTip, fJson, getTheOffset, _StoredGlobal, searchList
 from screen_translate.Mbox import Mbox
 from screen_translate.Capture import captureImg
 import pyperclip
@@ -20,11 +20,14 @@ class CaptureUI():
         self.root.attributes('-alpha', 0.8)
 
         # Top frame
-        self.topFrame = Frame(self.root)
-        self.topFrame.pack(side=TOP, fill=X, expand=False)
+        self.Frame_1 = Frame(self.root)
+        self.Frame_1.pack(side=TOP, fill=X, expand=False)
+
+        self.Frame_2 = Frame(self.root)
+        self.Frame_2.pack(side=TOP, fill=X, expand=False)
 
         # Label for opacity slider
-        self.opacityLabel = Label(self.topFrame, text="Opacity: " + str(_StoredGlobal.curCapOpacity))
+        self.opacityLabel = Label(self.Frame_1, text="Opacity: " + str(_StoredGlobal.curCapOpacity))
         self.opacityLabel.pack(padx=5, pady=5, side=LEFT)
 
         # Always on top checkbox
@@ -36,10 +39,10 @@ class CaptureUI():
 
         # What happen here is that we created a hidden checkbutton to control the variable because for some reason it JUST DOES NOT WORK properly i dont know why
         # If someone found a better solution to this problem, please let me know or just create a pull request.
-        self.alwaysOnTopCheck_Hidden = Checkbutton(self.topFrame, text="Stay on top", variable=self.alwaysOnTopVar, command=self.always_on_top)
+        self.alwaysOnTopCheck_Hidden = Checkbutton(self.Frame_1, text="Stay on top", variable=self.alwaysOnTopVar, command=self.always_on_top)
         self.alwaysOnTopCheck_Hidden.select()
 
-        self.topHiddenCheck = Checkbutton(self.topFrame, text="Hide Top", variable=self.topHiddenVar, command=self.show_top)
+        self.topHiddenCheck = Checkbutton(self.Frame_1, text="Hide Top", variable=self.topHiddenVar, command=self.show_top)
 
         self.filemenu = Menu(self.menubar, tearoff=0)
         self.filemenu.add_checkbutton(label="Always on Top", onvalue=True, offvalue=False, variable=self.alwaysOnTopVar, command=self.always_on_top)
@@ -50,32 +53,54 @@ class CaptureUI():
         self.root.config(menu=self.menubar)
 
         # Button
-        self.captureBtn = ttk.Button(self.topFrame, text="Capture And Translate", command=self.getTextAndTranslate)
+        self.captureBtn = ttk.Button(self.Frame_1, text="Capture And Translate", command=self.getTextAndTranslate)
         self.captureBtn.pack(padx=5, pady=5, side=LEFT)
 
         # opacity slider # the slider will be added to main menu not here
-        self.opacitySlider = ttk.Scale(self.topFrame, from_=0.0, to=1.0, value=_StoredGlobal.curCapOpacity, orient=HORIZONTAL, command=self.sliderOpac)
+        self.opacitySlider = ttk.Scale(self.Frame_1, from_=0.0, to=1.0, value=_StoredGlobal.curCapOpacity, orient=HORIZONTAL, command=self.sliderOpac)
         self.opacitySlider.pack(padx=5, pady=5, side=LEFT)
         _StoredGlobal.captureSlider_Cap = self.opacitySlider
 
-        # Background type
-        _StoredGlobal.bgType = StringVar(self.root)
+        # Read settings
+        settings = fJson.readSetting()
+
+        # Checkbutton for capture grayscale
+        self.captureGrayscaleVar = BooleanVar(self.root)
+        try:
+            self.captureGrayscaleVar.set(settings["enhance_Capture"]['grayscale'])
+        except Exception:
+            self.captureGrayscaleVar.set(False)
+            print("Error: Faild to load grayscale setting! Please do not modify settings manually") 
+        
+        self.captureGrayscaleCheck = ttk.Checkbutton(self.Frame_1, text="Grayscale Capture", variable=self.captureGrayscaleVar, command=self.captureGrayscale)
+        self.captureGrayscaleCheck.pack(padx=5, pady=5, side=LEFT)
+        CreateToolTip(self.captureGrayscaleCheck, "Enhance OCR by making the picture grayscale")
+
+        # Checkbutton for enhance capture or not
+        self.detectContourVar = BooleanVar(self.root)
+        try:
+            self.detectContourVar.set(settings["enhance_Capture"]['cv2_Contour'])
+        except Exception:
+            self.detectContourVar.set(False)
+            print("Error: Faild to load enhance setting! Please do not modify settings manually")
+
+        self.detectContourCheck = ttk.Checkbutton(self.Frame_2, text="Detect Contour Using CV2 ", variable=self.detectContourVar, command=self.disableEnableCb)
+        self.detectContourCheck.pack(padx=5, pady=5, side=LEFT)
+        CreateToolTip(self.detectContourCheck, "Enhance OCR by detecting the contour of the image")
 
         # Background type label
-        self.bgTypeLabel = Label(self.topFrame, text="Background Type: ")
+        self.bgTypeLabel = Label(self.Frame_2, text="Bg Type: ")
         self.bgTypeLabel.pack(padx=5, pady=5, side=LEFT)
+        CreateToolTip(self.bgTypeLabel, "The background type of the target")
 
         # Background type combobox
-        self.CBBgType = ttk.Combobox(self.topFrame, values=["Light", "Dark"], state="readonly")
+        self.CBBgType = ttk.Combobox(self.Frame_2, values=["Light", "Dark"], state="readonly")
         self.CBBgType.pack(padx=5, pady=5, side=LEFT)
-        self.CBBgType.bind("<<ComboboxSelected>>", self.bgCBChange)
+        self.CBBgType.bind("<<ComboboxSelected>>", lambda e: _StoredGlobal.main.capture_UI_Setting.changeCbBg(self.CBBgType.get()))
+        CreateToolTip(self.CBBgType, "The background type of the target")
 
-        settings = fJson.readSetting()
         index = searchList(settings['enhance_Capture']['background'], ["Light", "Dark"])
         self.CBBgType.current(index)
-
-        # Set global var
-        _StoredGlobal.bgType.set(self.CBBgType.get())
 
         # On Close
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
@@ -172,10 +197,14 @@ class CaptureUI():
 
         # Set language
         language = _StoredGlobal.langFrom
+        tesseract_loc = settings['tesseract_loc']
+        willSaveImg = settings['cached']
+        willDetectContour = self.detectContourVar.get()
+        willCaptureGrayscale = self.captureGrayscaleVar.get()
+        bgType = self.CBBgType.get()
 
         # Capture the img
-        is_Success, result = captureImg(coords, language, settings['tesseract_loc'], settings['cached'], settings['enhance_Capture']['cv2_Contour'], 
-        settings['enhance_Capture']['grayscale'], _StoredGlobal.bgType.get())
+        is_Success, result = captureImg(coords, language, tesseract_loc, willSaveImg, willDetectContour, willCaptureGrayscale, bgType)
         
         # Set opac to before
         self.root.attributes('-alpha', opacBefore)
@@ -207,11 +236,24 @@ class CaptureUI():
             self.root.wm_attributes('-topmost', True)
             self.alwaysOnTopVar.set(True)
 
-    # changeCb
-    def changeCbBg(self):
-        self.CBBgType.current(searchList(_StoredGlobal.bgType.get(), ['Light', 'Dark']))
+    # ChangeCb
+    def changeCbBg(self, value):
+        self.CBBgType.current(searchList(value, ['Light', 'Dark']))
 
-    # On cb change
-    def bgCBChange(self, event):
-        _StoredGlobal.bgType.set(self.CBBgType.get())
-        _StoredGlobal.main.capture_UI_Setting.changeCbBg()
+    # Disable enable cb
+    def disableEnableCb(self, outside=False):
+        if self.detectContourVar.get(): # If disabled eneable
+            self.CBBgType.config(state="readonly")
+        else:
+            self.CBBgType.config(state="disabled") # If enable disable
+    
+        if not outside: self.detectContour() # if from outside, change the state only
+
+    # Contour checkbox
+    def detectContour(self):
+        _StoredGlobal.main.capture_UI_Setting.detectContourVar.set(self.detectContourVar.get())
+        _StoredGlobal.main.capture_UI_Setting.disableEnableCb(outside=True)
+
+    # Grayscale checkbox
+    def captureGrayscale(self):
+        _StoredGlobal.main.capture_UI_Setting.captureGrayscaleVar.set(self.captureGrayscaleVar.get())

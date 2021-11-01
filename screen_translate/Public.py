@@ -68,8 +68,8 @@ class global_Class:
         self.mboxOpen = False
         
         # Version
-        self.version = "1.7.2"
-        self.versionType = "build"
+        self.version = "1.8"
+        self.versionType = "wip"
         self.newVerStatusCache = None
 
         # Logo
@@ -84,9 +84,6 @@ class global_Class:
         self.resultBg = None
         self.resultFg = None
         self.resultFont = None
-
-        # Bg type
-        self.bgType = None
 
     def hotkeyCallback(self):
         self.hotkeyPressed = True
@@ -323,6 +320,8 @@ class CreateToolTip(object):
         self.tw = tk.Toplevel(self.widget)
         # Make it stay on top
         self.tw.wm_attributes('-topmost', True)
+        # Make it a little transparent
+        self.tw.wm_attributes('-alpha', 0.9)
         # Leaves only the label and removes the app window
         self.tw.wm_overrideredirect(True)
         self.tw.wm_geometry("+%d+%d" % (x, y))

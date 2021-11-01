@@ -17,7 +17,7 @@ from screen_translate.Mbox import Mbox
 from screen_translate.ui.History import HistoryUI
 from screen_translate.ui.Settings import SettingUI
 from screen_translate.ui.Capture_Window import CaptureUI
-from screen_translate.ui.Capture_Window_Setting import CaptureUI_Setting
+from screen_translate.ui.Capture_WindowSetting import CaptureUI_Setting
 from screen_translate.ui.About import AboutUI
 from screen_translate.ui.Tl_From import Detached_Tl_Query
 from screen_translate.ui.Tl_Result import Detached_Tl_Result
