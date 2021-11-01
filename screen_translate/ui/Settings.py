@@ -6,7 +6,7 @@ from tkinter import *
 from tkinter import filedialog
 
 from tkfontchooser import askfont
-from screen_translate.Public import CreateToolTip, fJson, globalStuff
+from screen_translate.Public import CreateToolTip, fJson, _StoredGlobal
 from screen_translate.Public import startfile, optGoogle, optDeepl, optMyMemory, optPons, optNone, engines, getTheOffset, searchList
 from screen_translate.Mbox import Mbox
 from screen_translate.Capture import captureAll
@@ -185,7 +185,6 @@ class SettingUI():
         self.CBBackgroundType = ttk.Combobox(self.content_Cap_3_1, values=['Light', 'Dark'], state="readonly")
         self.CBBackgroundType.pack(side=LEFT, padx=5, pady=5)
         CreateToolTip(self.CBBackgroundType, "Background type of the area that will be captured. This variable is used only if detect contour using CV2 is checked.")
-        self.CBBackgroundType.bind("<<ComboboxSelected>>", self.on_cb_change)
 
         self.checkCV2 = ttk.Checkbutton(self.content_Cap_3_1, text="Detect Contour using CV2", variable=self.checkVarCV2)
         self.checkCV2.pack(side=LEFT, padx=5, pady=5)
@@ -197,7 +196,10 @@ class SettingUI():
         
         self.hintLabelEnhance = Label(self.content_Cap_3_1, text="❓")
         self.hintLabelEnhance.pack(side=RIGHT, padx=5, pady=5)
-        CreateToolTip(self.hintLabelEnhance, text="You can experiment with the option to increase the accuracy of tesseract OCR. The saved picture will not be affected by the options")
+        CreateToolTip(self.hintLabelEnhance, 
+        text="""Options saved in this section are for the inital value on startup.
+        \rYou can experiment with the option to increase the accuracy of tesseract OCR.
+        \rThe saved picture will not be affected by the options.""")
 
         # ----------------------------------------------------------------------
         # OCR Engine
@@ -215,7 +217,7 @@ class SettingUI():
         CreateToolTip(self.content_Engine_1, "Tesseract.exe location")
 
         self.textBoxTesseractPath = ttk.Entry(self.content_Engine_1, width=70, xscrollcommand=True)
-        self.textBoxTesseractPath.bind("<Key>", lambda event: globalStuff.allowedKey(event)) # Disable textbox input
+        self.textBoxTesseractPath.bind("<Key>", lambda event: _StoredGlobal.allowedKey(event)) # Disable textbox input
         self.textBoxTesseractPath.pack(side=LEFT, padx=5, pady=5, fill=X, expand=True)
         CreateToolTip(self.textBoxTesseractPath, "Tesseract.exe location")
 
@@ -323,30 +325,30 @@ class SettingUI():
         self.fQueryContent_3 = Frame(self.fLabelQuery)
         self.fQueryContent_3.pack(side=TOP, fill=X, expand=False)
 
-        self.queryBgVar = globalStuff.queryBg
+        self.queryBgVar = _StoredGlobal.queryBg
         self.queryBg = Label(self.fQueryContent_1, text="Textbox Bg Color : ")
         self.queryBg.pack(side=LEFT, padx=5, pady=5)
         self.queryBg.bind("<Button-1>", lambda event: self.bgColorChooser(label=self.queryBg, 
-        theVar=self.queryBgVar, destination=globalStuff.main.query_Detached_Window_UI))
+        theVar=self.queryBgVar, destination=_StoredGlobal.main.query_Detached_Window_UI))
         CreateToolTip(self.queryBg, "Click to choose query textbox background color")
 
         self.hintLabelQuery = Label(self.fQueryContent_1, text="❓")
         self.hintLabelQuery.pack(padx=5, pady=5, side=RIGHT)
         CreateToolTip(self.hintLabelQuery, "Click on the label to change the value of the settings")
 
-        self.queryFgVar = globalStuff.queryFg
+        self.queryFgVar = _StoredGlobal.queryFg
         self.queryFg = Label(self.fQueryContent_2, text="Textbox Fg Color : ")
         self.queryFg.pack(side=LEFT, padx=5, pady=5)
         self.queryFg.bind("<Button-1>", lambda event: self.fgColorChooser(label=self.queryFg,
-        theVar=self.queryFgVar, destination=globalStuff.main.query_Detached_Window_UI))
+        theVar=self.queryFgVar, destination=_StoredGlobal.main.query_Detached_Window_UI))
         CreateToolTip(self.queryFg, "Click to choose query textbox foreground color")
 
-        self.queryFontVar = globalStuff.queryFont
+        self.queryFontVar = _StoredGlobal.queryFont
         self.queryFontDict = json.loads(self.queryFontVar.get().replace("'", '"'))
         self.queryFont = Label(self.fQueryContent_3, text="Textbox Font : ")
         self.queryFont.pack(side=LEFT, padx=5, pady=5)
         self.queryFont.bind("<Button-1>", lambda event: self.fontChooser(label=self.queryFont,
-        theVar=self.queryFontVar, theDict=self.queryFontDict, destination=globalStuff.main.query_Detached_Window_UI))
+        theVar=self.queryFontVar, theDict=self.queryFontDict, destination=_StoredGlobal.main.query_Detached_Window_UI))
         CreateToolTip(self.queryFont, "Click to choose query textbox font")
 
         self.fLabelResult = LabelFrame(self.frameQueryResult, text="• Result Box", width=750, height=110)
@@ -362,30 +364,30 @@ class SettingUI():
         self.fResultContent_3 = Frame(self.fLabelResult)
         self.fResultContent_3.pack(side=TOP, fill=X, expand=False)
 
-        self.resultBgVar = globalStuff.resultBg
+        self.resultBgVar = _StoredGlobal.resultBg
         self.resultBg = Label(self.fResultContent_1, text="Textbox Bg Color : ")
         self.resultBg.pack(side=LEFT, padx=5, pady=5)
         self.resultBg.bind("<Button-1>", lambda event: self.bgColorChooser(label=self.resultBg,
-        theVar=self.resultBgVar, destination=globalStuff.main.result_Detached_Window_UI))
+        theVar=self.resultBgVar, destination=_StoredGlobal.main.result_Detached_Window_UI))
         CreateToolTip(self.resultBg, "Click to choose result textbox background color")
 
         self.hintLabelResult = Label(self.fResultContent_1, text="❓")
         self.hintLabelResult.pack(padx=5, pady=5, side=RIGHT)
         CreateToolTip(self.hintLabelResult, "Click on the label to change the value of the settings")
 
-        self.resultFgVar = globalStuff.resultFg
+        self.resultFgVar = _StoredGlobal.resultFg
         self.resultFg = Label(self.fResultContent_2, text="Textbox Fg Color : ")
         self.resultFg.pack(side=LEFT, padx=5, pady=5)
         self.resultFg.bind("<Button-1>", lambda event: self.fgColorChooser(label=self.resultFg,
-        theVar=self.resultFgVar, destination=globalStuff.main.result_Detached_Window_UI))
+        theVar=self.resultFgVar, destination=_StoredGlobal.main.result_Detached_Window_UI))
         CreateToolTip(self.resultFg, "Click to choose result textbox foreground color")
 
-        self.resultFontVar = globalStuff.resultFont
+        self.resultFontVar = _StoredGlobal.resultFont
         self.resultFontDict = json.loads(self.resultFontVar.get().replace("'", '"'))
         self.resultFont = Label(self.fResultContent_3, text="Textbox Font : ")
         self.resultFont.pack(side=LEFT, padx=5, pady=5)
         self.resultFont.bind("<Button-1>", lambda event: self.fontChooser(label=self.resultFont,
-        theVar=self.resultFontVar, theDict=self.resultFontDict, destination=globalStuff.main.result_Detached_Window_UI))
+        theVar=self.resultFontVar, theDict=self.resultFontDict, destination=_StoredGlobal.main.result_Detached_Window_UI))
         CreateToolTip(self.resultFont, "Click to choose result textbox font")
 
         # ----------------------------------------------------------------------
@@ -677,8 +679,8 @@ class SettingUI():
         self.textBoxTesseractPath.delete(0, END)
         self.textBoxTesseractPath.insert(0, settings['tesseract_loc'])
 
-        globalStuff.main.query_Detached_Window_UI.updateStuff()
-        globalStuff.main.result_Detached_Window_UI.updateStuff()
+        _StoredGlobal.main.query_Detached_Window_UI.updateStuff()
+        _StoredGlobal.main.result_Detached_Window_UI.updateStuff()
         print("Setting Loaded")
         # No need for mbox
 
@@ -758,7 +760,7 @@ class SettingUI():
             # No hotkeys to unbind
             pass
         if self.labelCurrentHotkey['text'] != '':
-            keyboard.add_hotkey(self.labelCurrentHotkey['text'], globalStuff.hotkeyCallback)
+            keyboard.add_hotkey(self.labelCurrentHotkey['text'], _StoredGlobal.hotkeyCallback)
 
         print("-" * 50)
         print("Setting saved!")
@@ -822,16 +824,6 @@ class SettingUI():
         captureAll()
 
     # ----------------------------------------------------------------
-    # CB Background
-    # changeCb
-    def changeCb(self):
-        self.CBBackgroundType.current(searchList(globalStuff.bgType.get(), ['Light', 'Dark']))
-
-    # On cb change
-    def on_cb_change(self, event):
-        globalStuff.bgType.set(self.CBBackgroundType.get())
-        globalStuff.main.capture_UI.changeCb()
-
     # CB Settings
     def CBTLChange_setting(self, event = ""):
         # In settings

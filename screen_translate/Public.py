@@ -30,7 +30,7 @@ except Exception as e:
 # ---------------------------------------------------------------
 # --------------------- Public Classes --------------------------
 # ---------------------------------------------------------------
-class global_Stuff: 
+class global_Class: 
     """
     Class containing all the static variables for the UI. It also contains some methods
     for the stuff to works, such as the hotkey callback, the translate method, etc.
@@ -57,7 +57,9 @@ class global_Stuff:
         # Capture opacities
         self.curCapOpacity = 0.8
         self.captureSlider_Main = None
+        self.captureSlider_Cap = None
         self.captureOpacityLabel_Main = None
+        self.captureOpacityLabel_CapSetting = None
 
         # CB TL
         self.langTo = None
@@ -67,7 +69,7 @@ class global_Stuff:
         
         # Version
         self.version = "1.7.2"
-        self.versionType = "release"
+        self.versionType = "build"
         self.newVerStatusCache = None
 
         # Logo
@@ -487,4 +489,4 @@ fillList(tesseract_Lang, optNone)
 
 # Create an object for the classes needed here
 fJson = JsonHandler()
-globalStuff = global_Stuff()
+_StoredGlobal = global_Class()

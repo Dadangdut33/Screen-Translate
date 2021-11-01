@@ -8,7 +8,7 @@ import requests
 
 # ----------------------------------------------------------------
 # Var and methods
-from screen_translate.Public import TextWithVar, fJson, globalStuff
+from screen_translate.Public import TextWithVar, fJson, _StoredGlobal
 from screen_translate.Public import startfile, optGoogle, optDeepl, optMyMemory, optPons, optNone, engines, searchList, OpenUrl
 from screen_translate.Mbox import Mbox
 
@@ -17,6 +17,7 @@ from screen_translate.Mbox import Mbox
 from screen_translate.ui.History import HistoryUI
 from screen_translate.ui.Settings import SettingUI
 from screen_translate.ui.Capture_Window import CaptureUI
+from screen_translate.ui.Capture_Window_Setting import CaptureUI_Setting
 from screen_translate.ui.About import AboutUI
 from screen_translate.ui.Tl_From import Detached_Tl_Query
 from screen_translate.ui.Tl_Result import Detached_Tl_Result
@@ -26,7 +27,7 @@ from screen_translate.ui.Tl_Result import Detached_Tl_Result
 dir_path = os.path.dirname(os.path.realpath(__file__))
 dir_img_captured = dir_path + r"\img_captured"
 dir_logo = dir_path + "/logo.ico"
-globalStuff.logoPath = dir_logo.replace(".ico", ".png")
+_StoredGlobal.logoPath = dir_logo.replace(".ico", ".png")
 
 # ----------------------------------------------------------------
 """ For future features
@@ -57,9 +58,9 @@ class main_Menu():
         self.root.geometry("900x300")
         self.root.wm_attributes('-topmost', False) # Default False
         self.alwaysOnTop = False
-        globalStuff.capUiHidden = True
-        globalStuff.main = self
-        globalStuff.main_Ui = self.root
+        _StoredGlobal.capUiHidden = True
+        _StoredGlobal.main = self
+        _StoredGlobal.main_Ui = self.root
 
         # --- Load settings ---
         tStatus, settings = fJson.loadSetting()
@@ -87,13 +88,14 @@ class main_Menu():
         # Load order is important because some widgets are dependent on others
         # Keep in mind that settings are already loaded
         self.capture_UI = CaptureUI()
+        self.capture_UI_Setting = CaptureUI_Setting()
         self.query_Detached_Window_UI = Detached_Tl_Query()
         self.result_Detached_Window_UI = Detached_Tl_Result()
         self.setting_UI = SettingUI()
         self.history_UI = HistoryUI()
 
         # Set hotkeyPressed as false
-        globalStuff.hotkeyPressed = False
+        _StoredGlobal.hotkeyPressed = False
 
         # Frame
         self.topFrame1 = Frame(self.root)
@@ -110,18 +112,18 @@ class main_Menu():
 
         # --- Top Frame 1 ---
         # Button
-        self.translateOnly_Btn = ttk.Button(self.topFrame1, text="Translate", command=globalStuff.translate)
+        self.translateOnly_Btn = ttk.Button(self.topFrame1, text="Translate", command=_StoredGlobal.translate)
         self.captureNTranslate_Btn = ttk.Button(self.topFrame1, text="Capture And Translate", command=self.capture_UI.getTextAndTranslate)
         self.translateOnly_Btn.pack(side=LEFT, padx=5, pady=5)
         self.captureNTranslate_Btn.pack(side=LEFT, padx=5, pady=5)
 
         # Opacity
-        self.captureOpacitySlider = ttk.Scale(self.topFrame1, from_=0.0, to=1.0, value=globalStuff.curCapOpacity, orient=HORIZONTAL, command=self.opacChange)
-        globalStuff.captureSlider_Main = self.captureOpacitySlider
+        self.captureOpacitySlider = ttk.Scale(self.topFrame1, from_=0.0, to=1.0, value=_StoredGlobal.curCapOpacity, orient=HORIZONTAL, command=self.opacChange)
+        _StoredGlobal.captureSlider_Main = self.captureOpacitySlider
         self.captureOpacitySlider.pack(side=LEFT, padx=5, pady=5)
 
-        self.captureOpacityLabel = Label(self.topFrame1, text="Capture UI Opacity: " + str(globalStuff.curCapOpacity))
-        globalStuff.captureOpacityObject = self.captureOpacityLabel
+        self.captureOpacityLabel = Label(self.topFrame1, text="Capture UI Opacity: " + str(_StoredGlobal.curCapOpacity))
+        _StoredGlobal.captureOpacityLabel_Main = self.captureOpacityLabel
         self.captureOpacityLabel.pack(side=LEFT, padx=5, pady=5)
 
         # --- Top Frame 2 ---
@@ -130,7 +132,7 @@ class main_Menu():
         self.tbTopBg = Frame(self.topFrame2, bg="#7E7E7E")
         self.tbTopBg.pack(side=TOP, fill=BOTH, expand=True, padx=5, pady=5)
 
-        self.textBoxTop = TextWithVar(self.tbTopBg, textvariable=globalStuff.text_Box_Top_Var, height = 4, width = 100, font=("Segoe UI", 10), yscrollcommand=True, relief=FLAT)
+        self.textBoxTop = TextWithVar(self.tbTopBg, textvariable=_StoredGlobal.text_Box_Top_Var, height = 4, width = 100, font=("Segoe UI", 10), yscrollcommand=True, relief=FLAT)
         self.textBoxTop.pack(padx=1, pady=1, fill=BOTH, expand=True)
 
         # --- Bottom Frame 1 ---
@@ -172,7 +174,7 @@ class main_Menu():
         self.tbBottomBg = Frame(self.bottomFrame2, bg="#7E7E7E")
         self.tbBottomBg.pack(side=BOTTOM, fill=BOTH, expand=True, padx=5, pady=5)
 
-        self.textBoxBottom = TextWithVar(self.tbBottomBg, textvariable=globalStuff.text_Box_Bottom_Var, height = 5, width = 100, font=("Segoe UI", 10), yscrollcommand=True, relief=FLAT)
+        self.textBoxBottom = TextWithVar(self.tbBottomBg, textvariable=_StoredGlobal.text_Box_Bottom_Var, height = 5, width = 100, font=("Segoe UI", 10), yscrollcommand=True, relief=FLAT)
         self.textBoxBottom.pack(padx=1, pady=1, fill=BOTH, expand=True)
 
         # Menubar
@@ -191,6 +193,7 @@ class main_Menu():
 
         self.filemenu3 = Menu(self.menubar, tearoff=0)
         self.filemenu3.add_command(label="Capture Window", command=self.open_Capture_Screen, accelerator="F5") # Open Capture Screen Window
+        self.filemenu3.add_command(label="Capture Setting Box", command=self.open_Capture_Screen_Setting, accelerator="Ctrl + F5") # Capture window settings
         self.filemenu3.add_command(label="Query Box", command=self.open_Query_Box, accelerator="F6")
         self.filemenu3.add_command(label="Result Box", command=self.open_Result_Box, accelerator="F7")
         self.menubar.add_cascade(label="Generate", menu=self.filemenu3)
@@ -223,6 +226,7 @@ class main_Menu():
         self.root.bind("<F3>", self.open_History)
         self.root.bind("<F4>", self.open_Img_Captured)
         self.root.bind("<F5>", self.open_Capture_Screen)
+        self.root.bind("<Control-F5>", self.open_Capture_Screen_Setting)
         self.root.bind("<F6>", self.open_Query_Box)
         self.root.bind("<F7>", self.open_Result_Box)
 
@@ -233,7 +237,7 @@ class main_Menu():
 
         # Bind hotkey
         if settings['capture_Hotkey'] != '':
-            keyboard.add_hotkey(settings['capture_Hotkey'], globalStuff.hotkeyCallback)
+            keyboard.add_hotkey(settings['capture_Hotkey'], _StoredGlobal.hotkeyCallback)
         self.root.after(100, self.hotkeyPoll)
         
         self.cbTLChange() # Update the cb
@@ -255,6 +259,7 @@ class main_Menu():
             self.root.iconbitmap(dir_logo)
             self.setting_UI.root.iconbitmap(dir_logo)
             self.capture_UI.root.iconbitmap(dir_logo)
+            self.capture_UI_Setting.root.iconbitmap(dir_logo)
             self.history_UI.root.iconbitmap(dir_logo)
             self.about_UI.root.iconbitmap(dir_logo)
             self.query_Detached_Window_UI.root.iconbitmap(dir_logo)
@@ -295,22 +300,30 @@ class main_Menu():
     def open_About(self, event=None):
         self.about_UI.show()
 
+    # Open Capture Window
+    def open_Capture_Screen(self, event=None):
+        self.capture_UI.show()
+
+    # Open Capture Window Setting
+    def open_Capture_Screen_Setting(self, event=None):
+        self.capture_UI_Setting.show()
+
     # Open captured image folder
     def open_Img_Captured(self, event=None):
         startfile(dir_img_captured)
 
     # Hotkey
     def hotkeyPoll(self):
-        if globalStuff.hotkeyPressed == True and globalStuff.capUiHidden == False:
+        if _StoredGlobal.hotkeyPressed == True and _StoredGlobal.capUiHidden == False:
             settings = fJson.readSetting()
             time.sleep(settings['capture_HotkeyDelay'] / 1000)
             self.capture_UI.getTextAndTranslate()
-        globalStuff.hotkeyPressed = False
+        _StoredGlobal.hotkeyPressed = False
         self.root.after(100, self.hotkeyPoll)
 
     # Slider
     def opacChange(self, val):
-        self.capture_UI.sliderOpac(val, "menu")
+        self.capture_UI.sliderOpac(val, fromOutside=True)
 
     # Menubar
     def always_on_top(self):
@@ -325,19 +338,20 @@ class main_Menu():
     # Mbox
     # Tutorials
     def open_Tutorial(self):
-        Mbox("Tutorial", "1. *First*, make sure your screen scaling is 100%. If scaling is not 100%, the capturer won't work properly. If by any chance you don't want to set your monitor scaling to 100%, " +
-        "you can set the xy offset in the setting" + "\n\n2. *Second*, you need to install tesseract, you can quickly go to the download link by pressing the download tesseract in menu bar\n\n" +
-        "3. *Then*, check the settings. Make sure tesseract path is correct\n\n" +
-        "4. *FOR MULTI MONITOR USER*, set offset in setting. If you have multiple monitor setup, you might need to set the offset in settings. \n\nWhat you shold do in the setting window:\n- Check how the program see your monitors in settings by clicking that one button.\n" +
-        "- You can also see how the capture area captured your images by enabling save capture image in settingsand then see the image in 'img_captured' directory" +
-        "\n\n\nYou can open the tutorial or user manual linked in menubar if you are still confused.", 0, self.root)
+        Mbox("Tutorial", """1. *First*, make sure your screen scaling is 100%. If scaling is not 100%, the capturer won't work properly. If by any chance you don't want to set your monitor scaling to 100%, you can set the xy offset in the setting
+        \r2. *Second*, you need to install tesseract, you can quickly go to the download link by pressing the download tesseract in menu bar
+        \r3. *Then*, check the settings. Make sure tesseract path is correct
+        \r4. *FOR MULTI MONITOR USER*, set offset in setting. If you have multiple monitor setup, you might need to set the offset in settings.
+        \rWhat you should do in the setting window:\n- Check how the program see your monitors in settings by clicking that one button.\n- You can also see how the capture area captured your images by enabling save capture image in settingsand then see the image in 'img_captured' directory
+        \r\nYou can open the tutorial or user manual linked in menubar if you are still confused.""" +
+        "you can set the xy offset in the setting", 0, self.root)
 
     # FAQ
     def open_Faq(self):
-        Mbox("FAQ", "Q : Do you collect the screenshot?\nA : No, no data is collected by me. Image and text captured will only be use for query and the captured image is only saved locally\n\n" +
-        "Q : Is this safe?\nA : Yes, it is safe, you can check the code on the github linked in the menubar, or open it yourself on your machine.\n\n" +
-        "Q : I could not capture anything, help!?\nA : You might need to check the captured image and see wether it actually capture the stuff that you targeted or not. If not, you might " +
-        "want to set offset in setting or change your monitor scaling to 100%", 0, self.root)
+        Mbox("FAQ", """Q : Do you collect the screenshot?\nA : No, no data is collected by me. Image and text captured will only be use for query and the captured image is only saved locally
+        \rQ : Is this safe?\nA : Yes, it is safe, you can check the code on the github linked in the menubar, or open it yourself on your machine.
+        \rQ : I could not capture anything, help!?\nA : You might need to check the captured image and see wether it actually capture the stuff that you targeted or not. If not, you might want to set offset in setting or change your monitor scaling to 100%
+        """, 0, self.root)
 
     # Download tesseract
     def openTesLink(self):
@@ -364,10 +378,6 @@ class main_Menu():
     def open_Contributor(self):
         Mbox("Contributor", "Thanks to:\n1. Dadangdut33 (Author)\n2. Laggykiller (contributor)\n3. Mdika (contributor)", 0, self.root)
 
-    # Open Capture Window
-    def open_Capture_Screen(self, event=None):
-        self.capture_UI.show()
-
     # Open changelog
     def open_Changelog(self):
         try:
@@ -386,27 +396,27 @@ class main_Menu():
             version = requests.get("https://raw.githubusercontent.com/Dadangdut33/Screen-Translate/main/version.txt").text
 
             # If wip
-            if globalStuff.versionType == "wip":
-                globalStuff.newVerStatusCache = "Work in proggress"
-                print(">> The current version that you are using is still in development.\n(+) Current Version : " + globalStuff.version + "\n(-) Latest Version  : " + version)
-                if withPopup: Mbox("Your Version is newer than the latest version", "The current version that you are using is still in development.\n\nCurrent Version : " + globalStuff.version + "\nLatest Version  : " + version +
+            if _StoredGlobal.versionType == "wip":
+                _StoredGlobal.newVerStatusCache = "Work in proggress"
+                print(">> The current version that you are using is still in development.\n(+) Current Version : " + _StoredGlobal.version + "\n(-) Latest Version  : " + version)
+                if withPopup: Mbox("Your Version is newer than the latest version", "The current version that you are using is still in development.\n\nCurrent Version : " + _StoredGlobal.version + "\nLatest Version  : " + version +
                     "\n\nThis build is probably still work in progress for further improvement", 0, self.root)
 
                 return
 
             # If release
-            if globalStuff.version != version:
-                globalStuff.newVerStatusCache = "New version available!"
-                print(">> A new version is available. Please update to the latest version.\n(-) Current Version : " + globalStuff.version + "\n(+) Latest Version  : " + version)
+            if _StoredGlobal.version != version:
+                _StoredGlobal.newVerStatusCache = "New version available!"
+                print(">> A new version is available. Please update to the latest version.\n(-) Current Version : " + _StoredGlobal.version + "\n(+) Latest Version  : " + version)
                 if withPopup or onStart: 
-                    Mbox("New Version Available", "A newer version is available. Please update to the latest version by going to the release section in the repository.\n\nCurrent Version : " + globalStuff.version + "\nLatest Version  : " + version, 0, self.root)
+                    Mbox("New Version Available", "A newer version is available. Please update to the latest version by going to the release section in the repository.\n\nCurrent Version : " + _StoredGlobal.version + "\nLatest Version  : " + version, 0, self.root)
                     # Ask if user want to download the latest version or not
                     if Mbox("Download Latest Version", "Do you want to download the latest version?", 3, self.root):
                         OpenUrl("https://github.com/Dadangdut33/Screen-Translate/releases/latest")
             else:
-                globalStuff.newVerStatusCache = "Version up to date!"
-                print(">> You are using the latest version.\n(=) Current Version : " + globalStuff.version + "\n(=) Latest Version  : " + version)
-                if withPopup: Mbox("Version Up to Date", "You are using the latest version.\nCurrent Version : " + globalStuff.version + "\nLatest Version  : " + version, 0, self.root)
+                _StoredGlobal.newVerStatusCache = "Version up to date!"
+                print(">> You are using the latest version.\n(=) Current Version : " + _StoredGlobal.version + "\n(=) Latest Version  : " + version)
+                if withPopup: Mbox("Version Up to Date", "You are using the latest version.\nCurrent Version : " + _StoredGlobal.version + "\nLatest Version  : " + version, 0, self.root)
         except Exception as e:
             print("Failed to check version!")
             print("Error: " + str(e))
@@ -433,27 +443,27 @@ class main_Menu():
         self.CBLangTo.current(x)
 
         # Change the value of the global var
-        globalStuff.langFrom = self.CBLangFrom.get()
-        globalStuff.langTo = self.CBLangTo.get()
+        _StoredGlobal.langFrom = self.CBLangFrom.get()
+        _StoredGlobal.langTo = self.CBLangTo.get()
 
     def langChanged(self, event = None):
         # Change the value of the global var
-        globalStuff.langFrom = self.CBLangFrom.get()
-        globalStuff.langTo = self.CBLangTo.get()
+        _StoredGlobal.langFrom = self.CBLangFrom.get()
+        _StoredGlobal.langTo = self.CBLangTo.get()
 
     # Clear TB
     def clearTB(self):
         self.textBoxTop.delete(1.0, END)
         self.textBoxBottom.delete(1.0, END)
 
-    def cbTLChange(self, event = ""):
+    def cbTLChange(self, event = None):
         # In Main
         # Get the engine from the combobox
         curr_Engine = self.CBTranslateEngine.get()
         previous_From = self.CBLangFrom.get()
         previous_To = self.CBLangTo.get()
 
-        globalStuff.engine = curr_Engine
+        _StoredGlobal.engine = curr_Engine
         # Translate
         if curr_Engine == "Google Translate":
             self.langOpt = optGoogle
@@ -492,8 +502,8 @@ class main_Menu():
             self.CBLangTo.config(state='disabled')
 
         # Change the value of the global var
-        globalStuff.langFrom = self.CBLangFrom.get()
-        globalStuff.langTo = self.CBLangTo.get()
+        _StoredGlobal.langFrom = self.CBLangFrom.get()
+        _StoredGlobal.langTo = self.CBLangTo.get()
 
 if __name__ == '__main__':
     gui = main_Menu()

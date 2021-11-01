@@ -3,7 +3,7 @@ from tkinter import *
 from tkinter import ttk, colorchooser
 
 from screen_translate.Mbox import Mbox
-from screen_translate.Public import globalStuff, TextWithVar, fJson, CreateToolTip
+from screen_translate.Public import _StoredGlobal, TextWithVar, fJson, CreateToolTip
 from tkfontchooser import askfont
 
 # Classes
@@ -71,12 +71,12 @@ class Detached_Tl_Query():
         # Textbox bg color
         self.textboxBgColor = StringVar()
         self.textboxBgColor.set(settings['Query_Box']['bg'])
-        globalStuff.queryBg = self.textboxBgColor
+        _StoredGlobal.queryBg = self.textboxBgColor
 
         # Textbox fg color
         self.textboxFgColor = StringVar()
         self.textboxFgColor.set(settings['Query_Box']['fg'])
-        globalStuff.queryFg = self.textboxFgColor
+        _StoredGlobal.queryFg = self.textboxFgColor
 
         # Textbox bg color Label
         self.textboxBgColorLabel = Label(self.settingFrame, text="BG color: " + self.textboxBgColor.get())
@@ -95,7 +95,7 @@ class Detached_Tl_Query():
         self.tbQueryFont.set(settings['Query_Box']['font'])
         self.tbQueryFontDict = json.loads(str(settings['Query_Box']['font']).replace("'",'"'))
         font_str = "%(family)s %(size)i %(weight)s %(slant)s" % self.tbQueryFontDict
-        globalStuff.queryFont = self.tbQueryFont
+        _StoredGlobal.queryFont = self.tbQueryFont
 
         self.tbFontLabel = Label(self.settingFrame, text="Font: " + font_str)
         self.tbFontLabel.pack(padx=5, pady=5, side=LEFT)
@@ -117,8 +117,8 @@ class Detached_Tl_Query():
         self.root.config(menu=self.menubar)
 
         # Textbox in topframe2
-        self.textBoxTlQuery = TextWithVar(self.tbFrame, textvariable=globalStuff.text_Box_Top_Var, height = 5, width = 100, yscrollcommand=True, background=self.textboxBgColor.get())
-        self.textBoxTlQuery.bind("<Key>", lambda event: globalStuff.allowedKey(event)) # Disable textbox input
+        self.textBoxTlQuery = TextWithVar(self.tbFrame, textvariable=_StoredGlobal.text_Box_Top_Var, height = 5, width = 100, yscrollcommand=True, background=self.textboxBgColor.get())
+        self.textBoxTlQuery.bind("<Key>", lambda event: _StoredGlobal.allowedKey(event)) # Disable textbox input
         self.textBoxTlQuery.config(font=(self.tbQueryFontDict['family'], self.tbQueryFontDict['size'], self.tbQueryFontDict['weight'], self.tbQueryFontDict['slant']))
         self.textBoxTlQuery.pack(side=LEFT, fill=BOTH, expand=True)
 
@@ -189,7 +189,7 @@ class Detached_Tl_Query():
             font_str = "%(family)s %(size)i %(weight)s %(slant)s" % self.tbQueryFontDict
             self.tbFontLabel.configure(text='Font: ' + font_str)
             self.textBoxTlQuery.config(font=(self.tbQueryFontDict['family'], self.tbQueryFontDict['size'], self.tbQueryFontDict['weight'], self.tbQueryFontDict['slant']))
-            globalStuff.main.setting_UI.updateLbl()
+            _StoredGlobal.main.setting_UI.updateLbl()
 
     def reset_To_Current(self):
         # Ask for confirmation first
@@ -210,7 +210,7 @@ class Detached_Tl_Query():
             font_str = "%(family)s %(size)i %(weight)s %(slant)s" % self.tbQueryFontDict
             self.tbFontLabel.configure(text='Font: ' + font_str)
             self.textBoxTlQuery.config(font=(self.tbQueryFontDict['family'], self.tbQueryFontDict['size'], self.tbQueryFontDict['weight'], self.tbQueryFontDict['slant']))
-            globalStuff.main.setting_UI.updateLbl()
+            _StoredGlobal.main.setting_UI.updateLbl()
 
     # Bg Color chooser
     def bgColorChooser(self, event=None):
@@ -219,7 +219,7 @@ class Detached_Tl_Query():
             self.textboxBgColor.set(colorGet[1])
             self.textboxBgColorLabel.config(text="BG color: " + self.textboxBgColor.get())
             self.textBoxTlQuery.config(background=self.textboxBgColor.get())
-            globalStuff.main.setting_UI.updateLbl()
+            _StoredGlobal.main.setting_UI.updateLbl()
     
     # Fg Color chooser
     def fgColorChooser(self, event=None):
@@ -228,7 +228,7 @@ class Detached_Tl_Query():
             self.textboxFgColor.set(colorGet[1])
             self.textboxFgColorLabel.config(text="FG color: " + self.textboxFgColor.get())
             self.textBoxTlQuery.config(foreground=self.textboxFgColor.get())
-            globalStuff.main.setting_UI.updateLbl()
+            _StoredGlobal.main.setting_UI.updateLbl()
 
     # Font Chooser
     def fontChooser(self, event=None):
@@ -239,7 +239,7 @@ class Detached_Tl_Query():
             self.textBoxTlQuery.config(font=(self.tbQueryFontDict['family'], self.tbQueryFontDict['size'], self.tbQueryFontDict['weight'], self.tbQueryFontDict['slant']))
             font_str = "%(family)s %(size)i %(weight)s %(slant)s" % self.tbQueryFontDict
             self.tbFontLabel.configure(text='Font: ' + font_str)
-            globalStuff.main.setting_UI.updateLbl()
+            _StoredGlobal.main.setting_UI.updateLbl()
 
     def updateStuff(self):
         self.textboxBgColorLabel.config(text="BG color: " + self.textboxBgColor.get())

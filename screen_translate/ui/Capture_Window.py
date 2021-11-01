@@ -1,6 +1,6 @@
 import tkinter.ttk as ttk
 from tkinter import *
-from screen_translate.Public import fJson, getTheOffset, globalStuff, searchList
+from screen_translate.Public import fJson, getTheOffset, _StoredGlobal, searchList
 from screen_translate.Mbox import Mbox
 from screen_translate.Capture import captureImg
 import pyperclip
@@ -16,7 +16,7 @@ class CaptureUI():
         self.root.geometry('600x150')
         self.root.wm_withdraw()
 
-        globalStuff.curCapOpacity = 0.8
+        _StoredGlobal.curCapOpacity = 0.8
         self.root.attributes('-alpha', 0.8)
 
         # Top frame
@@ -24,7 +24,7 @@ class CaptureUI():
         self.topFrame.pack(side=TOP, fill=X, expand=False)
 
         # Label for opacity slider
-        self.opacityLabel = Label(self.topFrame, text="Opacity: " + str(globalStuff.curCapOpacity))
+        self.opacityLabel = Label(self.topFrame, text="Opacity: " + str(_StoredGlobal.curCapOpacity))
         self.opacityLabel.pack(padx=5, pady=5, side=LEFT)
 
         # Always on top checkbox
@@ -54,11 +54,12 @@ class CaptureUI():
         self.captureBtn.pack(padx=5, pady=5, side=LEFT)
 
         # opacity slider # the slider will be added to main menu not here
-        self.opacitySlider = ttk.Scale(self.topFrame, from_=0.0, to=1.0, value=globalStuff.curCapOpacity, orient=HORIZONTAL, command=self.sliderOpac)
+        self.opacitySlider = ttk.Scale(self.topFrame, from_=0.0, to=1.0, value=_StoredGlobal.curCapOpacity, orient=HORIZONTAL, command=self.sliderOpac)
         self.opacitySlider.pack(padx=5, pady=5, side=LEFT)
+        _StoredGlobal.captureSlider_Cap = self.opacitySlider
 
         # Background type
-        globalStuff.bgType = StringVar(self.root)
+        _StoredGlobal.bgType = StringVar(self.root)
 
         # Background type label
         self.bgTypeLabel = Label(self.topFrame, text="Background Type: ")
@@ -67,15 +68,14 @@ class CaptureUI():
         # Background type combobox
         self.CBBgType = ttk.Combobox(self.topFrame, values=["Light", "Dark"], state="readonly")
         self.CBBgType.pack(padx=5, pady=5, side=LEFT)
-        self.CBBgType.bind("<<ComboboxSelected>>", self.on_cb_change)
+        self.CBBgType.bind("<<ComboboxSelected>>", self.bgCBChange)
 
         settings = fJson.readSetting()
         index = searchList(settings['enhance_Capture']['background'], ["Light", "Dark"])
         self.CBBgType.current(index)
-        if index == 0:
-            globalStuff.bgType.set("Light")
-        else:
-            globalStuff.bgType.set("Dark")
+
+        # Set global var
+        _StoredGlobal.bgType.set(self.CBBgType.get())
 
         # On Close
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
@@ -91,54 +91,58 @@ class CaptureUI():
 
     # Show/Hide
     def show(self):
-        globalStuff.capUiHidden = False
+        _StoredGlobal.capUiHidden = False
         self.root.wm_deiconify()
         self.sliderOpac(0.8, "main")
 
     def on_closing(self):
-        globalStuff.capUiHidden = True
+        _StoredGlobal.capUiHidden = True
         self.root.wm_withdraw()
 
     # Slider function
-    def sliderOpac(self, x, from_=None):
+    def sliderOpac(self, x, fromOutside = False):
         self.root.attributes('-alpha', x)
         self.opacityLabel.config(text="Opacity: " + str(round(float(x), 2)))
-        globalStuff.curCapOpacity = x
+        _StoredGlobal.curCapOpacity = x
 
         # Change the label and the slider in main window
-        globalStuff.captureOpacityObject.config(text="Capture UI Opacity: " + str(round(float(x), 2)))
-        globalStuff.captureSlider_Main.config(value=x)
+        _StoredGlobal.captureOpacityLabel_Main.config(text="Capture UI Opacity: " + str(round(float(x), 2)))
+        _StoredGlobal.captureSlider_Main.config(value=x)
+
+        # Change the label and slider in the capture settings window
+        _StoredGlobal.captureOpacityLabel_CapSetting.config(text="Capture UI Opacity: " + str(round(float(x), 2)))
+        _StoredGlobal.captureSlider_Cap.config(value=x)
 
         # If from is there, it means the slider is being slide from main window
-        if from_ is not None:
+        if fromOutside:
             self.opacitySlider.set(x)
 
     # Capture the text
     def getTextAndTranslate(self):
-        if(globalStuff.capUiHidden): # If Hidden
+        if(_StoredGlobal.capUiHidden): # If Hidden
             Mbox("Error: You need to generate the capture window", "Please generate the capture window first", 2, self.root)
             print("Error Need to generate the capture window! Please generate the capture window first")
             return
         # Check for the lang from and langto only if it's on translation mode
-        if globalStuff.engine != "None":
+        if _StoredGlobal.engine != "None":
             # If selected langfrom and langto is the same
-            if(globalStuff.langFrom) == (globalStuff.langTo):
+            if(_StoredGlobal.langFrom) == (_StoredGlobal.langTo):
                 Mbox("Error: Language target is the same as source", "Please choose a different language", 2, self.root)
                 print("Error Language is the same as source! Please choose a different language")
                 return
             # If selected langfrom is autodetect -> invalid
-            if globalStuff.langFrom == "Auto-Detect":
+            if _StoredGlobal.langFrom == "Auto-Detect":
                 Mbox("Error: Invalid Language Selected", "Can't Use Auto Detect in Capture Mode", 2, self.root)
                 print("Error: Invalid Language Selected! Can't Use Auto Detect in Capture Mode")
                 return
             # If selected langto is autodetect -> also invalid
-            if globalStuff.langTo == "Auto-Detect":
+            if _StoredGlobal.langTo == "Auto-Detect":
                 Mbox("Error: Invalid Language Selected", "Must specify language destination", 2, self.root)
                 print("Error: Invalid Language Selected! Must specify language destination")
                 return
 
         # Hide the Capture Window so it can detect the words better
-        opacBefore = globalStuff.curCapOpacity
+        opacBefore = _StoredGlobal.curCapOpacity
         self.root.attributes('-alpha', 0)
 
         # Get xywh of the screen
@@ -167,11 +171,11 @@ class CaptureUI():
         coords = [x, y, w, h]
 
         # Set language
-        language = globalStuff.langFrom
+        language = _StoredGlobal.langFrom
 
         # Capture the img
         is_Success, result = captureImg(coords, language, settings['tesseract_loc'], settings['cached'], settings['enhance_Capture']['cv2_Contour'], 
-        settings['enhance_Capture']['grayscale'], globalStuff.bgType.get())
+        settings['enhance_Capture']['grayscale'], _StoredGlobal.bgType.get())
         
         # Set opac to before
         self.root.attributes('-alpha', opacBefore)
@@ -184,7 +188,7 @@ class CaptureUI():
             if settings['show_no_text_alert']: Mbox("Warning", "Failed to Capture Text!", 1, self.root)
         else:
             # Pass it to mainMenu
-            globalStuff.text_Box_Top_Var.set(result[:-1]) # Delete last character
+            _StoredGlobal.text_Box_Top_Var.set(result[:-1]) # Delete last character
 
             if settings['autoCopy'] == True:
                 print("Copying text to clipboard")
@@ -192,7 +196,7 @@ class CaptureUI():
                 print("Copied successfully to clipboard!")
 
             # Run the translate function
-            globalStuff.translate()
+            _StoredGlobal.translate()
 
     # Menubar
     def always_on_top(self):
@@ -204,10 +208,10 @@ class CaptureUI():
             self.alwaysOnTopVar.set(True)
 
     # changeCb
-    def changeCb(self):
-        self.CBBgType.current(searchList(globalStuff.bgType.get(), ['Light', 'Dark']))
+    def changeCbBg(self):
+        self.CBBgType.current(searchList(_StoredGlobal.bgType.get(), ['Light', 'Dark']))
 
     # On cb change
-    def on_cb_change(self, event):
-        globalStuff.bgType.set(self.CBBgType.get())
-        globalStuff.main.setting_UI.changeCb()
+    def bgCBChange(self, event):
+        _StoredGlobal.bgType.set(self.CBBgType.get())
+        _StoredGlobal.main.capture_UI_Setting.changeCbBg()

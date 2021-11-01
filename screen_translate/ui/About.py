@@ -1,7 +1,7 @@
 from tkinter.font import BOLD
 import tkinter.ttk as ttk
 from tkinter import *
-from screen_translate.Public import globalStuff, OpenUrl, CreateToolTip
+from screen_translate.Public import _StoredGlobal, OpenUrl, CreateToolTip
 from PIL import Image, ImageTk
 
 # Classes
@@ -38,7 +38,7 @@ class AboutUI():
         try: # Try catch the logo so if logo not found it can still run
             self.canvasImg = Canvas(self.topFrame, width = 98, height = 98, bg="white")      
             self.canvasImg.pack(side=TOP, padx=5, pady=5) 
-            self.imgObj = Image.open(globalStuff.logoPath)
+            self.imgObj = Image.open(_StoredGlobal.logoPath)
             self.imgObj = self.imgObj.resize((100, 100), Image.ANTIALIAS)
 
             self.img = ImageTk.PhotoImage(self.imgObj, master=self.canvasImg)
@@ -57,10 +57,10 @@ class AboutUI():
         self.contentLabel.pack(padx=5, pady=0, side=TOP)
 
         # Label for version
-        self.versionLabel = Label(self.botLeftTop, text=f"Version: {globalStuff.version}", font=("Segoe UI", 8))
+        self.versionLabel = Label(self.botLeftTop, text=f"Version: {_StoredGlobal.version}", font=("Segoe UI", 8))
         self.versionLabel.pack(padx=5, pady=2, ipadx=0, side=LEFT)
 
-        self.versionUpdateStatus = Label(self.botLeftTop, text=f"({globalStuff.newVerStatusCache})", fg="blue", font=("Segoe UI", 8))
+        self.versionUpdateStatus = Label(self.botLeftTop, text=f"({_StoredGlobal.newVerStatusCache})", fg="blue", font=("Segoe UI", 8))
         self.versionUpdateStatus.pack(padx=0, pady=2, ipadx=0, side=LEFT)
         self.versionUpdateStatus.bind("<Button-1>", self.open_dl_link)
         self.updateToolTip = CreateToolTip(self.versionUpdateStatus, "Click to visit the download page")

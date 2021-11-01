@@ -1,7 +1,7 @@
 import tkinter.ttk as ttk
 import pyperclip
 from tkinter import *
-from screen_translate.Public import fJson, globalStuff
+from screen_translate.Public import fJson, _StoredGlobal
 from screen_translate.Mbox import Mbox
 
 # ----------------------------------------------------------------------
@@ -149,7 +149,7 @@ class HistoryUI():
         sel_Index = self.historyTreeView.focus()
         if sel_Index != '':
             dataRow = self.historyTreeView.item(sel_Index, 'values')
-            globalStuff.text_Box_Top_Var.set(dataRow[2]) # Hint: ('2', 'Japanese-English', 'こんにちは')
+            _StoredGlobal.text_Box_Top_Var.set(dataRow[2]) # Hint: ('2', 'Japanese-English', 'こんにちは')
 
             Mbox("Success", "Copied to translate menu", 0, self.root)
 
