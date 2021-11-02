@@ -30,10 +30,10 @@ dir_logo = dir_path + "/logo.ico"
 _StoredGlobal.logoPath = dir_logo.replace(".ico", ".png")
 
 # ----------------------------------------------------------------
-""" For future features
+""" For future features or improvement
 TODO: 
-- Add more OCR options
-- Find better way to use the hotkey instead of checking it every 100ms
+- Add more OCR options (This might not be necessary after all. Will still keep it here for now)
+- Find better way to use the hotkey instead of checking it every 100ms. (Currently it's not that bad, but if found  a better way, will try update it)
 """
 
 # ----------------------------------------------------------------
@@ -132,7 +132,7 @@ class main_Menu():
         self.tbTopBg = Frame(self.topFrame2, bg="#7E7E7E")
         self.tbTopBg.pack(side=TOP, fill=BOTH, expand=True, padx=5, pady=5)
 
-        self.textBoxTop = TextWithVar(self.tbTopBg, textvariable=_StoredGlobal.text_Box_Top_Var, height = 4, width = 100, font=("Segoe UI", 10), yscrollcommand=True, relief=FLAT)
+        self.textBoxTop = TextWithVar(self.tbTopBg, textvariable=_StoredGlobal.text_Box_Top_Var, height = 5, width = 100, font=("Segoe UI", 10), yscrollcommand=True, relief=FLAT)
         self.textBoxTop.pack(padx=1, pady=1, fill=BOTH, expand=True)
 
         # --- Bottom Frame 1 ---

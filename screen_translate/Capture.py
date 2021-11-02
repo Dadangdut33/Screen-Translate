@@ -72,12 +72,20 @@ def captureImg(coords, sourceLang, tesseract_Location, saveImg = False, enhance_
             if debugmode and grayScale: cv2.imshow("Grayscale Image", grayImg)
 
             # Threshtype
-            threshType = cv2.THRESH_BINARY_INV if background == "Light" else cv2.THRESH_BINARY
+            imgType = "Thresh Image"
+            if background == "Auto-Detect":
+                is_light = np.mean(open_cv_image) > 127
+                imgType += " (Auto - Light)" if is_light else " (Auto - Dark)"
+                print(">> Image detected as light" if is_light else ">> Image detected as dark")
+                threshType = cv2.THRESH_BINARY_INV if is_light else cv2.THRESH_BINARY
+            else:
+                threshType = cv2.THRESH_BINARY_INV if background == "Light" else cv2.THRESH_BINARY
+            
             # Performing OTSU threshold
             ret, thresh = cv2.threshold(grayImg, 0, 255, cv2.THRESH_OTSU | threshType)
 
             # debug
-            if debugmode: cv2.imshow("Thresh Image", thresh)
+            if debugmode: cv2.imshow(imgType, thresh)
 
             # Specify structure shape and kernel size. 
             # Kernel size increases or decreases the area 

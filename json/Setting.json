@@ -45,7 +45,7 @@
     "enhance_Capture": {
         "cv2_Contour": true,
         "grayscale": false,
-        "background": "Light",
+        "background": "Auto-Detect",
         "debugmode": false
     },
     "show_no_text_alert": false

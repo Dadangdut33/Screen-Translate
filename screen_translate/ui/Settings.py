@@ -183,7 +183,7 @@ class SettingUI():
         self.labelCBBackground.pack(side=LEFT, padx=5, pady=5)
         CreateToolTip(self.labelCBBackground, "Background type of the area that will be captured. This variable is used only if detect contour using CV2 is checked.")
 
-        self.CBBackgroundType = ttk.Combobox(self.content_Cap_3_1, values=['Light', 'Dark'], state="readonly")
+        self.CBBackgroundType = ttk.Combobox(self.content_Cap_3_1, values=["Auto-Detect", 'Light', 'Dark'], state="readonly")
         self.CBBackgroundType.pack(side=LEFT, padx=5, pady=5)
         CreateToolTip(self.CBBackgroundType, "Background type of the area that will be captured. This variable is used only if detect contour using CV2 is checked.")
 
@@ -193,7 +193,7 @@ class SettingUI():
 
         self.checkGrayscale = ttk.Checkbutton(self.content_Cap_3_1, text="Grayscale", variable=self.checkVarGrayscale)
         self.checkGrayscale.pack(side=LEFT, padx=5, pady=5)
-        CreateToolTip(self.checkGrayscale, text="Enhance the OCR by making the picture grayscale.")
+        CreateToolTip(self.checkGrayscale, text="Enhance the OCR by making the captured picture grayscale on the character reading part.")
 
         self.checkDebugmode = ttk.Checkbutton(self.content_Cap_3_1, text="Debug Mode", variable=self.checkVarDebugmode)
         self.checkDebugmode.pack(side=LEFT, padx=5, pady=5)
@@ -593,7 +593,7 @@ class SettingUI():
             self.checkVarDebugmode.set(False)
 
         # Check for cb background
-        self.CBBackgroundType.current(searchList(settings['enhance_Capture']['background'], ["Light", "Dark"]))
+        self.CBBackgroundType.current(searchList(settings['enhance_Capture']['background'], ["Auto-Detect", "Light", "Dark"]))
 
         # Set label value for query and result box
         # Query

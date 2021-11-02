@@ -58,6 +58,7 @@ class CaptureUI_Setting():
         # opacity slider
         self.opacitySlider = ttk.Scale(self.Frame_1, from_=0.0, to=1.0, value=_StoredGlobal.curCapOpacity, orient=HORIZONTAL, command=self.opacChange)
         self.opacitySlider.pack(padx=5, pady=5, side=LEFT)
+        _StoredGlobal.captureSlider_Cap = self.opacitySlider
 
         # ----------------------------------------------------------------------
         # Button
@@ -78,7 +79,7 @@ class CaptureUI_Setting():
         
         self.captureGrayscaleCheck = ttk.Checkbutton(self.Frame_2, text="Grayscale Capture", variable=self.captureGrayscaleVar, command=self.captureGrayscale)
         self.captureGrayscaleCheck.pack(padx=5, pady=5, side=LEFT)
-        CreateToolTip(self.captureGrayscaleCheck, "Enhance OCR by making the picture grayscale")
+        CreateToolTip(self.captureGrayscaleCheck, "Enhance the OCR by making the captured picture grayscale on the character reading part.grayscale")
 
         # ----------------------------------------------------------------------
         # Checkbutton for enhance capture or not
@@ -101,12 +102,12 @@ class CaptureUI_Setting():
 
         # ----------------------------------------------------------------------
         # Background type combobox
-        self.CBBgType = ttk.Combobox(self.Frame_3, values=["Light", "Dark"], state="readonly")
+        self.CBBgType = ttk.Combobox(self.Frame_3, values=["Auto-Detect", "Light", "Dark"], state="readonly")
         self.CBBgType.pack(padx=0, pady=5, side=LEFT)
         self.CBBgType.bind("<<ComboboxSelected>>", lambda e: _StoredGlobal.main.capture_UI.changeCbBg(self.CBBgType.get()))
         CreateToolTip(self.CBBgType, "The background type of the target")
 
-        index = searchList(settings['enhance_Capture']['background'], ["Light", "Dark"])
+        index = searchList(settings['enhance_Capture']['background'], ["Auto-Detect", "Light", "Dark"])
         self.CBBgType.current(index)
 
         # ----------------------------------------------------------------------
@@ -156,7 +157,7 @@ class CaptureUI_Setting():
 
     # ChangeCb
     def changeCbBg(self, value):
-        self.CBBgType.current(searchList(value, ['Light', 'Dark']))
+        self.CBBgType.current(searchList(value, ["Auto-Detect", 'Light', 'Dark']))
 
     # Disable enable cb
     def disableEnableCb(self, outside=False):

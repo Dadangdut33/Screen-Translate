@@ -84,7 +84,7 @@ class CaptureUI():
         
         self.captureGrayscaleCheck = ttk.Checkbutton(self.Frame_2, text="Grayscale Capture", variable=self.captureGrayscaleVar, command=self.captureGrayscale)
         self.captureGrayscaleCheck.pack(padx=5, pady=5, side=LEFT)
-        CreateToolTip(self.captureGrayscaleCheck, "Enhance OCR by making the picture grayscale")
+        CreateToolTip(self.captureGrayscaleCheck, "Enhance the OCR by making the captured picture grayscale on the character reading part.")
 
         # ----------------------------------------------------------------------
         # Checkbutton for enhance capture or not
@@ -106,12 +106,12 @@ class CaptureUI():
         CreateToolTip(self.bgTypeLabel, "The background type of the target")
 
         # Background type combobox
-        self.CBBgType = ttk.Combobox(self.Frame_3, values=["Light", "Dark"], state="readonly")
+        self.CBBgType = ttk.Combobox(self.Frame_3, values=["Auto-Detect", "Light", "Dark"], state="readonly")
         self.CBBgType.pack(padx=0, pady=5, side=LEFT)
         self.CBBgType.bind("<<ComboboxSelected>>", lambda e: _StoredGlobal.main.capture_UI_Setting.changeCbBg(self.CBBgType.get()))
         CreateToolTip(self.CBBgType, "The background type of the target")
 
-        index = searchList(settings['enhance_Capture']['background'], ["Light", "Dark"])
+        index = searchList(settings['enhance_Capture']['background'], ["Auto-Detect", "Light", "Dark"])
         self.CBBgType.current(index)
 
         # ----------------------------------------------------------------------
@@ -143,7 +143,7 @@ class CaptureUI():
     def show(self):
         _StoredGlobal.capUiHidden = False
         self.root.wm_deiconify()
-        self.sliderOpac(0.8, "main")
+        self.sliderOpac(0.8, True)
 
     def on_closing(self):
         _StoredGlobal.capUiHidden = True
@@ -264,7 +264,7 @@ class CaptureUI():
 
     # ChangeCb
     def changeCbBg(self, value):
-        self.CBBgType.current(searchList(value, ['Light', 'Dark']))
+        self.CBBgType.current(searchList(value, ["Auto-Detect", 'Light', 'Dark']))
 
     # Disable enable cb
     def disableEnableCb(self, outside=False):
