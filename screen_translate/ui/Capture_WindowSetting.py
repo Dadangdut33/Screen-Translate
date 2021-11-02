@@ -62,7 +62,7 @@ class CaptureUI_Setting():
 
         # ----------------------------------------------------------------------
         # Button
-        self.captureBtn = ttk.Button(self.Frame_1, text="Capture And Translate", command=_StoredGlobal.main.capture_UI.getTextAndTranslate)
+        self.captureBtn = ttk.Button(self.Frame_1, text="Capture & Translate", command=_StoredGlobal.main.capture_UI.getTextAndTranslate)
         self.captureBtn.pack(padx=5, pady=5, side=LEFT)
 
         # Read settings

@@ -67,7 +67,7 @@ class CaptureUI():
 
         # ----------------------------------------------------------------------
         # Button
-        self.captureBtn = ttk.Button(self.Frame_1, text="Capture And Translate", command=self.getTextAndTranslate)
+        self.captureBtn = ttk.Button(self.Frame_1, text="Capture & Translate", command=self.getTextAndTranslate)
         self.captureBtn.pack(padx=5, pady=5, side=LEFT)
 
         # Read settings
@@ -168,8 +168,12 @@ class CaptureUI():
             self.opacitySlider.set(x)
 
     # Capture the text
-    def getTextAndTranslate(self):
-        if(_StoredGlobal.capUiHidden): # If Hidden
+    def getTextAndTranslate(self, snippedCoords = ""):
+        theUI_IsHidden = _StoredGlobal.capUiHidden
+        if snippedCoords != "":
+            theUI_IsHidden = False
+        
+        if(theUI_IsHidden): # If Hidden
             Mbox("Error: You need to generate the capture window", "Please generate the capture window first", 2, self.root)
             print("Error Need to generate the capture window! Please generate the capture window first")
             return
@@ -210,15 +214,18 @@ class CaptureUI():
 
             return # Reject
 
-        # Offsets
-        offSets = getTheOffset()
-        x += offSets[0]
-        y += offSets[1]
-        w += offSets[2]
-        h += offSets[3]
+        if snippedCoords == "": # IF Captured using the capture window
+            # Offsets
+            offSets = getTheOffset()
+            x += offSets[0]
+            y += offSets[1]
+            w += offSets[2]
+            h += offSets[3]
 
-        # Store the coords
-        coords = [x, y, w, h]
+            # Store the coords
+            coords = [x, y, w, h]
+        else: # IF CAPTURED USING THE SNIPPING
+            coords = snippedCoords
 
         # Set language
         language = _StoredGlobal.langFrom

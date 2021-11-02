@@ -1,18 +1,19 @@
 {
     "cached": true,
     "autoCopy": true,
-    "offSetXYType": "No Offset",
+    "offSetXYType": "Custom Offset",
     "offSetXY": [
-        0,
-        0
+        "auto",
+        "auto"
     ],
     "offSetWH": [
         "auto",
         "auto"
     ],
+    "snippingWindowGeometry": "auto",
     "tesseract_loc": "C:/Program Files/Tesseract-OCR/tesseract.exe",
     "default_Engine": "Google Translate",
-    "default_FromOnOpen": "Auto-Detect",
+    "default_FromOnOpen": "Japanese",
     "default_ToOnOpen": "English",
     "hotkey": {
         "captureAndTl": {

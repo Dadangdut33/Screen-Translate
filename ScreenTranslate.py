@@ -8,7 +8,7 @@ import requests
 
 # ----------------------------------------------------------------
 # Var and methods
-from screen_translate.Public import TextWithVar, fJson, _StoredGlobal
+from screen_translate.Public import CreateToolTip, TextWithVar, fJson, _StoredGlobal
 from screen_translate.Public import startfile, optGoogle, optDeepl, optMyMemory, optPons, optNone, engines, searchList, OpenUrl
 from screen_translate.Mbox import Mbox
 
@@ -18,6 +18,7 @@ from screen_translate.ui.History import HistoryUI
 from screen_translate.ui.Settings import SettingUI
 from screen_translate.ui.Capture_Window import CaptureUI
 from screen_translate.ui.Capture_WindowSetting import CaptureUI_Setting
+from screen_translate.ui.SnipAndCap import Snip_Mask
 from screen_translate.ui.About import AboutUI
 from screen_translate.ui.Tl_From import Detached_Tl_Query
 from screen_translate.ui.Tl_Result import Detached_Tl_Result
@@ -89,6 +90,7 @@ class main_Menu():
         # Keep in mind that settings are already loaded
         self.capture_UI = CaptureUI()
         self.capture_UI_Setting = CaptureUI_Setting()
+        self.snipper_UI = Snip_Mask()
         self.query_Detached_Window_UI = Detached_Tl_Query()
         self.result_Detached_Window_UI = Detached_Tl_Result()
         self.setting_UI = SettingUI()
@@ -113,9 +115,16 @@ class main_Menu():
         # --- Top Frame 1 ---
         # Button
         self.translateOnly_Btn = ttk.Button(self.topFrame1, text="Translate", command=_StoredGlobal.translate)
-        self.captureNTranslate_Btn = ttk.Button(self.topFrame1, text="Capture And Translate", command=self.capture_UI.getTextAndTranslate)
         self.translateOnly_Btn.pack(side=LEFT, padx=5, pady=5)
+        CreateToolTip(self.translateOnly_Btn, "Translate the text in the top frame")
+        
+        self.captureNTranslate_Btn = ttk.Button(self.topFrame1, text="Capture & Translate", command=self.capture_UI.getTextAndTranslate)
         self.captureNTranslate_Btn.pack(side=LEFT, padx=5, pady=5)
+        CreateToolTip(self.captureNTranslate_Btn, "Capture and translate the selected text. Need to generate the capture UI first")
+        
+        self.snipAndCapTL_Btn = ttk.Button(self.topFrame1, text="Snip & Translate", command=self.snipAndCapTL)
+        self.snipAndCapTL_Btn.pack(side=LEFT, padx=5, pady=5)
+        CreateToolTip(self.snipAndCapTL_Btn, "Snip and translate the selected text. Setting used are same as capture UI")
 
         # Opacity
         self.captureOpacitySlider = ttk.Scale(self.topFrame1, from_=0.0, to=1.0, value=_StoredGlobal.curCapOpacity, orient=HORIZONTAL, command=self.opacChange)
@@ -336,6 +345,9 @@ class main_Menu():
         else:
             self.root.wm_attributes('-topmost', True)
             self.alwaysOnTop = True
+
+    def snipAndCapTL(self):
+        self.snipper_UI.createScreenCanvas()
 
     # ---------------------------------
     # Mbox

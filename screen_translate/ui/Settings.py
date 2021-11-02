@@ -43,7 +43,7 @@ class SettingUI():
         self.listboxCat.pack(side=LEFT, fill=BOTH, padx=5, pady=5)
 
         self.listboxCat.insert(1, "Capturing/Offset")
-        self.listboxCat.insert(2, "OCR Engine")
+        self.listboxCat.insert(2, "OCR Engine/Enhance")
         self.listboxCat.insert(3, "Translate")
         self.listboxCat.insert(4, "Hotkey")
         self.listboxCat.insert(5, "Query/Result Box")
@@ -167,12 +167,107 @@ class SettingUI():
         self.spinnerOffSetH.configure(validate='key', validatecommand=self.validateDigits_Offset_H)
         self.spinnerOffSetH.bind("<MouseWheel>", lambda event: self.disableScrollWheel(event, theSpinner=self.spinnerOffSetH))
 
-        # [Ocr enhancement]
-        self.fLabelCapture_3 = LabelFrame(self.frameCapture, text="• OCR Enhancement", width=750, height=55)
-        self.fLabelCapture_3.pack(side=TOP, fill=X, expand=False, padx=5, pady=5)
-        self.fLabelCapture_3.pack_propagate(0)
+        # [Snippet offset]
+        self.fLabelSnippet = LabelFrame(self.frameCapture, text="• Monitor Snippet Offset", width=750, height=55)
+        self.fLabelSnippet.pack(side=TOP, fill=X, expand=False, padx=5, pady=5)
+        self.fLabelSnippet.pack_propagate(0)
 
-        self.content_Cap_3_1 = Frame(self.fLabelCapture_3)
+        self.content_Snippet_3_1 = Frame(self.fLabelSnippet)
+        self.content_Snippet_3_1.pack(side=TOP, fill=X, expand=False)
+
+        self.checkAutoSnippetVar = BooleanVar(self.root, value=True)
+
+        self.checkAutoSnippet = ttk.Checkbutton(self.content_Snippet_3_1, text="Auto", 
+                            variable=self.checkAutoSnippetVar, command=self.disableEnableSnipSpin)
+        self.checkAutoSnippet.pack(side=LEFT, padx=5, pady=5)
+        CreateToolTip(self.checkAutoSnippet, text="Auto detect the layout of the monitor (May not work properly)")
+        
+        self.labelSnippet_1 = Label(self.content_Snippet_3_1, text="Total Width:")
+        self.labelSnippet_1.pack(side=LEFT, padx=(0,5), pady=5)
+        CreateToolTip(self.labelSnippet_1, "Total width of the monitor")
+
+        self.validateDigits_Snippet_1 = (self.root.register(lambda event: self.validateSpinBox_Snipp(event, '1')), '%P')
+        self.validateDigits_Snippet_2 = (self.root.register(lambda event: self.validateSpinBox_Snipp(event, '2')), '%P')
+        self.validateDigits_Snippet_3 = (self.root.register(lambda event: self.validateSpinBox_Snipp(event, '3')), '%P')
+        self.validateDigits_Snippet_4 = (self.root.register(lambda event: self.validateSpinBox_Snipp(event, '4')), '%P')
+
+        self.spinValSnippet_1 = IntVar(self.root)
+        self.spinnerSnippet_1 = ttk.Spinbox(self.content_Snippet_3_1, from_=-100000, to=100000, width=7, textvariable=self.spinValSnippet_1)
+        self.spinnerSnippet_1.configure(validate='key', validatecommand=self.validateDigits_Snippet_1)
+        self.spinnerSnippet_1.bind("<MouseWheel>", lambda event: self.disableScrollWheel(event, theSpinner=self.spinnerSnippet_1))
+        self.spinnerSnippet_1.pack(side=LEFT, padx=0, pady=5)
+        CreateToolTip(self.spinnerSnippet_1, "Total width of the monitor")
+
+        self.labelSnippet_2 = Label(self.content_Snippet_3_1, text="Total Height:")
+        self.labelSnippet_2.pack(side=LEFT, padx=(5, 0), pady=5)
+        CreateToolTip(self.labelSnippet_2, "Total height of the monitor")
+
+        self.spinValSnippet_2 = IntVar(self.root)
+        self.spinnerSnippet_2 = ttk.Spinbox(self.content_Snippet_3_1, from_=-100000, to=100000, width=7, textvariable=self.spinValSnippet_2)
+        self.spinnerSnippet_2.configure(validate='key', validatecommand=self.validateDigits_Snippet_2)
+        self.spinnerSnippet_2.bind("<MouseWheel>", lambda event: self.disableScrollWheel(event, theSpinner=self.spinnerSnippet_2))
+        self.spinnerSnippet_2.pack(side=LEFT, padx=0, pady=5)
+        CreateToolTip(self.spinnerSnippet_2, "Total height of the monitor")
+
+        self.labelSnippet_3 = Label(self.content_Snippet_3_1, text="X Offset From Primary:")
+        self.labelSnippet_3.pack(side=LEFT, padx=(5, 0), pady=5)
+        CreateToolTip(self.labelSnippet_3, "X offset of the monitor from the primary monitor")
+
+        self.spinValSnippet_3 = IntVar(self.root)
+        self.spinnerSnippet_3 = ttk.Spinbox(self.content_Snippet_3_1, from_=-100000, to=100000, width=7, textvariable=self.spinValSnippet_3)
+        self.spinnerSnippet_3.configure(validate='key', validatecommand=self.validateDigits_Snippet_3)
+        self.spinnerSnippet_3.bind("<MouseWheel>", lambda event: self.disableScrollWheel(event, theSpinner=self.spinnerSnippet_3))
+        self.spinnerSnippet_3.pack(side=LEFT, padx=0, pady=5)
+        CreateToolTip(self.spinnerSnippet_3, "X offset of the monitor from the primary monitor")
+
+        self.labelSnippet_4 = Label(self.content_Snippet_3_1, text="Y Offset From Main:")
+        self.labelSnippet_4.pack(side=LEFT, padx=(5, 0), pady=5)
+        CreateToolTip(self.labelSnippet_4, "Y offset of the monitor from the primary monitor")
+
+        self.spinValSnippet_4 = IntVar(self.root)
+        self.spinnerSnippet_4 = ttk.Spinbox(self.content_Snippet_3_1, from_=-100000, to=100000, width=7, textvariable=self.spinValSnippet_4)
+        self.spinnerSnippet_4.configure(validate='key', validatecommand=self.validateDigits_Snippet_4)
+        self.spinnerSnippet_4.bind("<MouseWheel>", lambda event: self.disableScrollWheel(event, theSpinner=self.spinnerSnippet_4))
+        self.spinnerSnippet_4.pack(side=LEFT, padx=0, pady=5)
+        CreateToolTip(self.spinnerSnippet_4, "Y offset of the monitor from the primary monitor")
+        
+        self.hintLabelSnippet = Label(self.content_Snippet_3_1, text="❓")
+        self.hintLabelSnippet.pack(side=RIGHT, padx=5, pady=5)
+        CreateToolTip(self.hintLabelSnippet, 
+        text="""If the snipping does not match the monitor, then you can manually set the height, width, and offsets.
+        \rIf the offset is negative then you need to input (-) before it, if it's positive just leave it as normal
+        \rTo get the offset, you need to identify your primary monitor position then you can calculate it by seeing wether the primary monitor is on the first position, in the top, in the middle, or etc.
+        \rIf it is in the first position then you might not need any offset, if it's on the second from the left then you might need to add minus offset, etc.""")
+
+        # ----------------------------------------------------------------------
+        # OCR Engine
+        self.frameOCREngine = Frame(self.mainFrameTop)
+        self.frameOCREngine.pack(side=LEFT, fill=BOTH, padx=5, pady=5)
+
+        self.fLabelOCR_1 = LabelFrame(self.frameOCREngine, text="• Tesseract OCR Settings", width=750, height=55)
+        self.fLabelOCR_1.pack(side=TOP, fill=X, expand=False, padx=5, pady=(0, 5))
+        self.fLabelOCR_1.pack_propagate(0)
+        self.content_Engine_1 = Frame(self.fLabelOCR_1)
+        self.content_Engine_1.pack(side=TOP, fill=X, expand=False)
+
+        self.labelTesseractPath = Label(self.content_Engine_1, text="Tesseract Path :")
+        self.labelTesseractPath.pack(side=LEFT, padx=5, pady=5)
+        CreateToolTip(self.content_Engine_1, "Tesseract.exe location")
+
+        self.textBoxTesseractPath = ttk.Entry(self.content_Engine_1, width=70, xscrollcommand=True)
+        self.textBoxTesseractPath.bind("<Key>", lambda event: _StoredGlobal.allowedKey(event)) # Disable textbox input
+        self.textBoxTesseractPath.pack(side=LEFT, padx=5, pady=5, fill=X, expand=True)
+        CreateToolTip(self.textBoxTesseractPath, "Tesseract.exe location")
+
+        self.btnSearchTesseract = ttk.Button(self.content_Engine_1, text="...", command=self.searchTesseract)
+        self.btnSearchTesseract.pack(side=LEFT, padx=5, pady=5)
+
+        # [Ocr enhancement]
+        self.fLabelOCR_2 = LabelFrame(self.frameOCREngine, text="• OCR Enhancement", width=750, height=55)
+        self.fLabelOCR_2.pack(side=TOP, fill=X, expand=False, padx=5, pady=5)
+        self.fLabelOCR_2.pack_propagate(0)
+
+        self.content_Cap_3_1 = Frame(self.fLabelOCR_2)
         self.content_Cap_3_1.pack(side=TOP, fill=X, expand=False)
 
         self.checkVarCV2 = BooleanVar(self.root, value=True)
@@ -205,29 +300,6 @@ class SettingUI():
         text="""Options saved in this section are for the inital value on startup.
         \rYou can experiment with the option to increase the accuracy of tesseract OCR.
         \rThe saved picture will not be affected by the options.""")
-
-        # ----------------------------------------------------------------------
-        # OCR Engine
-        self.frameEngine = Frame(self.mainFrameTop)
-        self.frameEngine.pack(side=LEFT, fill=BOTH, padx=5, pady=5)
-
-        self.fLabelEngine_1 = LabelFrame(self.frameEngine, text="• Tesseract OCR Settings", width=750, height=55)
-        self.fLabelEngine_1.pack(side=TOP, fill=X, expand=False, padx=5, pady=(0, 5))
-        self.fLabelEngine_1.pack_propagate(0)
-        self.content_Engine_1 = Frame(self.fLabelEngine_1)
-        self.content_Engine_1.pack(side=TOP, fill=X, expand=False)
-
-        self.labelTesseractPath = Label(self.content_Engine_1, text="Tesseract Path :")
-        self.labelTesseractPath.pack(side=LEFT, padx=5, pady=5)
-        CreateToolTip(self.content_Engine_1, "Tesseract.exe location")
-
-        self.textBoxTesseractPath = ttk.Entry(self.content_Engine_1, width=70, xscrollcommand=True)
-        self.textBoxTesseractPath.bind("<Key>", lambda event: _StoredGlobal.allowedKey(event)) # Disable textbox input
-        self.textBoxTesseractPath.pack(side=LEFT, padx=5, pady=5, fill=X, expand=True)
-        CreateToolTip(self.textBoxTesseractPath, "Tesseract.exe location")
-
-        self.btnSearchTesseract = ttk.Button(self.content_Engine_1, text="...", command=self.searchTesseract)
-        self.btnSearchTesseract.pack(side=LEFT, padx=5, pady=5)
 
         # ----------------------------------------------------------------------
         # Translate
@@ -486,7 +558,7 @@ class SettingUI():
                 self.showFrame(self.frameCapture)
             
             elif self.listboxCat.curselection()[0] == 1:
-                self.showFrame(self.frameEngine)
+                self.showFrame(self.frameOCREngine)
             
             elif self.listboxCat.curselection()[0] == 2:
                 self.showFrame(self.frameTranslate)
@@ -505,7 +577,7 @@ class SettingUI():
         Hide all frames
         """
         self.frameCapture.pack_forget()
-        self.frameEngine.pack_forget()
+        self.frameOCREngine.pack_forget()
         self.frameTranslate.pack_forget()
         self.frameHotkey.pack_forget()
         self.frameQueryResult.pack_forget()
@@ -619,29 +691,75 @@ class SettingUI():
             Mbox("Error: Invalid Debug Options", "Please do not modify the setting manually if you don't know what you are doing", 2, self.root)
             self.checkVarDebugmode.set(False)
 
-        # Check for cb background
-        self.CBBackgroundType.current(searchList(settings['enhance_Capture']['background'], ["Auto-Detect", "Light", "Dark"]))
+        # Check for snip offset
+        try:
+            if settings['snippingWindowGeometry'] == "auto":
+                self.checkAutoSnippetVar.set(True)
+                geometryStr = _StoredGlobal.main.snipper_UI.getScreenTotalGeometry()
+            else:
+                self.checkAutoSnippetVar.set(False)
+                geometryStr = settings['snippingWindowGeometry']
+            newStr = ''.join((ch if ch in '0123456789.-e' else ' ') for ch in geometryStr)
+            geometryNum = [int(i) for i in newStr.split()]
+            self.spinnerSnippet_1.set(geometryNum[0])
+            self.spinnerSnippet_2.set(geometryNum[1])
+            self.spinnerSnippet_3.set(geometryNum[2])
+            self.spinnerSnippet_4.set(geometryNum[3])
+        except Exception:
+            print("Error: Invalid Snip Offset Options")
+            Mbox("Error: Invalid Snip Offset Options", "Please do not modify the setting manually if you don't know what you are doing", 2, self.root)
+            self.checkAutoSnippetVar.set(True)
 
+        # Update the spinner offset
+        self.disableEnableSnipSpin()
+
+        # Check for cb background
+        try:
+            self.CBBackgroundType.current(searchList(settings['enhance_Capture']['background'], ["Auto-Detect", "Light", "Dark"]))
+        except Exception:
+            print("Error: Invalid Background Options")
+            Mbox("Error: Invalid Background Options", "Please do not modify the setting manually if you don't know what you are doing", 2, self.root)
+            self.CBBackgroundType.current(0)
+        
         # Set label value for query and result box
         # Query
-        self.queryFontVar.set(settings['Query_Box']['font'])
-        self.queryFontDict = json.loads(self.queryFontVar.get().replace("'", '"'))
-        self.queryBgVar.set(settings['Query_Box']['bg'])
-        self.queryFgVar.set(settings['Query_Box']['fg'])
-        query_font_str = "%(family)s %(size)i %(weight)s %(slant)s" % self.queryFontDict
-        self.queryBg.config(text="Textbox Bg Color : " + self.queryBgVar.get())
-        self.queryFg.config(text="Textbox Fg Color : " + self.queryFgVar.get())
-        self.queryFont.config(text="Textbox Font : " + query_font_str)
+        try:
+            self.queryFontVar.set(settings['Query_Box']['font'])
+            self.queryFontDict = json.loads(self.queryFontVar.get().replace("'", '"'))
+            self.queryBgVar.set(settings['Query_Box']['bg'])
+            self.queryFgVar.set(settings['Query_Box']['fg'])
+            query_font_str = "%(family)s %(size)i %(weight)s %(slant)s" % self.queryFontDict
+            self.queryBg.config(text="Textbox Bg Color : " + self.queryBgVar.get())
+            self.queryFg.config(text="Textbox Fg Color : " + self.queryFgVar.get())
+            self.queryFont.config(text="Textbox Font : " + query_font_str)
 
-        # Result
-        self.resultFontVar.set(settings['Result_Box']['font'])
-        self.resultFontDict = json.loads(self.resultFontVar.get().replace("'", '"'))
-        self.resultBgVar.set(settings['Result_Box']['bg'])
-        self.resultFgVar.set(settings['Result_Box']['fg'])
-        result_font_str = "%(family)s %(size)i %(weight)s %(slant)s" % self.resultFontDict
-        self.resultBg.config(text="Textbox Bg Color : " + self.resultBgVar.get())
-        self.resultFg.config(text="Textbox Fg Color : " + self.resultFgVar.get())
-        self.resultFont.config(text="Textbox Font : " + result_font_str)
+            # Result
+            self.resultFontVar.set(settings['Result_Box']['font'])
+            self.resultFontDict = json.loads(self.resultFontVar.get().replace("'", '"'))
+            self.resultBgVar.set(settings['Result_Box']['bg'])
+            self.resultFgVar.set(settings['Result_Box']['fg'])
+            result_font_str = "%(family)s %(size)i %(weight)s %(slant)s" % self.resultFontDict
+            self.resultBg.config(text="Textbox Bg Color : " + self.resultBgVar.get())
+            self.resultFg.config(text="Textbox Fg Color : " + self.resultFgVar.get())
+            self.resultFont.config(text="Textbox Font : " + result_font_str)
+        except Exception:
+            print("Error: Invalid Font Options")
+            Mbox("Error: Invalid Font Options", "Please do not modify the setting manually if you don't know what you are doing", 2, self.root)
+            self.queryFontVar.set("{'family': 'Segoe UI', 'size': 10, 'weight': 'normal', 'slant': 'roman'}")
+            self.queryFontDict = json.loads(self.queryFontVar.get().replace("'", '"'))
+            self.queryBgVar.set("#ffffff")
+            self.queryFgVar.set("#000000")
+            self.queryBg.config(text="Textbox Bg Color : " + self.queryBgVar.get())
+            self.queryFg.config(text="Textbox Fg Color : " + self.queryFgVar.get())
+            self.queryFont.config(text="Textbox Font : " + "%(family)s %(size)i %(weight)s %(slant)s" % self.queryFontDict)
+
+            # Result
+            self.resultFontVar.set("{'family': 'Segoe UI', 'size': 10, 'weight': 'normal', 'slant': 'roman'}")
+            self.resultFontDict = json.loads(self.resultFontVar.get().replace("'", '"'))
+            self.resultBgVar.set("#ffffff")
+            self.resultFgVar.set("#000000")
+            self.resultBg.config(text="Textbox Bg Color : " + self.resultBgVar.get())
+            self.resultFg.config(text="Textbox Fg Color : " + self.resultFgVar.get())
 
         # Show current hotkey
         try:
@@ -652,12 +770,17 @@ class SettingUI():
             print("Error: Invalid Hotkey Options")
 
         # Store setting to localvar
-        offSetXY = settings["offSetXY"]
-        xyOffSetType = settings["offSetXYType"]
+        try:
+            offSetXY = settings["offSetXY"]
+            xyOffSetType = settings["offSetXYType"]
+        except Exception:
+            print("Error: Invalid Offset Options")
+            Mbox("Error: Invalid Offset Options", "Please do not modify the setting manually if you don't know what you are doing", 2, self.root)
+            offSetXY = [0, 0]
+            xyOffSetType = "No Offset"
 
         # Get offset
         x, y, w, h = getTheOffset()
-
         # If cb no offset
         if xyOffSetType == "No Offset":
             self.CBOffSetChoice.current(0)
@@ -701,26 +824,41 @@ class SettingUI():
         self.spinValOffSetW.set(w)
         self.spinValOffSetH.set(h)
 
-        if(settings["offSetWH"][0] == "auto"):
-            self.checkVarOffSetW.set(True)
-            self.spinnerOffSetW.config(state=DISABLED)
-        else:
-            self.checkVarOffSetW.set(False)
-            self.spinnerOffSetW.config(state=NORMAL)
+        try:
+            if(settings["offSetWH"][0] == "auto"):
+                self.checkVarOffSetW.set(True)
+                self.spinnerOffSetW.config(state=DISABLED)
+            else:
+                self.checkVarOffSetW.set(False)
+                self.spinnerOffSetW.config(state=NORMAL)
 
-        if(settings["offSetWH"][1] == "auto"):
-            self.checkVarOffSetH.set(True)
-            self.spinnerOffSetH.config(state=DISABLED)
-        else:
+            if(settings["offSetWH"][1] == "auto"):
+                self.checkVarOffSetH.set(True)
+                self.spinnerOffSetH.config(state=DISABLED)
+            else:
+                self.checkVarOffSetH.set(False)
+                self.spinnerOffSetH.config(state=NORMAL)
+        except Exception:
+            print("Error: Invalid Offset Options")
+            Mbox("Error: Invalid Offset Options", "Please do not modify the setting manually if you don't know what you are doing", 2, self.root)
+            self.checkVarOffSetW.set(False)
             self.checkVarOffSetH.set(False)
-            self.spinnerOffSetH.config(state=NORMAL)
 
         self.CBTLChange_setting()
-        self.CBDefaultEngine.current(searchList(settings['default_Engine'], engines))
-        self.CBDefaultFrom.current(searchList(settings['default_FromOnOpen'], self.langOpt))
-        self.CBDefaultTo.current(searchList(settings['default_ToOnOpen'], self.langOpt))
-        self.textBoxTesseractPath.delete(0, END)
-        self.textBoxTesseractPath.insert(0, settings['tesseract_loc'])
+        try:
+            self.CBDefaultEngine.current(searchList(settings['default_Engine'], engines))
+            self.CBDefaultFrom.current(searchList(settings['default_FromOnOpen'], self.langOpt))
+            self.CBDefaultTo.current(searchList(settings['default_ToOnOpen'], self.langOpt))
+            self.textBoxTesseractPath.delete(0, END)
+            self.textBoxTesseractPath.insert(0, settings['tesseract_loc'])
+        except Exception:
+            print("Error: Invalid Engine Options")
+            Mbox("Error: Invalid Engine Options", "Please do not modify the setting manually if you don't know what you are doing", 2, self.root)
+            self.CBDefaultEngine.current(0)
+            self.CBDefaultFrom.current(0)
+            self.CBDefaultTo.current(0)
+            self.textBoxTesseractPath.delete(0, END)
+            self.textBoxTesseractPath.insert(0, "C:/Program Files/Tesseract-OCR/tesseract.exe")
 
         _StoredGlobal.main.query_Detached_Window_UI.updateStuff()
         _StoredGlobal.main.result_Detached_Window_UI.updateStuff()
@@ -750,12 +888,18 @@ class SettingUI():
         self.queryFontDict = json.loads(self.queryFontVar.get().replace("'", '"'))
         self.resultFontDict = json.loads(self.resultFontVar.get().replace("'", '"'))
 
+        if self.checkAutoSnippetVar.get():
+            snippingWindowGeometry = "auto"
+        else:
+            snippingWindowGeometry = f"{self.spinnerSnippet_1.get()}x{self.spinnerSnippet_2.get()}+{self.spinnerSnippet_3.get()}+{self.spinnerSnippet_4.get()}"
+
         settingToSave = {
             "cached": self.checkVarImgSaved.get(),
             "autoCopy": self.checkVarAutoCopy.get(),
             "offSetXYType": self.CBOffSetChoice.get(),
             "offSetXY": [x, y],
             "offSetWH": [w, h],
+            "snippingWindowGeometry": snippingWindowGeometry,
             "tesseract_loc": self.textBoxTesseractPath.get().strip(),
             "default_Engine": self.CBDefaultEngine.get(),
             "default_FromOnOpen": self.CBDefaultFrom.get(),
@@ -962,13 +1106,40 @@ class SettingUI():
             return False
 
         if event.isdigit():
-            # Check value no more than 200
             if int(event) > 100000:
                 self.spinnerHKCapTlDelay.set(100000)
                 return False
             else:
                 return event.isdigit()
         else:
+            return False
+
+    def validateSpinBox_Snipp(self, event, type):
+        typeDict = {'1': self.spinnerSnippet_1, '2': self.spinnerSnippet_2, '3': self.spinnerSnippet_3, '4': self.spinnerSnippet_4}
+        typeGet = typeDict[type]
+
+        if event == "":
+            typeGet.set(0)
+            return False
+
+        try:
+            event = int(event)
+            # Fetching minimum and maximum value of the spinbox
+            minval = int(self.root.nametowidget(typeGet).config('from')[4])
+            maxval = int(self.root.nametowidget(typeGet).config('to')[4])
+
+            # check if the number is within the range
+            if event not in range(minval, maxval):
+                # if not, set the value to the nearest limit
+                if event < minval:
+                    typeGet.set(minval)
+                else:
+                    typeGet.set(maxval)
+                return False
+
+            # if all is well, return True
+            return True
+        except Exception: # Except means that number is not a digit
             return False
 
     def validateSpinbox_Offset(self, event, type):
@@ -1039,3 +1210,22 @@ class SettingUI():
         self.resultBg.config(text="Textbox Bg Color : " + self.resultBgVar.get())
         self.resultFg.config(text="Textbox Fg Color : " + self.resultFgVar.get())
         self.resultFont.config(text="Textbox Font : " + result_font_str)
+
+    def disableEnableSnipSpin(self, event=None):
+        if not self.checkAutoSnippetVar.get(): # IF disabled then enable it
+            self.spinnerSnippet_1.config(state=NORMAL)
+            self.spinnerSnippet_2.config(state=NORMAL)
+            self.spinnerSnippet_3.config(state=NORMAL)
+            self.spinnerSnippet_4.config(state=NORMAL)
+        else:
+            self.spinnerSnippet_1.config(state=DISABLED)
+            self.spinnerSnippet_2.config(state=DISABLED)
+            self.spinnerSnippet_3.config(state=DISABLED)
+            self.spinnerSnippet_4.config(state=DISABLED)
+            geometryStr = _StoredGlobal.main.snipper_UI.getScreenTotalGeometry()
+            newStr = ''.join((ch if ch in '0123456789.-e' else ' ') for ch in geometryStr)
+            geometryNum = [int(i) for i in newStr.split()]
+            self.spinnerSnippet_1.set(geometryNum[0])
+            self.spinnerSnippet_2.set(geometryNum[1])
+            self.spinnerSnippet_3.set(geometryNum[2])
+            self.spinnerSnippet_4.set(geometryNum[3])

@@ -92,9 +92,13 @@ class Detached_Tl_Query():
 
         # textbox font label
         self.tbQueryFont = StringVar() 
-        self.tbQueryFont.set(settings['Query_Box']['font'])
-        self.tbQueryFontDict = json.loads(str(settings['Query_Box']['font']).replace("'",'"'))
-        font_str = "%(family)s %(size)i %(weight)s %(slant)s" % self.tbQueryFontDict
+        try:
+            self.tbQueryFont.set(settings['Query_Box']['font'])
+            self.tbQueryFontDict = json.loads(str(settings['Query_Box']['font']).replace("'",'"'))
+            font_str = "%(family)s %(size)i %(weight)s %(slant)s" % self.tbQueryFontDict
+        except Exception:
+            font_str = "Segoe UI 10 normal"
+
         _StoredGlobal.queryFont = self.tbQueryFont
 
         self.tbFontLabel = Label(self.settingFrame, text="Font: " + font_str)
@@ -119,7 +123,10 @@ class Detached_Tl_Query():
         # Textbox in topframe2
         self.textBoxTlQuery = TextWithVar(self.tbFrame, textvariable=_StoredGlobal.text_Box_Top_Var, height = 5, width = 100, yscrollcommand=True, background=self.textboxBgColor.get())
         self.textBoxTlQuery.bind("<Key>", lambda event: _StoredGlobal.allowedKey(event)) # Disable textbox input
-        self.textBoxTlQuery.config(font=(self.tbQueryFontDict['family'], self.tbQueryFontDict['size'], self.tbQueryFontDict['weight'], self.tbQueryFontDict['slant']))
+        try:
+            self.textBoxTlQuery.config(font=(self.tbQueryFontDict['family'], self.tbQueryFontDict['size'], self.tbQueryFontDict['weight'], self.tbQueryFontDict['slant']))
+        except Exception:
+            self.textBoxTlQuery.config(font=("Segoe UI", 10, "normal", "roman"))
         self.textBoxTlQuery.pack(side=LEFT, fill=BOTH, expand=True)
 
         # On Close

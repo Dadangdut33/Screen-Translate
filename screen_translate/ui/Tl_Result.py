@@ -92,9 +92,12 @@ class Detached_Tl_Result():
 
         # textbox font label
         self.tbResultFont = StringVar()
-        self.tbResultFont.set(settings['Result_Box']['font'])
-        self.tbResultFontDict = json.loads(self.tbResultFont.get().replace("'", '"'))
-        font_str = "%(family)s %(size)i %(weight)s %(slant)s" % self.tbResultFontDict
+        try:
+            self.tbResultFont.set(settings['Result_Box']['font'])
+            self.tbResultFontDict = json.loads(self.tbResultFont.get().replace("'", '"'))
+            font_str = "%(family)s %(size)i %(weight)s %(slant)s" % self.tbResultFontDict
+        except Exception as e:
+            font_str = "Segoe UI 10 normal"
         _StoredGlobal.resultFont = self.tbResultFont
         
         self.tbFontLabel = Label(self.settingFrame, text="Font: " + font_str)
@@ -119,7 +122,10 @@ class Detached_Tl_Result():
         # Textbox in topframe2
         self.textBoxTlResult = TextWithVar(self.tbFrame, textvariable=_StoredGlobal.text_Box_Bottom_Var, height = 5, width = 100, yscrollcommand=True, background=self.textboxBgColor.get())
         self.textBoxTlResult.bind("<Key>", lambda event: _StoredGlobal.allowedKey(event)) # Disable textbox input
-        self.textBoxTlResult.config(font=(self.tbResultFontDict['family'], self.tbResultFontDict['size'], self.tbResultFontDict['weight'], self.tbResultFontDict['slant']))
+        try:
+            self.textBoxTlResult.config(font=(self.tbResultFontDict['family'], self.tbResultFontDict['size'], self.tbResultFontDict['weight'], self.tbResultFontDict['slant']))
+        except Exception:
+            self.textBoxTlResult.config(font=("Segoe UI", 10, "normal", "roman"))
         self.textBoxTlResult.pack(side=LEFT, fill=BOTH, expand=True)
 
         # On Close

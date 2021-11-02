@@ -8,6 +8,11 @@ from screen_translate.LangCode import *
 from screen_translate.Mbox import Mbox
 from screeninfo import get_monitors
 
+# Settings to capture all screens
+from PIL import ImageGrab
+from functools import partial
+ImageGrab.grab = partial(ImageGrab.grab, all_screens=True)
+
 # Add try except to intercept connection error
 try:
     from screen_translate.Translate import *
@@ -30,7 +35,7 @@ except Exception as e:
 # ---------------------------------------------------------------
 # --------------------- Public Classes --------------------------
 # ---------------------------------------------------------------
-class global_Class: 
+class Global_Class: 
     """
     Class containing all the static variables for the UI. It also contains some methods
     for the stuff to works, such as the hotkey callback, the translate method, etc.
@@ -335,6 +340,66 @@ class CreateToolTip(object):
         self.tw= None
         if tw:
             tw.destroy()
+
+# ----------------------------------------------------------------
+# Screen
+class MonitorInfo:
+    def __init__(self):
+        self.mInfoCache = {
+            "totalX": 0,
+            "totalY": 0,
+            "primaryIn": None,
+            "mData": None,
+            "layoutType": None
+        }
+        self.mInfoCache = self.getScreenInfo() # Fill the cache
+
+    def getWidthAndHeight(self):
+        # Better solution for this case on getting the width and height 
+        # get_monitors() are not accurate sometimes
+        img = ImageGrab.grab()
+        totalX = img.size[0]
+        totalY = img.size[1]
+
+        return totalX, totalY
+
+    def getScreenInfo(self):
+        """
+        Get the primary screen size.
+        """
+        mData = []
+        index = 0
+        primaryIn = 0
+        layoutType = None
+        for m in get_monitors():
+            mData.append(m)
+            if m.is_primary:
+                primaryIn = index
+
+            # print(m)
+            index += 1
+
+        if self.mInfoCache['mData'] != mData:
+            totalX, totalY = self.getWidthAndHeight()
+        else:
+            totalX = self.mInfoCache['totalX']
+            totalY = self.mInfoCache['totalY']
+
+        if totalX > totalY:
+            layoutType = "horizontal"
+        else:
+            layoutType = "vertical"
+
+        self.mInfoCache = {
+            "totalX": totalX,
+            "totalY": totalY,
+            "primaryIn": primaryIn,
+            "mData": mData,
+            "layoutType": layoutType
+        }
+
+        return self.mInfoCache
+
 # ---------------------------------------------------------------
 # --------------------- Public Functions ------------------------
 # ---------------------------------------------------------------
@@ -488,4 +553,5 @@ fillList(tesseract_Lang, optNone)
 
 # Create an object for the classes needed here
 fJson = JsonHandler()
-_StoredGlobal = global_Class()
+_StoredGlobal = Global_Class()
+mInfo = MonitorInfo()
