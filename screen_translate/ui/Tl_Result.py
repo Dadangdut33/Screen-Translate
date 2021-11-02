@@ -8,7 +8,7 @@ from tkfontchooser import askfont
 
 # Classes
 class Detached_Tl_Result():
-    """Source TL Window"""
+    """Result TL Window"""
     # ----------------------------------------------------------------------
     def __init__(self):
         self.root = Tk()

@@ -4,7 +4,7 @@ from screen_translate.Public import CreateToolTip, fJson, _StoredGlobal, searchL
 
 # Classes
 class CaptureUI_Setting():
-    """Capture Window"""
+    """Capture Window Settings"""
     # ----------------------------------------------------------------------
     def __init__(self):
         self.root = Tk()

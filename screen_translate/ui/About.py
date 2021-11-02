@@ -6,7 +6,7 @@ from PIL import Image, ImageTk
 
 # Classes
 class AboutUI():
-    """Capture Window"""
+    """About Window"""
     # ----------------------------------------------------------------------
     def __init__(self):
         self.root = Tk()
