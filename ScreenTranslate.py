@@ -365,7 +365,7 @@ class main_Menu():
 
     # Open known bugs
     def open_KnownBugs(self):
-        Mbox("Known Bugs", "- Monitor scaling needs to be 100% or it won't capture accurately\n\n- The auto offset is wrong if the resolution between monitor 1 and 2 is not the same. It's because the auto offset calculate only the primary monitor. In this case you have to set the offset manually.", 0, self.root)
+        Mbox("Known Bugs", "- Monitor scaling needs to be 100% or it won't capture accurately (You can fix this easily by setting offset or set your monitor scaling to 100%)", 0, self.root)
 
     # Open user manual
     def open_UserManual(self):

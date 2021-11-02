@@ -177,6 +177,7 @@ class SettingUI():
 
         self.checkVarCV2 = BooleanVar(self.root, value=True)
         self.checkVarGrayscale = BooleanVar(self.root, value=False)
+        self.checkVarDebugmode = BooleanVar(self.root, value=False)
 
         self.labelCBBackground = Label(self.content_Cap_3_1, text="Background :")
         self.labelCBBackground.pack(side=LEFT, padx=5, pady=5)
@@ -193,6 +194,10 @@ class SettingUI():
         self.checkGrayscale = ttk.Checkbutton(self.content_Cap_3_1, text="Grayscale", variable=self.checkVarGrayscale)
         self.checkGrayscale.pack(side=LEFT, padx=5, pady=5)
         CreateToolTip(self.checkGrayscale, text="Enhance the OCR by making the picture grayscale.")
+
+        self.checkDebugmode = ttk.Checkbutton(self.content_Cap_3_1, text="Debug Mode", variable=self.checkVarDebugmode)
+        self.checkDebugmode.pack(side=LEFT, padx=5, pady=5)
+        CreateToolTip(self.checkDebugmode, text="Enable debug mode.")
         
         self.hintLabelEnhance = Label(self.content_Cap_3_1, text="❓")
         self.hintLabelEnhance.pack(side=RIGHT, padx=5, pady=5)
@@ -579,6 +584,14 @@ class SettingUI():
             Mbox("Error: Invalid Grayscale Options", "Please do not modify the setting manually if you don't know what you are doing", 2, self.root)
             self.checkVarGrayscale.set(True)
 
+        # Check for debug
+        try:
+            self.checkVarDebugmode.set(settings['enhance_Capture']['debugmode'])
+        except Exception:
+            print("Error: Invalid Debug Options")
+            Mbox("Error: Invalid Debug Options", "Please do not modify the setting manually if you don't know what you are doing", 2, self.root)
+            self.checkVarDebugmode.set(False)
+
         # Check for cb background
         self.CBBackgroundType.current(searchList(settings['enhance_Capture']['background'], ["Light", "Dark"]))
 
@@ -748,7 +761,8 @@ class SettingUI():
             "enhance_Capture" : {
                 "cv2_Contour": self.checkVarCV2.get(),
                 "grayscale": self.checkVarGrayscale.get(),
-                "background": self.CBBackgroundType.get()
+                "background": self.CBBackgroundType.get(),
+                "debugmode": self.checkVarDebugmode.get()
             },
             "show_no_text_alert": self.showNoTextAlertVar.get()
         }

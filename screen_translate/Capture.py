@@ -30,7 +30,7 @@ def createPicDirIfGone():
             print("Error: " + str(e))
             Mbox("Error: ", str(e), 2)
 
-def captureImg(coords, sourceLang, tesseract_Location, saveImg = False, enhance_WithCv2 = False, grayScale = False, background = "Light"):
+def captureImg(coords, sourceLang, tesseract_Location, saveImg = False, enhance_WithCv2 = False, grayScale = False, background = None, debugmode = False):
     """Capture Image and return text from it
 
     Args:
@@ -65,21 +65,19 @@ def captureImg(coords, sourceLang, tesseract_Location, saveImg = False, enhance_
             open_cv_image = np.array(captured) 
             # Convert RGB to BGR 
             open_cv_image = open_cv_image[:, :, ::-1].copy()
-
             # Convert the image to gray scale
             grayImg = cv2.cvtColor(open_cv_image, cv2.COLOR_BGR2GRAY)
 
-            # cv2.imshow("Gray", grayImg)
+            # debug
+            if debugmode and grayScale: cv2.imshow("Grayscale Image", grayImg)
 
-            if background == "Light":
-                threshType = cv2.THRESH_BINARY_INV
-            else:
-                threshType = cv2.THRESH_BINARY
-
+            # Threshtype
+            threshType = cv2.THRESH_BINARY_INV if background == "Light" else cv2.THRESH_BINARY
             # Performing OTSU threshold
             ret, thresh = cv2.threshold(grayImg, 0, 255, cv2.THRESH_OTSU | threshType)
 
-            # cv2.imshow("Thresh", thresh)
+            # debug
+            if debugmode: cv2.imshow("Thresh Image", thresh)
 
             # Specify structure shape and kernel size. 
             # Kernel size increases or decreases the area 
@@ -91,26 +89,24 @@ def captureImg(coords, sourceLang, tesseract_Location, saveImg = False, enhance_
             # Applying dilation on the threshold image
             dilation = cv2.dilate(thresh, rectKernel, iterations = 1)
 
-            # cv2.imshow("Dilation", dilation)
+            # debug
+            if debugmode: cv2.imshow("Dilation Image", dilation)
 
             # Finding contours in the image based on dilation
             contours, hierarchy = cv2.findContours(dilation, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
 
             # Create a copy of captured image
-            if grayScale:
-                imgCopy = grayImg
-            else:
-                imgCopy = open_cv_image.copy()
+            imgCopy = grayImg if grayScale else open_cv_image.copy()
 
             # Looping through the identified contours
             # Then rectangular part is cropped and passed on
             # to pytesseract for extracting text from it
-            # Extracted text is then written into the text file
             for cnt in contours[::-1]:  # Reverse the array because it actually starts from the bottom
                 x, y, w, h = cv2.boundingRect(cnt)
                 # Drawing a rectangle on copied image
-                # rect = cv2.rectangle(imgCopy, (x, y), (x + w, y + h), (0, 255, 0), 2)
-                # cv2.imshow("Rect", rect)
+                if debugmode:
+                    rect = cv2.rectangle(imgCopy, (x, y), (x + w, y + h), (0, 255, 0), 2)
+                    cv2.imshow("Rectangle drawn on image", rect)
 
                 # Cropping the text block for giving input to OCR
                 cropped = imgCopy[y:y + h, x:x + w]
@@ -132,10 +128,12 @@ def captureImg(coords, sourceLang, tesseract_Location, saveImg = False, enhance_
                 open_cv_image = open_cv_image[:, :, ::-1].copy()
 
                 # Convert the image to gray scale
-                captured = cv2.cvtColor(open_cv_image, cv2.COLOR_BGR2GRAY)
+                grayImg = cv2.cvtColor(open_cv_image, cv2.COLOR_BGR2GRAY)
+
+                if debugmode and grayScale: cv2.imshow("Grayscale Image", grayImg)
 
             # Get the text from the image 
-            wordsGet = pytesseract.image_to_string(captured, langCode)
+            wordsGet = pytesseract.image_to_string(grayImg, langCode)
 
             if saveImg:
                 createPicDirIfGone()
