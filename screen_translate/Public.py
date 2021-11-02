@@ -288,11 +288,12 @@ class CreateToolTip(object):
     """
     create a tooltip for a given widget
     """
-    def __init__(self, widget, text='widget info'):
-        self.waittime = 250     #miliseconds
-        self.wraplength = 180   #pixels
+    def __init__(self, widget, text='widget info', delay=250, wraplength=180, opacity=1.0):
+        self.waittime = delay     #miliseconds
+        self.wraplength = wraplength   #pixels
         self.widget = widget
         self.text = text
+        self.opacity = opacity
         self.widget.bind("<Enter>", self.enter)
         self.widget.bind("<Leave>", self.leave)
         self.widget.bind("<ButtonPress>", self.leave)
@@ -326,7 +327,7 @@ class CreateToolTip(object):
         # Make it stay on top
         self.tw.wm_attributes('-topmost', True)
         # Make it a little transparent
-        self.tw.wm_attributes('-alpha', 0.9)
+        self.tw.wm_attributes('-alpha', self.opacity)
         # Leaves only the label and removes the app window
         self.tw.wm_overrideredirect(True)
         self.tw.wm_geometry("+%d+%d" % (x, y))

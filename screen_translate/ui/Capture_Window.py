@@ -84,7 +84,7 @@ class CaptureUI():
         
         self.captureGrayscaleCheck = ttk.Checkbutton(self.Frame_2, text="Grayscale Capture", variable=self.captureGrayscaleVar, command=self.captureGrayscale)
         self.captureGrayscaleCheck.pack(padx=5, pady=5, side=LEFT)
-        CreateToolTip(self.captureGrayscaleCheck, "Enhance the OCR by making the captured picture grayscale on the character reading part.")
+        self.Tooltip1 = CreateToolTip(self.captureGrayscaleCheck, "Enhance the OCR by making the captured picture grayscale on the character reading part.", opacity=0.8)
 
         # ----------------------------------------------------------------------
         # Checkbutton for enhance capture or not
@@ -97,19 +97,19 @@ class CaptureUI():
 
         self.detectContourCheck = ttk.Checkbutton(self.Frame_2, text="Detect Contour Using CV2 ", variable=self.detectContourVar, command=self.disableEnableCb)
         self.detectContourCheck.pack(padx=5, pady=5, side=LEFT)
-        CreateToolTip(self.detectContourCheck, "Enhance OCR by detecting the contour of the image")
+        self.Tooltip2 = CreateToolTip(self.detectContourCheck, "Enhance OCR by detecting the contour of the image", opacity=0.8)
 
         # ----------------------------------------------------------------------
         # Background type label
         self.bgTypeLabel = Label(self.Frame_3, text="Bg Type: ")
         self.bgTypeLabel.pack(padx=5, pady=5, side=LEFT)
-        CreateToolTip(self.bgTypeLabel, "The background type of the target")
+        self.Tooltip3 = CreateToolTip(self.bgTypeLabel, "The background type of the target", opacity=0.8)
 
         # Background type combobox
         self.CBBgType = ttk.Combobox(self.Frame_3, values=["Auto-Detect", "Light", "Dark"], state="readonly")
         self.CBBgType.pack(padx=0, pady=5, side=LEFT)
         self.CBBgType.bind("<<ComboboxSelected>>", lambda e: _StoredGlobal.main.capture_UI_Setting.changeCbBg(self.CBBgType.get()))
-        CreateToolTip(self.CBBgType, "The background type of the target")
+        self.Tooltip4 = CreateToolTip(self.CBBgType, "The background type of the target", opacity=0.8)
 
         index = searchList(settings['enhance_Capture']['background'], ["Auto-Detect", "Light", "Dark"])
         self.CBBgType.current(index)
@@ -125,7 +125,7 @@ class CaptureUI():
 
         self.debugModeCheck = ttk.Checkbutton(self.Frame_3, text="Debug Mode", variable=self.debugModeVar) # , command=self.debugMode
         self.debugModeCheck.pack(padx=5, pady=5, side=LEFT)
-        CreateToolTip(self.debugModeCheck, text="Enable debug mode.")
+        self.Tooltip5 = CreateToolTip(self.debugModeCheck, text="Enable debug mode.", opacity=0.8)
 
         # On Close
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
@@ -162,6 +162,13 @@ class CaptureUI():
         # Change the label and slider in the capture settings window
         _StoredGlobal.captureOpacityLabel_CapSetting.config(text="Capture UI Opacity: " + str(round(float(x), 2)))
         _StoredGlobal.captureSlider_Cap.config(value=x)
+
+        # Update tooltip opacity
+        self.Tooltip1.opacity = x
+        self.Tooltip2.opacity = x
+        self.Tooltip3.opacity = x
+        self.Tooltip4.opacity = x
+        self.Tooltip5.opacity = x
 
         # If from is there, it means the slider is being slide from main window
         if fromOutside:
