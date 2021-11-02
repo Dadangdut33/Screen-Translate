@@ -126,17 +126,14 @@ class SettingUI():
         self.spinValOffSetW = IntVar(self.root)
         self.spinValOffSetH = IntVar(self.root)
 
-        self.validateDigits_Offset_X = (self.root.register(lambda event: self.validateSpinbox_Offset(event, 'x')), '%P')
-        self.validateDigits_Offset_Y = (self.root.register(lambda event: self.validateSpinbox_Offset(event, 'y')), '%P')
-        self.validateDigits_Offset_W = (self.root.register(lambda event: self.validateSpinbox_Offset(event, 'w')), '%P')
-        self.validateDigits_Offset_H = (self.root.register(lambda event: self.validateSpinbox_Offset(event, 'h')), '%P')
-
         self.labelOffSetX = Label(self.content_Cap_2_3, text="Offset X :")
         self.labelOffSetX.pack(side=LEFT, padx=5, pady=5)
         CreateToolTip(self.labelOffSetX, "The X Coordinates offset of the capture window")
 
         self.spinnerOffSetX = ttk.Spinbox(self.content_Cap_2_3, from_=-100000, to=100000, width=20, textvariable=self.spinValOffSetX)
         self.spinnerOffSetX.pack(side=LEFT, padx=5, pady=5)
+
+        self.validateDigits_Offset_X = (self.root.register(lambda event: self.validateSpinbox(event, self.spinnerOffSetX)), '%P')
         self.spinnerOffSetX.configure(validate='key', validatecommand=self.validateDigits_Offset_X)
         self.spinnerOffSetX.bind("<MouseWheel>", lambda event: self.disableScrollWheel(event, self.spinnerOffSetX))
 
@@ -146,6 +143,8 @@ class SettingUI():
 
         self.spinnerOffSetY = ttk.Spinbox(self.content_Cap_2_4, from_=-100000, to=100000, width=20, textvariable=self.spinValOffSetY)
         self.spinnerOffSetY.pack(side=LEFT, padx=5, pady=5)
+
+        self.validateDigits_Offset_Y = (self.root.register(lambda event: self.validateSpinbox(event, self.spinnerOffSetY)), '%P')
         self.spinnerOffSetY.configure(validate='key', validatecommand=self.validateDigits_Offset_Y)
         self.spinnerOffSetY.bind("<MouseWheel>", lambda event: self.disableScrollWheel(event, self.spinnerOffSetY))
 
@@ -155,6 +154,8 @@ class SettingUI():
 
         self.spinnerOffSetW = ttk.Spinbox(self.content_Cap_2_3, from_=-100000, to=100000, width=20, textvariable=self.spinValOffSetW)
         self.spinnerOffSetW.pack(side=LEFT, padx=5, pady=5)
+
+        self.validateDigits_Offset_W = (self.root.register(lambda event: self.validateSpinbox(event, self.spinnerOffSetW)), '%P')
         self.spinnerOffSetW.configure(validate='key', validatecommand=self.validateDigits_Offset_W)
         self.spinnerOffSetW.bind("<MouseWheel>", lambda event: self.disableScrollWheel(event, self.spinnerOffSetW))
 
@@ -164,6 +165,8 @@ class SettingUI():
 
         self.spinnerOffSetH = ttk.Spinbox(self.content_Cap_2_4, from_=-100000, to=100000, width=20, textvariable=self.spinValOffSetH)
         self.spinnerOffSetH.pack(side=LEFT, padx=8, pady=5)
+
+        self.validateDigits_Offset_H = (self.root.register(lambda event: self.validateSpinbox(event, self.spinnerOffSetH)), '%P')
         self.spinnerOffSetH.configure(validate='key', validatecommand=self.validateDigits_Offset_H)
         self.spinnerOffSetH.bind("<MouseWheel>", lambda event: self.disableScrollWheel(event, theSpinner=self.spinnerOffSetH))
 
@@ -186,15 +189,13 @@ class SettingUI():
         self.labelSnippet_1.pack(side=LEFT, padx=(0,5), pady=5)
         CreateToolTip(self.labelSnippet_1, "Total width of the monitor")
 
-        self.validateDigits_Snippet_1 = (self.root.register(lambda event: self.validateSpinBox_Snipp(event, '1')), '%P')
-        self.validateDigits_Snippet_2 = (self.root.register(lambda event: self.validateSpinBox_Snipp(event, '2')), '%P')
-        self.validateDigits_Snippet_3 = (self.root.register(lambda event: self.validateSpinBox_Snipp(event, '3')), '%P')
-        self.validateDigits_Snippet_4 = (self.root.register(lambda event: self.validateSpinBox_Snipp(event, '4')), '%P')
-
         self.spinValSnippet_1 = IntVar(self.root)
         self.spinnerSnippet_1 = ttk.Spinbox(self.content_Snippet_3_1, from_=-100000, to=100000, width=7, textvariable=self.spinValSnippet_1)
+
+        self.validateDigits_Snippet_1 = (self.root.register(lambda event: self.validateSpinbox(event, self.spinnerSnippet_1)), '%P')
         self.spinnerSnippet_1.configure(validate='key', validatecommand=self.validateDigits_Snippet_1)
         self.spinnerSnippet_1.bind("<MouseWheel>", lambda event: self.disableScrollWheel(event, theSpinner=self.spinnerSnippet_1))
+        
         self.spinnerSnippet_1.pack(side=LEFT, padx=0, pady=5)
         CreateToolTip(self.spinnerSnippet_1, "Total width of the monitor")
 
@@ -204,8 +205,11 @@ class SettingUI():
 
         self.spinValSnippet_2 = IntVar(self.root)
         self.spinnerSnippet_2 = ttk.Spinbox(self.content_Snippet_3_1, from_=-100000, to=100000, width=7, textvariable=self.spinValSnippet_2)
+
+        self.validateDigits_Snippet_2 = (self.root.register(lambda event: self.validateSpinbox(event, self.spinnerSnippet_2)), '%P')
         self.spinnerSnippet_2.configure(validate='key', validatecommand=self.validateDigits_Snippet_2)
         self.spinnerSnippet_2.bind("<MouseWheel>", lambda event: self.disableScrollWheel(event, theSpinner=self.spinnerSnippet_2))
+        
         self.spinnerSnippet_2.pack(side=LEFT, padx=0, pady=5)
         CreateToolTip(self.spinnerSnippet_2, "Total height of the monitor")
 
@@ -215,8 +219,11 @@ class SettingUI():
 
         self.spinValSnippet_3 = IntVar(self.root)
         self.spinnerSnippet_3 = ttk.Spinbox(self.content_Snippet_3_1, from_=-100000, to=100000, width=7, textvariable=self.spinValSnippet_3)
+
+        self.validateDigits_Snippet_3 = (self.root.register(lambda event: self.validateSpinbox(event, self.spinnerSnippet_3)), '%P')
         self.spinnerSnippet_3.configure(validate='key', validatecommand=self.validateDigits_Snippet_3)
         self.spinnerSnippet_3.bind("<MouseWheel>", lambda event: self.disableScrollWheel(event, theSpinner=self.spinnerSnippet_3))
+        
         self.spinnerSnippet_3.pack(side=LEFT, padx=0, pady=5)
         CreateToolTip(self.spinnerSnippet_3, "X offset of the monitor from the primary monitor")
 
@@ -226,8 +233,11 @@ class SettingUI():
 
         self.spinValSnippet_4 = IntVar(self.root)
         self.spinnerSnippet_4 = ttk.Spinbox(self.content_Snippet_3_1, from_=-100000, to=100000, width=7, textvariable=self.spinValSnippet_4)
+
+        self.validateDigits_Snippet_4 = (self.root.register(lambda event: self.validateSpinbox(event, self.spinnerSnippet_4)), '%P')
         self.spinnerSnippet_4.configure(validate='key', validatecommand=self.validateDigits_Snippet_4)
         self.spinnerSnippet_4.bind("<MouseWheel>", lambda event: self.disableScrollWheel(event, theSpinner=self.spinnerSnippet_4))
+        
         self.spinnerSnippet_4.pack(side=LEFT, padx=0, pady=5)
         CreateToolTip(self.spinnerSnippet_4, "Y offset of the monitor from the primary monitor")
         
@@ -366,8 +376,8 @@ class SettingUI():
         self.labelHkCapTl.pack(side=LEFT, padx=5, pady=5)
         CreateToolTip(self.labelHkCapTl, text="The time delay to capture when the hotkey is pressed")
         
-        self.validateDigits_Delay = (self.root.register(self.validateSpinBox_Delay), '%P')
         self.spinnerHKCapTlDelay = ttk.Spinbox(self.content_HKCapTl, from_=0, to=100000, width=20, textvariable=self.spinValHKCapTl)
+        self.validateDigits_Delay = (self.root.register(lambda event: self.validateSpinbox(event, self.spinnerHKCapTlDelay)), '%P')
         self.spinnerHKCapTlDelay.configure(validate='key', validatecommand=self.validateDigits_Delay)
         self.spinnerHKCapTlDelay.pack(side=LEFT, padx=5, pady=5)
         
@@ -1100,69 +1110,24 @@ class SettingUI():
 
     # ----------------------------------------------------------------
     # Spinbox validation
-    def validateSpinBox_Delay(self, event):
+    def validateSpinbox(self, event, theSpinner):
         if event == "":
-            self.spinnerHKCapTlDelay.set(0)
-            return False
-
-        if event.isdigit():
-            if int(event) > 100000:
-                self.spinnerHKCapTlDelay.set(100000)
-                return False
-            else:
-                return event.isdigit()
-        else:
-            return False
-
-    def validateSpinBox_Snipp(self, event, type):
-        typeDict = {'1': self.spinnerSnippet_1, '2': self.spinnerSnippet_2, '3': self.spinnerSnippet_3, '4': self.spinnerSnippet_4}
-        typeGet = typeDict[type]
-
-        if event == "":
-            typeGet.set(0)
+            theSpinner.set(0)
             return False
 
         try:
             event = int(event)
             # Fetching minimum and maximum value of the spinbox
-            minval = int(self.root.nametowidget(typeGet).config('from')[4])
-            maxval = int(self.root.nametowidget(typeGet).config('to')[4])
+            minval = int(self.root.nametowidget(theSpinner).config('from')[4])
+            maxval = int(self.root.nametowidget(theSpinner).config('to')[4])
 
             # check if the number is within the range
             if event not in range(minval, maxval):
                 # if not, set the value to the nearest limit
                 if event < minval:
-                    typeGet.set(minval)
+                    theSpinner.set(minval)
                 else:
-                    typeGet.set(maxval)
-                return False
-
-            # if all is well, return True
-            return True
-        except Exception: # Except means that number is not a digit
-            return False
-
-    def validateSpinbox_Offset(self, event, type):
-        typeDict = {'x': self.spinnerOffSetX, 'y': self.spinnerOffSetY, 'w': self.spinnerOffSetW, 'h': self.spinnerOffSetH}
-        typeGet = typeDict[type]
-
-        if event == "":
-            typeGet.set(0)
-            return False
-
-        try:
-            event = int(event)
-            # Fetching minimum and maximum value of the spinbox
-            minval = int(self.root.nametowidget(typeGet).config('from')[4])
-            maxval = int(self.root.nametowidget(typeGet).config('to')[4])
-
-            # check if the number is within the range
-            if event not in range(minval, maxval):
-                # if not, set the value to the nearest limit
-                if event < minval:
-                    typeGet.set(minval)
-                else:
-                    typeGet.set(maxval)
+                    theSpinner.set(maxval)
                 return False
 
             # if all is well, return True
