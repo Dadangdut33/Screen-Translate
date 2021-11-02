@@ -55,16 +55,26 @@ class Snip_Mask():
             # Get offset
             offset_X, offset_Y = 0, 0
             primaryIn = screenData['primaryIn']
-            if screenData['layoutType'] == 'horizontal':
+            if screenData['layoutType'] == "horizontal":
                 if primaryIn != 0: # Make sure its not the first monitor
-                    offset_X = screenData['mData'][primaryIn - 1].x
+                    counter = 0
+                    for monitor in screenData['mData']:
+                        if counter != primaryIn:
+                            offset_X += monitor.x
+
+                    # Set to 0 because the first monitor is the primary monitor
                     if offset_X > 0:
                         offset_X = 0
                 else:
                     offset_X = 0
             else:
                 if primaryIn != 0: # Make sure its not the first monitor
-                    offset_Y = screenData['mData'][primaryIn - 1].y
+                    counter = 0
+                    for monitor in screenData['mData']:
+                        if counter != primaryIn:
+                            offset_Y += monitor.y
+                    
+                    # Set to 0 because the first monitor is the primary monitor
                     if offset_Y > 0:
                         offset_Y = 0
                 else:
