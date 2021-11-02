@@ -510,6 +510,12 @@ class SettingUI():
         # Restore Default Settings
         tStatus, settings = fJson.setDefault()
         if tStatus == True:
+            # Unbind all hotkeys
+            try:
+                keyboard.unhook_all_hotkeys()
+            except AttributeError:
+                # No hotkeys to unbind
+                pass
             # Update the settings
             self.reset()
 
