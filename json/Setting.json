@@ -12,10 +12,15 @@
     ],
     "tesseract_loc": "C:/Program Files/Tesseract-OCR/tesseract.exe",
     "default_Engine": "Google Translate",
-    "default_FromOnOpen": "Japanese",
+    "default_FromOnOpen": "Auto-Detect",
     "default_ToOnOpen": "English",
-    "capture_Hotkey": "",
-    "capture_HotkeyDelay": 1000,
+    "hotkey": {
+        "captureAndTl": {
+            "hk": "",
+            "delay": 1000
+        },
+        "snipAndCap": ""
+    },
     "Query_Box": {
         "font": {
             "family": "Segoe UI",

@@ -20,8 +20,13 @@ class JsonHandler:
         "default_Engine": "Google Translate",
         "default_FromOnOpen": "Auto-Detect",
         "default_ToOnOpen": "English",
-        "capture_Hotkey": "",
-        "capture_HotkeyDelay": 1000,
+        "hotkey": {
+            "captureAndTl": {
+                "hk": "",
+                "delay": 1000
+            },
+            "snipAndCap": ""
+        },
         "Query_Box": {
             "font": {
                 "family": "Segoe UI", 

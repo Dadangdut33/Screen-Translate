@@ -236,8 +236,11 @@ class main_Menu():
         self.setting_UI.reset() # Reset
 
         # Bind hotkey
-        if settings['capture_Hotkey'] != '':
-            keyboard.add_hotkey(settings['capture_Hotkey'], _StoredGlobal.hotkeyCallback)
+        try:
+            if settings['hotkey']['captureAndTl']['hk'] != '':
+                keyboard.add_hotkey(settings['hotkey']['captureAndTl']['hk'], _StoredGlobal.hotkeyCallback)
+        except KeyError:
+            print("Error: Invalid Hotkey Options")
         self.root.after(100, self.hotkeyPoll)
         
         self.cbTLChange() # Update the cb
@@ -316,7 +319,7 @@ class main_Menu():
     def hotkeyPoll(self):
         if _StoredGlobal.hotkeyPressed == True and _StoredGlobal.capUiHidden == False:
             settings = fJson.readSetting()
-            time.sleep(settings['capture_HotkeyDelay'] / 1000)
+            time.sleep(settings['hotkey']['captureAndTl']['delay'] / 1000)
             self.capture_UI.getTextAndTranslate()
         _StoredGlobal.hotkeyPressed = False
         self.root.after(100, self.hotkeyPoll)

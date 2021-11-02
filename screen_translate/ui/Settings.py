@@ -282,35 +282,56 @@ class SettingUI():
         self.frameHotkey = Frame(self.mainFrameTop)
         self.frameHotkey.pack(side=LEFT, fill=BOTH, padx=5, pady=5)
         
-        self.fLabelHotkey_1 = LabelFrame(self.frameHotkey, text="• Capture Hotkey Settings", width=750, height=55)
-        self.fLabelHotkey_1.pack(side=TOP, fill=X, expand=False, padx=5, pady=(0, 5))
-        self.fLabelHotkey_1.pack_propagate(0)
-        self.content_Hotkey_1 = Frame(self.fLabelHotkey_1)
-        self.content_Hotkey_1.pack(side=TOP, fill=X, expand=False)
+        self.fLabelHKCapTl = LabelFrame(self.frameHotkey, text="• Capture Hotkey Settings", width=750, height=55)
+        self.fLabelHKCapTl.pack(side=TOP, fill=X, expand=False, padx=5, pady=(0, 5))
+        self.fLabelHKCapTl.pack_propagate(0)
+        self.content_HKCapTl = Frame(self.fLabelHKCapTl)
+        self.content_HKCapTl.pack(side=TOP, fill=X, expand=False)
 
-        self.spinValHotkeyDelay = IntVar(self.root)
+        self.spinValHKCapTl = IntVar(self.root)
 
-        self.labelHotkeyDelay = Label(self.content_Hotkey_1, text="Time delay (ms) : ")
-        self.labelHotkeyDelay.pack(side=LEFT, padx=5, pady=5)
-        CreateToolTip(self.labelHotkeyDelay, text="The time delay to capture when the hotkey is pressed")
+        self.labelHkCapTl = Label(self.content_HKCapTl, text="Time delay (ms) : ")
+        self.labelHkCapTl.pack(side=LEFT, padx=5, pady=5)
+        CreateToolTip(self.labelHkCapTl, text="The time delay to capture when the hotkey is pressed")
         
         self.validateDigits_Delay = (self.root.register(self.validateSpinBox_Delay), '%P')
-        self.spinnerHotkeyDelay = ttk.Spinbox(self.content_Hotkey_1, from_=0, to=100000, width=20, textvariable=self.spinValHotkeyDelay)
-        self.spinnerHotkeyDelay.configure(validate='key', validatecommand=self.validateDigits_Delay)
-        self.spinnerHotkeyDelay.pack(side=LEFT, padx=5, pady=5)
+        self.spinnerHKCapTlDelay = ttk.Spinbox(self.content_HKCapTl, from_=0, to=100000, width=20, textvariable=self.spinValHKCapTl)
+        self.spinnerHKCapTlDelay.configure(validate='key', validatecommand=self.validateDigits_Delay)
+        self.spinnerHKCapTlDelay.pack(side=LEFT, padx=5, pady=5)
         
-        self.buttonSetHotkey = ttk.Button(self.content_Hotkey_1, text="Click to set hotkey for capture", command=self.setHotkey)
-        self.buttonSetHotkey.pack(side=LEFT, padx=5, pady=5)
+        self.buttonSetHKCapTl = ttk.Button(self.content_HKCapTl, text="Click to set hotkey for capture", command=self.setHKCapTl)
+        self.buttonSetHKCapTl.pack(side=LEFT, padx=5, pady=5)
         
-        self.buttonClearHotkey = ttk.Button(self.content_Hotkey_1, text="Clear", command=self.clearHotkey)
-        self.buttonClearHotkey.pack(side=LEFT, padx=5, pady=5)
+        self.buttonClearHKCapTl = ttk.Button(self.content_HKCapTl, text="Clear", command=self.clearHKCapTl)
+        self.buttonClearHKCapTl.pack(side=LEFT, padx=5, pady=5)
         
-        self.labelHotkeyTip = Label(self.content_Hotkey_1, text="Current hotkey : ")
-        self.labelHotkeyTip.pack(side=LEFT, padx=5, pady=5)
-        CreateToolTip(self.labelHotkeyTip, text="Currently set hotkey for capturing")
+        self.labelHKCapTl = Label(self.content_HKCapTl, text="Current hotkey : ")
+        self.labelHKCapTl.pack(side=LEFT, padx=5, pady=5)
+        CreateToolTip(self.labelHKCapTl, text="Currently set hotkey for capturing")
 
-        self.labelCurrentHotkey = Label(self.content_Hotkey_1, text="")
-        self.labelCurrentHotkey.pack(side=LEFT, padx=5, pady=5)
+        self.labelCurrentHKCapTl = Label(self.content_HKCapTl, text="")
+        self.labelCurrentHKCapTl.pack(side=LEFT, padx=5, pady=5)
+
+
+        # Snip and cap
+        self.fLabelHKSnipCapTl = LabelFrame(self.frameHotkey, text="• Snip & Capture Hotkey Settings", width=750, height=55)
+        self.fLabelHKSnipCapTl.pack(side=TOP, fill=X, expand=False, padx=5, pady=(0, 5))
+        self.fLabelHKSnipCapTl.pack_propagate(0)
+        self.content_HKSnipCapTl = Frame(self.fLabelHKSnipCapTl)
+        self.content_HKSnipCapTl.pack(side=TOP, fill=X, expand=False)
+
+        self.buttonHKSnipCapTl = ttk.Button(self.content_HKSnipCapTl, text="Click to set hotkey for snip & capture", command=self.setHKSnipCapTl)
+        self.buttonHKSnipCapTl.pack(side=LEFT, padx=5, pady=5)
+        
+        self.buttonClearHKSnipCapTl = ttk.Button(self.content_HKSnipCapTl, text="Clear", command=self.clearHKSnipCapTl)
+        self.buttonClearHKSnipCapTl.pack(side=LEFT, padx=5, pady=5)
+        
+        self.labelHKSnipCapTl = Label(self.content_HKSnipCapTl, text="Current hotkey : ")
+        self.labelHKSnipCapTl.pack(side=LEFT, padx=5, pady=5)
+        CreateToolTip(self.labelHKSnipCapTl, text="Currently set hotkey for snip & capture")
+
+        self.labelCurrentHKSnipCapTl = Label(self.content_HKSnipCapTl, text="")
+        self.labelCurrentHKSnipCapTl.pack(side=LEFT, padx=5, pady=5)
 
         # ----------------------------------------------------------------------
         # Query/Result box
@@ -623,9 +644,12 @@ class SettingUI():
         self.resultFont.config(text="Textbox Font : " + result_font_str)
 
         # Show current hotkey
-        self.labelCurrentHotkey.config(text=settings['capture_Hotkey'])
+        try:
+            self.labelCurrentHKCapTl.config(text=settings['hotkey']['captureAndTl']['hk'])
 
-        self.spinValHotkeyDelay.set(settings["capture_HotkeyDelay"])
+            self.spinValHKCapTl.set(settings['hotkey']['captureAndTl']['delay'])
+        except KeyError:
+            print("Error: Invalid Hotkey Options")
 
         # Store setting to localvar
         offSetXY = settings["offSetXY"]
@@ -736,8 +760,13 @@ class SettingUI():
             "default_Engine": self.CBDefaultEngine.get(),
             "default_FromOnOpen": self.CBDefaultFrom.get(),
             "default_ToOnOpen": self.CBDefaultTo.get(),
-            "capture_Hotkey": self.labelCurrentHotkey['text'],
-            "capture_HotkeyDelay": self.spinValHotkeyDelay.get(),
+            "hotkey": {
+                "captureAndTl": {
+                    "hk": self.labelCurrentHKCapTl['text'],
+                    "delay": self.spinValHKCapTl.get()
+                },
+                "snipAndCap": self.labelCurrentHKSnipCapTl['text']
+            },
             "Query_Box": {
                 "font": {
                     "family": self.queryFontDict['family'],
@@ -773,14 +802,15 @@ class SettingUI():
             "show_no_text_alert": self.showNoTextAlertVar.get()
         }
 
-        # Bind hotkey
+        # Unbind all hotkey
         try:
             keyboard.unhook_all_hotkeys()
         except AttributeError:
             # No hotkeys to unbind
             pass
-        if self.labelCurrentHotkey['text'] != '':
-            keyboard.add_hotkey(self.labelCurrentHotkey['text'], _StoredGlobal.hotkeyCallback)
+        # Bind hotkey
+        if self.labelCurrentHKCapTl['text'] != '':
+            keyboard.add_hotkey(self.labelCurrentHKCapTl['text'], _StoredGlobal.hotkeyCallback)
 
         print("-" * 50)
         print("Setting saved!")
@@ -831,12 +861,19 @@ class SettingUI():
 
     # ----------------------------------------------------------------
     # Hotkey
-    def setHotkey(self):
+    def setHKCapTl(self):
         hotkey = keyboard.read_hotkey(suppress=False)
-        self.labelCurrentHotkey.config(text=str(hotkey))
+        self.labelCurrentHKCapTl.config(text=str(hotkey))
 
-    def clearHotkey(self):
-        self.labelCurrentHotkey.config(text="")
+    def clearHKCapTl(self):
+        self.labelCurrentHKCapTl.config(text="")
+
+    def setHKSnipCapTl(self):
+        hotkey = keyboard.read_hotkey(suppress=False)
+        self.labelCurrentHKSnipCapTl.config(text=str(hotkey))
+
+    def clearHKSnipCapTl(self):
+        self.labelCurrentHKSnipCapTl.config(text="")
 
     # ----------------------------------------------------------------
     # Capture
@@ -921,13 +958,13 @@ class SettingUI():
     # Spinbox validation
     def validateSpinBox_Delay(self, event):
         if event == "":
-            self.spinnerHotkeyDelay.set(0)
+            self.spinnerHKCapTlDelay.set(0)
             return False
 
         if event.isdigit():
             # Check value no more than 200
             if int(event) > 100000:
-                self.spinnerHotkeyDelay.set(100000)
+                self.spinnerHKCapTlDelay.set(100000)
                 return False
             else:
                 return event.isdigit()
