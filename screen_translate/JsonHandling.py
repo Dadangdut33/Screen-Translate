@@ -26,7 +26,10 @@ class JsonHandler:
                 "hk": "",
                 "delay": 1000
             },
-            "snipAndCap": ""
+            "snipAndCapTl": {
+                "hk": "",
+                "delay": 0
+            }
         },
         "Query_Box": {
             "font": {

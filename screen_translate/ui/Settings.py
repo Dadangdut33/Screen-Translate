@@ -186,7 +186,7 @@ class SettingUI():
         CreateToolTip(self.checkAutoSnippet, text="Auto detect the layout of the monitor (May not work properly)")
         
         self.labelSnippet_1 = Label(self.content_Snippet_3_1, text="Total Width:")
-        self.labelSnippet_1.pack(side=LEFT, padx=(0,5), pady=5)
+        self.labelSnippet_1.pack(side=LEFT, padx=(0,5), pady=0)
         CreateToolTip(self.labelSnippet_1, "Total width of the monitor")
 
         self.spinValSnippet_1 = IntVar(self.root)
@@ -196,7 +196,7 @@ class SettingUI():
         self.spinnerSnippet_1.configure(validate='key', validatecommand=self.validateDigits_Snippet_1)
         self.spinnerSnippet_1.bind("<MouseWheel>", lambda event: self.disableScrollWheel(event, theSpinner=self.spinnerSnippet_1))
         
-        self.spinnerSnippet_1.pack(side=LEFT, padx=0, pady=5)
+        self.spinnerSnippet_1.pack(side=LEFT, padx=0, pady=(3,0))
         CreateToolTip(self.spinnerSnippet_1, "Total width of the monitor")
 
         self.labelSnippet_2 = Label(self.content_Snippet_3_1, text="Total Height:")
@@ -210,7 +210,7 @@ class SettingUI():
         self.spinnerSnippet_2.configure(validate='key', validatecommand=self.validateDigits_Snippet_2)
         self.spinnerSnippet_2.bind("<MouseWheel>", lambda event: self.disableScrollWheel(event, theSpinner=self.spinnerSnippet_2))
         
-        self.spinnerSnippet_2.pack(side=LEFT, padx=0, pady=5)
+        self.spinnerSnippet_2.pack(side=LEFT, padx=0, pady=(3,0))
         CreateToolTip(self.spinnerSnippet_2, "Total height of the monitor")
 
         self.labelSnippet_3 = Label(self.content_Snippet_3_1, text="X Offset From Primary:")
@@ -224,10 +224,10 @@ class SettingUI():
         self.spinnerSnippet_3.configure(validate='key', validatecommand=self.validateDigits_Snippet_3)
         self.spinnerSnippet_3.bind("<MouseWheel>", lambda event: self.disableScrollWheel(event, theSpinner=self.spinnerSnippet_3))
         
-        self.spinnerSnippet_3.pack(side=LEFT, padx=0, pady=5)
+        self.spinnerSnippet_3.pack(side=LEFT, padx=0, pady=(3,0))
         CreateToolTip(self.spinnerSnippet_3, "X offset of the monitor from the primary monitor")
 
-        self.labelSnippet_4 = Label(self.content_Snippet_3_1, text="Y Offset From Main:")
+        self.labelSnippet_4 = Label(self.content_Snippet_3_1, text="Y Offset From Primary:")
         self.labelSnippet_4.pack(side=LEFT, padx=(5, 0), pady=5)
         CreateToolTip(self.labelSnippet_4, "Y offset of the monitor from the primary monitor")
 
@@ -238,7 +238,7 @@ class SettingUI():
         self.spinnerSnippet_4.configure(validate='key', validatecommand=self.validateDigits_Snippet_4)
         self.spinnerSnippet_4.bind("<MouseWheel>", lambda event: self.disableScrollWheel(event, theSpinner=self.spinnerSnippet_4))
         
-        self.spinnerSnippet_4.pack(side=LEFT, padx=0, pady=5)
+        self.spinnerSnippet_4.pack(side=LEFT, padx=0, pady=(3,0))
         CreateToolTip(self.spinnerSnippet_4, "Y offset of the monitor from the primary monitor")
         
         self.hintLabelSnippet = Label(self.content_Snippet_3_1, text="❓")
@@ -381,7 +381,7 @@ class SettingUI():
         self.spinnerHKCapTlDelay.configure(validate='key', validatecommand=self.validateDigits_Delay)
         self.spinnerHKCapTlDelay.pack(side=LEFT, padx=5, pady=5)
         
-        self.buttonSetHKCapTl = ttk.Button(self.content_HKCapTl, text="Click to set hotkey for capture", command=self.setHKCapTl)
+        self.buttonSetHKCapTl = ttk.Button(self.content_HKCapTl, text="Click to set the hotkey", command=self.setHKCapTl)
         self.buttonSetHKCapTl.pack(side=LEFT, padx=5, pady=5)
         
         self.buttonClearHKCapTl = ttk.Button(self.content_HKCapTl, text="Clear", command=self.clearHKCapTl)
@@ -402,7 +402,18 @@ class SettingUI():
         self.content_HKSnipCapTl = Frame(self.fLabelHKSnipCapTl)
         self.content_HKSnipCapTl.pack(side=TOP, fill=X, expand=False)
 
-        self.buttonHKSnipCapTl = ttk.Button(self.content_HKSnipCapTl, text="Click to set hotkey for snip & capture", command=self.setHKSnipCapTl)
+        self.spinValHKSnipCapTl = IntVar(self.root)
+
+        self.labelHkSnipCapTl = Label(self.content_HKSnipCapTl, text="Time delay (ms) : ")
+        self.labelHkSnipCapTl.pack(side=LEFT, padx=5, pady=5)
+        CreateToolTip(self.labelHkCapTl, text="The time delay to activate snipping mode when the hotkey is pressed")
+        
+        self.spinnerHKSnipCapTlDelay = ttk.Spinbox(self.content_HKSnipCapTl, from_=0, to=100000, width=20, textvariable=self.spinValHKSnipCapTl)
+        self.validateDigits_DelaySnip = (self.root.register(lambda event: self.validateSpinbox(event, self.spinnerHKSnipCapTlDelay)), '%P')
+        self.spinnerHKSnipCapTlDelay.configure(validate='key', validatecommand=self.validateDigits_DelaySnip)
+        self.spinnerHKSnipCapTlDelay.pack(side=LEFT, padx=5, pady=5)
+
+        self.buttonHKSnipCapTl = ttk.Button(self.content_HKSnipCapTl, text="Click to set the hotkey", command=self.setHKSnipCapTl)
         self.buttonHKSnipCapTl.pack(side=LEFT, padx=5, pady=5)
         
         self.buttonClearHKSnipCapTl = ttk.Button(self.content_HKSnipCapTl, text="Clear", command=self.clearHKSnipCapTl)
@@ -774,8 +785,10 @@ class SettingUI():
         # Show current hotkey
         try:
             self.labelCurrentHKCapTl.config(text=settings['hotkey']['captureAndTl']['hk'])
-
             self.spinValHKCapTl.set(settings['hotkey']['captureAndTl']['delay'])
+
+            self.labelCurrentHKSnipCapTl.config(text=settings['hotkey']['snipAndCapTl']['hk'])
+            self.spinValHKSnipCapTl.set(settings['hotkey']['snipAndCapTl']['delay'])
         except KeyError:
             print("Error: Invalid Hotkey Options")
 
@@ -919,7 +932,10 @@ class SettingUI():
                     "hk": self.labelCurrentHKCapTl['text'],
                     "delay": self.spinValHKCapTl.get()
                 },
-                "snipAndCap": self.labelCurrentHKSnipCapTl['text']
+                "snipAndCapTl": {
+                    "hk": self.labelCurrentHKSnipCapTl['text'],
+                    "delay": self.spinValHKSnipCapTl.get()
+                },
             },
             "Query_Box": {
                 "font": {

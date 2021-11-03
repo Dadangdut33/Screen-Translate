@@ -288,12 +288,13 @@ class CreateToolTip(object):
     """
     create a tooltip for a given widget
     """
-    def __init__(self, widget, text='widget info', delay=250, wraplength=180, opacity=1.0):
+    def __init__(self, widget, text='widget info', delay=250, wraplength=180, opacity=1.0, always_on_top=True):
         self.waittime = delay     #miliseconds
         self.wraplength = wraplength   #pixels
         self.widget = widget
         self.text = text
         self.opacity = opacity
+        self.always_on_top = always_on_top
         self.widget.bind("<Enter>", self.enter)
         self.widget.bind("<Leave>", self.leave)
         self.widget.bind("<ButtonPress>", self.leave)
@@ -325,7 +326,7 @@ class CreateToolTip(object):
         # creates a toplevel window
         self.tw = tk.Toplevel(self.widget)
         # Make it stay on top
-        self.tw.wm_attributes('-topmost', True)
+        self.tw.wm_attributes('-topmost', self.always_on_top)
         # Make it a little transparent
         self.tw.wm_attributes('-alpha', self.opacity)
         # Leaves only the label and removes the app window
