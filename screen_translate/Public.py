@@ -56,7 +56,8 @@ class Global_Class:
         self.text_Box_Bottom_Var = tk.StringVar()
         
         # Flag variables
-        self.hotkeyPressed = False
+        self.hotkeyCapTlPressed = False
+        self.hotkeySnipCapTlPressed = False
         self.capUiHidden = True
 
         # Capture opacities
@@ -90,8 +91,13 @@ class Global_Class:
         self.resultFg = None
         self.resultFont = None
 
-    def hotkeyCallback(self):
-        self.hotkeyPressed = True
+    def hotkeyCapTLCallback(self):
+        """Callback for the hotkey to capture the screen"""
+        self.hotkeyCapTlPressed = True
+
+    def hotkeySnipCapTLCallback(self):
+        """Callback for the hotkey to snip the screen"""
+        self.hotkeySnipCapTlPressed = True
 
     # Translate
     def translate(self):

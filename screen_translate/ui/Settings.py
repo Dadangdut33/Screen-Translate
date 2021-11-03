@@ -983,7 +983,10 @@ class SettingUI():
             pass
         # Bind hotkey
         if self.labelCurrentHKCapTl['text'] != '':
-            keyboard.add_hotkey(self.labelCurrentHKCapTl['text'], _StoredGlobal.hotkeyCallback)
+            keyboard.add_hotkey(self.labelCurrentHKCapTl['text'], _StoredGlobal.hotkeyCapTLCallback)
+
+        if self.labelCurrentHKSnipCapTl['text'] != '':
+            keyboard.add_hotkey(self.labelCurrentHKSnipCapTl['text'], _StoredGlobal.hotkeySnipCapTLCallback)
 
         print("-" * 50)
         print("Setting saved!")

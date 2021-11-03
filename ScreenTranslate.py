@@ -97,7 +97,7 @@ class main_Menu():
         self.history_UI = HistoryUI()
 
         # Set hotkeyPressed as false
-        _StoredGlobal.hotkeyPressed = False
+        _StoredGlobal.hotkeyCapTlPressed = False
 
         # Frame
         self.topFrame1 = Frame(self.root)
@@ -247,7 +247,9 @@ class main_Menu():
         # Bind hotkey
         try:
             if settings['hotkey']['captureAndTl']['hk'] != '':
-                keyboard.add_hotkey(settings['hotkey']['captureAndTl']['hk'], _StoredGlobal.hotkeyCallback)
+                keyboard.add_hotkey(settings['hotkey']['captureAndTl']['hk'], _StoredGlobal.hotkeyCapTLCallback)
+            if settings['hotkey']['snipAndCapTl']['hk'] != '':
+                keyboard.add_hotkey(settings['hotkey']['snipAndCapTl']['hk'], _StoredGlobal.hotkeySnipCapTLCallback)
         except KeyError:
             print("Error: Invalid Hotkey Options")
         self.root.after(100, self.hotkeyPoll)
@@ -326,11 +328,18 @@ class main_Menu():
 
     # Hotkey
     def hotkeyPoll(self):
-        if _StoredGlobal.hotkeyPressed == True and _StoredGlobal.capUiHidden == False:
+        if _StoredGlobal.hotkeyCapTlPressed == True and _StoredGlobal.capUiHidden == False: # If the hotkey for capture and translate is pressed
             settings = fJson.readSetting()
             time.sleep(settings['hotkey']['captureAndTl']['delay'] / 1000)
             self.capture_UI.getTextAndTranslate()
-        _StoredGlobal.hotkeyPressed = False
+            _StoredGlobal.hotkeyCapTlPressed = False
+
+        if _StoredGlobal.hotkeySnipCapTlPressed == True: # If the hotkey for snip and translate is pressed
+            settings = fJson.readSetting()
+            time.sleep(settings['hotkey']['snipAndCapTl']['delay'] / 1000)
+            self.snipper_UI.createScreenCanvas()        
+            _StoredGlobal.hotkeySnipCapTlPressed = False
+        
         self.root.after(100, self.hotkeyPoll)
 
     # Slider

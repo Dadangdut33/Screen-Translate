@@ -123,6 +123,7 @@ class Snip_Mask():
         # Bind events
         self.snipping_Mask.bind("<Escape>", self.exitScreenshotMode)
         self.screenCanvas.bind("<ButtonPress-1>", self.on_button_press)
+        self.screenCanvas.bind("<ButtonPress-3>", self.exitScreenshotMode)
         self.screenCanvas.bind("<B1-Motion>", self.on_move_press)
         self.screenCanvas.bind("<ButtonRelease-1>", self.on_button_release)
 
@@ -140,6 +141,8 @@ class Snip_Mask():
             event: Ignored
         """
         self.recPosition()
+        if self.curX is None:
+            return
 
         if self.start_x <= self.curX and self.start_y <= self.curY:
             print(">> Detected position direction: right down")
@@ -198,8 +201,9 @@ class Snip_Mask():
         """
         Get the position details
         """
-        print(">> Captured")
-        print("Starting position x:", self.start_x)
-        print("End position x:",self.curX)
-        print("Starting position y:",self.start_y)
-        print("End position y:",self.curY)
+        if self.curX is not None:
+            print(">> Captured")
+            print("Starting position x:", self.start_x)
+            print("End position x:",self.curX)
+            print("Starting position y:",self.start_y)
+            print("End position y:",self.curY)
