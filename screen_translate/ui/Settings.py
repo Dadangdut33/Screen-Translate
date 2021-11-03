@@ -890,6 +890,9 @@ class SettingUI():
 
     # Save settings
     def saveSettings(self):
+        """
+        Save settings to file
+        """
         # Check path tesseract
         tesseractPathInput = self.textBoxTesseractPath.get().strip().lower()
         # Get the exe name or the last / in tesseract path
@@ -1002,10 +1005,10 @@ class SettingUI():
         """Set the state & value for each spinner
 
         Args:
-            theSpinner ([type]): [The spinner that is to be set]
-            theSpinVal ([type]): [The variable that controls the spinner]
-            theCheckVar ([type]): [The checkbox variable that controls the spinner]
-            theReturnType ([type]): [The type of return value]
+            theSpinner : [The spinner that is to be set]
+            theSpinVal : [The variable that controls the spinner]
+            theCheckVar : [The checkbox variable that controls the spinner]
+            theReturnType : [The type of return value]
         """
         offType = theSpinner.get() if theCheckVar.get() else "auto" 
         offSets = getTheOffset(offType)
@@ -1022,6 +1025,9 @@ class SettingUI():
     # Engine
     # Search for tesseract
     def searchTesseract(self):
+        """
+        Search for tesseract by opening a file dialog
+        """
         self.tesseract_path = filedialog.askopenfilename(initialdir="/", title="Select file", filetypes=(
             ("tesseract.exe", "*.exe"),
         ))
@@ -1032,27 +1038,47 @@ class SettingUI():
     # ----------------------------------------------------------------
     # Hotkey
     def setHKCapTl(self):
+        """
+        Set the hotkey for capturing and translating
+        """
         hotkey = keyboard.read_hotkey(suppress=False)
         self.labelCurrentHKCapTl.config(text=str(hotkey))
 
     def clearHKCapTl(self):
+        """
+        Clear the hotkey for capturing and translating
+        """
         self.labelCurrentHKCapTl.config(text="")
 
     def setHKSnipCapTl(self):
+        """
+        Set the hotkey for snipping and translate
+        """
         hotkey = keyboard.read_hotkey(suppress=False)
         self.labelCurrentHKSnipCapTl.config(text=str(hotkey))
 
     def clearHKSnipCapTl(self):
+        """
+        Clear the hotkey for snipping and translate
+        """
         self.labelCurrentHKSnipCapTl.config(text="")
 
     # ----------------------------------------------------------------
     # Capture
     def screenShotAndOpenLayout(self):
+        """
+        Fully capture the window and open the image
+        """
         captureAll()
 
     # ----------------------------------------------------------------
     # CB Settings
-    def CBTLChange_setting(self, event = ""):
+    def CBTLChange_setting(self, event = None):
+        """Change the state of the CB when the default engine is changed
+
+        Args:
+            event: Ignored. Defaults to None
+        """
         # In settings
         # Get the engine from the combobox
         curr_Engine = self.CBDefaultEngine.get()
@@ -1096,7 +1122,12 @@ class SettingUI():
             self.CBDefaultTo.current(searchList(previous_To, optNone))
             self.CBDefaultTo.config(state='disabled')
 
-    def CBOffSetChange(self, event = ""):
+    def CBOffSetChange(self, event = None):
+        """Change the state of the CB when the default engine is changed
+
+        Args:
+            event: Ignored. Defaults to None.
+        """
         offSets = getTheOffset("Custom")
         xyOffSetType = self.CBOffSetChoice.get()
 
@@ -1127,6 +1158,15 @@ class SettingUI():
     # ----------------------------------------------------------------
     # Spinbox validation
     def validateSpinbox(self, event, theSpinner):
+        """Validate the spinbox
+
+        Args:
+            event: spinbox event
+            theSpinner: the spinbox
+
+        Returns:
+            allowing the spinbox to be changed or not
+        """
         if event == "":
             theSpinner.set(0)
             return False
@@ -1153,6 +1193,14 @@ class SettingUI():
 
     # Bg Color chooser
     def bgColorChooser(self, event=None, label=None, theVar=None, destination=None):
+        """Bg color chooser
+
+        Args:
+            event : Ignored. Defaults to None.
+            label : The targeted label object. Defaults to None.
+            theVar : The targeted var object. Defaults to None.
+            destination : The targeted destination object, destination targeted is a UI window. Defaults to None.
+        """
         colorGet = colorchooser.askcolor(color=theVar.get(), title="Choose a color")
         if colorGet[1] != None:
             theVar.set(colorGet[1])
@@ -1161,6 +1209,14 @@ class SettingUI():
     
     # Fg Color chooser
     def fgColorChooser(self, event=None, label=None, theVar=None, destination=None):
+        """Fg color chooser
+
+        Args:
+            event : Ignored. Defaults to None.
+            label : The targeted label object. Defaults to None.
+            theVar : The targeted var object. Defaults to None.
+            destination : The targeted destination object, destination targeted is a UI window. Defaults to None.
+        """
         colorGet = colorchooser.askcolor(color=theVar.get(), title="Choose a color")
         if colorGet[1] != None:
             theVar.set(colorGet[1])
@@ -1169,6 +1225,14 @@ class SettingUI():
 
     # Font Chooser
     def fontChooser(self, event=None, label=None, theVar=None, theDict=None, destination=None):
+        """Font chooser
+
+        Args:
+            event : Ignored. Defaults to None.
+            label : The targeted label object. Defaults to None.
+            theVar : The targeted var object. Defaults to None.
+            destination : The targeted destination object, destination targeted is a UI window. Defaults to None.
+        """
         fontGet = askfont(self.root, title="Choose a font", text="Preview プレビュー معاينة 预览", family=theDict['family'], size=theDict['size'], weight=theDict['weight'], slant=theDict['slant'])
         if fontGet:
             theVar.set(fontGet)
@@ -1179,6 +1243,9 @@ class SettingUI():
     
     # Update lbl
     def updateLbl(self):
+        """
+        Update the UI Font lbl
+        """
         self.queryFontDict = json.loads(self.queryFontVar.get().replace("'", '"'))
         query_font_str = "%(family)s %(size)i %(weight)s %(slant)s" % self.queryFontDict
         self.queryBg.config(text="Textbox Bg Color : " + self.queryBgVar.get())
@@ -1193,6 +1260,11 @@ class SettingUI():
         self.resultFont.config(text="Textbox Font : " + result_font_str)
 
     def disableEnableSnipSpin(self, event=None):
+        """Disable/Enable the snip spinbox
+
+        Args:
+            event : Ignored. Defaults to None.
+        """
         if not self.checkAutoSnippetVar.get(): # IF disabled then enable it
             self.spinnerSnippet_1.config(state=NORMAL)
             self.spinnerSnippet_2.config(state=NORMAL)

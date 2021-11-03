@@ -22,6 +22,9 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 img_captured_path = os.path.join(dir_path, '../img_captured')
 
 def createPicDirIfGone():
+    """
+    Create the directory if it does not exist
+    """
     # Will create the dir if not exists
     if not os.path.exists(img_captured_path):
         try:

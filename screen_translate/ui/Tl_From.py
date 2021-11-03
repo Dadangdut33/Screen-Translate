@@ -181,6 +181,9 @@ class Detached_Tl_Query():
 
     # Reset
     def reset_Default(self):
+        """
+        Show/Hide setting frame
+        """
         # Ask for confirmation first
         if Mbox("Reset Default", "Are you sure you want to reset to default settings?", 3, parent=self.root):
             self.root.attributes('-alpha', 1)
@@ -199,6 +202,9 @@ class Detached_Tl_Query():
             _StoredGlobal.main.setting_UI.updateLbl()
 
     def reset_To_Current(self):
+        """
+        Reset to currently stored settings
+        """
         # Ask for confirmation first
         if Mbox("Reset To Currently Saved", "Are you sure you want to reset to current settings?", 3, parent=self.root):
             self.root.attributes('-alpha', 1)
@@ -221,6 +227,11 @@ class Detached_Tl_Query():
 
     # Bg Color chooser
     def bgColorChooser(self, event=None):
+        """Bg color chooser
+
+        Args:
+            event : Ignored. Defaults to None.
+        """
         colorGet = colorchooser.askcolor(color=self.textboxBgColor.get(), title="Choose a color")
         if colorGet[1] != None:
             self.textboxBgColor.set(colorGet[1])
@@ -230,6 +241,11 @@ class Detached_Tl_Query():
     
     # Fg Color chooser
     def fgColorChooser(self, event=None):
+        """Fg color chooser
+
+        Args:
+            event : Ignored. Defaults to None.
+        """
         colorGet = colorchooser.askcolor(color=self.textboxFgColor.get(), title="Choose a color")
         if colorGet[1] != None:
             self.textboxFgColor.set(colorGet[1])
@@ -239,6 +255,11 @@ class Detached_Tl_Query():
 
     # Font Chooser
     def fontChooser(self, event=None):
+        """Font chooser
+
+        Args:
+            event : Ignored. Defaults to None.
+        """
         fontGet = askfont(self.root, title="Choose a font", text="Preview プレビュー معاينة 预览", family=self.tbQueryFontDict['family'], size=self.tbQueryFontDict['size'], weight=self.tbQueryFontDict['weight'], slant=self.tbQueryFontDict['slant'])
         if fontGet:
             self.tbQueryFont.set(fontGet)
@@ -249,6 +270,9 @@ class Detached_Tl_Query():
             _StoredGlobal.main.setting_UI.updateLbl()
 
     def updateStuff(self):
+        """
+        Update the UI font labels and the text box
+        """
         self.textboxBgColorLabel.config(text="BG color: " + self.textboxBgColor.get())
         self.textBoxTlQuery.config(background=self.textboxBgColor.get())
 

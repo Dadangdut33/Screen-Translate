@@ -209,7 +209,9 @@ class Global_Class:
         return "break"
 
 # ---------------------------------------------------------------
-# TextWithVar, taken from: https://stackoverflow.com/questions/21507178/tkinter-text-binding-a-variable-to-widget-text-contents
+"""
+TextWithVar, taken from: https://stackoverflow.com/questions/21507178/tkinter-text-binding-a-variable-to-widget-text-contents
+"""
 class TextWithVar(tk.Text):
     '''A text widget that accepts a 'textvariable' option'''
     def __init__(self, parent, *args, **kwargs):
@@ -276,12 +278,8 @@ class TextWithVar(tk.Text):
 
 # ---------------------------------------------------------------
 # Tooltip
-""" tk_ToolTip_class101.py
-gives a Tkinter widget a tooltip as the mouse is above the widget
-tested with Python27 and Python34  by  vegaseat  09sep2014
-www.daniweb.com/programming/software-development/code/484591/a-tooltip-class-for-tkinter
-
-Modified to include a delay time by Victor Zaccardo, 25mar16
+""" 
+Original from: https://stackoverflow.com/questions/3221956/how-do-i-display-tooltips-in-tkinter
 """
 
 class CreateToolTip(object):

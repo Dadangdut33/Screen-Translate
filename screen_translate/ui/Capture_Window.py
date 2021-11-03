@@ -151,6 +151,12 @@ class CaptureUI():
 
     # Slider function
     def sliderOpac(self, x, fromOutside = False):
+        """Slider control, can be called from outside of the UI class
+
+        Args:
+            x ([float]): x amount
+            fromOutside (bool, optional): [description]. Defaults to False.
+        """
         self.root.attributes('-alpha', x)
         self.opacityLabel.config(text="Opacity: " + str(round(float(x), 2)))
         _StoredGlobal.curCapOpacity = x
@@ -176,6 +182,11 @@ class CaptureUI():
 
     # Capture the text
     def getTextAndTranslate(self, snippedCoords = ""):
+        """Capture the text and translate it
+
+        Args:
+            snippedCoords (str, optional): If method is by snipping and capture. Defaults to "".
+        """
         theUI_IsHidden = _StoredGlobal.capUiHidden
         if snippedCoords != "":
             theUI_IsHidden = False
@@ -278,10 +289,18 @@ class CaptureUI():
 
     # ChangeCb
     def changeCbBg(self, value):
+        """
+        Change the combobox value. Only called from outside of its own class. Used to sync 2 UI
+        """
         self.CBBgType.current(searchList(value, ["Auto-Detect", 'Light', 'Dark']))
 
     # Disable enable cb
     def disableEnableCb(self, outside=False):
+        """Disable or enable combobox background type
+
+        Args:
+            outside (bool, optional): value True if called from outside of its own class. Defaults to False.
+        """
         if self.detectContourVar.get(): # If disabled enable it
             self.CBBgType.config(state="readonly")
         else:
@@ -291,6 +310,9 @@ class CaptureUI():
 
     # Disable enable debugmode checkbox
     def disableEnableDebugMode(self, outside=False):
+        """
+        Disable the debug mode checkbox if both the contour detection and the background detection is disabled
+        """
         if not self.detectContourVar.get() and not self.captureGrayscaleVar.get(): # If both are not checked then disable the debugmode checkbox
             self.debugModeCheck.config(state="disabled")
         else:
@@ -298,15 +320,26 @@ class CaptureUI():
 
     # Contour checkbox
     def detectContour(self):
+        """
+        Event handler for detect contour checkbox that will update the var in the capture UI Settings and check for disable/enable debug mode.
+        """
         _StoredGlobal.main.capture_UI_Setting.detectContourVar.set(self.detectContourVar.get())
         _StoredGlobal.main.capture_UI_Setting.disableEnableCb(outside=True)
         self.disableEnableDebugMode()
         _StoredGlobal.main.capture_UI_Setting.disableEnableDebugMode()
+        
     # Grayscale checkbox
     def captureGrayscale(self):
+        """
+        Event handler for capture grayscale checkbox that will update the var in the capture UI Settings and check for disable/enable debug mode.
+        """
         _StoredGlobal.main.capture_UI_Setting.captureGrayscaleVar.set(self.captureGrayscaleVar.get())
         self.disableEnableDebugMode()
         _StoredGlobal.main.capture_UI_Setting.disableEnableDebugMode()
+
     # debugmode checkbox
     def debugMode(self):
+        """
+        Event handler for debug mode checkbox that will update the var in the capture UI Settings and check for disable/enable debug mode.
+        """
         _StoredGlobal.main.capture_UI_Setting.debugModeVar.set(self.debugModeVar.get())

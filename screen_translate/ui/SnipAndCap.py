@@ -1,4 +1,5 @@
 from tkinter import *
+from screen_translate.Mbox import Mbox
 from screen_translate.Public import fJson, mInfo, _StoredGlobal
 import pyautogui
 import datetime
@@ -88,6 +89,27 @@ class Snip_Mask():
         _StoredGlobal.main.capture_UI.getTextAndTranslate(snippedCoords = coords)
 
     def createScreenCanvas(self):
+        """
+        Create the canvas for the snipping mask
+        """
+        # Check for the lang from and langto only if it's on translation mode
+        if _StoredGlobal.engine != "None":
+            # If selected langfrom and langto is the same
+            if(_StoredGlobal.langFrom) == (_StoredGlobal.langTo):
+                Mbox("Error: Language target is the same as source", "Please choose a different language", 2, _StoredGlobal.main_Ui)
+                print("Error Language is the same as source! Please choose a different language")
+                return
+            # If selected langfrom is autodetect -> invalid
+            if _StoredGlobal.langFrom == "Auto-Detect":
+                Mbox("Error: Invalid Language Selected", "Can't Use Auto Detect in Capture Mode", 2, _StoredGlobal.main_Ui)
+                print("Error: Invalid Language Selected! Can't Use Auto Detect in Capture Mode")
+                return
+            # If selected langto is autodetect -> also invalid
+            if _StoredGlobal.langTo == "Auto-Detect":
+                Mbox("Error: Invalid Language Selected", "Must specify language destination", 2, _StoredGlobal.main_Ui)
+                print("Error: Invalid Language Selected! Must specify language destination")
+                return
+
         print(">> Snipped mode activated")
         self.snipping_Mask.geometry(self.getScreenTotalGeometry())
 
@@ -111,6 +133,12 @@ class Snip_Mask():
         self.snipping_Mask.focus_force()
 
     def on_button_release(self, event):
+        """
+        When the mouse button is released, take the screenshot then translate it and then exit snipping mode.
+
+        Args:
+            event: Ignored
+        """
         self.recPosition()
 
         if self.start_x <= self.curX and self.start_y <= self.curY:
@@ -132,11 +160,23 @@ class Snip_Mask():
         self.exitScreenshotMode()
 
     def exitScreenshotMode(self, event=None):
+        """
+        Exit the snipping mode.
+
+        Args:
+            event : Ignored. Defaults to None.
+        """
         print(">> Snipped mode exited")
         self.screenCanvas.destroy()
         self.snipping_Mask.withdraw()
 
     def on_button_press(self, event):
+        """
+        When the mouse button is pressed, set the start position. And draw the rectangle.
+
+        Args:
+            event : Mouse event
+        """
         # save mouse drag start position
         self.start_x = self.screenCanvas.canvasx(event.x)
         self.start_y = self.screenCanvas.canvasy(event.y)
@@ -144,11 +184,20 @@ class Snip_Mask():
         self.rect = self.screenCanvas.create_rectangle(self.x, self.y, 1, 1, outline='red', width=3, fill="blue")
 
     def on_move_press(self, event):
+        """
+        When the mouse is moved, update the rectangle.
+
+        Args:
+            event : Mouse event
+        """
         self.curX, self.curY = (event.x, event.y)
         # expand rectangle as you drag the mouse
         self.screenCanvas.coords(self.rect, self.start_x, self.start_y, self.curX, self.curY)
 
     def recPosition(self):
+        """
+        Get the position details
+        """
         print(">> Captured")
         print("Starting position x:", self.start_x)
         print("End position x:",self.curX)

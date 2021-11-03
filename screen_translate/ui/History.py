@@ -81,6 +81,9 @@ class HistoryUI():
         self.root.wm_withdraw()
 
     def deleteSelected(self):
+        """
+        Delete selected history
+        """
         sel_Index = self.historyTreeView.focus()
         if sel_Index != "":
             if Mbox("Confirmation", "Are you sure you want to the selected data?", 3, self.root):
@@ -96,6 +99,9 @@ class HistoryUI():
                 self.refresh()
 
     def deleteAll(self):
+        """
+        Delete all history data
+        """
         if Mbox("Confirmation", "Are you sure you want to delete all history?", 3, self.root):
             status, statusText = fJson.deleteAllHistory()
             if status == True:
@@ -107,6 +113,9 @@ class HistoryUI():
             self.refresh()
 
     def refresh(self):
+        """
+        Refresh the history
+        """
         status, data = fJson.readHistory()
         # Error already handled in jsonHandling
         if status == True:
@@ -138,6 +147,9 @@ class HistoryUI():
                 self.historyTreeView.delete(i)
 
     def copyToClipboard(self):
+        """
+        Copy selected history to clipboard
+        """
         sel_Index = self.historyTreeView.focus()
         if sel_Index != "":
             dataRow = self.historyTreeView.item(sel_Index, 'values')
@@ -146,6 +158,9 @@ class HistoryUI():
             Mbox("Success", "Copied to clipboard", 0, self.root)
 
     def copyToTranslateMenu(self):
+        """
+        Copy selected history to translate menu
+        """
         sel_Index = self.historyTreeView.focus()
         if sel_Index != '':
             dataRow = self.historyTreeView.item(sel_Index, 'values')
@@ -154,5 +169,8 @@ class HistoryUI():
             Mbox("Success", "Copied to translate menu", 0, self.root)
 
     def handle_click(self, event):
+        """
+        Handler for the treeview separator. Made it so that it does not do anything.
+        """
         if self.historyTreeView.identify_region(event.x, event.y) == "separator":
             return "break"

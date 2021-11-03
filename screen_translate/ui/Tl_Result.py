@@ -171,6 +171,9 @@ class Detached_Tl_Result():
 
     # hide / show setting
     def toggle_Setting(self):
+        """
+        Show/Hide setting frame
+        """
         if self.showSetting.get():
             self.settingFrame.pack_forget()
             self.showSetting.set(False)
@@ -180,6 +183,9 @@ class Detached_Tl_Result():
 
     # Reset
     def reset_Default(self):
+        """
+        Reset the font settings of the window to default
+        """
         # Ask for confirmation first
         if Mbox("Reset Default", "Are you sure you want to reset to default settings?", 3, parent=self.root):
             self.root.attributes('-alpha', 1)
@@ -199,6 +205,9 @@ class Detached_Tl_Result():
             _StoredGlobal.main.setting_UI.updateLbl()
 
     def reset_To_Current(self):
+        """
+        Reset to currently stored settings
+        """
         # Ask for confirmation first
         if Mbox("Reset To Currently Saved", "Are you sure you want to reset to current settings?", 3, parent=self.root):
             self.root.attributes('-alpha', 1)
@@ -221,6 +230,11 @@ class Detached_Tl_Result():
 
     # Bg Color chooser
     def bgColorChooser(self, event=None):
+        """Bg color chooser
+
+        Args:
+            event : Ignored. Defaults to None.
+        """
         colorGet = colorchooser.askcolor(color=self.textboxBgColor.get(), title="Choose a color")
         if colorGet[1] != None:
             self.textboxBgColor.set(colorGet[1])
@@ -230,6 +244,11 @@ class Detached_Tl_Result():
     
     # Fg Color chooser
     def fgColorChooser(self, event=None):
+        """Fg color chooser
+
+        Args:
+            event : Ignored. Defaults to None.
+        """
         colorGet = colorchooser.askcolor(color=self.textboxFgColor.get(), title="Choose a color")
         if colorGet[1] != None:
             self.textboxFgColor.set(colorGet[1])
@@ -239,6 +258,11 @@ class Detached_Tl_Result():
 
     # Font Chooser
     def fontChooser(self, event=None):
+        """Font chooser
+
+        Args:
+            event : Ignored. Defaults to None.
+        """
         fontGet = askfont(self.root, title="Choose a font", text="Preview プレビュー معاينة 预览", family=self.tbResultFontDict['family'], size=self.tbResultFontDict['size'], weight=self.tbResultFontDict['weight'], slant=self.tbResultFontDict['slant'])
         if fontGet:
             self.tbResultFont.set(fontGet)
@@ -249,6 +273,9 @@ class Detached_Tl_Result():
             _StoredGlobal.main.setting_UI.updateLbl()
 
     def updateStuff(self):
+        """
+        Update the UI font labels and the text box
+        """
         self.textboxBgColorLabel.config(text="BG color: " + self.textboxBgColor.get())
         self.textBoxTlResult.config(background=self.textboxBgColor.get())
 

@@ -7,6 +7,12 @@ history_json_path = os.path.join(dir_path, '../json/History.json')
 setting_json_path = os.path.join(dir_path, '../json/Setting.json')
 
 class JsonHandler:
+    """
+    [summary] 
+        Create, Read, Update the json file
+    [description]
+        Returns: [type] -- [description]
+    """
     settingsCache = None
 
     # Default Setting
@@ -69,7 +75,9 @@ class JsonHandler:
     # -------------------------------------------------
     # Create dir if not exists
     def createDirIfGone(self):
-        # Will create the dir if not exists
+        """
+        Create the json directory if not exists
+        """
         if not os.path.exists(jsons_path):
             try:
                 os.makedirs(jsons_path)
@@ -80,7 +88,9 @@ class JsonHandler:
     # -------------------------------------------------
     # Write, Append, Delete, Read, History
     def writeAdd_History(self, new_data):
-        """Example of how the data should be written
+        """Write and or add history
+        
+        # Example of how the data should be written
             new_data = {
                 # ID Will be auto generated here
                 "from": "en",
@@ -159,6 +169,12 @@ class JsonHandler:
             return is_Success, status
 
     def deleteAllHistory(self):
+        """Delete all history
+
+        Returns:
+            bool: True if success, False if failed
+            status: Status text of the operation
+        """
         is_Success = False
         status = ""
         try:
@@ -190,6 +206,15 @@ class JsonHandler:
             return is_Success, status
 
     def deleteCertainHistory(self, index):
+        """Delete certain history
+
+        Args:
+            index (int): Index of the history to delete
+
+        Returns:
+            bool: True if success, False if failed
+            status: Status text of the operation
+        """
         is_Success = False
         status = ""
         try:
@@ -243,6 +268,12 @@ class JsonHandler:
 
     # Read History
     def readHistory(self):
+        """Read history
+
+        Returns:
+            bool: True if success, False if failed
+            data: Data of the history
+        """
         is_Success = False
         data = ""
         try:
@@ -271,6 +302,15 @@ class JsonHandler:
     # -------------------------------------------------
     # Settings
     def writeSetting(self, data):
+        """Write setting
+
+        Args:
+            data (dict): Data to write
+
+        Returns:
+            bool: True if success, False if failed
+            status: Status text of the operation
+        """
         is_Success = False
         status = ""
         try:
@@ -288,6 +328,12 @@ class JsonHandler:
             return is_Success, status
 
     def setDefault(self):
+        """Set default setting
+
+        Returns:
+            bool: True if success, False if failed
+            status: Status text of the operation
+        """
         is_Success = False
         status = ""
         try:
@@ -305,6 +351,12 @@ class JsonHandler:
             return is_Success, status
 
     def loadSetting(self):
+        """Load setting
+
+        Returns:
+            bool: True if success, False if failed
+            status: Status text of the operation
+        """
         is_Success = False
         data = ""
         try:
@@ -324,4 +376,9 @@ class JsonHandler:
             return is_Success, data
 
     def readSetting(self):
+        """Read the currently loaded setting from the settings cache
+
+        Returns:
+            dict: The setting data
+        """
         return self.settingsCache
