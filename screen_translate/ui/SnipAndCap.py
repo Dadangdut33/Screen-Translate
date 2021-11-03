@@ -1,8 +1,6 @@
 from tkinter import *
 from screen_translate.Mbox import Mbox
 from screen_translate.Public import fJson, mInfo, _StoredGlobal
-import pyautogui
-import datetime
 import os
 
 # Settings to capture all screens

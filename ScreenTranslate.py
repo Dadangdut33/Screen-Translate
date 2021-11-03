@@ -168,7 +168,7 @@ class main_Menu():
         self.labelLangTo.pack(side=LEFT, padx=5, pady=5)
 
         self.CBLangTo = ttk.Combobox(self.bottomFrame1, values=self.langOpt, state="readonly")
-        self.CBLangTo.current(searchList(settings['default_ToOnOpen'], self.langOpt)) # Default to English
+        self.CBLangTo.current(searchList(settings['default_ToOnOpen'], self.langOpt))
         self.CBLangTo.pack(side=LEFT, padx=5, pady=5)
         self.CBLangTo.bind("<<ComboboxSelected>>", self.langChanged)
 
