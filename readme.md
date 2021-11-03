@@ -16,7 +16,7 @@
 </p>
 
 STL a.k.a Screen Translate is an OCR translator tool made by utilizing Tesseract and opencv-python. The code is then compiled to .exe by using pyinstaller. 
-Inspired by Visual Novel Reader (VNR), [Visual Novel OCR](https://github.com/leminhyen2/Visual-Novel-OCR), and [QTranslate](https://quest-app.appspot.com/)
+Inspired by Visual Novel Reader (VNR), [Visual Novel OCR](https://github.com/leminhyen2/Visual-Novel-OCR), and [QTranslate](https://quest-app.appspot.com/).
 
 <h1>Jump to</h1>
 
@@ -27,17 +27,19 @@ Inspired by Visual Novel Reader (VNR), [Visual Novel OCR](https://github.com/lem
 - [Tutorial on How To Install and Setup](#tutorial-on-how-to-install-and-setup)
 - [How To Compile It To .exe Yourself](#how-to-compile-it-to-exe-yourself)
 - [Tutorial on How To Use](#tutorial-on-how-to-use)
-- [Reporting bugs](#reporting-bugs)
+- [Reporting bugs and feature requests](#reporting-bugs-and-feature-requests)
 - [Credits](#credits)
 - [Disclaimer](#disclaimer)
 
 # Features
 - Translation
-- OCR
+- OCR Detection
+- Snip and translate
+- Capture and translate
 
 # What can i use this for?
 - You can use this just to translate text from one language to another
-- You can use this to capture and translate text from documents, games, pictures, etc. As long as the text is clear enough (Tesseract might not be able to read it if it's not clear enough)
+- You can use this to capture and translate text from documents, games, pictures, etc. As long as the text is clear enough (Tesseract might not be able to read it if it's not clear enough. But, it can be improve with the help of python-opencv which you can try experimenting with in the settings)
 
 # FAQ
 - **[Q]** How do i use this? \
@@ -45,7 +47,7 @@ Inspired by Visual Novel Reader (VNR), [Visual Novel OCR](https://github.com/lem
 - **[Q]** Is this safe? \
 **[A]** Yes, it is completely safe. If your antivirus detect this program as a virus, it's only a false positive. If you don't believe it, you can take a look at the code yourself. 
 - **[Q]** What do you mean by a "clear enough" text? \
-**[A]** It means the text is not too blend it with the background. If the text is light the background needs to be darken, so it is easier to be read. Somewhat like that. In the future i might add some adjustment and more OCR options, so this might be fixed some day.
+**[A]** It means the text is not too blend it with the background. If the text is light the background needs to be darken, so it is easier to be read. Somewhat like that. It now has been improved with the help of python-opencv, you can experiment with it in the settings.
 
 # Requirements
 **For User**
@@ -117,13 +119,11 @@ Read [this stackoverflow post](https://stackoverflow.com/questions/5458048/how-c
 
 For more information you can check the [user_manual](https://github.com/Dadangdut33/Screen-Translate/tree/main/user_manual) folder
 
-# Reporting bugs
-If you encounter any bugs with the program, please report them by opening an issue on the github repository.    
+# Reporting bugs and feature requests
+If you encounter any bugs with the program, please report them by opening an issue on the github repository. You can also request a feature by opening an issue.
 
 # Credits
 Icons are taken from [Icons8](https://icons8.com/)
 
 # Disclaimer
-This is a free open source software, you can use it for any purpose. However, I am not responsible for any damage caused by this software. Use it at your own risk. **(Not that it will do anything to you, it's just a tool to help you translate text lol)**
-
-This is also non profit, I gain no money from creating this.
+This is a free open source software, you can use it for any purpose. However, I am not responsible for any damage caused by this software. Use it at your own risk. **(It won't create any damage though don't worry)**. This is also non profit, I gain no money from creating this.

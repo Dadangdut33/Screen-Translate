@@ -75,7 +75,7 @@ class Global_Class:
         
         # Version
         self.version = "1.8"
-        self.versionType = "wip"
+        self.versionType = "release"
         self.newVerStatusCache = None
 
         # Logo

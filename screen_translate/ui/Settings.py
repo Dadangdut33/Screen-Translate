@@ -618,7 +618,6 @@ class SettingUI():
         """
         x = Mbox("Confirmation", "Are you sure you want to set the settings to default?\n\n**WARNING! CURRENTLY SAVED SETTING WILL BE OVERWRITTEN**", 3, self.root)
         if x == False:
-            Mbox("Canceled", "Action Canceled", 0, self.root)
             return
 
         # Restore Default Settings
