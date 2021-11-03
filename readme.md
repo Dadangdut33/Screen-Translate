@@ -78,7 +78,7 @@ Inspired by Visual Novel Reader (VNR), [Visual Novel OCR](https://github.com/lem
 4. Check settings, make sure tesseract location is correct
 5. Set monitor scaling to 100% so that image is captured accurately (If scaling is not set to 100% you will need to set offset in setting) **(Recommended)**
 6. Set offset if on multiple monitors. **(Optional)**
-7. Try capturing image and see if it works or not, if it doesn't, go check the image captured in img_cache folder. If it still doesn't work, try to change the offset.
+7. Try capturing image and see if it works or not, if it doesn't, go check the image captured in img_captured folder. If it still doesn't work, try to change the offset.
 8. Now that you have set everything, the app should be ready. Feel free to submit new issue on the github repository if you encounter any bugs.
 
 **For Dev**
