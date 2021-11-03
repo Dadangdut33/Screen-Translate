@@ -24,6 +24,7 @@ Inspired by Visual Novel Reader (VNR), [Visual Novel OCR](https://github.com/lem
 - [What can i use this for?](#what-can-i-use-this-for)
 - [FAQ](#faq)
 - [Requirements](#requirements)
+- [Downloads](#downloads)
 - [Tutorial on How To Install and Setup](#tutorial-on-how-to-install-and-setup)
 - [How To Compile It To .exe Yourself](#how-to-compile-it-to-exe-yourself)
 - [Tutorial on How To Use](#tutorial-on-how-to-use)
@@ -31,11 +32,18 @@ Inspired by Visual Novel Reader (VNR), [Visual Novel OCR](https://github.com/lem
 - [Credits](#credits)
 - [Disclaimer](#disclaimer)
 
+---
+<br>
+
+<p align="center">
+    <img src="https://media.discordapp.net/attachments/653206818759376916/905394838764146698/unknown.png" width="700" alt="Screen Translate Looks">
+</p>
+
 # Features
 - Translation
 - OCR Detection
-- Snip and translate
-- Capture and translate
+- Snip and translate<details open><summary>Example</summary><img src="https://raw.githubusercontent.com/Dadangdut33/Screen-Translate/main/user_manual/6_5_snipdemonstration.png" width="700" alt="Screen Translate Looks"></details>
+- Capture and translate<details open><summary>Example</summary><img src="https://raw.githubusercontent.com/Dadangdut33/Screen-Translate/main/user_manual/6_1_Usage_Example_old.png" width="700" alt="Screen Translate Looks"><img src="https://raw.githubusercontent.com/Dadangdut33/Screen-Translate/main/user_manual/6_3_usageExampleNew.png" width="700" alt="Screen Translate Looks"></details>
 
 # What can i use this for?
 - You can use this just to translate text from one language to another
@@ -57,6 +65,10 @@ Inspired by Visual Novel Reader (VNR), [Visual Novel OCR](https://github.com/lem
 **For Dev**
 - Python 3.5+, checked using [vermin](https://github.com/netromdk/vermin) (I am using python 3.9.6)
 - Install [the dependencies](https://github.com/Dadangdut33/Screen-Translate/blob/main/requirements.txt) You can install them by running `pip_install.bat` or by typing `pip install -r requirements.txt` installing them yourself.
+
+# Downloads
+- [Tesseract](https://github.com/UB-Mannheim/tesseract/wiki)
+- [The application (ScreenTranslate/STL)](https://github.com/Dadangdut33/Screen-Translate/releases/latest)
 
 # Tutorial on How To Install and Setup
 **For User**
