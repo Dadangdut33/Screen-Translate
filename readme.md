@@ -18,8 +18,8 @@
 STL a.k.a Screen Translate is an OCR translator tool made by utilizing Tesseract and opencv-python. The code is then compiled to .exe by using pyinstaller. 
 Inspired by Visual Novel Reader (VNR), [Visual Novel OCR](https://github.com/leminhyen2/Visual-Novel-OCR), and [QTranslate](https://quest-app.appspot.com/)
 
-# Jump to
-- [Jump to](#jump-to)
+<h1>Jump to</h1>
+
 - [Features](#features)
 - [What can i use this for?](#what-can-i-use-this-for)
 - [FAQ](#faq)
