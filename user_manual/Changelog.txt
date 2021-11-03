@@ -1,5 +1,13 @@
 # Changelog
-Latest V1.7.2
+Latest V1.8
+
+[V1.8 Added snip and cap]
+- Added snip and cap
+- Added more options to the capture window
+- Added detached setting window for capturing
+- Added options for auto detect background type
+- Added debug mode for capture ehancement (This will show how the image is processed, might help on getting the best result)
+- Fix keybind not unbinding on restore default
 
 [V1.7.2 Bug fix and background option]
 - Fix reversed word 
