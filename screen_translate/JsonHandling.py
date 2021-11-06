@@ -149,10 +149,10 @@ class JsonHandler:
                 toAddNew = {
                     "id": 0,
                     "from": new_data['from'],
-                    "to": item['to'],
-                    "query": item['query'],
-                    "result": item['result'],
-                    "engine": item['engine']
+                    "to": new_data['to'],
+                    "query": new_data['query'],
+                    "result": new_data['result'],
+                    "engine": new_data['engine']
                 }
                 file_data = {
                     "tl_history": [toAddNew]
