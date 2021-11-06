@@ -123,7 +123,7 @@ class CaptureUI():
             self.debugModeVar.set(False)
             print("Error: Failed to load debug mode setting! Please do not modify settings manually")
 
-        self.debugModeCheck = ttk.Checkbutton(self.Frame_3, text="Debug Mode", variable=self.debugModeVar) # , command=self.debugMode
+        self.debugModeCheck = ttk.Checkbutton(self.Frame_3, text="Debug Mode", variable=self.debugModeVar, command=self.checkDebugmode) 
         self.debugModeCheck.pack(padx=5, pady=5, side=LEFT)
         self.Tooltip5 = CreateToolTip(self.debugModeCheck, text="Enable debug mode.", opacity=0.8)
 
@@ -338,7 +338,7 @@ class CaptureUI():
         _StoredGlobal.main.capture_UI_Setting.disableEnableDebugMode()
 
     # debugmode checkbox
-    def debugMode(self):
+    def checkDebugmode(self):
         """
         Event handler for debug mode checkbox that will update the var in the capture UI Settings and check for disable/enable debug mode.
         """
