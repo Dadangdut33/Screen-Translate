@@ -389,7 +389,8 @@ class main_Menu():
 
     # Open known bugs
     def open_KnownBugs(self):
-        Mbox("Known Bugs", "- Monitor scaling needs to be 100% or it won't capture accurately (You can fix this easily by setting offset or set your monitor scaling to 100%)", 0, self.root)
+        Mbox("Known Bugs", """- Monitor scaling needs to be 100% or it won't capture accurately (You can fix this easily by setting offset or set your monitor scaling to 100%)
+        \r- Chinese translation doesn't work with the google translate (I have no idea why)""", 0, self.root)
 
     # Open user manual
     def open_UserManual(self):

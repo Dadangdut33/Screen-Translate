@@ -25,9 +25,10 @@ Inspired by Visual Novel Reader (VNR), [Visual Novel OCR](https://github.com/lem
 - [FAQ](#faq)
 - [Requirements](#requirements)
 - [Downloads](#downloads)
-- [Tutorial on How To Install and Setup](#tutorial-on-how-to-install-and-setup)
+- [How To Install and Setup](#how-to-install-and-setup)
+- [How To Uninstall](#how-to-uninstall)
 - [How To Compile It To .exe Yourself](#how-to-compile-it-to-exe-yourself)
-- [Tutorial on How To Use](#tutorial-on-how-to-use)
+- [How To Use](#how-to-use)
 - [Reporting bugs and feature requests](#reporting-bugs-and-feature-requests)
 - [Credits](#credits)
 - [Disclaimer](#disclaimer)
@@ -47,7 +48,8 @@ Inspired by Visual Novel Reader (VNR), [Visual Novel OCR](https://github.com/lem
 
 # What can i use this for?
 - You can use this just to translate text from one language to another
-- You can use this to capture and translate text from documents, games, pictures, etc. As long as the text is clear enough (Tesseract might not be able to read it if it's not clear enough. But, it can be improve with the help of python-opencv which you can try experimenting with in the settings)
+- You can use this to capture and translate text from documents, games, pictures, etc.
+- You can use this to just capture the text if you wanted to by setting the tl engine to None. 
 
 # FAQ
 - **[Q]** How do i use this? \
@@ -55,7 +57,7 @@ Inspired by Visual Novel Reader (VNR), [Visual Novel OCR](https://github.com/lem
 - **[Q]** Is this safe? \
 **[A]** Yes, it is completely safe. If your antivirus detect this program as a virus, it's only a false positive. If you don't believe it, you can take a look at the code yourself. 
 - **[Q]** What do you mean by a "clear enough" text? \
-**[A]** It means the text is not too blend it with the background. If the text is light the background needs to be darken, so it is easier to be read. Somewhat like that. It now has been improved with the help of python-opencv, you can experiment with it in the settings.
+**[A]** It means the text is not too blend it with the background. If the text is light the background needs to be darken, so it is easier to be read, somewhat like that. But, this has been improved with some tricks which you can experiment with in the settings.
 
 # Requirements
 **For User**
@@ -70,7 +72,7 @@ Inspired by Visual Novel Reader (VNR), [Visual Novel OCR](https://github.com/lem
 - [Tesseract](https://github.com/UB-Mannheim/tesseract/wiki)
 - [The application (ScreenTranslate/STL)](https://github.com/Dadangdut33/Screen-Translate/releases/latest)
 
-# Tutorial on How To Install and Setup
+# How To Install and Setup
 **For User**
 1. Download the latest [release](https://github.com/Dadangdut33/Screen-Translate/releases/tag/release) of this program
 2. Install tesseract, **make sure to select install all language pack when prompted**
@@ -101,6 +103,9 @@ pip install -r requirements.txt
 
 if everything works and you have a suggestion or improvement, you can submit a pull request on the github repository. I will check if it's a good idea to add it.
 
+# How To Uninstall
+If you use the installer version, you can run the uninstaller inside the app folder or uninstall it from control panel. For the portable (rar) version, you can just delete them.
+
 # How To Compile It To .exe Yourself
 You can use [p2exe](https://www.py2exe.org/) or many other stuff. I use [pyinstaller](https://www.pyinstaller.org/) to compile it.<br>
 There are 2 options for compiling, command used are: 
@@ -122,9 +127,9 @@ pyinstaller --paths STL_Venv/lib/site-packages ScreenTranslate_NoConsole.spec
 ```
 Read [this stackoverflow post](https://stackoverflow.com/questions/5458048/how-can-i-make-a-python-script-standalone-executable-to-run-without-any-dependen) to learn more on how to do it.
 
-# Tutorial on How To Use
+# How To Use
 1. Select Language
-2. Translate or Capture Image using the capture window
+2. Translate or Capture Image using the capture window or the snipping feature
 3. Set hotkeys and delays as needed
 4. Set offset if needed (Usually when scaling is not 100% or when using multiple monitors)
 5. Done
