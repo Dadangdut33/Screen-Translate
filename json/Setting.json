@@ -15,6 +15,7 @@
     "default_Engine": "Google Translate",
     "default_FromOnOpen": "Japanese",
     "default_ToOnOpen": "English",
+    "captureLastValDelete": 0,
     "hotkey": {
         "captureAndTl": {
             "hk": "",

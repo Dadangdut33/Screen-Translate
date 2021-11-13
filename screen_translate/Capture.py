@@ -164,7 +164,7 @@ def captureImg(coords, sourceLang, tesseract_Location, saveImg = False, enhance_
         return is_Success, wordsGet.strip()
 
 def captureAll():
-    """Capture all screens and return the result"""
+    """Capture all screens and save the result"""
     # Capture all screens
     try:
         captured = pyautogui.screenshot()

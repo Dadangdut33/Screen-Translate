@@ -277,39 +277,63 @@ class SettingUI():
         self.fLabelOCR_2.pack(side=TOP, fill=X, expand=False, padx=5, pady=5)
         self.fLabelOCR_2.pack_propagate(0)
 
-        self.content_Cap_3_1 = Frame(self.fLabelOCR_2)
-        self.content_Cap_3_1.pack(side=TOP, fill=X, expand=False)
+        self.content_Enhance_1 = Frame(self.fLabelOCR_2)
+        self.content_Enhance_1.pack(side=TOP, fill=X, expand=False)
 
         self.checkVarCV2 = BooleanVar(self.root, value=True)
         self.checkVarGrayscale = BooleanVar(self.root, value=False)
         self.checkVarDebugmode = BooleanVar(self.root, value=False)
 
-        self.labelCBBackground = Label(self.content_Cap_3_1, text="Background :")
+        self.labelCBBackground = Label(self.content_Enhance_1, text="Background :")
         self.labelCBBackground.pack(side=LEFT, padx=5, pady=5)
         CreateToolTip(self.labelCBBackground, "Background type of the area that will be captured. This variable is used only if detect contour using CV2 is checked.")
 
-        self.CBBackgroundType = ttk.Combobox(self.content_Cap_3_1, values=["Auto-Detect", 'Light', 'Dark'], state="readonly")
+        self.CBBackgroundType = ttk.Combobox(self.content_Enhance_1, values=["Auto-Detect", 'Light', 'Dark'], state="readonly")
         self.CBBackgroundType.pack(side=LEFT, padx=5, pady=5)
         CreateToolTip(self.CBBackgroundType, "Background type of the area that will be captured. This variable is used only if detect contour using CV2 is checked.")
 
-        self.checkCV2 = ttk.Checkbutton(self.content_Cap_3_1, text="Detect Contour using CV2", variable=self.checkVarCV2)
+        self.checkCV2 = ttk.Checkbutton(self.content_Enhance_1, text="Detect Contour using CV2", variable=self.checkVarCV2)
         self.checkCV2.pack(side=LEFT, padx=5, pady=5)
         CreateToolTip(self.checkCV2, text="Enhance the OCR by applying filters and outlining the contour of the words.")
 
-        self.checkGrayscale = ttk.Checkbutton(self.content_Cap_3_1, text="Grayscale", variable=self.checkVarGrayscale)
+        self.checkGrayscale = ttk.Checkbutton(self.content_Enhance_1, text="Grayscale", variable=self.checkVarGrayscale)
         self.checkGrayscale.pack(side=LEFT, padx=5, pady=5)
         CreateToolTip(self.checkGrayscale, text="Enhance the OCR by making the captured picture grayscale on the character reading part.")
 
-        self.checkDebugmode = ttk.Checkbutton(self.content_Cap_3_1, text="Debug Mode", variable=self.checkVarDebugmode)
+        self.checkDebugmode = ttk.Checkbutton(self.content_Enhance_1, text="Debug Mode", variable=self.checkVarDebugmode)
         self.checkDebugmode.pack(side=LEFT, padx=5, pady=5)
         CreateToolTip(self.checkDebugmode, text="Enable debug mode.")
         
-        self.hintLabelEnhance = Label(self.content_Cap_3_1, text="❓")
+        self.hintLabelEnhance = Label(self.content_Enhance_1, text="❓")
         self.hintLabelEnhance.pack(side=RIGHT, padx=5, pady=5)
         CreateToolTip(self.hintLabelEnhance, 
         text="""Options saved in this section are for the inital value on startup.
         \rYou can experiment with the option to increase the accuracy of tesseract OCR.
         \rThe saved picture will not be affected by the options.""")
+
+        self.fLabelOCR_3 = LabelFrame(self.frameOCREngine, text="• Misc", width=750, height=55)
+        self.fLabelOCR_3.pack(side=TOP, fill=X, expand=False, padx=5, pady=5)
+
+        self.content_Misc_1 = Frame(self.fLabelOCR_3)
+        self.content_Misc_1.pack(side=TOP, fill=X, expand=False)
+
+        self.labelSpinValDel = Label(self.content_Misc_1, text="Delete Last Char :")
+        self.labelSpinValDel.pack(side=LEFT, padx=5, pady=5)
+        CreateToolTip(self.labelSpinValDel, 
+        """The amount of captured word characters to be removed from the last.
+        \rWhy? Because sometimes tesseract captured a garbage character that shows up in the last word.
+        \rSet this to 0 if it deletes an actual character!""")
+
+        self.valDelLastChar = IntVar(self.root)
+        self.spinnerDelLastChar = ttk.Spinbox(self.content_Misc_1, from_=0, to=10, width=5, textvariable=self.valDelLastChar)
+        self.spinnerDelLastChar.pack(side=LEFT, padx=5, pady=5)
+        CreateToolTip(self.spinnerDelLastChar, 
+        """The amount of captured word characters to be removed from the last.
+        \rWhy? Because sometimes tesseract captured a garbage character that shows up in the last word.
+        \rSet this to 0 if it deletes an actual character!""")
+
+        self.validateDigits_SpinDel = (self.root.register(lambda event: self.validateSpinbox(event, self.spinnerDelLastChar)), '%P')
+        self.spinnerDelLastChar.configure(validate='key', validatecommand=self.validateDigits_SpinDel)
 
         # ----------------------------------------------------------------------
         # Translate
@@ -711,6 +735,16 @@ class SettingUI():
             Mbox("Error: Invalid Debug Options", "Please do not modify the setting manually if you don't know what you are doing", 2, self.root)
             self.checkVarDebugmode.set(False)
 
+        # Check for delete last char
+        try:
+            if settings['captureLastValDelete'] > 10 or settings['captureLastValDelete'] < 0:
+                raise Exception
+            self.valDelLastChar.set(settings['captureLastValDelete'])
+        except Exception:
+            print("Error: Invalid Delete Last Char Value")
+            Mbox("Error: Invalid Delete Last Char Value", "Please do not modify the setting manually if you don't know what you are doing", 2, self.root)
+            self.valDelLastChar.set(0)
+
         # Check for snip offset
         try:
             if settings['snippingWindowGeometry'] == "auto":
@@ -929,6 +963,7 @@ class SettingUI():
             "default_Engine": self.CBDefaultEngine.get(),
             "default_FromOnOpen": self.CBDefaultFrom.get(),
             "default_ToOnOpen": self.CBDefaultTo.get(),
+            "captureLastValDelete": self.valDelLastChar.get(),
             "hotkey": {
                 "captureAndTl": {
                     "hk": self.labelCurrentHKCapTl['text'],

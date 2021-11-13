@@ -27,6 +27,7 @@ class JsonHandler:
         "default_Engine": "Google Translate",
         "default_FromOnOpen": "Auto-Detect",
         "default_ToOnOpen": "English",
+        "captureLastValDelete": 0,
         "hotkey": {
             "captureAndTl": {
                 "hk": "",

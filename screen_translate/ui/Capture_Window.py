@@ -267,12 +267,15 @@ class CaptureUI():
             print("But Failed to capture any text!")
             if settings['show_no_text_alert']: Mbox("Warning", "Failed to Capture Text!", 1, self.root)
         else:
+            if settings['captureLastValDelete'] > 0 and settings['captureLastValDelete'] < 11:
+                result = result[:-settings['captureLastValDelete']]
+            
             # Pass it to mainMenu
-            _StoredGlobal.text_Box_Top_Var.set(result[:-1]) # Delete last character
+            _StoredGlobal.text_Box_Top_Var.set(result) # Delete last character
 
             if settings['autoCopy'] == True:
                 print("Copying text to clipboard")
-                pyperclip.copy(result[:-1].strip())
+                pyperclip.copy(result.strip())
                 print("Copied successfully to clipboard!")
 
             # Run the translate function
