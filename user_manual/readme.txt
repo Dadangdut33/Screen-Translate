@@ -6,6 +6,7 @@ Readme File
 
 # Requirements
 - Tesseract, needed for the ocr. Install it with all the language pack.
+- Internet connection
 
 # Tutorial on How To Setup
 For visual instructions please take a look inside the user_manual folder

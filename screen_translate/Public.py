@@ -80,7 +80,7 @@ class Global_Class:
         self.mboxOpen = False
         
         # Version
-        self.version = "1.8"
+        self.version = "1.8.1"
         self.versionType = "release"
         self.newVerStatusCache = None
 

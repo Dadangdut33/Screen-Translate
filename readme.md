@@ -61,12 +61,12 @@ Inspired by Visual Novel Reader (VNR), [Visual Novel OCR](https://github.com/lem
 
 # Requirements
 **For User**
-- **[tesseract](https://github.com/UB-Mannheim/tesseract/wiki)**, You only need to install it and its language tessdata
+- **[tesseract](https://github.com/UB-Mannheim/tesseract/wiki)**, needed for the ocr. Install it with all the language pack.
 - Internet connection
 
 **For Dev**
 - Python 3.5+, checked using [vermin](https://github.com/netromdk/vermin) (I am using python 3.9.6)
-- Install [the dependencies](https://github.com/Dadangdut33/Screen-Translate/blob/main/requirements.txt) You can install them by running `pip_install.bat` or by typing `pip install -r requirements.txt` installing them yourself.
+- Install [the dependencies](https://github.com/Dadangdut33/Screen-Translate/blob/main/requirements.txt) You can install them by running `pip_install.bat` or by typing `pip install -r requirements.txt`.
 
 # Downloads
 - [Tesseract](https://github.com/UB-Mannheim/tesseract/wiki)

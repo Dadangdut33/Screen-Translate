@@ -1,5 +1,10 @@
 # Changelog
-Latest V1.8
+Latest V1.8.1
+
+[V1.8.1 Minor Bug Fix and Update]
+- Fixed chinese language bug
+- Fix debug mode checkbox not syncing between the 2 ui
+- Add setting to control how many last characters to delete
 
 [V1.8 Added snip and cap]
 - Added snip and cap
