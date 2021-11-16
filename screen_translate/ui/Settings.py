@@ -407,7 +407,7 @@ class SettingUI():
         self.spinnerHKCapTlDelay.configure(validate='key', validatecommand=self.validateDigits_Delay)
         self.spinnerHKCapTlDelay.pack(side=LEFT, padx=5, pady=5)
         
-        self.buttonSetHKCapTl = ttk.Button(self.content_HKCapTl, text="Click to set the hotkey", command=self.setHKCapTl)
+        self.buttonSetHKCapTl = Button(self.content_HKCapTl, text="Click to set the hotkey", command=self.setHKCapTl)
         self.buttonSetHKCapTl.pack(side=LEFT, padx=5, pady=5)
         
         self.buttonClearHKCapTl = ttk.Button(self.content_HKCapTl, text="Clear", command=self.clearHKCapTl)
@@ -439,7 +439,7 @@ class SettingUI():
         self.spinnerHKSnipCapTlDelay.configure(validate='key', validatecommand=self.validateDigits_DelaySnip)
         self.spinnerHKSnipCapTlDelay.pack(side=LEFT, padx=5, pady=5)
 
-        self.buttonHKSnipCapTl = ttk.Button(self.content_HKSnipCapTl, text="Click to set the hotkey", command=self.setHKSnipCapTl)
+        self.buttonHKSnipCapTl = Button(self.content_HKSnipCapTl, text="Click to set the hotkey", command=self.setHKSnipCapTl)
         self.buttonHKSnipCapTl.pack(side=LEFT, padx=5, pady=5)
         
         self.buttonClearHKSnipCapTl = ttk.Button(self.content_HKSnipCapTl, text="Clear", command=self.clearHKSnipCapTl)
@@ -563,7 +563,7 @@ class SettingUI():
 
         self.maskOpacityLabel2 = Label(self.fMaskContent_2, text="0.5")
 
-        self.maskOpacitySlider = ttk.Scale(self.fMaskContent_2, from_=0.0, to=1.0, orient=HORIZONTAL, variable=self.maskOpacityVar, command=self.maskOpacitySlider_Callback)
+        self.maskOpacitySlider = ttk.Scale(self.fMaskContent_2, from_=0.0, to=1.0, length=150, orient=HORIZONTAL, variable=self.maskOpacityVar, command=self.maskOpacitySlider_Callback)
         self.maskOpacitySlider.pack(side=LEFT, padx=5, pady=5)
         self.maskOpacityLabel2.pack(side=LEFT, padx=5, pady=5)
         CreateToolTip(self.maskOpacityLabel2, "Mask window opacity on startup")

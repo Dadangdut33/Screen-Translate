@@ -209,7 +209,7 @@ class Detached_Tl_Result():
         Reset to currently stored settings
         """
         # Ask for confirmation first
-        if Mbox("Reset To Currently Saved", "Are you sure you want to reset to current settings?", 3, parent=self.root):
+        if Mbox("Reset To Currently Saved", "Are you sure you want to reset to currently saved settings?", 3, parent=self.root):
             self.root.attributes('-alpha', 1)
             self.sliderOpac(1, "outside")
             settings = fJson.readSetting()

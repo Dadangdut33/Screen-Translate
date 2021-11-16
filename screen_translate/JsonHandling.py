@@ -64,7 +64,7 @@ class JsonHandler:
         },
         "Masking_Window": {
             "color": "#555555",
-            "alpha": 0.5
+            "alpha": 0.8
         },
         "saveHistory": True,
         "checkUpdateOnStart": True,

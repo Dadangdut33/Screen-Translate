@@ -24,6 +24,7 @@ from screen_translate.ui.History import HistoryUI
 from screen_translate.ui.Settings import SettingUI
 from screen_translate.ui.Capture_Window import CaptureUI
 from screen_translate.ui.Capture_WindowSetting import CaptureUI_Setting
+from screen_translate.ui.Masking_Window import MaskingUI
 from screen_translate.ui.SnipAndCap import Snip_Mask
 from screen_translate.ui.About import AboutUI
 from screen_translate.ui.Tl_From import Detached_Tl_Query
@@ -92,6 +93,7 @@ class main_Menu():
         self.snipper_UI = Snip_Mask()
         self.query_Detached_Window_UI = Detached_Tl_Query()
         self.result_Detached_Window_UI = Detached_Tl_Result()
+        self.mask_UI = MaskingUI()
         self.setting_UI = SettingUI()
         self.history_UI = HistoryUI()
 
@@ -202,6 +204,7 @@ class main_Menu():
         self.filemenu3 = Menu(self.menubar, tearoff=0)
         self.filemenu3.add_command(label="Capture Window", command=self.open_Capture_Screen, accelerator="F5") # Open Capture Screen Window
         self.filemenu3.add_command(label="Capture Setting Box", command=self.open_Capture_Screen_Setting, accelerator="Ctrl + F5") # Capture window settings
+        self.filemenu3.add_command(label="Mask Window", command=self.open_Mask_Window, accelerator="Ctrl + Alt + F5") # Open Mask window
         self.filemenu3.add_command(label="Query Box", command=self.open_Query_Box, accelerator="F6")
         self.filemenu3.add_command(label="Result Box", command=self.open_Result_Box, accelerator="F7")
         self.menubar.add_cascade(label="Generate", menu=self.filemenu3)
@@ -235,6 +238,7 @@ class main_Menu():
         self.root.bind("<F4>", self.open_Img_Captured)
         self.root.bind("<F5>", self.open_Capture_Screen)
         self.root.bind("<Control-F5>", self.open_Capture_Screen_Setting)
+        self.root.bind("<Control-Alt-F5>", self.open_Mask_Window)
         self.root.bind("<F6>", self.open_Query_Box)
         self.root.bind("<F7>", self.open_Result_Box)
 
@@ -320,6 +324,10 @@ class main_Menu():
     # Open Capture Window Setting
     def open_Capture_Screen_Setting(self, event=None):
         self.capture_UI_Setting.show()
+
+    # Open mask window
+    def open_Mask_Window(self, event=None):
+        self.mask_UI.show()
 
     # Open captured image folder
     def open_Img_Captured(self, event=None):
