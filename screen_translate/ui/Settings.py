@@ -1,16 +1,17 @@
+import os
 import json
 from tkinter import colorchooser
 import tkinter.ttk as ttk
-import keyboard
 from tkinter import *
 from tkinter import filedialog
 
-from tkfontchooser import askfont
 from screen_translate.Public import CreateToolTip, fJson, _StoredGlobal
 from screen_translate.Public import startfile, optGoogle, optDeepl, optMyMemory, optPons, optNone, engines, getTheOffset, searchList
 from screen_translate.Mbox import Mbox
 from screen_translate.Capture import captureAll
-import os
+
+import keyboard
+from tkfontchooser import askfont
 # Get dir path
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
@@ -47,7 +48,8 @@ class SettingUI():
         self.listboxCat.insert(3, "Translate")
         self.listboxCat.insert(4, "Hotkey")
         self.listboxCat.insert(5, "Query/Result Box")
-        self.listboxCat.insert(6, "Other")
+        self.listboxCat.insert(6, "Mask window")
+        self.listboxCat.insert(7, "Other")
 
         # Bind the listbox to the function
         self.listboxCat.bind("<<ListboxSelect>>", self.onSelect)
@@ -471,8 +473,8 @@ class SettingUI():
         self.queryBgVar = _StoredGlobal.queryBg
         self.queryBg = Label(self.fQueryContent_1, text="Textbox Bg Color : ")
         self.queryBg.pack(side=LEFT, padx=5, pady=5)
-        self.queryBg.bind("<Button-1>", lambda event: self.bgColorChooser(label=self.queryBg, 
-        theVar=self.queryBgVar, destination=_StoredGlobal.main.query_Detached_Window_UI))
+        self.queryBg.bind("<Button-1>", lambda event: self.colorChoosing(label=self.queryBg, 
+        theVar=self.queryBgVar, theText="Textbox BG color: ", destination=_StoredGlobal.main.query_Detached_Window_UI))
         CreateToolTip(self.queryBg, "Click to choose query textbox background color")
 
         self.hintLabelQuery = Label(self.fQueryContent_1, text="❓")
@@ -482,8 +484,8 @@ class SettingUI():
         self.queryFgVar = _StoredGlobal.queryFg
         self.queryFg = Label(self.fQueryContent_2, text="Textbox Fg Color : ")
         self.queryFg.pack(side=LEFT, padx=5, pady=5)
-        self.queryFg.bind("<Button-1>", lambda event: self.fgColorChooser(label=self.queryFg,
-        theVar=self.queryFgVar, destination=_StoredGlobal.main.query_Detached_Window_UI))
+        self.queryFg.bind("<Button-1>", lambda event: self.colorChoosing(label=self.queryFg,
+        theVar=self.queryFgVar, theText="Textbox FG color: ", destination=_StoredGlobal.main.query_Detached_Window_UI))
         CreateToolTip(self.queryFg, "Click to choose query textbox foreground color")
 
         self.queryFontVar = _StoredGlobal.queryFont
@@ -510,8 +512,8 @@ class SettingUI():
         self.resultBgVar = _StoredGlobal.resultBg
         self.resultBg = Label(self.fResultContent_1, text="Textbox Bg Color : ")
         self.resultBg.pack(side=LEFT, padx=5, pady=5)
-        self.resultBg.bind("<Button-1>", lambda event: self.bgColorChooser(label=self.resultBg,
-        theVar=self.resultBgVar, destination=_StoredGlobal.main.result_Detached_Window_UI))
+        self.resultBg.bind("<Button-1>", lambda event: self.colorChoosing(label=self.resultBg,
+        theVar=self.resultBgVar, theText="Textbox BG color: ", destination=_StoredGlobal.main.result_Detached_Window_UI))
         CreateToolTip(self.resultBg, "Click to choose result textbox background color")
 
         self.hintLabelResult = Label(self.fResultContent_1, text="❓")
@@ -521,8 +523,8 @@ class SettingUI():
         self.resultFgVar = _StoredGlobal.resultFg
         self.resultFg = Label(self.fResultContent_2, text="Textbox Fg Color : ")
         self.resultFg.pack(side=LEFT, padx=5, pady=5)
-        self.resultFg.bind("<Button-1>", lambda event: self.fgColorChooser(label=self.resultFg,
-        theVar=self.resultFgVar, destination=_StoredGlobal.main.result_Detached_Window_UI))
+        self.resultFg.bind("<Button-1>", lambda event: self.colorChoosing(label=self.resultFg,
+        theVar=self.resultFgVar, theText="Textbox FG color: ", destination=_StoredGlobal.main.result_Detached_Window_UI))
         CreateToolTip(self.resultFg, "Click to choose result textbox foreground color")
 
         self.resultFontVar = _StoredGlobal.resultFont
@@ -532,6 +534,39 @@ class SettingUI():
         self.resultFont.bind("<Button-1>", lambda event: self.fontChooser(label=self.resultFont,
         theVar=self.resultFontVar, theDict=self.resultFontDict, destination=_StoredGlobal.main.result_Detached_Window_UI))
         CreateToolTip(self.resultFont, "Click to choose result textbox font")
+
+        # ----------------------------------------------------------------------
+        # Mask window
+        self.frameMask = Frame(self.mainFrameTop)
+        self.frameMask.pack(side=TOP, fill=X, expand=False, padx=5, pady=5)
+
+        self.fLabelMask = LabelFrame(self.frameMask, text="• Mask Window", width=750, height=90)
+        self.fLabelMask.pack(side=TOP, fill=X, expand=False, padx=5, pady=5)
+        self.fLabelMask.pack_propagate(0)
+
+        self.fMaskContent_1 = Frame(self.fLabelMask)
+        self.fMaskContent_1.pack(side=TOP, fill=X, expand=False)
+
+        self.fMaskContent_2 = Frame(self.fLabelMask)
+        self.fMaskContent_2.pack(side=TOP, fill=X, expand=False)
+
+        self.maskColorVar = StringVar()
+        self.maskColorLabel = Label(self.fMaskContent_1, text="Color     :     ")
+        self.maskColorLabel.pack(side=LEFT, padx=5, pady=5)
+        self.maskColorLabel.bind("<Button-1>", lambda event: self.colorChoosing(label=self.maskColorLabel, theVar=self.maskColorVar, theText="Color     :     "))
+        CreateToolTip(self.maskColorLabel, "Click to choose mask window color on startup")
+
+        self.maskOpacityVar = DoubleVar()
+        self.maskOpacityLabel = Label(self.fMaskContent_2, text="Opacity : ")
+        self.maskOpacityLabel.pack(side=LEFT, padx=5, pady=5)
+        CreateToolTip(self.maskOpacityLabel, "Mask window opacity on startup")
+
+        self.maskOpacityLabel2 = Label(self.fMaskContent_2, text="0.5")
+
+        self.maskOpacitySlider = ttk.Scale(self.fMaskContent_2, from_=0.0, to=1.0, orient=HORIZONTAL, variable=self.maskOpacityVar, command=self.maskOpacitySlider_Callback)
+        self.maskOpacitySlider.pack(side=LEFT, padx=5, pady=5)
+        self.maskOpacityLabel2.pack(side=LEFT, padx=5, pady=5)
+        CreateToolTip(self.maskOpacityLabel2, "Mask window opacity on startup")
 
         # ----------------------------------------------------------------------
         # Other
@@ -615,6 +650,9 @@ class SettingUI():
                 self.showFrame(self.frameQueryResult)
 
             elif self.listboxCat.curselection()[0] == 5:
+                self.showFrame(self.frameMask)
+
+            elif self.listboxCat.curselection()[0] == 6:
                 self.showFrame(self.frameOther)
 
     def hideAllFrame(self):
@@ -626,6 +664,7 @@ class SettingUI():
         self.frameTranslate.pack_forget()
         self.frameHotkey.pack_forget()
         self.frameQueryResult.pack_forget()
+        self.frameMask.pack_forget()
         self.frameOther.pack_forget()
 
     def showFrame(self, frame):
@@ -664,7 +703,7 @@ class SettingUI():
         """
         Reset the settings to currently stored settings
         """
-        status, settings = fJson.loadSetting()
+        settings = fJson.loadSetting()[1]
 
         validTesseract = "tesseract" in settings['tesseract_loc'].lower()
         # If tesseract is not found
@@ -744,6 +783,20 @@ class SettingUI():
             print("Error: Invalid Delete Last Char Value")
             Mbox("Error: Invalid Delete Last Char Value", "Please do not modify the setting manually if you don't know what you are doing", 2, self.root)
             self.valDelLastChar.set(0)
+
+        # Check for maskwindow
+        try:
+            self.maskColorLabel.config(text="Color     :     " + settings['Masking_Window']['color'])
+            self.maskColorVar.set(settings['Masking_Window']['color'])
+            self.maskOpacityLabel2.config(text=str(settings['Masking_Window']['alpha']))
+            self.maskOpacitySlider.set(settings['Masking_Window']['alpha'])
+        except Exception:
+            print("Error: Invalid Mask Window Options")
+            Mbox("Error: Invalid Mask Window Options", "Please do not modify the setting manually if you don't know what you are doing", 2, self.root)
+            self.maskColorLabel.config(text="Color     :     #555555")
+            self.maskColorVar.set("#555555")
+            self.maskOpacityLabel2.config(text="0.5")
+            self.maskOpacitySlider.set(0.5)
 
         # Check for snip offset
         try:
@@ -998,6 +1051,10 @@ class SettingUI():
                 "bg": self.resultBgVar.get(),
                 "fg": self.resultFgVar.get(),
             },
+            "Masking_Window": {
+                "color": self.maskColorVar.get(),
+                "alpha": self.maskOpacityVar.get()
+            },
             "saveHistory": self.saveToHistoryVar.get(),
             "checkUpdateOnStart": self.checkUpdateVar.get(),
             "enhance_Capture" : {
@@ -1228,37 +1285,39 @@ class SettingUI():
         except Exception: # Except means that number is not a digit
             return False
 
-    # Bg Color chooser
-    def bgColorChooser(self, event=None, label=None, theVar=None, destination=None):
-        """Bg color chooser
+    # ----------------------------------------------------------------
+    # Slider
+    def maskOpacitySlider_Callback(self, event):
+        """Callback for the mask opacity slider
 
         Args:
-            event : Ignored. Defaults to None.
-            label : The targeted label object. Defaults to None.
-            theVar : The targeted var object. Defaults to None.
-            destination : The targeted destination object, destination targeted is a UI window. Defaults to None.
+            event: value of the slider
         """
-        colorGet = colorchooser.askcolor(color=theVar.get(), title="Choose a color")
-        if colorGet[1] != None:
-            theVar.set(colorGet[1])
-            label.config(text="Textbox BG color: " + theVar.get())
-            destination.updateStuff()
-    
-    # Fg Color chooser
-    def fgColorChooser(self, event=None, label=None, theVar=None, destination=None):
-        """Fg color chooser
+        self.maskOpacityVar.set(event)
+        self.maskOpacityLabel2.config(text=str(round(float(event), 2)))
+
+    # ----------------------------------------------------------------
+    # For choosing color
+    def colorChoosing(self, event=None, label=None, theVar=None, theText=None, destination=None):
+        """
+        Color chooser
 
         Args:
-            event : Ignored. Defaults to None.
-            label : The targeted label object. Defaults to None.
-            theVar : The targeted var object. Defaults to None.
-            destination : The targeted destination object, destination targeted is a UI window. Defaults to None.
+            event: Ignored. Defaults to None
+            label: Label to change
+            theVar: Variable to change
+            theText: Text for the label
+            destination: Destination to change
         """
-        colorGet = colorchooser.askcolor(color=theVar.get(), title="Choose a color")
-        if colorGet[1] != None:
-            theVar.set(colorGet[1])
-            label.config(text="Textbox FG color: " + theVar.get())
-            destination.updateStuff()
+        # Get the color
+        color = colorchooser.askcolor(color=theVar.get(), title="Choose a color")[1]
+        # If the color is not None
+        if color is not None:
+            theVar.set(color)
+            label.config(text=theText + theVar.get())
+
+            if destination is not None:
+                destination.updateStuff()
 
     # Font Chooser
     def fontChooser(self, event=None, label=None, theVar=None, theDict=None, destination=None):

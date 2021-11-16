@@ -1,13 +1,16 @@
+# Internal
+import os
+from datetime import datetime
+# External
 import numpy as np
 import pyautogui
-import os
 import pytesseract
 import cv2
-from screen_translate.Mbox import Mbox
-from datetime import datetime
 
 # Lang Code
 from screen_translate.LangCode import *
+# Mbox
+from screen_translate.Mbox import Mbox
 
 # Settings to capture all screens
 from PIL import ImageGrab

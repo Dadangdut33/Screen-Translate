@@ -50,6 +50,10 @@
         "bg": "#FFFFFF",
         "fg": "#000000"
     },
+    "Masking_Window": {
+        "color": "#555555",
+        "alpha": 0.5
+    },
     "saveHistory": true,
     "checkUpdateOnStart": true,
     "enhance_Capture": {

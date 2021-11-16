@@ -62,6 +62,10 @@ class JsonHandler:
             "bg": "#FFFFFF",
             "fg": "#000000",
         },
+        "Masking_Window": {
+            "color": "#555555",
+            "alpha": 0.5
+        },
         "saveHistory": True,
         "checkUpdateOnStart": True,
         "enhance_Capture" : {
@@ -356,7 +360,7 @@ class JsonHandler:
 
         Returns:
             bool: True if success, False if failed
-            status: Status text of the operation
+            data: The data of the setting
         """
         is_Success = False
         data = ""

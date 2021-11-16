@@ -1,10 +1,10 @@
+import os
 import tkinter.ttk as ttk
 from tkinter import *
 from screen_translate.Public import CreateToolTip, fJson, getTheOffset, _StoredGlobal, searchList
 from screen_translate.Mbox import Mbox
 from screen_translate.Capture import captureImg
 import pyperclip
-import os
 
 # Classes
 class CaptureUI():

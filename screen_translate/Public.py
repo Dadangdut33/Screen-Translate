@@ -1,13 +1,20 @@
+# Internal
 import tkinter as tk
 import subprocess
 import asyncio
 import os
+import time
+
+# Ext
 import webbrowser
+
+# User Defined
 from screen_translate.JsonHandling import JsonHandler
 from screen_translate.LangCode import *
 from screen_translate.Mbox import Mbox
 from screeninfo import get_monitors
 
+# ---------------------------------------------------------------
 # Settings to capture all screens
 from PIL import ImageGrab
 from functools import partial

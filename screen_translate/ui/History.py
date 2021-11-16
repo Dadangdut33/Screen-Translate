@@ -1,8 +1,8 @@
-import tkinter.ttk as ttk
-import pyperclip
 from tkinter import *
+import tkinter.ttk as ttk
 from screen_translate.Public import fJson, _StoredGlobal
 from screen_translate.Mbox import Mbox
+import pyperclip
 
 # ----------------------------------------------------------------------
 class HistoryUI():

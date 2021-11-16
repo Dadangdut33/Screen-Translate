@@ -1,10 +1,16 @@
+# Internal
 import os
-import keyboard
 import time
 from sys import exit
 from tkinter import *
 import tkinter.ttk as ttk
+
+# External
+import keyboard
 import requests
+from pystray import MenuItem as item
+import pystray
+from PIL import Image
 
 # ----------------------------------------------------------------
 # Var and methods
@@ -29,13 +35,6 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 dir_img_captured = dir_path + r"\img_captured"
 dir_logo = dir_path + "/logo.ico"
 _StoredGlobal.logoPath = dir_logo.replace(".ico", ".png")
-
-# ----------------------------------------------------------------
-""" For future features or improvement
-TODO: 
-- Add more OCR options (This might not be necessary after all. Will still keep it here for now)
-- Find better way to use the hotkey instead of checking it every 100ms. (Currently it's not that bad, but if found  a better way, will try update it)
-"""
 
 # ----------------------------------------------------------------
 def console():
@@ -252,7 +251,7 @@ class main_Menu():
                 keyboard.add_hotkey(settings['hotkey']['snipAndCapTl']['hk'], _StoredGlobal.hotkeySnipCapTLCallback)
         except KeyError:
             print("Error: Invalid Hotkey Options")
-        self.root.after(100, self.hotkeyPoll)
+        self.root.after(0, self.hotkeyPoll)
         
         self.cbTLChange() # Update the cb
         self.langChanged() # Update the value in global var
@@ -291,7 +290,7 @@ class main_Menu():
         """
         # Confirmation on close
         if Mbox("Confirmation", "Are you sure you want to exit?", 3, self.root):
-            self.root.destroy()
+            self.root.quit()
             exit()
 
     # Open Setting Window
@@ -346,7 +345,7 @@ class main_Menu():
     def opacChange(self, val):
         self.capture_UI.sliderOpac(val, fromOutside=True)
 
-    # Menubar
+    # Menubar   
     def always_on_top(self):
         if self.alwaysOnTop:
             self.root.wm_attributes('-topmost', False)
