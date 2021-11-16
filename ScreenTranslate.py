@@ -373,9 +373,8 @@ class main_Menu():
         \r2. *Second*, you need to install tesseract, you can quickly go to the download link by pressing the download tesseract in menu bar
         \r3. *Then*, check the settings. Make sure tesseract path is correct
         \r4. *FOR MULTI MONITOR USER*, set offset in setting. If you have multiple monitor setup, you might need to set the offset in settings.
-        \rWhat you should do in the setting window:\n- Check how the program see your monitors in settings by clicking that one button.\n- You can also see how the capture area captured your images by enabling save capture image in settingsand then see the image in 'img_captured' directory
-        \r\nYou can open the tutorial or user manual linked in menubar if you are still confused.""" +
-        "you can set the xy offset in the setting", 0, self.root)
+        \rWhat you should do in the setting window:\n- Check how the program see your monitors in settings by clicking that one button.\n- You can also see how the capture area captured your images by enabling save capture image in settings and then see the image in 'img_captured' directory
+        \r\n------------------------------------------------------------------------------\nYou can check for visual tutorial in help -> open user manual if you are still confused.""", 0, self.root)
 
     # FAQ
     def open_Faq(self):
