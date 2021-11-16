@@ -8,9 +8,6 @@ import tkinter.ttk as ttk
 # External
 import keyboard
 import requests
-from pystray import MenuItem as item
-import pystray
-from PIL import Image
 
 # ----------------------------------------------------------------
 # Var and methods
