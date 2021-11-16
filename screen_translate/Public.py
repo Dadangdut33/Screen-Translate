@@ -3,7 +3,6 @@ import tkinter as tk
 import subprocess
 import asyncio
 import os
-import time
 
 # Ext
 import webbrowser
