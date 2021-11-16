@@ -153,7 +153,11 @@ class Global_Class:
         # --------------------------------
         # Google Translate
         if self.engine == "Google Translate":
-            isSuccess, translateResult = google_tl(query, self.langTo, self.langFrom)
+            oldMethod = False
+            if "- Alt" in self.langFrom or "- Alt" in self.langTo:
+                oldMethod = True
+
+            isSuccess, translateResult = google_tl(query, self.langTo, self.langFrom, oldMethod=oldMethod)
             self.fillTextBoxAndSaveHistory(isSuccess, query, translateResult, historyIsSaved)
         # --------------------------------
         # Deepl

@@ -1,3 +1,4 @@
+import requests
 from screen_translate.Mbox import Mbox
 from screen_translate.LangCode import *
 
@@ -40,7 +41,7 @@ __all__ = ["google_tl", "memory_tl", "pons_tl"]
 # ----------------------------------------------------------------
 # TL Functions
 # Google
-def google_tl(text, to_lang, from_lang="auto"):
+def google_tl(text, to_lang, from_lang="auto", oldMethod = False):
     """Translate Using Google Translate
 
     Args:
@@ -62,7 +63,12 @@ def google_tl(text, to_lang, from_lang="auto"):
         return is_Success, "Error Language Code Undefined"
     # --- Translate ---
     try:
-        result = GoogleTranslator(source=from_LanguageCode_Google, target=to_LanguageCode_Google).translate(text.strip())
+        if not oldMethod:
+            result = GoogleTranslator(source=from_LanguageCode_Google, target=to_LanguageCode_Google).translate(text.strip())
+        else:
+            url = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl={}&tl={}&dt=t&q={}'.format(from_LanguageCode_Google, to_LanguageCode_Google, text.replace('\n', ' ').replace(' ', '%20').strip())
+            result = requests.get(url).json()[0][0][0]        
+        
         is_Success = True
     except Exception as e:
         print(str(e))

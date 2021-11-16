@@ -160,7 +160,7 @@ class main_Menu():
         self.labelLangFrom = Label(self.bottomFrame1, text="From:")
         self.labelLangFrom.pack(side=LEFT, padx=5, pady=5)
 
-        self.CBLangFrom = ttk.Combobox(self.bottomFrame1, values=self.langOpt, state="readonly")
+        self.CBLangFrom = ttk.Combobox(self.bottomFrame1, values=self.langOpt, state="readonly", width=29)
         self.CBLangFrom.current(searchList(settings['default_FromOnOpen'], self.langOpt))
         self.CBLangFrom.pack(side=LEFT, padx=5, pady=5)
         self.CBLangFrom.bind("<<ComboboxSelected>>", self.langChanged)
@@ -168,7 +168,7 @@ class main_Menu():
         self.labelLangTo = Label(self.bottomFrame1, text="To:")
         self.labelLangTo.pack(side=LEFT, padx=5, pady=5)
 
-        self.CBLangTo = ttk.Combobox(self.bottomFrame1, values=self.langOpt, state="readonly")
+        self.CBLangTo = ttk.Combobox(self.bottomFrame1, values=self.langOpt, state="readonly", width=29)
         self.CBLangTo.current(searchList(settings['default_ToOnOpen'], self.langOpt))
         self.CBLangTo.pack(side=LEFT, padx=5, pady=5)
         self.CBLangTo.bind("<<ComboboxSelected>>", self.langChanged)
@@ -397,7 +397,7 @@ class main_Menu():
     # Open known bugs
     def open_KnownBugs(self):
         Mbox("Known Bugs", """- Monitor scaling needs to be 100% or it won't capture accurately (You can fix this easily by setting offset or set your monitor scaling to 100%)
-        \r- Chinese translation doesn't work with the google translate (I have no idea why)""", 0, self.root)
+        \r- Chinese translation doesn't work with the original method (deep_translator library) I don't know why. So i provided an alternative and that's why there is an \"alt\" options for chinese when using google translate (You should use it when translating chinese using google translate).""", 0, self.root)
 
     # Open user manual
     def open_UserManual(self):

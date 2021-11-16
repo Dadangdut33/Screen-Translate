@@ -135,6 +135,8 @@ google_Lang = {
     "Czech": "ces",
     "Chinese (Simplified)": "zh-cn",
     "Chinese (Traditional)": "zh-tw",
+    "Chinese (Simplified) - Alt": "zh-CN",
+    "Chinese (Traditional) - Alt": "zh-TW",
     "Corsican": "co",
     "Welsh": "cy",
     "Danish": "da",
