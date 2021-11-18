@@ -22,6 +22,8 @@ tesseract_Lang = {
     "Czech": "ces",
     "Chinese (Simplified)": "chi_sim",
     "Chinese (Traditional)": "chi_tra",
+    "Chinese (Simplified) - Alt": "chi_sim",
+    "Chinese (Traditional) - Alt": "chi_tra",
     "Cherokee": "chr",
     "Corsican": "cos",
     "Welsh": "cym",
