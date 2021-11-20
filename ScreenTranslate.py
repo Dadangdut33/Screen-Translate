@@ -293,6 +293,8 @@ class main_Menu():
             self.about_UI.root.iconbitmap(dir_logo)
             self.query_Detached_Window_UI.root.iconbitmap(dir_logo)
             self.result_Detached_Window_UI.root.iconbitmap(dir_logo)
+            self.mask_UI.root.iconbitmap(dir_logo)
+            self.log_UI.root.iconbitmap(dir_logo)
         except FileNotFoundError:
             print("Error loading icon: Logo not found!")
         except Exception as e:

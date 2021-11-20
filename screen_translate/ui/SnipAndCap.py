@@ -180,7 +180,8 @@ class Snip_Mask():
             event : Ignored. Defaults to None.
         """
         print(">> Snipped mode exited")
-        _StoredGlobal.set_Status_Ready()
+        if event is not None:
+            _StoredGlobal.set_Status_Ready()
         _StoredGlobal.statusChange("Canceled", fJson.readSetting())
         self.screenCanvas.destroy()
         self.snipping_Mask.withdraw()

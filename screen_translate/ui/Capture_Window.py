@@ -300,8 +300,6 @@ class CaptureUI():
                 # Run the translate function
                 _StoredGlobal.translate(settings)
 
-            _StoredGlobal.set_Status_Ready()
-
     # Menubar
     def always_on_top(self):
         if self.alwaysOnTopVar.get(): # IF ON THEN TURN IT OFF
