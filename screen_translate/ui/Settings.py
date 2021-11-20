@@ -593,13 +593,13 @@ class SettingUI():
         self.bottomFrame.pack(side=BOTTOM, fill=X, pady=(1,0))
 
         # Create the buttons
-        self.btnSave = ttk.Button(self.bottomFrame, text="Save Settings", command=self.saveSettings)
+        self.btnSave = ttk.Button(self.bottomFrame, text="🖪 Save Settings", command=self.saveSettings)
         self.btnSave.pack(side=RIGHT, padx=4, pady=5)
         
-        self.btnReset = ttk.Button(self.bottomFrame, text="Reset To Currently Stored Setting", command=self.reset)
+        self.btnReset = ttk.Button(self.bottomFrame, text="⟳ Reset To Currently Stored Setting", command=self.reset)
         self.btnReset.pack(side=RIGHT, padx=5, pady=5)
 
-        self.btnRestoreDefault = ttk.Button(self.bottomFrame, text="Restore Default", command=self.restoreDefault)
+        self.btnRestoreDefault = ttk.Button(self.bottomFrame, text="⚠ Restore Default", command=self.restoreDefault)
         self.btnRestoreDefault.pack(side=RIGHT, padx=5, pady=5)
 
         # ----------------------------------------------------------------

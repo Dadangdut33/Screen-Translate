@@ -69,7 +69,7 @@ class AboutUI():
         self.iconsLabel = Label(self.botLeftBottom, text="Icons from", font=("Segoe UI", 8))
         self.iconsLabel.pack(padx=5, pady=0, side=LEFT)
 
-        self.iconsLabel_2 = Label(self.botLeftBottom, text="Icons8.com", font=("Segoe UI", 8), fg="blue")
+        self.iconsLabel_2 = Label(self.botLeftBottom, text="Icons8.com 🡽", font=("Segoe UI", 8), fg="blue")
         self.iconsLabel_2.pack(padx=0, pady=0, side=LEFT) 
         self.iconsLabel_2.bind("<Button-1>", self.open_icons8)
         self.icons_8_ToolTip = CreateToolTip(self.iconsLabel_2, "Open Icons8 in web browser")

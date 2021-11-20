@@ -42,11 +42,11 @@ class HistoryUI():
         self.historyTreeView.bind('<Button-1>', self.handle_click)
 
         # Other stuff
-        self.btnCopyToClipboard = ttk.Button(self.bottomFrame, text="Copy to Clipboard", command=self.copyToClipboard)
-        self.btnCopyToTranslateBox = ttk.Button(self.bottomFrame, text="Copy to Translate Menu", command=self.copyToTranslateMenu)
-        self.btnDeleteAll = ttk.Button(self.bottomFrame, text="Delete All", command=self.deleteAll)
-        self.btnDeleteSelected = ttk.Button(self.bottomFrame, text="Delete Selected", command=self.deleteSelected)
-        self.btnRefresh = ttk.Button(self.bottomFrame, text="Refresh", command=self.refresh)
+        self.btnRefresh = ttk.Button(self.bottomFrame, text="⟳ Refresh", command=self.refresh)
+        self.btnCopyToClipboard = ttk.Button(self.bottomFrame, text="↳ Copy to Clipboard", command=self.copyToClipboard)
+        self.btnCopyToTranslateBox = ttk.Button(self.bottomFrame, text="↳ Copy to Translate Menu", command=self.copyToTranslateMenu)
+        self.btnDeleteSelected = ttk.Button(self.bottomFrame, text="✕ Delete Selected", command=self.deleteSelected)
+        self.btnDeleteAll = ttk.Button(self.bottomFrame, text="✕ Delete All", command=self.deleteAll)
 
         # Init element
         self.refresh()

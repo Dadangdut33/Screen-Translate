@@ -118,7 +118,7 @@ class main_Menu():
         
         self.captureNTranslate_Btn = ttk.Button(self.topFrame1, text="Capture & Translate", command=self.capture_UI.getTextAndTranslate)
         self.captureNTranslate_Btn.pack(side=LEFT, padx=5, pady=5)
-        CreateToolTip(self.captureNTranslate_Btn, "Capture and translate the selected text. Need to generate the capture UI first")
+        CreateToolTip(self.captureNTranslate_Btn, "Capture and translate the text inside capture area. Need to generate the capture UI first")
         
         self.snipAndCapTL_Btn = ttk.Button(self.topFrame1, text="Snip & Translate", command=self.snipAndCapTL)
         self.snipAndCapTL_Btn.pack(side=LEFT, padx=5, pady=5)
@@ -157,6 +157,7 @@ class main_Menu():
 
         self.labelEngines = Label(self.bottomFrame1, text="TL Engine:")
         self.labelEngines.pack(side=LEFT, padx=5, pady=5)
+        CreateToolTip(self.labelEngines, "The provider use to translate the text. You can set it to \"None\" if you only want to use the OCR")
 
         self.CBTranslateEngine = ttk.Combobox(self.bottomFrame1, values=engines, state="readonly")
         self.CBTranslateEngine.current(searchList(settings['default_Engine'], engines))
@@ -165,6 +166,7 @@ class main_Menu():
 
         self.labelLangFrom = Label(self.bottomFrame1, text="From:")
         self.labelLangFrom.pack(side=LEFT, padx=5, pady=5)
+        CreateToolTip(self.labelLangFrom, "Source Language (Text to be translated)")
 
         self.CBLangFrom = ttk.Combobox(self.bottomFrame1, values=self.langOpt, state="readonly", width=29)
         self.CBLangFrom.current(searchList(settings['default_FromOnOpen'], self.langOpt))
@@ -173,14 +175,15 @@ class main_Menu():
 
         self.labelLangTo = Label(self.bottomFrame1, text="To:")
         self.labelLangTo.pack(side=LEFT, padx=5, pady=5)
+        CreateToolTip(self.labelLangTo, "Target Language (Results)")
 
         self.CBLangTo = ttk.Combobox(self.bottomFrame1, values=self.langOpt, state="readonly", width=29)
         self.CBLangTo.current(searchList(settings['default_ToOnOpen'], self.langOpt))
         self.CBLangTo.pack(side=LEFT, padx=5, pady=5)
         self.CBLangTo.bind("<<ComboboxSelected>>", self.langChanged)
 
-        self.clearBtn = ttk.Button(self.bottomFrame1, text="Clear", command=self.clearTB)
-        self.swapBtn = ttk.Button(self.bottomFrame1, text="Swap", command=self.swapTl)
+        self.clearBtn = ttk.Button(self.bottomFrame1, text="✕ Clear", command=self.clearTB)
+        self.swapBtn = ttk.Button(self.bottomFrame1, text="⮁ Swap", command=self.swapTl)
         self.swapBtn.pack(side=LEFT, padx=5, pady=5)
         self.clearBtn.pack(side=LEFT, padx=5, pady=5)
 
