@@ -1425,7 +1425,6 @@ class SettingUI():
             # Filter only for .png
             imgArr = [i for i in imgArr if i.endswith('.png')]
 
-            print(imgArr)
             try:
                 for img in imgArr:
                     send2trash(".\\img_captured\\" + img)
