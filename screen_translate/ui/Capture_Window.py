@@ -187,30 +187,39 @@ class CaptureUI():
         Args:
             snippedCoords (str, optional): If method is by snipping and capture. Defaults to "".
         """
+        _StoredGlobal.set_Status_Busy()
         theUI_IsHidden = _StoredGlobal.capUiHidden
         if snippedCoords != "":
             theUI_IsHidden = False
         
         if(theUI_IsHidden): # If Hidden
-            Mbox("Error: You need to generate the capture window", "Please generate the capture window first", 2, self.root)
+            _StoredGlobal.set_Status_Error()
             print("Error Need to generate the capture window! Please generate the capture window first")
+            Mbox("Error: You need to generate the capture window", "Please generate the capture window first", 2, self.root)
+            _StoredGlobal.set_Status_Ready()
             return
         # Check for the lang from and langto only if it's on translation mode
         if _StoredGlobal.engine != "None":
             # If selected langfrom and langto is the same
             if(_StoredGlobal.langFrom) == (_StoredGlobal.langTo):
-                Mbox("Error: Language target is the same as source", "Please choose a different language", 2, self.root)
+                _StoredGlobal.set_Status_Error()
                 print("Error Language is the same as source! Please choose a different language")
+                Mbox("Error: Language target is the same as source", "Please choose a different language", 2, self.root)
+                _StoredGlobal.set_Status_Ready()
                 return
             # If selected langfrom is autodetect -> invalid
             if _StoredGlobal.langFrom == "Auto-Detect":
-                Mbox("Error: Invalid Language Selected", "Can't Use Auto Detect in Capture Mode", 2, self.root)
+                _StoredGlobal.set_Status_Error()
                 print("Error: Invalid Language Selected! Can't Use Auto Detect in Capture Mode")
+                Mbox("Error: Invalid Language Selected", "Can't Use Auto Detect in Capture Mode", 2, self.root)
+                _StoredGlobal.set_Status_Ready()
                 return
             # If selected langto is autodetect -> also invalid
             if _StoredGlobal.langTo == "Auto-Detect":
-                Mbox("Error: Invalid Language Selected", "Must specify language destination", 2, self.root)
+                _StoredGlobal.set_Status_Error()
                 print("Error: Invalid Language Selected! Must specify language destination")
+                Mbox("Error: Invalid Language Selected", "Must specify language destination", 2, self.root)
+                _StoredGlobal.set_Status_Ready()
                 return
 
         # Hide the Capture Window so it can detect the words better
@@ -263,7 +272,7 @@ class CaptureUI():
         print("Area Captured Successfully!") # Debug Print
         print("Coordinates: " + str(coords)) # Debug Print
 
-        if is_Success == False or len(result) == 1:
+        if is_Success == False:
             print("But Failed to capture any text!")
             if settings['show_no_text_alert']: Mbox("Warning", "Failed to Capture Text!", 1, self.root)
         else:
@@ -278,8 +287,11 @@ class CaptureUI():
                 pyperclip.copy(result.strip())
                 print("Copied successfully to clipboard!")
 
-            # Run the translate function
-            _StoredGlobal.translate()
+            if _StoredGlobal.engine != "None":
+                # Run the translate function
+                _StoredGlobal.translate()
+
+        _StoredGlobal.set_Status_Ready()
 
     # Menubar
     def always_on_top(self):

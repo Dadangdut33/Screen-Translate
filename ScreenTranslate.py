@@ -133,6 +133,14 @@ class main_Menu():
         _StoredGlobal.captureOpacityLabel_Main = self.captureOpacityLabel
         self.captureOpacityLabel.pack(side=LEFT, padx=5, pady=5)
 
+        self.statusFrame = Frame(self.topFrame1)
+        self.statusFrame.pack(side=RIGHT, fill=X, expand=False)
+
+        self.status = Label(self.statusFrame, text="⚐", font=("tkinterdefaultfont", 13, "bold"), fg="green")
+        _StoredGlobal.statusLabel = self.status    
+        self.status.pack(side=LEFT, padx=5, pady=(4,6))
+        CreateToolTip(self.status, """Status flag of the program.\n- Green: Ready state\n- Blue: Busy\n- Red: Error""")
+
         # --- Top Frame 2 ---
         # TB
         # Translation Textbox (Query/Source)

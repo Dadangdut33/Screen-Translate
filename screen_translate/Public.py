@@ -97,6 +97,21 @@ class Global_Class:
         self.resultFg = None
         self.resultFont = None
 
+        # Status lbl
+        self.statusLabel = None
+
+    def set_Status_Ready(self):
+        self.statusLabel.config(fg="green")
+        self.main_Ui.update_idletasks()
+
+    def set_Status_Busy(self):
+        self.statusLabel.config(fg="blue")
+        self.main_Ui.update_idletasks()
+
+    def set_Status_Error(self):
+        self.statusLabel.config(fg="red")
+        self.main_Ui.update_idletasks()
+
     def hotkeyCapTLCallback(self):
         """Callback for the hotkey to capture the screen"""
         self.hotkeyCapTlPressed = True
@@ -108,17 +123,22 @@ class Global_Class:
     # Translate
     def translate(self):
         """Translate the text"""
+        self.set_Status_Busy()
         # Only check the langfrom and langto if it is translating
         if self.engine != "None":
             # If source and destination are the same
             if(self.langFrom) == (self.langTo):
+                self.set_Status_Error()
                 Mbox("Error: Language target is the same as source", "Please choose a different language", 2, self.main_Ui)
                 print("Error Language is the same as source! Please choose a different language")
+                self.set_Status_Ready()
                 return
             # If langto not set
             if self.langTo == "Auto-Detect":
+                self.set_Status_Error()
                 Mbox("Error: Invalid Language Selected", "Must specify language destination", 2, self.main_Ui)
                 print("Error: Invalid Language Selected! Must specify language destination")
+                self.set_Status_Ready()
                 return
 
         # Get the text from the textbox
@@ -128,8 +148,7 @@ class Global_Class:
         try: 
             showAlert = fJson.readSetting()["show_no_text_alert"]
         except Exception as e:
-            print("Error: Couldn't read show alert setting. Using default value")
-            Mbox("Error: Could not read saveHistory setting", "Please do not edit Setting.json manually\n\n" + str(e), 2, self.main_Ui)
+            print("Error: Couldn't read show alert setting. Using default value!")
             showAlert = False
 
         # If the text is empty
@@ -139,13 +158,15 @@ class Global_Class:
             if showAlert:
                 Mbox("Error: No text entered", "Please enter some text", 2, self.main_Ui)
                 
+            self.set_Status_Ready()
             return
 
         try:
             historyIsSaved = fJson.readSetting()['saveHistory']
         except Exception as e:
-            print("Error: Could not read saveHistory setting", str(e))
-            Mbox("Error: Could not read saveHistory setting", "Please do not edit Setting.json manually\n\n" + str(e), 2, self.main_Ui)
+            print("Error: Could not read saveHistory setting. Using default value!", str(e))
+            if showAlert:
+                Mbox("Error: Could not read saveHistory setting", "Please do not edit Setting.json manually\n\n" + str(e), 2, self.main_Ui)
             historyIsSaved = True
 
         # Translate
@@ -173,11 +194,6 @@ class Global_Class:
         elif self.engine == "PONS":
             isSuccess, translateResult = pons_tl(query, self.langTo, self.langFrom)
             self.fillTextBoxAndSaveHistory(isSuccess, query, translateResult, historyIsSaved)
-
-        # --------------------------------
-        # None
-        elif self.engine == "None":
-            pass
         # --------------------------------
         # Wrong opts
         else:
@@ -206,8 +222,11 @@ class Global_Class:
                     "engine": self.engine
                 }
                 fJson.writeAdd_History(new_data)
+            self.set_Status_Ready()
         else:
+            self.set_Status_Error()
             Mbox("Error: Translation Failed", translateResult, 2, self.main_Ui)
+            self.set_Status_Ready()
 
     # Allowed keys
     def allowedKey(self, event):
