@@ -107,16 +107,20 @@ class Global_Class:
     def statusChange(self, newStatus, settings):
         if settings['logging']['enabled']:
             maxLine = settings['logging']['max_line']
-
+            if maxLine < 1:
+                maxLine = 1
+            elif maxLine > 1000:
+                maxLine = 1000
 
             oldText = self.logVar.get()        
             currTime = strftime("%H:%M:%S", localtime())
-            oldText += f"\n[{currTime}] {newStatus}"
             nlines = len(oldText.splitlines())
 
-
             if nlines == maxLine:
-                oldText = oldText.splitlines()[maxLine - 1]
+                # Remove the first line
+                oldText = oldText.splitlines()[1:]
+                oldText = "\n".join(oldText)
+            oldText += f"\n[{currTime}] {newStatus}"
 
             self.logVar.set(oldText)
 

@@ -590,16 +590,16 @@ class SettingUI():
 
         self.loggingVar = BooleanVar(self.root, value=True)
         self.loggingBox = ttk.Checkbutton(self.fOtherContent_2, text="Logging", variable=self.loggingVar)
-        self.loggingBox.pack(side=LEFT, padx=5, pady=5)
+        self.loggingBox.pack(side=LEFT, padx=(5,4), pady=(4,6))
 
         self.loggingLineVar = IntVar(self.root, value=10)
         self.loggingLineLabel = Label(self.fOtherContent_2, text="Max line : ")
         self.loggingLineLabel.pack(side=LEFT, padx=0, pady=5)
 
-        self.loggingLineSpinner = ttk.Spinbox(self.fOtherContent_2, from_=1, to=100, textvariable=self.loggingLineVar)
+        self.loggingLineSpinner = ttk.Spinbox(self.fOtherContent_2, from_=1, to=1000, textvariable=self.loggingLineVar, width=7)
         self.validateDigits_Logging = (self.root.register(lambda event: self.validateSpinbox(event, self.loggingLineSpinner)), '%P')
         self.loggingLineSpinner.configure(validate='key', validatecommand=self.validateDigits_Logging)
-        self.loggingLineSpinner.pack(side=LEFT, padx=5, pady=5)
+        self.loggingLineSpinner.pack(side=LEFT, padx=4, pady=(6,4))
         CreateToolTip(self.loggingLineSpinner, "Max line of logging")
 
         # ----------------------------------------------------------------
