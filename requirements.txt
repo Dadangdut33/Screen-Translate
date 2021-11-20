@@ -35,3 +35,6 @@ screeninfo == 0.7
 # \Screen-Translate\screen_translate\ui\Tl_From: 7
 # \Screen-Translate\screen_translate\ui\Tl_Result: 7
 tkfontchooser == 2.0.2
+
+# \Screen-Translate\screen_translate\ui\Settngs: 15
+send2trash == 1.8.0

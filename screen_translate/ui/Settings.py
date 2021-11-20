@@ -8,10 +8,11 @@ from tkinter import filedialog
 from screen_translate.Public import CreateToolTip, fJson, _StoredGlobal
 from screen_translate.Public import startfile, optGoogle, optDeepl, optMyMemory, optPons, optNone, engines, getTheOffset, searchList
 from screen_translate.Mbox import Mbox
-from screen_translate.Capture import captureAll
+from screen_translate.Capture import captureAll, img_captured_path
 
 import keyboard
 from tkfontchooser import askfont
+from send2trash import send2trash
 # Get dir path
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
@@ -79,6 +80,9 @@ class SettingUI():
 
         self.btnOpenImgFolder = ttk.Button(self.content_Cap_1, text="Open Captured Image Folder", command=lambda: startfile(dir_path + r"\..\..\img_captured"))
         self.btnOpenImgFolder.pack(side=LEFT, padx=5, pady=5)
+
+        self.deleteAllCapturedImg = ttk.Button(self.content_Cap_1, text="Delete All Captured Image", command=self.deleteAllCapImg)
+        self.deleteAllCapturedImg.pack(side=LEFT, padx=5, pady=5)
 
         # [Offset]
         self.fLabelCapture_2 = LabelFrame(self.frameCapture, text="• Monitor Capture Offset", width=750, height=150)
@@ -1408,3 +1412,26 @@ class SettingUI():
             self.spinnerSnippet_2.set(geometryNum[1])
             self.spinnerSnippet_3.set(geometryNum[2])
             self.spinnerSnippet_4.set(geometryNum[3])
+
+    def deleteAllCapImg(self, event=None):
+        """Delete all the cap images
+
+        Args:
+            event : Ignored. Defaults to None.
+        """
+        # Ask for confirmation first
+        if Mbox("Confirmation", "Are you sure you want to delete all captured images?", 3, self.root):
+            imgArr = os.listdir(img_captured_path)
+            # Filter only for .png
+            imgArr = [i for i in imgArr if i.endswith('.png')]
+
+            print(imgArr)
+            try:
+                for img in imgArr:
+                    send2trash(".\\img_captured\\" + img)
+
+                    # alt: # os.remove(os.path.join(img_captured_path + "/" + img))
+                Mbox("Success", "All captured images have been deleted successfully.", 0, self.root)
+            except Exception as e:
+                print(e)
+                Mbox("Error", "Error deleting images", 2, self.root)
