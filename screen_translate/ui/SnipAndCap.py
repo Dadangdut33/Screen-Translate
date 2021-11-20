@@ -96,23 +96,23 @@ class Snip_Mask():
             # If selected langfrom and langto is the same
             if(_StoredGlobal.langFrom) == (_StoredGlobal.langTo):
                 _StoredGlobal.set_Status_Error()
-                Mbox("Error: Language target is the same as source", "Please choose a different language", 2, _StoredGlobal.main_Ui)
                 print("Error Language is the same as source! Please choose a different language")
-                _StoredGlobal.set_Status_Ready()
+                Mbox("Error: Language target is the same as source", "Language target is the same as source! Please choose a different language", 2, _StoredGlobal.main_Ui)
+                _StoredGlobal.set_Status_Warning()
                 return
             # If selected langfrom is autodetect -> invalid
             if _StoredGlobal.langFrom == "Auto-Detect":
                 _StoredGlobal.set_Status_Error()
-                Mbox("Error: Invalid Language Selected", "Can't Use Auto Detect in Capture Mode", 2, _StoredGlobal.main_Ui)
                 print("Error: Invalid Language Selected! Can't Use Auto Detect in Capture Mode")
-                _StoredGlobal.set_Status_Ready()
+                Mbox("Error: Invalid Language Selected", "Invalid Language Selected! Can't Use Auto Detect in Capture Mode", 2, _StoredGlobal.main_Ui)
+                _StoredGlobal.set_Status_Warning()
                 return
             # If selected langto is autodetect -> also invalid
             if _StoredGlobal.langTo == "Auto-Detect":
                 _StoredGlobal.set_Status_Error()
-                Mbox("Error: Invalid Language Selected", "Must specify language destination", 2, _StoredGlobal.main_Ui)
                 print("Error: Invalid Language Selected! Must specify language destination")
-                _StoredGlobal.set_Status_Ready()
+                Mbox("Error: Invalid Language Selected", "Invalid Language Selected! Must specify language destination", 2, _StoredGlobal.main_Ui)
+                _StoredGlobal.set_Status_Warning()
                 return
 
         print(">> Snipped mode activated")

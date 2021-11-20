@@ -195,8 +195,8 @@ class CaptureUI():
         if(theUI_IsHidden): # If Hidden
             _StoredGlobal.set_Status_Error()
             print("Error Need to generate the capture window! Please generate the capture window first")
-            Mbox("Error: You need to generate the capture window", "Please generate the capture window first", 2, self.root)
-            _StoredGlobal.set_Status_Ready()
+            Mbox("Error: You need to generate the capture window", "Please generate the capture window first", 2, _StoredGlobal.main_Ui)
+            _StoredGlobal.set_Status_Warning()
             return
         # Check for the lang from and langto only if it's on translation mode
         if _StoredGlobal.engine != "None":
@@ -204,22 +204,22 @@ class CaptureUI():
             if(_StoredGlobal.langFrom) == (_StoredGlobal.langTo):
                 _StoredGlobal.set_Status_Error()
                 print("Error Language is the same as source! Please choose a different language")
-                Mbox("Error: Language target is the same as source", "Please choose a different language", 2, self.root)
-                _StoredGlobal.set_Status_Ready()
+                Mbox("Error: Language target is the same as source", "Language target is the same as source! Please choose a different language", 2, self.root)
+                _StoredGlobal.set_Status_Warning()
                 return
             # If selected langfrom is autodetect -> invalid
             if _StoredGlobal.langFrom == "Auto-Detect":
                 _StoredGlobal.set_Status_Error()
                 print("Error: Invalid Language Selected! Can't Use Auto Detect in Capture Mode")
-                Mbox("Error: Invalid Language Selected", "Can't Use Auto Detect in Capture Mode", 2, self.root)
-                _StoredGlobal.set_Status_Ready()
+                Mbox("Error: Invalid Language Selected", "Invalid Language Selected! Can't Use Auto Detect in Capture Mode", 2, self.root)
+                _StoredGlobal.set_Status_Warning()
                 return
             # If selected langto is autodetect -> also invalid
             if _StoredGlobal.langTo == "Auto-Detect":
                 _StoredGlobal.set_Status_Error()
                 print("Error: Invalid Language Selected! Must specify language destination")
-                Mbox("Error: Invalid Language Selected", "Must specify language destination", 2, self.root)
-                _StoredGlobal.set_Status_Ready()
+                Mbox("Error: Invalid Language Selected", "Invalid Language Selected! Must specify language destination", 2, self.root)
+                _StoredGlobal.set_Status_Warning()
                 return
 
         # Hide the Capture Window so it can detect the words better
@@ -235,9 +235,9 @@ class CaptureUI():
         validTesseract = "tesseract" in settings['tesseract_loc'].lower()
         # If tesseract is not found
         if os.path.exists(settings['tesseract_loc']) == False or validTesseract == False:
-            self.root.wm_withdraw()  # Hide the capture window
+            _StoredGlobal.set_Status_Error()
             Mbox("Error: Tesseract Not Found!", "Please set tesseract location in Setting.json.\nYou can set this in setting menu or modify it manually in json/Setting.json", 2, self.root)
-            self.root.wm_deiconify()  # Show the capture window
+            _StoredGlobal.set_Status_Warning()
 
             return # Reject
 
@@ -273,6 +273,7 @@ class CaptureUI():
         print("Coordinates: " + str(coords)) # Debug Print
 
         if is_Success == False:
+            _StoredGlobal.set_Status_Warning()
             print("But Failed to capture any text!")
             if settings['show_no_text_alert']: Mbox("Warning", "Failed to Capture Text!", 1, self.root)
         else:
@@ -291,7 +292,7 @@ class CaptureUI():
                 # Run the translate function
                 _StoredGlobal.translate()
 
-        _StoredGlobal.set_Status_Ready()
+            _StoredGlobal.set_Status_Ready()
 
     # Menubar
     def always_on_top(self):

@@ -138,8 +138,9 @@ class main_Menu():
 
         self.status = Label(self.statusFrame, text="⚐", font=("tkinterdefaultfont", 13, "bold"), fg="green")
         _StoredGlobal.statusLabel = self.status    
-        self.status.pack(side=LEFT, padx=5, pady=(4,6))
-        CreateToolTip(self.status, """Status flag of the program.\n- Green: Ready state\n- Blue: Busy\n- Red: Error""")
+        self.status.pack(side=LEFT, padx=5, pady=5)
+        CreateToolTip(self.status, """Status flag of the program.\n- Green: Ready state\n- Blue: Busy\n- Red: Error\n-Yellow: Warning (Happens when previous state is error)
+        \rTips: You can check the console or the log window to see the warning details""")
 
         # --- Top Frame 2 ---
         # TB

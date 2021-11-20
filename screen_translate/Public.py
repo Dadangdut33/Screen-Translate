@@ -107,6 +107,10 @@ class Global_Class:
     def set_Status_Busy(self):
         self.statusLabel.config(fg="blue")
         self.main_Ui.update_idletasks()
+    
+    def set_Status_Warning(self):
+        self.statusLabel.config(fg="#f7bd01")
+        self.main_Ui.update_idletasks()
 
     def set_Status_Error(self):
         self.statusLabel.config(fg="red")
@@ -131,14 +135,14 @@ class Global_Class:
                 self.set_Status_Error()
                 Mbox("Error: Language target is the same as source", "Please choose a different language", 2, self.main_Ui)
                 print("Error Language is the same as source! Please choose a different language")
-                self.set_Status_Ready()
+                self.set_Status_Warning()
                 return
             # If langto not set
             if self.langTo == "Auto-Detect":
                 self.set_Status_Error()
                 Mbox("Error: Invalid Language Selected", "Must specify language destination", 2, self.main_Ui)
                 print("Error: Invalid Language Selected! Must specify language destination")
-                self.set_Status_Ready()
+                self.set_Status_Warning()
                 return
 
         # Get the text from the textbox
@@ -153,12 +157,11 @@ class Global_Class:
 
         # If the text is empty
         if(len(query) < 1):
+            self.set_Status_Warning()
             print("Error: No text entered! Please enter some text")
             # If show alert is true then show a message box alert, else dont show any popup
             if showAlert:
                 Mbox("Error: No text entered", "Please enter some text", 2, self.main_Ui)
-                
-            self.set_Status_Ready()
             return
 
         try:
@@ -226,7 +229,7 @@ class Global_Class:
         else:
             self.set_Status_Error()
             Mbox("Error: Translation Failed", translateResult, 2, self.main_Ui)
-            self.set_Status_Ready()
+            self.set_Status_Warning()
 
     # Allowed keys
     def allowedKey(self, event):
