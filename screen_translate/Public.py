@@ -3,6 +3,7 @@ import tkinter as tk
 import subprocess
 import asyncio
 import os
+from time import localtime, strftime
 
 # Ext
 import webbrowser
@@ -100,6 +101,25 @@ class Global_Class:
         # Status lbl
         self.statusLabel = None
 
+        # Log
+        self.logVar = None
+
+    def statusChange(self, newStatus, settings):
+        if settings['logging']['enabled']:
+            maxLine = settings['logging']['max_line']
+
+
+            oldText = self.logVar.get()        
+            currTime = strftime("%H:%M:%S", localtime())
+            oldText += f"\n[{currTime}] {newStatus}"
+            nlines = len(oldText.splitlines())
+
+
+            if nlines == maxLine:
+                oldText = oldText.splitlines()[maxLine - 1]
+
+            self.logVar.set(oldText)
+
     def set_Status_Ready(self):
         self.statusLabel.config(fg="green")
         self.main_Ui.update_idletasks()
@@ -125,21 +145,24 @@ class Global_Class:
         self.hotkeySnipCapTlPressed = True
 
     # Translate
-    def translate(self):
+    def translate(self, settings):
         """Translate the text"""
         self.set_Status_Busy()
+        self.statusChange(f"Translating from {self.langFrom} to {self.langTo} using {self.engine}", settings)
         # Only check the langfrom and langto if it is translating
         if self.engine != "None":
             # If source and destination are the same
             if(self.langFrom) == (self.langTo):
                 self.set_Status_Error()
-                Mbox("Error: Language target is the same as source", "Please choose a different language", 2, self.main_Ui)
+                self.statusChange("Error: Language target is the same as source", settings)
+                Mbox("Error: Language target is the same as source", "Language target is the same as source! Please choose a different language", 2, self.main_Ui)
                 print("Error Language is the same as source! Please choose a different language")
                 self.set_Status_Warning()
                 return
             # If langto not set
             if self.langTo == "Auto-Detect":
                 self.set_Status_Error()
+                self.statusChange("Error: Invalid Language Selected", settings)
                 Mbox("Error: Invalid Language Selected", "Must specify language destination", 2, self.main_Ui)
                 print("Error: Invalid Language Selected! Must specify language destination")
                 self.set_Status_Warning()
@@ -158,6 +181,7 @@ class Global_Class:
         # If the text is empty
         if(len(query) < 1):
             self.set_Status_Warning()
+            self.statusChange("No text entered! Please enter some text", settings)
             print("Error: No text entered! Please enter some text")
             # If show alert is true then show a message box alert, else dont show any popup
             if showAlert:
@@ -181,22 +205,22 @@ class Global_Class:
                 oldMethod = True
 
             isSuccess, translateResult = google_tl(query, self.langTo, self.langFrom, oldMethod=oldMethod)
-            self.fillTextBoxAndSaveHistory(isSuccess, query, translateResult, historyIsSaved)
+            self.fillTextBoxAndSaveHistory(isSuccess, query, translateResult, historyIsSaved, settings)
         # --------------------------------
         # Deepl
         elif self.engine == "Deepl":
             loop = asyncio.get_event_loop()
-            loop.run_until_complete(self.getDeeplTl(query, self.langTo, self.langFrom, historyIsSaved))
+            loop.run_until_complete(self.getDeeplTl(query, self.langTo, self.langFrom, historyIsSaved, settings))
         # --------------------------------
         # MyMemoryTranslator
         elif self.engine == "MyMemoryTranslator":
             isSuccess, translateResult = memory_tl(query, self.langTo, self.langFrom)
-            self.fillTextBoxAndSaveHistory(isSuccess, query, translateResult, historyIsSaved)
+            self.fillTextBoxAndSaveHistory(isSuccess, query, translateResult, historyIsSaved, settings)
         # --------------------------------
         # PONS
         elif self.engine == "PONS":
             isSuccess, translateResult = pons_tl(query, self.langTo, self.langFrom)
-            self.fillTextBoxAndSaveHistory(isSuccess, query, translateResult, historyIsSaved)
+            self.fillTextBoxAndSaveHistory(isSuccess, query, translateResult, historyIsSaved, settings)
         # --------------------------------
         # Wrong opts
         else:
@@ -204,14 +228,14 @@ class Global_Class:
             Mbox("Error: Engine Not Set!", "Please select a correct engine", 2, self.main_Ui)
 
     # Get Deepl TL
-    async def getDeeplTl(self, text, langTo, langFrom, saveToHistory):
+    async def getDeeplTl(self, text, langTo, langFrom, saveToHistory, settings):
         """Get the translated text from deepl.com"""
 
         isSuccess, translateResult = await deepl_tl(text, langTo, langFrom)
-        self.fillTextBoxAndSaveHistory(isSuccess, text, translateResult, saveToHistory)
+        self.fillTextBoxAndSaveHistory(isSuccess, text, translateResult, saveToHistory, settings)
 
     # Save to History
-    def fillTextBoxAndSaveHistory(self, isSuccess, query, translateResult, saveToHistory):
+    def fillTextBoxAndSaveHistory(self, isSuccess, query, translateResult, saveToHistory, settings):
         """Save the text to history"""
         if(isSuccess):
             self.text_Box_Bottom_Var.set(translateResult)
@@ -225,9 +249,13 @@ class Global_Class:
                     "engine": self.engine
                 }
                 fJson.writeAdd_History(new_data)
+                self.statusChange("Saved translation to history", settings)
+            
+            self.statusChange("Successfully translated the text", settings)
             self.set_Status_Ready()
         else:
             self.set_Status_Error()
+            self.statusChange("Fail to translate and save to history", settings)
             Mbox("Error: Translation Failed", translateResult, 2, self.main_Ui)
             self.set_Status_Warning()
 

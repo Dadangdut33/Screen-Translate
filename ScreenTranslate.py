@@ -26,6 +26,7 @@ from screen_translate.ui.SnipAndCap import Snip_Mask
 from screen_translate.ui.About import AboutUI
 from screen_translate.ui.Tl_From import Detached_Tl_Query
 from screen_translate.ui.Tl_Result import Detached_Tl_Result
+from screen_translate.ui.Log import Log
 
 # ----------------------------------------------------------------
 # Paths
@@ -93,6 +94,7 @@ class main_Menu():
         self.mask_UI = MaskingUI()
         self.setting_UI = SettingUI()
         self.history_UI = HistoryUI()
+        self.log_UI = Log()
 
         # Set hotkeyPressed as false
         _StoredGlobal.hotkeyCapTlPressed = False
@@ -112,7 +114,7 @@ class main_Menu():
 
         # --- Top Frame 1 ---
         # Button
-        self.translateOnly_Btn = ttk.Button(self.topFrame1, text="Translate", command=_StoredGlobal.translate)
+        self.translateOnly_Btn = ttk.Button(self.topFrame1, text="Translate", command=self.translate)
         self.translateOnly_Btn.pack(side=LEFT, padx=5, pady=5)
         CreateToolTip(self.translateOnly_Btn, "Translate the text in the top frame")
         
@@ -140,7 +142,7 @@ class main_Menu():
         _StoredGlobal.statusLabel = self.status    
         self.status.pack(side=LEFT, padx=5, pady=5)
         CreateToolTip(self.status, """Status flag of the program.\n- Green: Ready state\n- Blue: Busy\n- Red: Error\n-Yellow: Warning (Happens when previous state is error)
-        \rTips: You can check the console or the log window to see the warning details""")
+        \rTips: You can enable status log in settings and check error log""")
 
         # --- Top Frame 2 ---
         # TB
@@ -208,6 +210,7 @@ class main_Menu():
         self.filemenu2.add_command(label="Setting", command=self.open_Setting, accelerator="F2") # Open Setting Window
         self.filemenu2.add_command(label="History", command=self.open_History, accelerator="F3") # Open History Window
         self.filemenu2.add_command(label="Captured", command=self.open_Img_Captured, accelerator="F4") # Open Captured img folder
+        self.filemenu2.add_command(label="Log", command=self.open_Log) # Open Error Log
         self.menubar.add_cascade(label="View", menu=self.filemenu2)
 
         self.filemenu3 = Menu(self.menubar, tearoff=0)
@@ -341,6 +344,10 @@ class main_Menu():
     # Open captured image folder
     def open_Img_Captured(self, event=None):
         startfile(dir_img_captured)
+
+    # Open log window
+    def open_Log(self, event=None):
+        self.log_UI.show()
 
     # Hotkey
     def hotkeyPoll(self):
@@ -544,6 +551,9 @@ class main_Menu():
         # Change the value of the global var
         _StoredGlobal.langFrom = self.CBLangFrom.get()
         _StoredGlobal.langTo = self.CBLangTo.get()
+
+    def translate(self):
+        _StoredGlobal.translate(fJson.readSetting())    
 
 if __name__ == '__main__':
     gui = main_Menu()

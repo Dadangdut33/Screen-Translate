@@ -188,12 +188,17 @@ class CaptureUI():
             snippedCoords (str, optional): If method is by snipping and capture. Defaults to "".
         """
         _StoredGlobal.set_Status_Busy()
+        # Get settings
+        settings = fJson.readSetting()
+
+        _StoredGlobal.statusChange("Capturing...", settings)
         theUI_IsHidden = _StoredGlobal.capUiHidden
         if snippedCoords != "":
             theUI_IsHidden = False
         
         if(theUI_IsHidden): # If Hidden
             _StoredGlobal.set_Status_Error()
+            _StoredGlobal.statusChange("Error: Capture UI is hidden!", settings)
             print("Error Need to generate the capture window! Please generate the capture window first")
             Mbox("Error: You need to generate the capture window", "Please generate the capture window first", 2, _StoredGlobal.main_Ui)
             _StoredGlobal.set_Status_Warning()
@@ -203,6 +208,7 @@ class CaptureUI():
             # If selected langfrom and langto is the same
             if(_StoredGlobal.langFrom) == (_StoredGlobal.langTo):
                 _StoredGlobal.set_Status_Error()
+                _StoredGlobal.statusChange("Error: Language is the same as source! ", settings)
                 print("Error Language is the same as source! Please choose a different language")
                 Mbox("Error: Language target is the same as source", "Language target is the same as source! Please choose a different language", 2, self.root)
                 _StoredGlobal.set_Status_Warning()
@@ -210,6 +216,7 @@ class CaptureUI():
             # If selected langfrom is autodetect -> invalid
             if _StoredGlobal.langFrom == "Auto-Detect":
                 _StoredGlobal.set_Status_Error()
+                _StoredGlobal.statusChange("Error: Can't Use Auto Detect in Capture Mode! ", settings)
                 print("Error: Invalid Language Selected! Can't Use Auto Detect in Capture Mode")
                 Mbox("Error: Invalid Language Selected", "Invalid Language Selected! Can't Use Auto Detect in Capture Mode", 2, self.root)
                 _StoredGlobal.set_Status_Warning()
@@ -217,6 +224,7 @@ class CaptureUI():
             # If selected langto is autodetect -> also invalid
             if _StoredGlobal.langTo == "Auto-Detect":
                 _StoredGlobal.set_Status_Error()
+                _StoredGlobal.statusChange("Error: Must specify language destination! ", settings)
                 print("Error: Invalid Language Selected! Must specify language destination")
                 Mbox("Error: Invalid Language Selected", "Invalid Language Selected! Must specify language destination", 2, self.root)
                 _StoredGlobal.set_Status_Warning()
@@ -229,13 +237,11 @@ class CaptureUI():
         # Get xywh of the screen
         x, y, w, h = self.root.winfo_x(), self.root.winfo_y(), self.root.winfo_width(), self.root.winfo_height()
 
-        # Get settings
-        settings = fJson.readSetting()
-
         validTesseract = "tesseract" in settings['tesseract_loc'].lower()
         # If tesseract is not found
         if os.path.exists(settings['tesseract_loc']) == False or validTesseract == False:
             _StoredGlobal.set_Status_Error()
+            _StoredGlobal.statusChange("Error: Tesseract not found! ", settings)
             Mbox("Error: Tesseract Not Found!", "Please set tesseract location in Setting.json.\nYou can set this in setting menu or modify it manually in json/Setting.json", 2, self.root)
             _StoredGlobal.set_Status_Warning()
 
@@ -274,12 +280,14 @@ class CaptureUI():
 
         if is_Success == False:
             _StoredGlobal.set_Status_Warning()
+            _StoredGlobal.statusChange("Error: Failed to capture any text!", settings)
             print("But Failed to capture any text!")
             if settings['show_no_text_alert']: Mbox("Warning", "Failed to Capture Text!", 1, self.root)
         else:
             if settings['captureLastValDelete'] > 0 and settings['captureLastValDelete'] < 11:
                 result = result[:-settings['captureLastValDelete']]
             
+            _StoredGlobal.statusChange("Sucessfully captured text!", settings)
             # Pass it to mainMenu
             _StoredGlobal.text_Box_Top_Var.set(result) # Delete last character
 
@@ -290,7 +298,7 @@ class CaptureUI():
 
             if _StoredGlobal.engine != "None":
                 # Run the translate function
-                _StoredGlobal.translate()
+                _StoredGlobal.translate(settings)
 
             _StoredGlobal.set_Status_Ready()
 

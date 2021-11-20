@@ -66,6 +66,10 @@ class JsonHandler:
             "color": "#555555",
             "alpha": 0.8
         },
+        "logging": {
+            "enabled": False,
+            "max_line": 25
+        },
         "saveHistory": True,
         "checkUpdateOnStart": True,
         "enhance_Capture" : {

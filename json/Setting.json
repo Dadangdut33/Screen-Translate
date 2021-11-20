@@ -54,6 +54,10 @@
         "color": "#555555",
         "alpha": 0.8
     },
+    "logging": {
+        "enabled": false,
+        "max_line": 25
+    },
     "saveHistory": true,
     "checkUpdateOnStart": true,
     "enhance_Capture": {

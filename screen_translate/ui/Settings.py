@@ -420,7 +420,6 @@ class SettingUI():
         self.labelCurrentHKCapTl = Label(self.content_HKCapTl, text="")
         self.labelCurrentHKCapTl.pack(side=LEFT, padx=5, pady=5)
 
-
         # Snip and cap
         self.fLabelHKSnipCapTl = LabelFrame(self.frameHotkey, text="• Snip & Capture Hotkey Settings", width=750, height=55)
         self.fLabelHKSnipCapTl.pack(side=TOP, fill=X, expand=False, padx=5, pady=(0, 5))
@@ -573,18 +572,35 @@ class SettingUI():
         self.frameOther = Frame(self.mainFrameTop)
         self.frameOther.pack(side=LEFT, fill=BOTH, padx=5, pady=5)
 
-        self.fLabelOther = LabelFrame(self.frameOther, text="• Other Settings", width=750, height=55)
+        self.fLabelOther = LabelFrame(self.frameOther, text="• Other Settings", width=750, height=85)
         self.fLabelOther.pack(side=TOP, fill=X, expand=False, padx=5, pady=(0, 5))
         self.fLabelOther.pack_propagate(0)
 
         self.fOtherContent_1 = Frame(self.fLabelOther)
         self.fOtherContent_1.pack(side=TOP, fill=X, expand=False)
 
+        self.fOtherContent_2 = Frame(self.fLabelOther)
+        self.fOtherContent_2.pack(side=TOP, fill=X, expand=False)
+
         # Checkbox for check for update
         self.checkUpdateVar = BooleanVar(self.root, value=True)
         self.checkUpdateBox = ttk.Checkbutton(self.fOtherContent_1, text="Check for update on app start", variable=self.checkUpdateVar)
         self.checkUpdateBox.pack(side=LEFT, padx=5, pady=5)
         CreateToolTip(self.checkUpdateBox, "Check for update on app start. You can also check manually by going to help in menubar")
+
+        self.loggingVar = BooleanVar(self.root, value=True)
+        self.loggingBox = ttk.Checkbutton(self.fOtherContent_2, text="Logging", variable=self.loggingVar)
+        self.loggingBox.pack(side=LEFT, padx=5, pady=5)
+
+        self.loggingLineVar = IntVar(self.root, value=10)
+        self.loggingLineLabel = Label(self.fOtherContent_2, text="Max line : ")
+        self.loggingLineLabel.pack(side=LEFT, padx=0, pady=5)
+
+        self.loggingLineSpinner = ttk.Spinbox(self.fOtherContent_2, from_=1, to=100, textvariable=self.loggingLineVar)
+        self.validateDigits_Logging = (self.root.register(lambda event: self.validateSpinbox(event, self.loggingLineSpinner)), '%P')
+        self.loggingLineSpinner.configure(validate='key', validatecommand=self.validateDigits_Logging)
+        self.loggingLineSpinner.pack(side=LEFT, padx=5, pady=5)
+        CreateToolTip(self.loggingLineSpinner, "Max line of logging")
 
         # ----------------------------------------------------------------
         # Bottom Frame
@@ -820,6 +836,16 @@ class SettingUI():
         # Update the spinner offset
         self.disableEnableSnipSpin()
 
+        # Logging
+        try:
+            self.loggingVar.set(settings['logging']['enabled'])
+            self.loggingLineVar.set(settings['logging']['max_line'])
+        except Exception:
+            print("Error: Invalid Logging Options")
+            Mbox("Error: Invalid Logging Options", "Please do not modify the setting manually if you don't know what you are doing", 2, self.root)
+            self.loggingVar.set(False)
+            self.loggingLineVar.set(10)
+
         # Check for cb background
         try:
             self.CBBackgroundType.current(searchList(settings['enhance_Capture']['background'], ["Auto-Detect", "Light", "Dark"]))
@@ -1054,6 +1080,10 @@ class SettingUI():
             "Masking_Window": {
                 "color": self.maskColorVar.get(),
                 "alpha": self.maskOpacityVar.get()
+            },
+            "logging": {
+                "enabled": self.loggingVar.get(),
+                "max_line": self.loggingLineVar.get()
             },
             "saveHistory": self.saveToHistoryVar.get(),
             "checkUpdateOnStart": self.checkUpdateVar.get(),
