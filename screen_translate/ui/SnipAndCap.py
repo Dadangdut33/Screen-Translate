@@ -154,6 +154,10 @@ class Snip_Mask():
         if self.curX is None:
             return
 
+        # Change canvas cursor to watch
+        self.screenCanvas.configure(cursor="watch")
+        self.root.update_idletasks()
+
         if self.start_x <= self.curX and self.start_y <= self.curY:
             print(">> Detected position direction: right down")
             self.takeBoundedScreenShot(self.start_x, self.start_y, self.curX - self.start_x, self.curY - self.start_y)
