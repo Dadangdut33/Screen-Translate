@@ -479,8 +479,16 @@ def startfile(filename):
     """
     try:
         os.startfile(filename)
+    except FileNotFoundError:
+        print("Cannot find the file specified.")
     except Exception:
         subprocess.Popen(['xdg-open', filename])
+        try:
+            subprocess.Popen(['xdg-open', filename])
+        except FileNotFoundError:
+            print("Cannot open the file specified.")
+        except Exception as e:
+            print("Error: " + str(e))
 
 
 def fillList(dictFrom, listTo, insertFirst="", insertSecond=""):
