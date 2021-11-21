@@ -5,10 +5,10 @@ from tkinter import *
 from tkinter import ttk, filedialog
 
 from screen_translate.Mbox import Mbox
-from screen_translate.Public import _StoredGlobal, TextWithVar
+from screen_translate.Public import _StoredGlobal, TextWithVar, startfile
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
-initialDirPath = os.path.join(dir_path, '../../')
+initialDirPath = os.path.join(dir_path, '../../log/')
 
 # Classes
 class Log():
@@ -50,6 +50,9 @@ class Log():
 
         self.btnSave = ttk.Button(self.bottomFrame, text='✉ Export Log', command=self.saveLog)
         self.btnSave.pack(side=LEFT, padx=5, pady=5)
+
+        self.btnOpenDefaultLog = ttk.Button(self.bottomFrame, text='🗁 Open Default Export Folder', command=lambda: startfile(initialDirPath))
+        self.btnOpenDefaultLog.pack(side=LEFT, padx=5, pady=5)
 
         # On Close
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)

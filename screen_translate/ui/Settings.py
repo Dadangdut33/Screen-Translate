@@ -78,10 +78,10 @@ class SettingUI():
         self.checkBTNSaved.pack(side=LEFT, padx=5, pady=5)
         CreateToolTip(self.checkBTNSaved, "Save the captured image to img_captured folder")
 
-        self.btnOpenImgFolder = ttk.Button(self.content_Cap_1, text="Open Captured Image Folder", command=lambda: startfile(dir_path + r"\..\..\img_captured"))
+        self.btnOpenImgFolder = ttk.Button(self.content_Cap_1, text="🗁 Open Captured Image Folder", command=lambda: startfile(dir_path + r"\..\..\img_captured"))
         self.btnOpenImgFolder.pack(side=LEFT, padx=5, pady=5)
 
-        self.deleteAllCapturedImg = ttk.Button(self.content_Cap_1, text="Delete All Captured Image", command=self.deleteAllCapImg)
+        self.deleteAllCapturedImg = ttk.Button(self.content_Cap_1, text="⚠ Delete All Captured Image", command=self.deleteAllCapImg)
         self.deleteAllCapturedImg.pack(side=LEFT, padx=5, pady=5)
 
         # [Offset]
@@ -387,7 +387,7 @@ class SettingUI():
         self.showNoTextAlertVar = BooleanVar(self.root, value=True)
         self.checkShowNoTextAlert = ttk.Checkbutton(self.content_Tl_2, variable=self.showNoTextAlertVar, text="Show No Text Entered Alert")
         self.checkShowNoTextAlert.pack(side=LEFT, padx=5, pady=5)
-        CreateToolTip(self.checkShowNoTextAlert, text="Show alert when no text is entered")
+        CreateToolTip(self.checkShowNoTextAlert, text="Show alert when no text is entered or captured by the OCR")
 
         # ----------------------------------------------------------------------
         # Hotkey
@@ -414,7 +414,7 @@ class SettingUI():
         self.buttonSetHKCapTl = Button(self.content_HKCapTl, text="Click to set the hotkey", command=self.setHKCapTl)
         self.buttonSetHKCapTl.pack(side=LEFT, padx=5, pady=5)
         
-        self.buttonClearHKCapTl = ttk.Button(self.content_HKCapTl, text="Clear", command=self.clearHKCapTl)
+        self.buttonClearHKCapTl = ttk.Button(self.content_HKCapTl, text="✕ Clear", command=self.clearHKCapTl)
         self.buttonClearHKCapTl.pack(side=LEFT, padx=5, pady=5)
         
         self.labelHKCapTl = Label(self.content_HKCapTl, text="Current hotkey : ")
@@ -445,7 +445,7 @@ class SettingUI():
         self.buttonHKSnipCapTl = Button(self.content_HKSnipCapTl, text="Click to set the hotkey", command=self.setHKSnipCapTl)
         self.buttonHKSnipCapTl.pack(side=LEFT, padx=5, pady=5)
         
-        self.buttonClearHKSnipCapTl = ttk.Button(self.content_HKSnipCapTl, text="Clear", command=self.clearHKSnipCapTl)
+        self.buttonClearHKSnipCapTl = ttk.Button(self.content_HKSnipCapTl, text="✕ Clear", command=self.clearHKSnipCapTl)
         self.buttonClearHKSnipCapTl.pack(side=LEFT, padx=5, pady=5)
         
         self.labelHKSnipCapTl = Label(self.content_HKSnipCapTl, text="Current hotkey : ")
@@ -570,6 +570,10 @@ class SettingUI():
         self.maskOpacitySlider.pack(side=LEFT, padx=5, pady=5)
         self.maskOpacityLabel2.pack(side=LEFT, padx=5, pady=5)
         CreateToolTip(self.maskOpacityLabel2, "Mask window opacity on startup")
+
+        self.maskWindowHint = Label(self.fMaskContent_1, text="❓")
+        self.maskWindowHint.pack(padx=5, pady=5, side=RIGHT)
+        CreateToolTip(self.maskWindowHint, "Settings for default startup value")
 
         # ----------------------------------------------------------------------
         # Other
