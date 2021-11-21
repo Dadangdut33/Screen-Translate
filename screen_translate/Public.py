@@ -81,7 +81,7 @@ class Global_Class:
         self.mboxOpen = False
         
         # Version
-        self.version = "1.8.1"
+        self.version = "1.8.2"
         self.versionType = "release"
         self.newVerStatusCache = None
 
@@ -482,7 +482,6 @@ def startfile(filename):
     except FileNotFoundError:
         print("Cannot find the file specified.")
     except Exception:
-        subprocess.Popen(['xdg-open', filename])
         try:
             subprocess.Popen(['xdg-open', filename])
         except FileNotFoundError:

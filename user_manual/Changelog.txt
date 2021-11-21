@@ -1,5 +1,14 @@
 # Changelog
-Latest V1.8.1
+Latest V1.8.2
+
+[V1.8.2 Minor Bug Fix and Update]
+- Fixed the alt chinese language not working on capturing
+- Fix logo for mask ui (I forgot to add the logo before)
+- Added status indicator in top right of the main menu to show the current state of the program (Ready/Busy/Error/Warning), each are colored differently.
+- Added log window to show program running log, you can turn this on in the settings.
+- Added symbols/emoji to some buttons to make it more clear.
+- Added button to delete all captured images in setting.
+- Change cursor look after snipping to indicate loading status.
 
 [V1.8.1 Minor Bug Fix and Update]
 - Fixed chinese language bug
