@@ -83,7 +83,7 @@ class AboutUI():
 
     # Show/Hide
     def show(self):
-        if _StoredGlobal.newVerStatusCache == None:
+        if _StoredGlobal.newVerStatusCache is None:
             self.versionUpdateStatus.config(text="Check for update on menu bar!")
         else:
             self.versionUpdateStatus.config(text=f"({_StoredGlobal.newVerStatusCache})")
