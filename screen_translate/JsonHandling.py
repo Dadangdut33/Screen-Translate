@@ -8,10 +8,7 @@ setting_json_path = os.path.join(dir_path, '../json/Setting.json')
 
 class JsonHandler:
     """
-    [summary] 
-        Create, Read, Update the json file
-    [description]
-        Returns: [type] -- [description]
+    Class to handle Create, Read, &  Update of json files
     """
     settingsCache = None
 
