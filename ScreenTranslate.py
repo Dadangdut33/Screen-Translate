@@ -12,7 +12,7 @@ import requests
 # ----------------------------------------------------------------
 # Var and methods
 from screen_translate.Public import CreateToolTip, TextWithVar, fJson, _StoredGlobal
-from screen_translate.Public import startfile, optGoogle, optDeepl, optMyMemory, optPons, optNone, engines, searchList, OpenUrl
+from screen_translate.Public import startfile, optGoogle, optDeepl, optMyMemory, optPons, optLibre, optNone, engines, searchList, OpenUrl
 from screen_translate.Mbox import Mbox
 
 # ----------------------------------------------------------------
@@ -155,7 +155,7 @@ class main_Menu():
 
         # --- Bottom Frame 1 ---
         # Langoptions onstart
-        self.langOpt = optGoogle
+        self.langOpt = optLibre
 
         self.labelEngines = Label(self.bottomFrame1, text="TL Engine:")
         self.labelEngines.pack(side=LEFT, padx=5, pady=5)
@@ -541,6 +541,13 @@ class main_Menu():
             self.CBLangFrom.current(searchList(previous_From, optPons))
             self.CBLangTo['values'] = optPons
             self.CBLangTo.current(searchList(previous_To, optPons))
+            self.CBLangTo.config(state='readonly')
+        elif curr_Engine == "LibreTranslate":
+            self.langOpt = optLibre
+            self.CBLangFrom['values'] = optLibre
+            self.CBLangFrom.current(searchList(previous_From, optLibre))
+            self.CBLangTo['values'] = optLibre
+            self.CBLangTo.current(searchList(previous_To, optLibre))
             self.CBLangTo.config(state='readonly')
         elif curr_Engine == "None":
             self.langOpt = optNone

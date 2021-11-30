@@ -226,6 +226,11 @@ class Global_Class:
             isSuccess, translateResult = pons_tl(query, self.langTo, self.langFrom)
             self.fillTextBoxAndSaveHistory(isSuccess, query, translateResult, historyIsSaved, settings)
         # --------------------------------
+        # LibreTranslate
+        elif self.engine == "LibreTranslate":
+            isSuccess, translateResult = libre_tl(query, self.langTo, self.langFrom)
+            self.fillTextBoxAndSaveHistory(isSuccess, query, translateResult, historyIsSaved, settings)
+        # --------------------------------
         # Wrong opts
         else:
             print("Please select a correct engine")
@@ -625,6 +630,8 @@ optMyMemory = []
 fillList(myMemory_Lang, optMyMemory, "Auto-Detect")
 optPons = []
 fillList(pons_Lang, optPons)  # PONS HAVE NO AUTO DETECT
+optLibre = []
+fillList(libre_Lang, optLibre, "Auto-Detect")
 optNone = []
 fillList(tesseract_Lang, optNone)
 
