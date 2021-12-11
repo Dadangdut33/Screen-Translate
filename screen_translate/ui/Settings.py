@@ -78,7 +78,7 @@ class SettingUI():
         self.checkBTNSaved.pack(side=LEFT, padx=5, pady=5)
         CreateToolTip(self.checkBTNSaved, "Save the captured image to img_captured folder")
 
-        self.btnOpenImgFolder = ttk.Button(self.content_Cap_1, text="🗁 Open Captured Image Folder", command=lambda: startfile(dir_path + r"\..\..\img_captured"))
+        self.btnOpenImgFolder = ttk.Button(self.content_Cap_1, text="🗁 Open Captured Image", command=lambda: startfile(dir_path + r"\..\..\img_captured"))
         self.btnOpenImgFolder.pack(side=LEFT, padx=5, pady=5)
 
         self.deleteAllCapturedImg = ttk.Button(self.content_Cap_1, text="⚠ Delete All Captured Image", command=self.deleteAllCapImg)

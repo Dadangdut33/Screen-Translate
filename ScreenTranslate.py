@@ -438,7 +438,7 @@ class main_Menu():
 
     # Open contributor
     def open_Contributor(self):
-        Mbox("Contributor", "Thanks to:\n1. Dadangdut33 (Author)\n2. Laggykiller (contributor)\n3. Mdika (contributor)", 0, self.root)
+        Mbox("Contributor", "Thanks to:\n1. Dadangdut33 (Author)\n2. Laggykiller (contributor)\n3. Mdika (contributor)\n4. fnx4 (Contributor)", 0, self.root)
 
     # Open changelog
     def open_Changelog(self):
