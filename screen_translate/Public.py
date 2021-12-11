@@ -23,18 +23,12 @@ ImageGrab.grab = partial(ImageGrab.grab, all_screens=True)
 # Add try except to intercept connection error
 try:
     from screen_translate.Translate import *
-except ConnectionError as e:
-    print("Error: No Internet Connection. Please Restart With Internet Connected", str(e))
-    Mbox("Error: No Internet Connection", e, 2)
 except Exception as e:
     print("Error", str(e))
     Mbox("Error", e, 2)
 
 try:
     from screen_translate.Translate_Deepl import *
-except ConnectionError as e:
-    print("Error: No Internet Connection. Please Restart With Internet Connected", str(e))
-    Mbox("Error: No Internet Connection", e, 2)
 except Exception as e:
     print("Error", str(e))
     Mbox("Error", e, 2)
