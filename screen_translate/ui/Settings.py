@@ -6,7 +6,7 @@ from tkinter import *
 from tkinter import filedialog
 
 from screen_translate.Public import CreateToolTip, fJson, _StoredGlobal
-from screen_translate.Public import startfile, optGoogle, optDeepl, optMyMemory, optPons, optNone, engines, getTheOffset, searchList
+from screen_translate.Public import startfile, optGoogle, optDeepl, optMyMemory, optPons, optLibre, optNone, engines, getTheOffset, searchList
 from screen_translate.Mbox import Mbox
 from screen_translate.Capture import captureAll, img_captured_path
 
@@ -1245,6 +1245,13 @@ class SettingUI():
             self.CBDefaultFrom.current(searchList(previous_From, optPons))
             self.CBDefaultTo['values'] = optPons
             self.CBDefaultTo.current(searchList(previous_To, optPons))
+            self.CBDefaultTo.config(state='readonly')
+        elif curr_Engine == "LibreTranslate":
+            self.langOpt = optLibre
+            self.CBDefaultFrom['values'] = optLibre
+            self.CBDefaultFrom.current(searchList(previous_From, optLibre))
+            self.CBDefaultTo['values'] = optLibre
+            self.CBDefaultTo.current(searchList(previous_To, optLibre))
             self.CBDefaultTo.config(state='readonly')
         elif curr_Engine == "None":
             self.langOpt = optNone

@@ -1,7 +1,7 @@
-__all__ = ['engineList', 'tesseract_Lang', 'google_Lang', 'myMemory_Lang', 'deepl_Lang', 'pons_Lang']
+__all__ = ['engineList', 'tesseract_Lang', 'google_Lang', 'myMemory_Lang', 'deepl_Lang', 'pons_Lang', 'libre_Lang']
 
 # Engines available
-engineList = ["Google Translate", "MyMemoryTranslator", "Deepl", "PONS", "None"]
+engineList = ["Google Translate", "MyMemoryTranslator", "Deepl", "PONS", "LibreTranslate", "None"]
 
 # List of supported languages by Tesseract OCR
 tesseract_Lang = {
@@ -357,4 +357,30 @@ pons_Lang = {
     "Spanish": "es",
     "Swedish": "sv",
     "Turkish": "tr",
+}
+
+libre_Lang = {
+    "English": "en",
+    "Arabic": "ar",
+    "Chinese (Simplified)": "zh",
+    "Chinese (Traditional)": "zh",
+    "Dutch": "nl",
+    "Finnish": "fi",
+    "French": "fr",
+    "German": "de",
+    "Hindi": "hi",
+    "Hungarian": "hu",
+    "Indonesian": "id",
+    "Irish": "ga",
+    "Italian": "it",
+    "Japanese": "ja",
+    "Korean": "ko",
+    "Polish": "pl",
+    "Portuguese": "pt",
+    "Russian": "ru",
+    "Spanish": "es",
+    "Swedish": "sv",
+    "Turkish": "tr",
+    "Ukrainian": "uk",
+    "Vietnamese": "vi",
 }

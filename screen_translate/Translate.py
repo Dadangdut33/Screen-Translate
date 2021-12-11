@@ -36,7 +36,8 @@ except Exception as e:
     print("Error", str(e))
     Mbox("Error", str(e), 2)
 
-__all__ = ["google_tl", "memory_tl", "pons_tl"]
+__all__ = ["google_tl", "memory_tl", "pons_tl", "libre_tl"]
+
 
 # ----------------------------------------------------------------
 # TL Functions
@@ -151,4 +152,52 @@ def pons_tl(text, to_lang, from_lang):
         print("Query: " + text.strip())
         print("-" * 50)
         print("Translation Get: "+ result)
+        return is_Success, result
+
+# LibreTranslator
+def libre_tl(text, to_lang, from_lang, host="localhost", port="5000"):
+    """Translate Using LibreTranslate
+        Args:
+            text ([str]): Text to translate
+            to_lang ([type]): Language to translate
+            from_lang (str, optional): [Language From]. Defaults to "auto".
+            host ([str]): Server hostname
+            port ([str]): Server port
+
+        Returns:
+            [type]: Translation result
+    """
+    is_Success = False
+    result = ""
+    # --- Get lang code ---
+    try:
+        to_LanguageCode_Libre = libre_Lang[to_lang]
+        from_LanguageCode_Libre = libre_Lang[from_lang]
+    except KeyError as e:
+        print("Error: " + str(e))
+        return is_Success, "Error Language Code Undefined"
+    # --- Translate ---
+    try:
+        request = {
+            "q": text,
+            "source": from_LanguageCode_Libre,
+            "target": to_LanguageCode_Libre,
+            "format": "text"
+        }
+        adr = "http://" + host + ":" + port + "/translate"
+        response = requests.post(adr, request).json()
+        if "error" in response:
+            result = response["error"]
+        else:
+            result = response["translatedText"]
+            is_Success = True
+    except Exception as e:
+        print(str(e))
+        result = str(e)
+        Mbox("Error", str(e), 2)
+    finally:
+        print("-" * 50)
+        print("Query: " + text.strip())
+        print("-" * 50)
+        print("Translation Get: " + result)
         return is_Success, result

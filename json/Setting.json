@@ -11,10 +11,10 @@
         "auto"
     ],
     "snippingWindowGeometry": "auto",
-    "tesseract_loc": "C:/Program Files/Tesseract-OCR/tesseract.exe",
-    "default_Engine": "Google Translate",
-    "default_FromOnOpen": "Japanese",
-    "default_ToOnOpen": "English",
+    "tesseract_loc": "B:/apps/translate/Tesseract-OCR/tesseract.exe",
+    "default_Engine": "LibreTranslate",
+    "default_FromOnOpen": "English",
+    "default_ToOnOpen": "Russian",
     "captureLastValDelete": 0,
     "hotkey": {
         "captureAndTl": {

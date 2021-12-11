@@ -70,6 +70,7 @@ Inspired by Visual Novel Reader (VNR), [Visual Novel OCR](https://github.com/lem
 
 # Downloads
 - [Tesseract](https://github.com/UB-Mannheim/tesseract/wiki)
+- [LibreTranslate](https://github.com/LibreTranslate/LibreTranslate)
 - [The application (ScreenTranslate/STL)](https://github.com/Dadangdut33/Screen-Translate/releases/latest)
 
 # How To Install and Setup
