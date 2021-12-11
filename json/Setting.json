@@ -11,11 +11,16 @@
         "auto"
     ],
     "snippingWindowGeometry": "auto",
-    "tesseract_loc": "B:/apps/translate/Tesseract-OCR/tesseract.exe",
-    "default_Engine": "LibreTranslate",
-    "default_FromOnOpen": "English",
-    "default_ToOnOpen": "Russian",
+    "tesseract_loc": "C:/Program Files/Tesseract-OCR/tesseract.exe",
+    "default_Engine": "Google Translate",
+    "default_FromOnOpen": "Japanese",
+    "default_ToOnOpen": "English",
     "captureLastValDelete": 0,
+    "libreTl": {
+        "https": false,
+        "host": "localhost",
+        "port": "5000"
+    },
     "hotkey": {
         "captureAndTl": {
             "hk": "",

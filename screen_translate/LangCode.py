@@ -360,6 +360,7 @@ pons_Lang = {
 }
 
 libre_Lang = {
+    "Auto-Detect": "auto",
     "English": "en",
     "Arabic": "ar",
     "Chinese (Simplified)": "zh",

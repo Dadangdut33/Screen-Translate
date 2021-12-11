@@ -99,10 +99,19 @@ class Global_Class:
         self.resultFont = None
 
         # Status lbl
-        self.statusLabel = None
+        self.programStatusLabel = None
+        self.connectionStatusLabel = None
 
         # Log
         self.logVar = None
+
+    def setConnected(self):
+        self.connectionStatusLabel.config(fg="green")
+        self.main_Ui.update_idletasks()
+
+    def setDisconnected(self):
+        self.connectionStatusLabel.config(fg="red")
+        self.main_Ui.update_idletasks()
 
     def statusChange(self, newStatus, settings):
         if settings['logging']['enabled']:
@@ -125,19 +134,19 @@ class Global_Class:
             self.logVar.set(oldText)
 
     def set_Status_Ready(self):
-        self.statusLabel.config(fg="green")
+        self.programStatusLabel.config(fg="green")
         self.main_Ui.update_idletasks()
 
     def set_Status_Busy(self):
-        self.statusLabel.config(fg="blue")
+        self.programStatusLabel.config(fg="blue")
         self.main_Ui.update_idletasks()
     
     def set_Status_Warning(self):
-        self.statusLabel.config(fg="#f7bd01")
+        self.programStatusLabel.config(fg="#f7bd01")
         self.main_Ui.update_idletasks()
 
     def set_Status_Error(self):
-        self.statusLabel.config(fg="red")
+        self.programStatusLabel.config(fg="red")
         self.main_Ui.update_idletasks()
 
     def hotkeyCapTLCallback(self):
@@ -176,11 +185,8 @@ class Global_Class:
         query = self.text_Box_Top_Var.get()
 
         # Read settings
-        try: 
-            showAlert = fJson.readSetting()["show_no_text_alert"]
-        except Exception as e:
-            print("Error: Couldn't read show alert setting. Using default value!")
-            showAlert = False
+        showAlert = settings["show_no_text_alert"]
+        historyIsSaved = settings['saveHistory']
 
         # If the text is empty
         if(len(query) < 1):
@@ -191,14 +197,6 @@ class Global_Class:
             if showAlert:
                 Mbox("Error: No text entered", "Please enter some text", 2, self.main_Ui)
             return
-
-        try:
-            historyIsSaved = fJson.readSetting()['saveHistory']
-        except Exception as e:
-            print("Error: Could not read saveHistory setting. Using default value!", str(e))
-            if showAlert:
-                Mbox("Error: Could not read saveHistory setting", "Please do not edit Setting.json manually\n\n" + str(e), 2, self.main_Ui)
-            historyIsSaved = True
 
         # Translate
         # --------------------------------
@@ -228,7 +226,7 @@ class Global_Class:
         # --------------------------------
         # LibreTranslate
         elif self.engine == "LibreTranslate":
-            isSuccess, translateResult = libre_tl(query, self.langTo, self.langFrom)
+            isSuccess, translateResult = libre_tl(query, self.langTo, self.langFrom, https=settings['libreTl']['https'], host=settings['libreTl']['host'], port=settings['libreTl']['port'])
             self.fillTextBoxAndSaveHistory(isSuccess, query, translateResult, historyIsSaved, settings)
         # --------------------------------
         # Wrong opts

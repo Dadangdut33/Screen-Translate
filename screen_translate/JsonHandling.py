@@ -25,6 +25,11 @@ class JsonHandler:
         "default_FromOnOpen": "Auto-Detect",
         "default_ToOnOpen": "English",
         "captureLastValDelete": 0,
+        "libreTl": {
+            "https": False,
+            "host": "localhost",
+            "port": "5000"
+        },
         "hotkey": {
             "captureAndTl": {
                 "hk": "",

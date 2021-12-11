@@ -356,6 +356,13 @@ class SettingUI():
         self.content_Tl_2 = Frame(self.fLabelTl_1)
         self.content_Tl_2.pack(side=TOP, fill=X, expand=False)
 
+        self.fLabelTl_2 = LabelFrame(self.frameTranslate, text="• Libretranslate Settings", width=750, height=55)
+        self.fLabelTl_2.pack(side=TOP, fill=X, expand=False, padx=5, pady=(0, 5))
+        self.fLabelTl_2.pack_propagate(0)
+
+        self.content_Tl_3 = Frame(self.fLabelTl_2)
+        self.content_Tl_3.pack(side=TOP, fill=X, expand=False)
+
         self.langOpt = optGoogle
         self.labelDefaultEngine = Label(self.content_Tl_1, text="Default TL Engine :")
         self.labelDefaultEngine.pack(side=LEFT, padx=5, pady=5)
@@ -388,6 +395,32 @@ class SettingUI():
         self.checkShowNoTextAlert = ttk.Checkbutton(self.content_Tl_2, variable=self.showNoTextAlertVar, text="Show No Text Entered Alert")
         self.checkShowNoTextAlert.pack(side=LEFT, padx=5, pady=5)
         CreateToolTip(self.checkShowNoTextAlert, text="Show alert when no text is entered or captured by the OCR")
+
+        # Libretranslate
+        self.labelHost = Label(self.content_Tl_3, text="Host :")
+        self.labelHost.pack(side=LEFT, padx=5, pady=5)
+        CreateToolTip(self.labelHost, text="Host address of Libletranslate server. Default: localhost\n\nYou can find full lists of other dedicated server on Libretranslate github repository.")
+
+        self.libreTlHost = StringVar(self.root)
+        self.libreTlHost.set("localhost")
+        self.entryLibleTlHost = ttk.Entry(self.content_Tl_3, textvariable=self.libreTlHost)
+        self.entryLibleTlHost.pack(side=LEFT, padx=5, pady=5)
+        CreateToolTip(self.entryLibleTlHost, text="Host address of Libletranslate server. Default: localhost\n\nYou can find full lists of other dedicated server on Libretranslate github repository.")
+
+        self.labelKey = Label(self.content_Tl_3, text="Port :")
+        self.labelKey.pack(side=LEFT, padx=5, pady=5)
+        CreateToolTip(self.labelKey, text="Port of Libletranslate server. Default: 5000\n\nSet it to empty if you are not using local server.")
+
+        self.libreTlPort = StringVar(self.root)
+        self.libreTlPort.set("5000")
+        self.entryLibreTlPort = ttk.Entry(self.content_Tl_3, textvariable=self.libreTlPort)
+        self.entryLibreTlPort.pack(side=LEFT, padx=5, pady=5)
+        CreateToolTip(self.entryLibreTlPort, text="Port of Libletranslate server. Default: 5000\n\nSet it to empty if you are not using local server.")
+
+        self.libreHttpsVar = BooleanVar(self.root, value=False)
+        self.checkLibreHttps = ttk.Checkbutton(self.content_Tl_3, variable=self.libreHttpsVar, text="Use HTTPS")
+        self.checkLibreHttps.pack(side=LEFT, padx=5, pady=5)
+        CreateToolTip(self.checkLibreHttps, text="HTTPS or HTTP. Default: HTTP\n\nSet it to https if you are not using local server.")
 
         # ----------------------------------------------------------------------
         # Hotkey
@@ -844,6 +877,18 @@ class SettingUI():
         # Update the spinner offset
         self.disableEnableSnipSpin()
 
+        # check for libretl
+        try:
+            self.libreTlHost.set(settings['libreTl']['host'])
+            self.libreTlPort.set(settings['libreTl']['port'])
+            self.libreHttpsVar.set(settings['libreTl']['https'])
+        except Exception:
+            self.libreTlHost.set("localhost")
+            self.libreTlPort.set("5000")
+            self.libreHttpsVar.set(False)
+            print("Error: Invalid LibreTranslate Options")
+            Mbox("Error: Invalid LibreTranslate Options", "Please do not modify the setting manually if you don't know what you are doing", 2, self.root)
+
         # Logging
         try:
             self.loggingVar.set(settings['logging']['enabled'])
@@ -1051,6 +1096,11 @@ class SettingUI():
             "default_FromOnOpen": self.CBDefaultFrom.get(),
             "default_ToOnOpen": self.CBDefaultTo.get(),
             "captureLastValDelete": self.valDelLastChar.get(),
+            "libreTl": {
+                "https": self.libreHttpsVar.get(),
+                "host": self.libreTlHost.get(),
+                "port": self.libreTlPort.get()
+            },
             "hotkey": {
                 "captureAndTl": {
                     "hk": self.labelCurrentHKCapTl['text'],

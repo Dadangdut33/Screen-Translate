@@ -14,6 +14,7 @@ import requests
 from screen_translate.Public import CreateToolTip, TextWithVar, fJson, _StoredGlobal
 from screen_translate.Public import startfile, optGoogle, optDeepl, optMyMemory, optPons, optLibre, optNone, engines, searchList, OpenUrl
 from screen_translate.Mbox import Mbox
+from screen_translate.Translate import reconnect, checkConns
 
 # ----------------------------------------------------------------
 # UI
@@ -138,10 +139,17 @@ class main_Menu():
         self.statusFrame = Frame(self.topFrame1)
         self.statusFrame.pack(side=RIGHT, fill=X, expand=False)
 
-        self.status = Label(self.statusFrame, text="⚐", font=("tkinterdefaultfont", 13, "bold"), fg="green")
-        _StoredGlobal.statusLabel = self.status    
-        self.status.pack(side=LEFT, padx=5, pady=5)
-        CreateToolTip(self.status, """Status flag of the program.\n- Green: Ready state\n- Blue: Busy\n- Red: Error\n-Yellow: Warning (Happens when previous state is error)
+        conColor = "green" if checkConns() == True else "red"
+        self.connectionStatus = Label(self.statusFrame, text="📶", font=("tkinterdefaultfont", 13, "bold"), fg=conColor)
+        self.connectionStatus.pack(side=LEFT, padx=0, pady=(0, 3))
+        self.connectionStatus.bind("<Button-1>", lambda e: self.reconnectTl())
+        CreateToolTip(self.connectionStatus, "Connection Status for Google, MyMemory, and Pons.\n\nGreen: Connected.\nRed: Disconnected\n\n*If disconnected, click here to reconnect!*\n\nDeepl and libreTranslate opens new connection each time you are translating so it's not affected by this.")
+        _StoredGlobal.connectionStatusLabel = self.connectionStatus
+
+        self.programStatus = Label(self.statusFrame, text="⚐", font=("tkinterdefaultfont", 13, "bold"), fg="green")
+        _StoredGlobal.programStatusLabel = self.programStatus    
+        self.programStatus.pack(side=LEFT, padx=(2, 5), pady=5) # 
+        CreateToolTip(self.programStatus, """Status flag of the program.\n- Green: Ready state\n- Blue: Busy\n- Red: Error\n-Yellow: Warning (Happens when previous state is error)
         \rTips: You can enable status log in settings and check error log""")
 
         # --- Top Frame 2 ---
@@ -223,6 +231,7 @@ class main_Menu():
 
         self.filemenu4 = Menu(self.menubar, tearoff=0)
         self.filemenu4.add_command(label="Tesseract", command=self.openTesLink) # Open Tesseract Downloads
+        self.filemenu4.add_command(label="Libretranslate", command=self.openLibreTlLink) # Open Tesseract Downloads
         self.filemenu4.add_command(label="Icon source", command=self.openIconSource)
         self.menubar.add_cascade(label="Get", menu=self.filemenu4)
 
@@ -407,6 +416,10 @@ class main_Menu():
         print("Please download the v5.0.0-alpha.20210811 Version (the latest version might be okay too) and install all language pack")
         OpenUrl("https://github.com/UB-Mannheim/tesseract/wiki")
 
+    def openLibreTlLink(self):
+        Mbox("Info", "You can follow the instruction on their github pages. It is recommended to build it with the models so you can use it fully offline.", 0, self.root)
+        OpenUrl("https://github.com/LibreTranslate/LibreTranslate")
+
     # Open icon source
     def openIconSource(self):
         OpenUrl("https://icons8.com/")
@@ -562,7 +575,15 @@ class main_Menu():
         _StoredGlobal.langTo = self.CBLangTo.get()
 
     def translate(self):
-        _StoredGlobal.translate(fJson.readSetting())    
+        _StoredGlobal.translate(fJson.readSetting())
+
+    def reconnectTl(self):
+        if not checkConns():
+            print(">> Reconnecting...")
+            reconnect()
+            conColor = "green" if checkConns() == True else "red"
+            self.connectionStatus.config(fg=conColor)
+            print(">> Reconnected!") if checkConns() == True else print(">> Failed to reconnect!")
 
 if __name__ == '__main__':
     gui = main_Menu()
