@@ -43,8 +43,17 @@ Inspired by Visual Novel Reader (VNR), [Visual Novel OCR](https://github.com/lem
 # Features
 - Translation
 - OCR Detection
-- Snip and translate<details open><summary>Example</summary><img src="https://raw.githubusercontent.com/Dadangdut33/Screen-Translate/main/user_manual/6_5_snipdemonstration.png" width="700" alt="Screen Translate Looks"></details>
-- Capture and translate<details open><summary>Example</summary><img src="https://raw.githubusercontent.com/Dadangdut33/Screen-Translate/main/user_manual/6_1_Usage_Example_old.png" width="700" alt="Screen Translate Looks"><img src="https://raw.githubusercontent.com/Dadangdut33/Screen-Translate/main/user_manual/6_3_usageExampleNew.png" width="700" alt="Screen Translate Looks"></details>
+- Snip and translate
+  <details open>
+  <summary>Example</summary>
+    <img src="https://raw.githubusercontent.com/Dadangdut33/Screen-Translate/main/user_manual/6_5_snipdemonstration.png" width="700" alt="Screen Translate Looks">
+  </details>
+- Capture and translate
+  <details open>
+  <summary>Example</summary>
+    <img src="https://raw.githubusercontent.com/Dadangdut33/Screen-Translate/main/user_manual/6_1_Usage_Example_old.png" width="700" alt="Screen Translate Looks">
+    <img src="https://raw.githubusercontent.com/Dadangdut33/Screen-Translate/main/user_manual/6_3_usageExampleNew.png" width="700" alt="Screen Translate Looks">
+  </details>
 
 # What can i use this for?
 - You can use this just to translate text from one language to another
@@ -62,7 +71,8 @@ Inspired by Visual Novel Reader (VNR), [Visual Novel OCR](https://github.com/lem
 # Requirements
 **For User**
 - **[tesseract](https://github.com/UB-Mannheim/tesseract/wiki)**, needed for the ocr. Install it with all the language pack.
-- Internet connection
+- **[LibreTranslate](https://github.com/LibreTranslate/LibreTranslate)** for offline translation (Optional).
+- Internet connection for the other engines (Needed if not using LibreTranslate). 
 
 **For Dev**
 - Python 3.5+, checked using [vermin](https://github.com/netromdk/vermin) (I am using python 3.9.6)
@@ -70,19 +80,20 @@ Inspired by Visual Novel Reader (VNR), [Visual Novel OCR](https://github.com/lem
 
 # Downloads
 - [Tesseract](https://github.com/UB-Mannheim/tesseract/wiki)
-- [LibreTranslate](https://github.com/LibreTranslate/LibreTranslate)
+- [LibreTranslate](https://github.com/LibreTranslate/LibreTranslate) (Optional)
 - [The application (ScreenTranslate/STL)](https://github.com/Dadangdut33/Screen-Translate/releases/latest)
 
 # How To Install and Setup
 **For User**
 1. Download the latest [release](https://github.com/Dadangdut33/Screen-Translate/releases/tag/release) of this program
 2. Install tesseract, **make sure to select install all language pack when prompted**
-3. Open the ScreenTranslate.exe
-4. Check settings, make sure tesseract location is correct
-5. Set monitor scaling to 100% so that image is captured accurately (If scaling is not set to 100% you will need to set offset in setting) **(Recommended)**
-6. Set offset if on multiple monitors. **(Optional)**
-7. Try capturing image and see if it works or not, if it doesn't, go check the image captured in img_captured folder. If it still doesn't work, try to change the offset.
-8. Now that you have set everything, the app should be ready. Feel free to submit new issue on the github repository if you encounter any bugs.
+3. Set up LibreTranslate **(Optional)**
+4. Open the ScreenTranslate.exe
+5. Check settings, make sure tesseract location is correct
+6. Set monitor scaling to 100% so that image is captured accurately (If scaling is not set to 100% you will need to set offset in setting) **(Recommended)**
+7. Set offset if on multiple monitors. **(Optional)**
+8. Try capturing image and see if it works or not, if it doesn't, go check the image captured in img_captured folder. If it still doesn't work, try to change the offset.
+9. Now that you have set everything, the app should be ready. Feel free to submit new issue on the github repository if you encounter any bugs.
 
 **For Dev**
 1. Clone the repo or download the source code of the latest release
