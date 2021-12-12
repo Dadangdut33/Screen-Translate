@@ -220,7 +220,7 @@ class Global_Class:
         # --------------------------------
         # LibreTranslate
         elif self.engine == "LibreTranslate":
-            isSuccess, translateResult = libre_tl(query, self.langTo, self.langFrom, https=settings['libreTl']['https'], host=settings['libreTl']['host'], port=settings['libreTl']['port'])
+            isSuccess, translateResult = libre_tl(query, self.langTo, self.langFrom, https=settings['libreTl']['https'], host=settings['libreTl']['host'], port=settings['libreTl']['port'], apiKeys=settings['libreTl']['api_key'])
             self.fillTextBoxAndSaveHistory(isSuccess, query, translateResult, historyIsSaved, settings)
         # --------------------------------
         # Wrong opts
