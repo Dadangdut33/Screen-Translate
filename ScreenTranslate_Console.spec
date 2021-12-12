@@ -49,4 +49,4 @@ coll = COLLECT(exe,
                strip=False,
                upx=True,
                upx_exclude=[],
-               name='ScreenTranslate 1.8.3 Console')
+               name='ScreenTranslate 1.8.4 Console')

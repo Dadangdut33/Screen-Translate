@@ -1,5 +1,9 @@
 # Changelog
-Latest V1.8.3
+Latest V1.8.4
+
+[V1.8.4 Minor Update]
+- Added setting for replacing new line with space for captured text.
+- Added setting for api keys for LibreTranslate.
 
 [V1.8.3 Added offline translation support by using LibreTranslate]
 - Now supports offline translation by using LibreTranslate. You can also use the online version if you are not interested in hosting it offline yourself. Link: https://github.com/LibreTranslate/LibreTranslate
