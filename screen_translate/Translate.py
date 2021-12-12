@@ -222,7 +222,7 @@ def pons_tl(text, to_lang, from_lang):
         return is_Success, result
 
 # LibreTranslator
-def libre_tl(text, to_lang, from_lang, https=False, host="localhost", port="5000"):
+def libre_tl(text, to_lang, from_lang, https=False, host="localhost", port="5000", apiKeys = ""):
     """Translate Using LibreTranslate
         Args:
             text ([str]): Text to translate
@@ -251,6 +251,9 @@ def libre_tl(text, to_lang, from_lang, https=False, host="localhost", port="5000
             "target": to_LanguageCode_Libre,
             "format": "text"
         }
+        if apiKeys != "":
+            request["api_key"] = apiKeys
+
         httpStr = "https" if https else "http"
 
         if port:

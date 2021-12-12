@@ -404,6 +404,16 @@ class SettingUI():
         CreateToolTip(self.checkShowNoTextAlert, text="Show alert when no text is entered or captured by the OCR")
 
         # Libretranslate
+        self.labelKeys = Label(self.content_Tl_3, text="API Key :")
+        self.labelKeys.pack(side=LEFT, padx=5, pady=5)
+        CreateToolTip(self.labelKeys, text="The API key for Libretranslate. Default: Empty.\n\nNot needed unless translating using the libretranslate.com domain/host.")
+
+        self.libreTlKey = StringVar(self.root)
+        self.libreTlKey.set("")
+        self.entryKeys = ttk.Entry(self.content_Tl_3, textvariable=self.libreTlKey)
+        self.entryKeys.pack(side=LEFT, padx=5, pady=5)
+        CreateToolTip(self.entryKeys, text="The API key for Libretranslate. Default: Empty.\n\nNot needed unless translating using the libretranslate.com domain/host.")
+
         self.labelHost = Label(self.content_Tl_3, text="Host :")
         self.labelHost.pack(side=LEFT, padx=5, pady=5)
         CreateToolTip(self.labelHost, text="Host address of Libletranslate server. Default: localhost\n\nYou can find full lists of other dedicated server on Libretranslate github repository.")
@@ -893,10 +903,12 @@ class SettingUI():
 
         # check for libretl
         try:
+            self.libreTlKey.set(settings['libreTl']['api_key'])
             self.libreTlHost.set(settings['libreTl']['host'])
             self.libreTlPort.set(settings['libreTl']['port'])
             self.libreHttpsVar.set(settings['libreTl']['https'])
         except Exception:
+            self.libreTlKey.set("")
             self.libreTlHost.set("localhost")
             self.libreTlPort.set("5000")
             self.libreHttpsVar.set(False)
@@ -1112,6 +1124,7 @@ class SettingUI():
             "captureLastValDelete": self.valDelLastChar.get(),
             "replaceNewLine": self.replaceNewLineVar.get(),
             "libreTl": {
+                "api_key": self.libreTlKey.get(),
                 "https": self.libreHttpsVar.get(),
                 "host": self.libreTlHost.get(),
                 "port": self.libreTlPort.get()

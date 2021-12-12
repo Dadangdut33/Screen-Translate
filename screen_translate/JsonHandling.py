@@ -27,6 +27,7 @@ class JsonHandler:
         "captureLastValDelete": 0,
         "replaceNewLine": True,
         "libreTl": {
+            "api_key": "",
             "https": False,
             "host": "localhost",
             "port": "5000"

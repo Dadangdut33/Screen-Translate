@@ -18,6 +18,7 @@
     "captureLastValDelete": 0,
     "replaceNewLine": true,
     "libreTl": {
+        "api_key": "",
         "https": false,
         "host": "localhost",
         "port": "5000"
