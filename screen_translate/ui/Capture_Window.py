@@ -268,9 +268,10 @@ class CaptureUI():
         willCaptureGrayscale = self.captureGrayscaleVar.get()
         bgType = self.CBBgType.get()
         debugmode = self.debugModeVar.get()
+        replaceNewLine = settings['replaceNewLine']
 
         # Capture the img
-        is_Success, result = captureImg(coords, language, tesseract_loc, willSaveImg, willDetectContour, willCaptureGrayscale, bgType, debugmode)
+        is_Success, result = captureImg(coords, language, tesseract_loc, willSaveImg, willDetectContour, willCaptureGrayscale, bgType, debugmode, replaceNewLine)
         
         # Set opac to before
         self.root.attributes('-alpha', opacBefore)

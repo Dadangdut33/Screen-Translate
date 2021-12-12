@@ -25,6 +25,7 @@ class JsonHandler:
         "default_FromOnOpen": "Auto-Detect",
         "default_ToOnOpen": "English",
         "captureLastValDelete": 0,
+        "replaceNewLine": True,
         "libreTl": {
             "https": False,
             "host": "localhost",

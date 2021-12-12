@@ -5,6 +5,8 @@ import tkinter.ttk as ttk
 from tkinter import *
 from tkinter import filedialog
 
+from numpy import True_
+
 from screen_translate.Public import CreateToolTip, fJson, _StoredGlobal
 from screen_translate.Public import startfile, optGoogle, optDeepl, optMyMemory, optPons, optLibre, optNone, engines, getTheOffset, searchList
 from screen_translate.Mbox import Mbox
@@ -337,6 +339,11 @@ class SettingUI():
         """The amount of captured word characters to be removed from the last.
         \rWhy? Because sometimes tesseract captured a garbage character that shows up in the last word.
         \rSet this to 0 if it deletes an actual character!""")
+
+        self.replaceNewLineVar = BooleanVar(self.root, value=True)
+        self.checkReplaceNewLine = ttk.Checkbutton(self.content_Misc_1, text="Replace New Line", variable=self.replaceNewLineVar)
+        self.checkReplaceNewLine.pack(side=LEFT, padx=5, pady=5)
+        CreateToolTip(self.checkReplaceNewLine, "Replace new line with space.")
 
         self.validateDigits_SpinDel = (self.root.register(lambda event: self.validateSpinbox(event, self.spinnerDelLastChar)), '%P')
         self.spinnerDelLastChar.configure(validate='key', validatecommand=self.validateDigits_SpinDel)
@@ -841,6 +848,13 @@ class SettingUI():
             Mbox("Error: Invalid Delete Last Char Value", "Please do not modify the setting manually if you don't know what you are doing", 2, self.root)
             self.valDelLastChar.set(0)
 
+        try: 
+            self.replaceNewLineVar.set(settings['replaceNewLine'])
+        except Exception:
+            print("Error: Invalid Replace New Line Options")
+            Mbox("Error: Invalid Replace New Line Options", "Please do not modify the setting manually if you don't know what you are doing", 2, self.root)
+            self.replaceNewLineVar.set(True)
+
         # Check for maskwindow
         try:
             self.maskColorLabel.config(text="Color     :     " + settings['Masking_Window']['color'])
@@ -1096,6 +1110,7 @@ class SettingUI():
             "default_FromOnOpen": self.CBDefaultFrom.get(),
             "default_ToOnOpen": self.CBDefaultTo.get(),
             "captureLastValDelete": self.valDelLastChar.get(),
+            "replaceNewLine": self.replaceNewLineVar.get(),
             "libreTl": {
                 "https": self.libreHttpsVar.get(),
                 "host": self.libreTlHost.get(),

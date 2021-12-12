@@ -36,7 +36,7 @@ def createPicDirIfGone():
             print("Error: " + str(e))
             Mbox("Error: ", str(e), 2)
 
-def captureImg(coords, sourceLang, tesseract_Location, saveImg = False, enhance_WithCv2 = False, grayScale = False, background = None, debugmode = False):
+def captureImg(coords, sourceLang, tesseract_Location, saveImg = False, enhance_WithCv2 = False, grayScale = False, background = None, debugmode = False, replaceNewLine = True):
     """Capture Image and return text from it
 
     Args:
@@ -44,7 +44,11 @@ def captureImg(coords, sourceLang, tesseract_Location, saveImg = False, enhance_
         sourceLang (string): The Language to be translated
         tesseract_Location (string): Tesseract .exe location
         cached (bool, optional): Cache/Save Image or not. Defaults to False.
-
+        enhance_WithCv2 (bool, optional): Enhance Image with cv2. Defaults to False.
+        grayScale (bool, optional): Convert Image to GrayScale. Defaults to False.
+        background (string, optional): Background color. Defaults to None.
+        debugmode (bool, optional): Debug mode. Defaults to False.
+        replaceNewLine (bool, optional): Replace new line with space. Defaults to True.
     Returns:
         status, result: Success or Error, Result
     """
@@ -164,7 +168,13 @@ def captureImg(coords, sourceLang, tesseract_Location, saveImg = False, enhance_
         else:
             Mbox("Error", str(e), 2)
     finally:
-        return is_Success, wordsGet.strip()
+        # replace all \n with space
+        if replaceNewLine:
+            wordsGet = wordsGet.strip().replace("\n", " ")
+        else:
+            wordsGet = wordsGet.strip()
+
+        return is_Success, wordsGet
 
 def captureAll():
     """Capture all screens and save the result"""

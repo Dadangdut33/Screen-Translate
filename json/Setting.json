@@ -16,6 +16,7 @@
     "default_FromOnOpen": "Japanese",
     "default_ToOnOpen": "English",
     "captureLastValDelete": 0,
+    "replaceNewLine": true,
     "libreTl": {
         "https": false,
         "host": "localhost",
