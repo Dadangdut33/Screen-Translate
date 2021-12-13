@@ -37,7 +37,7 @@ Inspired by Visual Novel Reader (VNR), [Visual Novel OCR](https://github.com/lem
 <br>
 
 <p align="center">
-    <img src="https://media.discordapp.net/attachments/653206818759376916/905394838764146698/unknown.png" width="700" alt="Screen Translate Looks">
+    <img src="https://media.discordapp.net/attachments/653206818759376916/919918869899014164/unknown.png" width="700" alt="Screen Translate Looks">
 </p>
 
 # Features
