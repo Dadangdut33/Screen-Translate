@@ -82,7 +82,7 @@ class Log():
         # Save the file
         if filename:
             try:
-                with open(filename, 'w') as f:
+                with open(filename, 'w', encoding='utf-8') as f:
                     f.write(self.logVar.get())
             except Exception as e:
                 Mbox('Error', 'Failed to save file: ' + str(e), 2, self.root)
