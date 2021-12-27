@@ -304,8 +304,8 @@ class main_Menu():
             self.result_Detached_Window_UI.root.iconbitmap(dir_logo)
             self.mask_UI.root.iconbitmap(dir_logo)
             self.log_UI.root.iconbitmap(dir_logo)
-        except FileNotFoundError:
-            print("Error loading icon: Logo not found!")
+        except TclError:
+            print("Error Loading icon: Logo not found!")
         except Exception as e:
             print("Error loading icon: " + str(e))
 
