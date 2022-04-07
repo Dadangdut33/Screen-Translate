@@ -1,5 +1,8 @@
 # Changelog
-Latest V1.8.4
+Latest V1.8.5
+
+[V1.8.5 Resizable setting window]
+- To counter scaling problem, you can now resize the setting window. It is also bigger now.
 
 [V1.8.4 Minor Update]
 - Added setting for replacing new line with space for captured text.
