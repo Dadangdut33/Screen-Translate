@@ -11,9 +11,8 @@ class AboutUI():
     def __init__(self):
         self.root = Tk()
         self.root.title('About Screen Translate')
-        self.root.geometry('375x300')
+        self.root.geometry('450x325')
         self.root.wm_withdraw()
-        self.root.resizable(False, False)
 
         # Top frame
         self.topFrame = Frame(self.root, bg="white")
