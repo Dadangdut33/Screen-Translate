@@ -41,8 +41,9 @@ Inspired by Visual Novel Reader (VNR), [Visual Novel OCR](https://github.com/lem
 </p>
 
 # Features
-- Translation
-- OCR Detection
+
+- Translation (Google translate, LibreTranslate, Mymemorytranslator, Deepl, Pons)
+- OCR Detection (Using tesseract OCR)
 - Snip and translate
   <details open>
   <summary>Example</summary>
@@ -56,11 +57,13 @@ Inspired by Visual Novel Reader (VNR), [Visual Novel OCR](https://github.com/lem
   </details>
 
 # What can i use this for?
+
 - You can use this just to translate text from one language to another
 - You can use this to capture and translate text from documents, games, pictures, etc.
 - You can use this to just capture the text if you wanted to by setting the tl engine to None. 
 
 # FAQ
+
 - **[Q]** How do i use this? \
 **[A]** You can look at the [user_manual](https://github.com/Dadangdut33/Screen-Translate/tree/main/user_manual) folder or [below](https://github.com/Dadangdut33/Screen-Translate#tutorial-on-how-to-use) for more information
 - **[Q]** Is this safe? \
@@ -69,21 +72,24 @@ Inspired by Visual Novel Reader (VNR), [Visual Novel OCR](https://github.com/lem
 **[A]** It means the text is not too blend it with the background. If the text is light the background needs to be darken, so it is easier to be read, somewhat like that. But, this has been improved with some tricks which you can experiment with in the settings.
 
 # Requirements
+
 **For User**
 - **[tesseract](https://github.com/UB-Mannheim/tesseract/wiki)**, needed for the ocr. Install it with all the language pack.
 - **[LibreTranslate](https://github.com/LibreTranslate/LibreTranslate)** for offline translation (Optional).
-- Internet connection for the other engines (Needed if not using LibreTranslate). 
+- Internet connection for translation if not using LibreTranslate. 
 
 **For Dev**
-- Python 3.5+, checked using [vermin](https://github.com/netromdk/vermin) (I am using python 3.9.6)
+- Python 3.6, checked using [vermin](https://github.com/netromdk/vermin) (I am using python 3.10.2)
 - Install [the dependencies](https://github.com/Dadangdut33/Screen-Translate/blob/main/requirements.txt) You can install them by running `pip_install.bat` or by typing `pip install -r requirements.txt`.
 
 # Downloads
+
 - [Tesseract](https://github.com/UB-Mannheim/tesseract/wiki)
 - [LibreTranslate](https://github.com/LibreTranslate/LibreTranslate) (Optional)
 - [The application (ScreenTranslate/STL)](https://github.com/Dadangdut33/Screen-Translate/releases/latest)
 
 # How To Install and Setup
+
 **For User**
 1. Download the latest [release](https://github.com/Dadangdut33/Screen-Translate/releases/tag/release) of this program
 2. Install tesseract, **make sure to select install all language pack when prompted**
@@ -116,9 +122,11 @@ pip install -r requirements.txt
 if everything works and you have a suggestion or improvement, you can submit a pull request on the github repository. I will check if it's a good idea to add it.
 
 # How To Uninstall
+
 If you use the installer version, you can run the uninstaller inside the app folder or uninstall it from control panel. For the portable (rar) version, you can just delete them.
 
 # How To Compile It To .exe Yourself
+
 You can use [p2exe](https://www.py2exe.org/) or many other stuff. I use [pyinstaller](https://www.pyinstaller.org/) to compile it.<br>
 There are 2 options for compiling, command used are: 
 ```
@@ -140,6 +148,7 @@ pyinstaller --paths STL_Venv/lib/site-packages ScreenTranslate_NoConsole.spec
 Read [this stackoverflow post](https://stackoverflow.com/questions/5458048/how-can-i-make-a-python-script-standalone-executable-to-run-without-any-dependen) to learn more on how to do it.
 
 # How To Use
+
 1. Select Language
 2. Translate or Capture Image using the capture window or the snipping feature
 3. Set hotkeys and delays as needed
@@ -149,10 +158,13 @@ Read [this stackoverflow post](https://stackoverflow.com/questions/5458048/how-c
 For more information you can check the [user_manual](https://github.com/Dadangdut33/Screen-Translate/tree/main/user_manual) folder
 
 # Reporting bugs and feature requests
+
 If you encounter any bugs with the program, please report them by opening an issue on the github repository. You can also request a feature by opening an issue.
 
 # Credits
+
 Icons are taken from [Icons8](https://icons8.com/)
 
 # Disclaimer
+
 This is a free open source software, you can use it for any purpose. However, I am not responsible for any damage caused by this software. Use it at your own risk. **(It won't create any damage though don't worry)**. This is also non profit, I gain no money from creating this.

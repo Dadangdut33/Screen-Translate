@@ -1,1 +1,1 @@
-Please do not edit stuff in this directory manually.
+Please do not edit stuff in this directory manually, unless you know what you are doing.

@@ -8,7 +8,7 @@ Readme File
 # Requirements
 - Tesseract, needed for the ocr. Install it with all the language pack.
 - LibreTranslate for offline translation (Optional).
-- Internet connection for the other engines (Needed if not using LibreTranslate). 
+- Internet connection for translation if not using LibreTranslate. 
 
 # Tutorial on How To Setup
 For visual instructions please take a look inside the user_manual folder
