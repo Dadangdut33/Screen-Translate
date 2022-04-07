@@ -26,7 +26,7 @@ pytesseract == 0.3.8
 requests == 2.26.0
 
 # \Screen-Translate\screen_translate\Capture.py: 4
-opencv-python == 4.5.3.56
+opencv-contrib-python == 4.5.5.64
 
 # \Screen-Translate\screen_translate\Public.py: 9
 screeninfo == 0.7
