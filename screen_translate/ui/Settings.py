@@ -5,8 +5,6 @@ import tkinter.ttk as ttk
 from tkinter import *
 from tkinter import filedialog
 
-from numpy import True_
-
 from screen_translate.Public import CreateToolTip, fJson, _StoredGlobal
 from screen_translate.Public import startfile, optGoogle, optDeepl, optMyMemory, optPons, optLibre, optNone, engines, getTheOffset, searchList
 from screen_translate.Mbox import Mbox
@@ -25,10 +23,9 @@ class SettingUI():
     def __init__(self):
         self.root = Tk()
         self.root.title("Setting")
-        self.root.geometry("915x350")
+        self.root.geometry("1110x425")
         self.root.wm_attributes('-topmost', False) # Default False
         self.root.wm_withdraw()
-        self.root.resizable(False, False)
 
         # ----------------------------------------------------------------------
         # Main frame
@@ -58,12 +55,12 @@ class SettingUI():
         self.listboxCat.bind("<<ListboxSelect>>", self.onSelect)
 
         # ----------------------------------------------------------------------
-        # Capturing/OCR
+        # Capturing/Offset
         self.frameCapture = Frame(self.mainFrameTop)
         self.frameCapture.pack(side=LEFT, fill=BOTH, padx=5, pady=5)
 
         # [Img/OCR Setting]
-        self.fLabelCapture_1 = LabelFrame(self.frameCapture, text="• Capturing Setting", width=750, height=55)
+        self.fLabelCapture_1 = LabelFrame(self.frameCapture, text="• Capturing Setting", width=900, height=80)
         self.fLabelCapture_1.pack(side=TOP, fill=X, expand=False, padx=5, pady=(0, 5))
         self.fLabelCapture_1.pack_propagate(0)
         self.content_Cap_1 = Frame(self.fLabelCapture_1)
@@ -87,7 +84,7 @@ class SettingUI():
         self.deleteAllCapturedImg.pack(side=LEFT, padx=5, pady=5)
 
         # [Offset]
-        self.fLabelCapture_2 = LabelFrame(self.frameCapture, text="• Monitor Capture Offset", width=750, height=150)
+        self.fLabelCapture_2 = LabelFrame(self.frameCapture, text="• Monitor Capture Offset", width=900, height=180)
         self.fLabelCapture_2.pack(side=TOP, fill=X, expand=False, padx=5, pady=5)
         self.fLabelCapture_2.pack_propagate(0)
 
@@ -179,7 +176,7 @@ class SettingUI():
         self.spinnerOffSetH.bind("<MouseWheel>", lambda event: self.disableScrollWheel(event, theSpinner=self.spinnerOffSetH))
 
         # [Snippet offset]
-        self.fLabelSnippet = LabelFrame(self.frameCapture, text="• Monitor Snippet Offset", width=750, height=55)
+        self.fLabelSnippet = LabelFrame(self.frameCapture, text="• Monitor Snippet Offset", width=900, height=80)
         self.fLabelSnippet.pack(side=TOP, fill=X, expand=False, padx=5, pady=5)
         self.fLabelSnippet.pack_propagate(0)
 
@@ -262,7 +259,7 @@ class SettingUI():
         self.frameOCREngine = Frame(self.mainFrameTop)
         self.frameOCREngine.pack(side=LEFT, fill=BOTH, padx=5, pady=5)
 
-        self.fLabelOCR_1 = LabelFrame(self.frameOCREngine, text="• Tesseract OCR Settings", width=750, height=55)
+        self.fLabelOCR_1 = LabelFrame(self.frameOCREngine, text="• Tesseract OCR Settings", width=900, height=80)
         self.fLabelOCR_1.pack(side=TOP, fill=X, expand=False, padx=5, pady=(0, 5))
         self.fLabelOCR_1.pack_propagate(0)
         self.content_Engine_1 = Frame(self.fLabelOCR_1)
@@ -281,7 +278,7 @@ class SettingUI():
         self.btnSearchTesseract.pack(side=LEFT, padx=5, pady=5)
 
         # [Ocr enhancement]
-        self.fLabelOCR_2 = LabelFrame(self.frameOCREngine, text="• OCR Enhancement", width=750, height=55)
+        self.fLabelOCR_2 = LabelFrame(self.frameOCREngine, text="• OCR Enhancement", width=900, height=80)
         self.fLabelOCR_2.pack(side=TOP, fill=X, expand=False, padx=5, pady=5)
         self.fLabelOCR_2.pack_propagate(0)
 
@@ -319,7 +316,7 @@ class SettingUI():
         \rYou can experiment with the option to increase the accuracy of tesseract OCR.
         \rThe saved picture will not be affected by the options.""")
 
-        self.fLabelOCR_3 = LabelFrame(self.frameOCREngine, text="• Misc", width=750, height=55)
+        self.fLabelOCR_3 = LabelFrame(self.frameOCREngine, text="• Misc", width=900, height=80)
         self.fLabelOCR_3.pack(side=TOP, fill=X, expand=False, padx=5, pady=5)
 
         self.content_Misc_1 = Frame(self.fLabelOCR_3)
@@ -353,7 +350,7 @@ class SettingUI():
         self.frameTranslate = Frame(self.mainFrameTop)
         self.frameTranslate.pack(side=LEFT, fill=BOTH, padx=5, pady=5)
         
-        self.fLabelTl_1 = LabelFrame(self.frameTranslate, text="• Translation Settings", width=750, height=80)
+        self.fLabelTl_1 = LabelFrame(self.frameTranslate, text="• Translation Settings", width=900, height=100)
         self.fLabelTl_1.pack(side=TOP, fill=X, expand=False, padx=5, pady=(0, 5))
         self.fLabelTl_1.pack_propagate(0)
 
@@ -363,7 +360,7 @@ class SettingUI():
         self.content_Tl_2 = Frame(self.fLabelTl_1)
         self.content_Tl_2.pack(side=TOP, fill=X, expand=False)
 
-        self.fLabelTl_2 = LabelFrame(self.frameTranslate, text="• Libretranslate Settings", width=750, height=55)
+        self.fLabelTl_2 = LabelFrame(self.frameTranslate, text="• Libretranslate Settings", width=900, height=80)
         self.fLabelTl_2.pack(side=TOP, fill=X, expand=False, padx=5, pady=(0, 5))
         self.fLabelTl_2.pack_propagate(0)
 
@@ -444,7 +441,7 @@ class SettingUI():
         self.frameHotkey = Frame(self.mainFrameTop)
         self.frameHotkey.pack(side=LEFT, fill=BOTH, padx=5, pady=5)
         
-        self.fLabelHKCapTl = LabelFrame(self.frameHotkey, text="• Capture Hotkey Settings", width=750, height=55)
+        self.fLabelHKCapTl = LabelFrame(self.frameHotkey, text="• Capture Hotkey Settings", width=900, height=80)
         self.fLabelHKCapTl.pack(side=TOP, fill=X, expand=False, padx=5, pady=(0, 5))
         self.fLabelHKCapTl.pack_propagate(0)
         self.content_HKCapTl = Frame(self.fLabelHKCapTl)
@@ -475,7 +472,7 @@ class SettingUI():
         self.labelCurrentHKCapTl.pack(side=LEFT, padx=5, pady=5)
 
         # Snip and cap
-        self.fLabelHKSnipCapTl = LabelFrame(self.frameHotkey, text="• Snip & Capture Hotkey Settings", width=750, height=55)
+        self.fLabelHKSnipCapTl = LabelFrame(self.frameHotkey, text="• Snip & Capture Hotkey Settings", width=900, height=80)
         self.fLabelHKSnipCapTl.pack(side=TOP, fill=X, expand=False, padx=5, pady=(0, 5))
         self.fLabelHKSnipCapTl.pack_propagate(0)
         self.content_HKSnipCapTl = Frame(self.fLabelHKSnipCapTl)
@@ -510,7 +507,7 @@ class SettingUI():
         self.frameQueryResult = Frame(self.mainFrameTop)
         self.frameQueryResult.pack(side=LEFT, fill=BOTH, padx=5, pady=5)
 
-        self.fLabelQuery = LabelFrame(self.frameQueryResult, text="• Query Box", width=750, height=110)
+        self.fLabelQuery = LabelFrame(self.frameQueryResult, text="• Query Box", width=900, height=140)
         self.fLabelQuery.pack(side=TOP, fill=X, expand=False, padx=5, pady=(0, 5))
         self.fLabelQuery.pack_propagate(0)
 
@@ -549,7 +546,7 @@ class SettingUI():
         theVar=self.queryFontVar, theDict=self.queryFontDict, destination=_StoredGlobal.main.query_Detached_Window_UI))
         CreateToolTip(self.queryFont, "Click to choose query textbox font")
 
-        self.fLabelResult = LabelFrame(self.frameQueryResult, text="• Result Box", width=750, height=110)
+        self.fLabelResult = LabelFrame(self.frameQueryResult, text="• Result Box", width=900, height=140)
         self.fLabelResult.pack(side=TOP, fill=X, expand=False, padx=5, pady=5)
         self.fLabelResult.pack_propagate(0)
 
@@ -593,7 +590,7 @@ class SettingUI():
         self.frameMask = Frame(self.mainFrameTop)
         self.frameMask.pack(side=TOP, fill=X, expand=False, padx=5, pady=5)
 
-        self.fLabelMask = LabelFrame(self.frameMask, text="• Mask Window", width=750, height=90)
+        self.fLabelMask = LabelFrame(self.frameMask, text="• Mask Window", width=900, height=110)
         self.fLabelMask.pack(side=TOP, fill=X, expand=False, padx=5, pady=5)
         self.fLabelMask.pack_propagate(0)
 
@@ -630,7 +627,7 @@ class SettingUI():
         self.frameOther = Frame(self.mainFrameTop)
         self.frameOther.pack(side=LEFT, fill=BOTH, padx=5, pady=5)
 
-        self.fLabelOther = LabelFrame(self.frameOther, text="• Other Settings", width=750, height=85)
+        self.fLabelOther = LabelFrame(self.frameOther, text="• Other Settings", width=900, height=110)
         self.fLabelOther.pack(side=TOP, fill=X, expand=False, padx=5, pady=(0, 5))
         self.fLabelOther.pack_propagate(0)
 
