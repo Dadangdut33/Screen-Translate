@@ -8,7 +8,7 @@
     <a href="https://lgtm.com/projects/g/Dadangdut33/Screen-Translate/context:python"><img alt="Language grade: Python" src="https://img.shields.io/lgtm/grade/python/g/Dadangdut33/Screen-Translate.svg?logo=lgtm&logoWidth=18"/></a>
     <a href="https://github.com/Dadangdut33/Screen-Translate/issues"><img alt="GitHub issues" src="https://img.shields.io/github/issues/Dadangdut33/Screen-Translate"></a>
     <a href="https://github.com/Dadangdut33/Screen-Translate/pulls"><img alt="GitHub pull requests" src="https://img.shields.io/github/issues-pr/Dadangdut33/Screen-Translate"></a>
-    <a href="https://github.com/Dadangdut33/Screen-Translate/releases/latest"><img src="https://img.shields.io/github/downloads/Dadangdut33/Screen-Translate/total"></a> <br>
+    <a href="https://github.com/Dadangdut33/Screen-Translate/releases/latest"><img alt="github downloads"  src="https://img.shields.io/github/downloads/Dadangdut33/Screen-Translate/total?label=downloads (github)"></a><a href="https://sourceforge.net/projects/screen-translate/files/latest/download"><img alt="sourceforge downloads" src="https://img.shields.io/sourceforge/dt/screen-translate.svg?label=downloads (sourceforge)"></a> <br>
     <a href="https://github.com/Dadangdut33/Screen-Translate/releases/latest"><img alt="GitHub release (latest SemVer)" src="https://img.shields.io/github/v/release/Dadangdut33/Screen-Translate"></a>
     <a href="https://github.com/Dadangdut33/Screen-Translate/commits/main"><img alt="GitHub commits since latest release (by date)" src="https://img.shields.io/github/commits-since/Dadangdut33/Screen-Translate/latest"></a><Br>
     <a href="https://github.com/Dadangdut33/Screen-Translate/stargazers"><img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/Dadangdut33/Screen-Translate?style=social"></a>
@@ -17,6 +17,10 @@
 
 STL a.k.a Screen Translate is an OCR translator tool made by utilizing Tesseract and opencv-python. The code is then compiled to .exe by using pyinstaller.
 Inspired by Visual Novel Reader (VNR), [Visual Novel OCR](https://github.com/leminhyen2/Visual-Novel-OCR), and [QTranslate](https://quest-app.appspot.com/). Also available to download at [sourceforge](https://sourceforge.net/projects/screen-translate/). Read on how I made it [here](https://blog.dadangdut33.codes/r/2/How-I-Make-Screen-Translate.-A-Desktop-OCR-translator-application-using-Python-and-Tesseract)
+
+<p align="center">
+<a href="https://sourceforge.net/projects/screen-translate/"><img width="125px"alt="GitHub forks" src="https://sourceforge.net/cdn/syndication/badge_img/3437888/oss-rising-star-white?achievement=oss-rising-star"></a>
+</p>
 
 <h1>Jump to</h1>
 
