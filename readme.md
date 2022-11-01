@@ -47,60 +47,60 @@ Inspired by Visual Novel Reader (VNR), [Visual Novel OCR](https://github.com/lem
 
 # Features
 
--   Translation (Google translate, LibreTranslate, Mymemorytranslator, Deepl, Pons)
--   OCR Detection (Using tesseract OCR)
--   Snip and translate
-    <details open>
-    <summary>Example</summary>
-      <img src="https://raw.githubusercontent.com/Dadangdut33/Screen-Translate/main/user_manual/6_5_snipdemonstration.png" width="700" alt="Screen Translate Looks">
-    </details>
--   Capture and translate
-    <details open>
-    <summary>Example</summary>
-      <img src="https://raw.githubusercontent.com/Dadangdut33/Screen-Translate/main/user_manual/6_1_Usage_Example_old.png" width="700" alt="Screen Translate Looks">
-      <img src="https://raw.githubusercontent.com/Dadangdut33/Screen-Translate/main/user_manual/6_3_usageExampleNew.png" width="700" alt="Screen Translate Looks">
-    </details>
+- Translation (Google translate, LibreTranslate, Mymemorytranslator, Deepl, Pons)
+- OCR Detection (Using tesseract OCR)
+- Snip and translate
+  <details open>
+  <summary>Example</summary>
+    <img src="https://raw.githubusercontent.com/Dadangdut33/Screen-Translate/main/user_manual/6_5_snipdemonstration.png" width="700" alt="Screen Translate Looks">
+  </details>
+- Capture and translate
+  <details open>
+  <summary>Example</summary>
+    <img src="https://raw.githubusercontent.com/Dadangdut33/Screen-Translate/main/user_manual/6_1_Usage_Example_old.png" width="700" alt="Screen Translate Looks">
+    <img src="https://raw.githubusercontent.com/Dadangdut33/Screen-Translate/main/user_manual/6_3_usageExampleNew.png" width="700" alt="Screen Translate Looks">
+  </details>
 
 # What can i use this for?
 
--   You can use this just to translate text from one language to another
--   You can use this to capture and translate text from documents, games, pictures, etc.
--   You can use this to just capture the text if you wanted to by setting the tl engine to None.
+- You can use this just to translate text from one language to another
+- You can use this to capture and translate text from documents, games, pictures, etc.
+- You can use this to just capture the text if you wanted to by setting the tl engine to None.
 
 # FAQ
 
--   **[Q]** How do i use this? \
-    **[A]** You can look at the [user_manual](https://github.com/Dadangdut33/Screen-Translate/tree/main/user_manual) folder or [below](#how-to-install-and-setup) for more information
--   **[Q]** Is this safe? \
-    **[A]** Yes, it is completely safe. If your antivirus detect this program as a virus, it's only a false positive. If you don't believe it, you can take a look at the code yourself.
--   **[Q]** What do you mean by a "clear enough" text? \
-    **[A]** It means the text is not too blend it with the background. If the text is light the background needs to be darken, so it is easier to be read, somewhat like that. But, this has been improved with some tricks which you can experiment with in the settings.
+- **[Q]** How do i use this? \
+  **[A]** You can look at the [user_manual](https://github.com/Dadangdut33/Screen-Translate/tree/main/user_manual) folder or [below](#how-to-install-and-setup) for more information
+- **[Q]** Is this safe? \
+  **[A]** Yes, it is completely safe. If your antivirus detect this program as a virus, it's only a false positive. If you don't believe it, you can take a look at the code yourself.
+- **[Q]** What do you mean by a "clear enough" text? \
+  **[A]** It means the text is not too blend it with the background. If the text is light the background needs to be darken, so it is easier to be read, somewhat like that. But, this has been improved with some tricks which you can experiment with in the settings.
 
 # Requirements
 
 **For User**
 
--   **[tesseract](https://github.com/UB-Mannheim/tesseract/wiki)**, needed for the ocr. Install it with all the language pack. (Tested version is v5.0.0-alpha2021081, higher version might work)
--   **[LibreTranslate](https://github.com/LibreTranslate/LibreTranslate)** for offline translation (Optional).
--   Internet connection for translation if not using LibreTranslate.
+- **[tesseract](https://github.com/UB-Mannheim/tesseract/wiki)**, needed for the ocr. Install it with all the language pack. (Tested version is v5.0.0-alpha2021081, higher version might work)
+- **[LibreTranslate](https://github.com/LibreTranslate/LibreTranslate)** for offline translation (Optional).
+- Internet connection for translation if not using LibreTranslate.
 
 **For Dev**
 
--   Python 3.6, checked using [vermin](https://github.com/netromdk/vermin) (I am using python 3.10.2)
--   Install [the dependencies](https://github.com/Dadangdut33/Screen-Translate/blob/main/requirements.txt) You can install them by running `pip_install.bat` or by typing `pip install -r requirements.txt`.
+- Python 3.6, checked using [vermin](https://github.com/netromdk/vermin) (I am using python 3.10.2)
+- Install [the dependencies](https://github.com/Dadangdut33/Screen-Translate/blob/main/requirements.txt) You can install them by running `pip_install.bat` or by typing `pip install -r requirements.txt`.
 
 # Downloads
 
--   [Tesseract](https://github.com/UB-Mannheim/tesseract/wiki) (v5.0.0-alpha2021081 or higher)
--   [LibreTranslate](https://github.com/LibreTranslate/LibreTranslate) (Optional)
--   [The application (ScreenTranslate/STL)](https://github.com/Dadangdut33/Screen-Translate/releases/latest)
+- [Tesseract](https://github.com/UB-Mannheim/tesseract/wiki) (v5.0.0-alpha2021081 or higher)
+- [LibreTranslate](https://github.com/LibreTranslate/LibreTranslate) (Optional)
+- [The application (ScreenTranslate/STL)](https://github.com/Dadangdut33/Screen-Translate/releases/latest)
 
 # How To Install and Setup
 
 **For User**
 
-1. Download the latest [release](https://github.com/Dadangdut33/Screen-Translate/releases/tag/release) of this program
-2. Install tesseract, **\*make sure to select install all language pack when prompted**, optionally you can found the language pack tessdata in [teserract repository](https://github.com/tesseract-ocr) such as [this (tessdata_best)](https://github.com/tesseract-ocr/tessdata_best)
+1. Download the latest [release](https://github.com/Dadangdut33/Screen-Translate/releases/latest) of this program
+2. Install [tesseract](https://github.com/UB-Mannheim/tesseract/wiki), **\*make sure to select install all language pack when prompted**, optionally you can found the language pack tessdata in [teserract repository](https://github.com/tesseract-ocr) such as [this (tessdata_best)](https://github.com/tesseract-ocr/tessdata_best)
 3. Set up LibreTranslate **(Optional)**
 4. Open the ScreenTranslate.exe
 5. Check settings, make sure tesseract location is correct
