@@ -36,6 +36,7 @@ Inspired by Visual Novel Reader (VNR), [Visual Novel OCR](https://github.com/lem
 - [Reporting bugs and feature requests](#reporting-bugs-and-feature-requests)
 - [Credits](#credits)
 - [Disclaimer](#disclaimer)
+- [Other](#other)
 
 ---
 
@@ -181,3 +182,7 @@ Icons are taken from [Icons8](https://icons8.com/)
 # Disclaimer
 
 This is a free open source software, you can use it for any purpose. However, I am not responsible for any damage caused by this software. Use it at your own risk. **(It won't create any damage though don't worry)**. This is also non profit, I gain no money from creating this.
+
+# Other
+
+Check out my other similar project called [Speech Translate](https://github.com/Dadangdut33/Speech-Translate/). This one is a real time speech transcription and translation app made possible using whisper model from openAI.
