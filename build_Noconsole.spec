@@ -1,21 +1,16 @@
 # -*- mode: python ; coding: utf-8 -*-
 
-
 block_cipher = None
 
+from PyInstaller.utils.hooks import copy_metadata
+from screen_translate._version import __version__
+
+datas = [('./assets', 'assets/'), ('./user_manual', 'user_manual'), ('./user_manual/Readme.txt', '.'), ('./user_manual/Changelog.txt', '.'),]
 
 a = Analysis(['ScreenTranslate.py'],
              pathex=['./'],
              binaries=[],
-             datas=[
-                ('./user_manual', 'user_manual'),
-                ('./img_captured', 'img_captured'),
-                ('./json', 'json'),
-                ('./user_manual/Readme.txt', '.'),
-                ('./user_manual/Changelog.txt', '.'),
-                ('./logo.ico', '.'),
-                ('./logo.png', '.'),
-             ],
+             datas=datas,
              hiddenimports=[],
              hookspath=[],
              hooksconfig={},
@@ -37,7 +32,7 @@ exe = EXE(pyz,
           bootloader_ignore_signals=False,
           strip=False,
           upx=True,
-          console=False,
+          console=True,
           disable_windowed_traceback=False,
           target_arch=None,
           codesign_identity=None,
@@ -49,4 +44,4 @@ coll = COLLECT(exe,
                strip=False,
                upx=True,
                upx_exclude=[],
-               name='ScreenTranslate 1.8.5 No Console')
+               name=f"ScreenTranslate {__version__} No Console")
