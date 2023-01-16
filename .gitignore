@@ -2,6 +2,8 @@ test/
 *.pyc
 build/
 dist/
-img_captured/*.png
+captured/
+json/
+log/
 .vscode/
-STL_Venv/
+venv/

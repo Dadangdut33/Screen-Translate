@@ -1,40 +1,14 @@
-# \Screen-Translate\screen_translate\Capture.py: 11
 Pillow == 8.3.2
-
-# \Screen-Translate\screen_translate\Capture.py: 1
-# \Screen-Translate\screen_translate\Public.py: 5
 PyAutoGUI == 0.9.53
-
-# \Screen-Translate\screen_translate\Translate.py: 8,19,30
 deep_translator == 1.5.4
-
-# \Screen-Translate\screen_translate\Translate_Deepl.py: 7
 deepl_scraper_pp == 0.1.2
-
-# \Screen-Translate\ScreenTranslate.py: 2
-# \Screen-Translate\screen_translate\ui\Settings.py: 2
 keyboard == 0.13.5
-
-# \Screen-Translate\screen_translate\ui\Capture_Window.py: 7
-# \Screen-Translate\screen_translate\ui\History.py: 2
 pyperclip == 1.8.2
-
-# \Screen-Translate\screen_translate\Capture.py: 3
 pytesseract == 0.3.8
-
-# \Screen-Translate\ScreenTranslate.py: 7
 requests == 2.26.0
-
-# \Screen-Translate\screen_translate\Capture.py: 4
 opencv-contrib-python == 4.5.5.64
-
-# \Screen-Translate\screen_translate\Public.py: 9
 screeninfo == 0.7
-
-# \Screen-Translate\screen_translate\ui\Settings: 8
-# \Screen-Translate\screen_translate\ui\Tl_From: 7
-# \Screen-Translate\screen_translate\ui\Tl_Result: 7
-tkfontchooser == 2.0.2
-
-# \Screen-Translate\screen_translate\ui\Settngs: 15
 send2trash == 1.8.0
+notify-py==0.3.3
+sounddevice==0.4.5
+soundfile==0.11.0

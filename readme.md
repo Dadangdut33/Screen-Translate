@@ -34,7 +34,7 @@ Inspired by Visual Novel Reader (VNR), [Visual Novel OCR](https://github.com/lem
 - [How To Compile It To .exe Yourself](#how-to-compile-it-to-exe-yourself)
 - [How To Use](#how-to-use)
 - [Reporting bugs and feature requests](#reporting-bugs-and-feature-requests)
-- [Credits](#credits)
+- [Attribution](#attribution)
 - [Disclaimer](#disclaimer)
 - [Other](#other)
 
@@ -117,11 +117,11 @@ Inspired by Visual Novel Reader (VNR), [Visual Novel OCR](https://github.com/lem
 
 ```
 # On source code directory
-# Create a virtualenviroment with the name STL_Venv
-python -m venv STL_Venv
+# Create a virtualenviroment with the name venv
+python -m venv venv
 
 # Activate the virtualenviroment
-source STL_Venv/bin/activate
+source venv/bin/activate
 
 # Install the dependencies
 pip install -r requirements.txt
@@ -151,12 +151,12 @@ pyinstaller ScreenTranslate_Console.spec
 pyinstaller ScreenTranslate_NoConsole.spec
 
 # If installing using virtualenviroment
-# Change STL_Venv to your virtualenviroment name
+# Change venv to your virtualenviroment name
 # With console window
-pyinstaller --paths STL_Venv/lib/site-packages ScreenTranslate_Console.spec
+pyinstaller --paths venv/lib/site-packages ScreenTranslate_Console.spec
 
 # No console window
-pyinstaller --paths STL_Venv/lib/site-packages ScreenTranslate_NoConsole.spec
+pyinstaller --paths venv/lib/site-packages ScreenTranslate_NoConsole.spec
 ```
 
 Read [this stackoverflow post](https://stackoverflow.com/questions/5458048/how-can-i-make-a-python-script-standalone-executable-to-run-without-any-dependen) to learn more on how to do it.
@@ -175,9 +175,9 @@ For more information you can check the [user_manual](https://github.com/Dadangdu
 
 If you encounter any bugs with the program, please report them by opening an issue on the github repository. You can also request a feature by opening an issue.
 
-# Credits
+# Attribution
 
-Icons are taken from [Icons8](https://icons8.com/)
+Translate Icon in the logo is taken from [Icons8](https://icons8.com/)
 
 # Disclaimer
 
@@ -185,4 +185,4 @@ This is a free open source software, you can use it for any purpose. However, I 
 
 # Other
 
-Check out my other similar project called [Speech Translate](https://github.com/Dadangdut33/Speech-Translate/). This one is a real time speech transcription and translation app made possible using whisper model from openAI.
+Check out my other similar project called [Speech Translate](https://github.com/Dadangdut33/Speech-Translate/) a real time speech transcription and translation app made possible using whisper model from openAI.

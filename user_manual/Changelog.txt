@@ -1,5 +1,8 @@
 # Changelog
-Latest V1.8.5
+Latest V2.0.0
+
+[V2.0.0 TBA] 
+...
 
 [V1.8.5 Resizable setting window]
 - To counter scaling problem, you can now resize the setting window. It is also bigger now.
