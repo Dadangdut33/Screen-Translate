@@ -3,14 +3,17 @@ import tkinter as tk
 import tkinter.ttk as ttk
 
 from .MBox import Mbox
+from screen_translate.Globals import gClass, path_logo_icon
 from screen_translate.Logging import logger, current_log, dir_log
 from screen_translate.utils.Helper import startFile, tb_copy_only
 
 # Classes
 class Log:
     """Logger but shown in toplevel window"""
+
     # ----------------------------------------------------------------------
     def __init__(self, master):
+        gClass.lw = self  # type: ignore
         self.root = tk.Toplevel(master)
         self.root.title("Log")
         self.root.geometry("600x160")
@@ -47,6 +50,12 @@ class Log:
 
         # On Close
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
+
+        # ------------------ Set Icon ------------------
+        try:
+            self.root.iconbitmap(path_logo_icon)
+        except:
+            pass
 
     # Show/Hide
     def show(self):

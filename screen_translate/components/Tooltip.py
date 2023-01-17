@@ -7,6 +7,7 @@ class CreateToolTip(object):
     create a tooltip for a given widget
     """
 
+    # ----------------------------------------------------------------------
     def __init__(self, widget, text="widget info", delay=250, wrapLength=180, opacity=1.0, always_on_top=True):
         self.waitTime = delay  # miliseconds
         self.wrapLength = wrapLength  # pixels

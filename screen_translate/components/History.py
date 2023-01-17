@@ -3,7 +3,7 @@ import tkinter.ttk as ttk
 import pyperclip
 
 from .MBox import Mbox
-from screen_translate.Globals import gClass, fJson
+from screen_translate.Globals import gClass, fJson, path_logo_icon
 from screen_translate.Logging import logger
 
 
@@ -13,6 +13,7 @@ class HistoryUI:
 
     # ----------------------------------------------------------------
     def __init__(self, master):
+        gClass.hw = self  # type: ignore
         self.root = tk.Toplevel(master)
         self.root.title("History")
         self.root.geometry("700x300")
@@ -71,6 +72,12 @@ class HistoryUI:
 
         # On Close
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
+
+        # ------------------ Set Icon ------------------
+        try:
+            self.root.iconbitmap(path_logo_icon)
+        except:
+            pass
 
         self.refresh()
 

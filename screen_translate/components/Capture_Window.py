@@ -1,97 +1,85 @@
+import platform
 import tkinter as tk
 import tkinter.ttk as ttk
-import platform
-from typing import Literal
 
-from screen_translate.Globals import fJson, gClass, path_logo_icon
 from screen_translate.utils.Beep import beep
-from .Tooltip import CreateToolTip
-from .MBox import Mbox
 
+from .Tooltip import CreateToolTip
+from screen_translate.Globals import gClass, fJson, path_logo_icon
+from screen_translate.components.MBox import Mbox
 
 # Classes
-class AbstractDetachedWindow:
-    """Detached Window"""
+class CaptureUI:
+    """Capture Window"""
 
     # ----------------------------------------------------------------------
-    def __init__(self, master, title: str, winType: Literal["q", "res"]):
-        self.root = tk.Toplevel(master)
-        self.root.title(title)
-        self.root.geometry("600x160")
+    def __init__(self):
+        gClass.cw = self  # type: ignore
+        self.root = tk.Tk()
+        self.root.title("Capture Window")
+        self.root.geometry("600x150")
         self.root.wm_withdraw()
+        self.root.attributes("-alpha", 0.8)
 
         # ------------------ #
-        self.winType = winType
-        self.x = 0
-        self.y = 0
-        self.curText = ""
-        self.updateTb = False
-        self.getTbVal = False
-        self.currentOpacity = 1.0
         self.always_on_top = tk.IntVar()
         self.tooltip_disabled = tk.IntVar()
         self.hidden_top = tk.IntVar()
         self.clickThrough = tk.IntVar()
-        if winType == "q":
-            gClass.ex_qw = self  # type: ignore
-        elif winType == "res":
-            gClass.ex_resw = self  # type: ignore
+        self.cv2Contour = tk.IntVar()
+        self.grayscale = tk.IntVar()
+        self.bgType = tk.StringVar()
+        self.debugMode = tk.IntVar()
 
-        # ------------------ #
-        # Top frame
-        self.frame_1 = ttk.Frame(self.root)
-        self.frame_1.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
-        self.fTooltip = CreateToolTip(self.frame_1, "Right click for interaction menu\n\nTips: You can drag the window by dragging from the label", wrapLength=400)
+        # Frame-1
+        self.frame_1 = tk.Frame(self.root)
+        self.frame_1.pack(side=tk.TOP, fill=tk.X, expand=False)
+        self.fTooltip = CreateToolTip(self.frame_1, "Right click for interaction menu", wrapLength=400)
 
-        self.labelText = tk.Label(
-            self.frame_1,
-            font=(fJson.settingCache[f"tb_ex_{winType}_font"], fJson.settingCache[f"tb_ex_{winType}_font_size"], "bold" if fJson.settingCache[f"tb_ex_{winType}_font_bold"] else "normal"),
-            fg=fJson.settingCache[f"tb_ex_{winType}_font_color"],
-            bg=fJson.settingCache[f"tb_ex_{winType}_bg_color"],
-            wraplength=600,
-            justify=tk.LEFT,
-        )
-        self.labelText.pack(side=tk.TOP)
+        # ----------------------------------------------------------------------
+        # Label for opacity slider
+        self.lbl_opacity = ttk.Label(self.frame_1, text="Opacity: 0.8")
+        self.lbl_opacity.pack(padx=5, pady=5, side=tk.LEFT)
 
+        # opacity slider
+        self.slider_opacity = ttk.Scale(self.frame_1, from_=0.25, to=1.0, value=0.8, orient=tk.HORIZONTAL, command=self.change_opacity)
+        self.slider_opacity.pack(padx=5, pady=5, side=tk.LEFT)
+
+        # Button
+        assert gClass.mw is not None
+        self.captureBtn = ttk.Button(self.frame_1, text="Capture & Translate", command=gClass.mw.capwin_callback)
+        self.captureBtn.pack(padx=5, pady=5, side=tk.LEFT)
+
+        # menu
         self.menuDropdown = tk.Menu(self.root, tearoff=0)
-        self.menuDropdown.add_command(label="Copy", command=lambda: self.copy_tb_content(), accelerator="Alt + C")
-        self.menuDropdown.add_separator()
         self.menuDropdown.add_checkbutton(label="Hide Title bar", command=lambda: self.toggle_hidden_top(False), onvalue=1, offvalue=0, variable=self.hidden_top, accelerator="Alt + T")
         if platform.system() == "Windows":
             self.menuDropdown.add_checkbutton(label="Click Through/Transparent", command=lambda: self.toggle_click_through(False), onvalue=1, offvalue=0, variable=self.clickThrough, accelerator="Alt + S")
         self.menuDropdown.add_checkbutton(label="Always On Top", command=lambda: self.toggle_always_on_top(False), onvalue=1, offvalue=0, variable=self.always_on_top, accelerator="Alt + O")
+
         self.menuDropdown.add_separator()
         self.menuDropdown.add_command(label="Increase Opacity by 0.1", command=lambda: self.increase_opacity(), accelerator="Alt + Mouse Wheel Up")
         self.menuDropdown.add_command(label="Decrease Opacity by 0.1", command=lambda: self.decrease_opacity(), accelerator="Alt + Mouse Wheel Down")
+
+        self.menuDropdown.add_separator()
+        self.menuDropdown.add_checkbutton(
+            label="Detect contour using CV2", command=lambda: beep() or fJson.savePartialSetting("enhance_with_cv2_Contour", self.cv2Contour.get()), onvalue=1, offvalue=0, variable=self.cv2Contour
+        )
+        self.menuDropdown.add_checkbutton(label="Grayscale", command=lambda: beep() or fJson.savePartialSetting("grayscale", self.grayscale.get()), onvalue=1, offvalue=0, variable=self.grayscale)
+        self.bgTypeMenu = tk.Menu(self.menuDropdown, tearoff=0)
+        self.menuDropdown.add_cascade(label="Background Type", menu=self.bgTypeMenu)
+        self.bgTypeMenu.add_radiobutton(label="Auto-Detect", command=lambda: beep() or fJson.savePartialSetting("enhance_background", "Auto-Detect"), value="Auto-Detect", variable=self.bgType)
+        self.bgTypeMenu.add_radiobutton(label="Light", command=lambda: beep() or fJson.savePartialSetting("enhance_background", "Light"), value="Light", variable=self.bgType)
+        self.bgTypeMenu.add_radiobutton(label="Dark", command=lambda: beep() or fJson.savePartialSetting("enhance_background", "Dark"), value="Dark", variable=self.bgType)
+        self.menuDropdown.add_checkbutton(label="Debug Mode", command=lambda: beep() or fJson.savePartialSetting("enhance_debugmode", self.debugMode.get()), onvalue=1, offvalue=0, variable=self.debugMode)
+
         self.menuDropdown.add_separator()
         self.menuDropdown.add_checkbutton(label="Hide Tooltip", command=lambda: self.disable_tooltip(False), onvalue=1, offvalue=0, variable=self.tooltip_disabled, accelerator="Alt + X")
         self.menuDropdown.add_separator()
         self.menuDropdown.add_command(label="Keyboard Shortcut Keys", command=lambda: self.show_shortcut_keys())
 
-        # ------------------------------------------------------------------------
-        # Binds
         # On Close
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
-
-        # rclick menu
-        self.root.bind("<Button-3>", lambda event: self.menuDropdown.post(event.x_root, event.y_root))
-
-        # keybinds
-        if platform.system() == "Windows":
-            self.root.bind("<Alt-KeyPress-s>", lambda event: self.toggle_click_through())
-        self.root.bind("<Alt-KeyPress-c>", lambda event: self.copy_tb_content())
-        self.root.bind("<Alt-KeyPress-t>", lambda event: self.toggle_hidden_top())
-        self.root.bind("<Alt-KeyPress-o>", lambda event: self.toggle_always_on_top())
-        self.root.bind("<Alt-KeyPress-x>", lambda event: self.disable_tooltip())
-        self.root.bind("<Alt-MouseWheel>", lambda event: self.change_opacity(event))
-
-        # bind resize
-        self.frame_1.bind("<Configure>", lambda event: self.on_resize(event))
-
-        # bind drag on label text
-        self.labelText.bind("<ButtonPress-1>", self.StartMove)
-        self.labelText.bind("<ButtonRelease-1>", self.StopMove)
-        self.labelText.bind("<B1-Motion>", self.OnMotion)
 
         # ------------------ Set Icon ------------------
         try:
@@ -99,12 +87,17 @@ class AbstractDetachedWindow:
         except:
             pass
 
+    def initVar(self):
+        self.cv2Contour.set(fJson.settingCache["enhance_with_cv2_Contour"])
+        self.grayscale.set(fJson.settingCache["enhance_with_grayscale"])
+        self.bgType.set(fJson.settingCache["enhance_background"])
+        self.debugMode.set(fJson.settingCache["enhance_debugmode"])
+
+    # Show/Hide
     def show(self):
-        """
-        Method to show the window.
-        """
+        self.initVar()
         self.root.wm_deiconify()
-        self.root.attributes("-alpha", 1)
+        self.root.attributes("-alpha", 0.8)
         if platform.system() == "Windows":
             self.clickThrough.set(0)
             self.root.wm_attributes("-transparentcolor", "")
@@ -112,40 +105,13 @@ class AbstractDetachedWindow:
     def on_closing(self):
         self.root.wm_withdraw()
 
-    def on_resize(self, event):
-        """
-        Method to resize the window.
-        """
-        # update wraplength
-        self.labelText.config(wraplength=event.width)
-
-    def StartMove(self, event):
-        self.x = event.x
-        self.y = event.y
-
-    def StopMove(self, event):
-        self.x = None
-        self.y = None
-
-    def OnMotion(self, event):
-        x = event.x_root - self.x - self.labelText.winfo_rootx() + self.labelText.winfo_rootx()
-        y = event.y_root - self.y - self.labelText.winfo_rooty() + self.labelText.winfo_rooty()
-        self.root.geometry("+%s+%s" % (x, y))
-
-    def check_height_resize(self):
-        """
-        Method to resize the window height if label text height is more than the window height.
-        """
-        if self.labelText.winfo_height() > self.frame_1.winfo_height():
-            self.root.geometry(f"{self.root.winfo_width()}x{self.labelText.winfo_height()}")
-
     def show_shortcut_keys(self):
         """
         Method to show shortcut keys.
         """
         Mbox(
             "Shortcut keys command for detached window",
-            "Alt + scroll to change opacity\nAlt + c to copy text\nAlt + t to toggle title bar (remove title bar)\nAlt + s to toggle click through or transparent window\nAlt + o to toggle always on top\nAlt + x to toggle on/off this tooltip\n\nTips: You can drag the window by dragging from the label",
+            "Alt + scroll to change opacity\nAlt + t to toggle title bar (remove title bar)\nAlt + s to toggle click through or transparent window\nAlt + o to toggle always on top\nAlt + x to toggle on/off this tooltip\n\nTips: If the window seems missing or you cannot find it click generate from main window title bar to set opacity to normal",
             0,
         )
 
@@ -204,7 +170,7 @@ class AbstractDetachedWindow:
         """
         Method to increase the opacity of the window by 0.1.
         """
-        self.currentOpacity += 0.1
+        self.currentOpacity += 0.075
         if self.currentOpacity > 1:
             self.currentOpacity = 1
         self.root.attributes("-alpha", self.currentOpacity)
@@ -214,9 +180,9 @@ class AbstractDetachedWindow:
         """
         Method to decrease the opacity of the window by 0.1.
         """
-        self.currentOpacity -= 0.1
-        if self.currentOpacity < 0.1:
-            self.currentOpacity = 0.1
+        self.currentOpacity -= 0.075
+        if self.currentOpacity < 0.025:
+            self.currentOpacity = 0.025
         self.root.attributes("-alpha", self.currentOpacity)
         self.fTooltip.opacity = self.currentOpacity
 
@@ -229,20 +195,15 @@ class AbstractDetachedWindow:
             event (event): event object
         """
         if event.delta > 0:
-            self.currentOpacity += 0.1
+            self.currentOpacity += 0.025
         else:
-            self.currentOpacity -= 0.1
+            self.currentOpacity -= 0.025
 
         if self.currentOpacity > 1:
             self.currentOpacity = 1
-        elif self.currentOpacity < 0.1:
-            self.currentOpacity = 0.1
+        elif self.currentOpacity < 0.025:
+            self.currentOpacity = 0.025
+
         self.root.attributes("-alpha", self.currentOpacity)
         self.fTooltip.opacity = self.currentOpacity
-
-    def copy_tb_content(self):
-        """
-        Method to copy the textbox content to clipboard.
-        """
-        self.root.clipboard_clear()
-        self.root.clipboard_append(self.labelText.cget("text").strip())
+        self.lbl_opacity.config(text=f"Opacity: {round(self.currentOpacity, 3)}")

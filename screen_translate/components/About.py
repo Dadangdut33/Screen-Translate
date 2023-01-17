@@ -7,7 +7,7 @@ from PIL import Image, ImageTk
 
 from screen_translate._version import __version__
 from screen_translate.Logging import logger
-from screen_translate.Globals import path_logo_png, path_logo_icon, app_name, fJson
+from screen_translate.Globals import gClass, path_logo_png, path_logo_icon, app_name, fJson
 from screen_translate.utils.Helper import OpenUrl, nativeNotify
 from .Tooltip import CreateToolTip
 
@@ -17,33 +17,34 @@ class AboutWindow:
 
     # ----------------------------------------------------------------------
     def __init__(self, master):
+        gClass.aw = self  # type: ignore
         self.root = tk.Toplevel(master)
         self.root.title("About Screen Translate")
         self.root.geometry("450x325")
         self.root.wm_withdraw()
 
         # Top frame
-        self.topFrame = tk.Frame(self.root, bg="white")
-        self.topFrame.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+        self.frame_top = tk.Frame(self.root, bg="white")
+        self.frame_top.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
-        self.bottomFrame = tk.Frame(self.root, bg="#F0F0F0")
-        self.bottomFrame.pack(side=tk.BOTTOM, fill=tk.X, expand=False)
+        self.frame_bot = tk.Frame(self.root, bg="#F0F0F0")
+        self.frame_bot.pack(side=tk.BOTTOM, fill=tk.X, expand=False)
 
-        self.bottomLeft = tk.Frame(self.bottomFrame, bg="#F0F0F0")
-        self.bottomLeft.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        self.frame_bot_l = tk.Frame(self.frame_bot, bg="#F0F0F0")
+        self.frame_bot_l.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
-        self.botLeftTop = tk.Frame(self.bottomLeft, bg="#F0F0F0")
-        self.botLeftTop.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+        self.frame_bot_l_t = tk.Frame(self.frame_bot_l, bg="#F0F0F0")
+        self.frame_bot_l_t.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
-        self.botLeftBottom = tk.Frame(self.bottomLeft, bg="#F0F0F0")
-        self.botLeftBottom.pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
+        self.frame_bot_l_b = tk.Frame(self.frame_bot_l, bg="#F0F0F0")
+        self.frame_bot_l_b.pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
 
-        self.bottomRight = tk.Frame(self.bottomFrame, bg="#F0F0F0")
-        self.bottomRight.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
+        self.frame_bot_r = tk.Frame(self.frame_bot, bg="#F0F0F0")
+        self.frame_bot_r.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
 
         # Top frame
         try:  # Try catch the logo so if logo not found it can still run
-            self.canvasImg = tk.Canvas(self.topFrame, width=98, height=98, bg="white")
+            self.canvasImg = tk.Canvas(self.frame_top, width=98, height=98, bg="white")
             self.canvasImg.pack(side=tk.TOP, padx=5, pady=5)
             self.imgObj = Image.open(path_logo_png)
             self.imgObj = self.imgObj.resize((100, 100), Image.ANTIALIAS)
@@ -51,47 +52,47 @@ class AboutWindow:
             self.img = ImageTk.PhotoImage(self.imgObj, master=self.canvasImg)
             self.canvasImg.create_image(2, 50, anchor=tk.W, image=self.img)
         except Exception:
-            self.logoNotFoud = tk.Label(self.topFrame, text="Fail To Load Logo, Logo not found", bg="white", fg="red")
+            self.logoNotFoud = tk.Label(self.frame_top, text="Fail To Load Logo, Logo not found", bg="white", fg="red")
             self.logoNotFoud.pack(side=tk.TOP, padx=5, pady=5)
             self.root.geometry("375x325")
 
-        self.titleLabel = tk.Label(self.topFrame, text="Screen Translate", bg="white", font=("Helvetica", 12, "bold"))
-        self.titleLabel.pack(padx=5, pady=2, side=tk.TOP)
+        self.lbl_title = tk.Label(self.frame_top, text="Screen Translate", bg="white", font=("Helvetica", 12, "bold"))
+        self.lbl_title.pack(padx=5, pady=2, side=tk.TOP)
 
-        self.contentLabel = tk.Label(
-            self.topFrame,
+        self.lbl_content = tk.Label(
+            self.frame_top,
             text="An open source OCR Translation tool.\n\n"
             + "This program is completely open source, you can improve it if you\nwant by sending a pull request, you can also submit an issue if you\n found any bugs. If you are confused on how to use it you can\n"
             + "check the tutorial linked in the menu bar",
             bg="white",
         )
-        self.contentLabel.pack(padx=5, pady=0, side=tk.TOP)
+        self.lbl_content.pack(padx=5, pady=0, side=tk.TOP)
 
         # tk.Label for version
-        self.versionLabel = tk.Label(self.botLeftTop, text=f"Version: {__version__}", font=("Segoe UI", 8))
-        self.versionLabel.pack(padx=5, pady=2, ipadx=0, side=tk.LEFT)
+        self.lbl_version = tk.Label(self.frame_bot_l_t, text=f"Version: {__version__}", font=("Segoe UI", 8))
+        self.lbl_version.pack(padx=5, pady=2, ipadx=0, side=tk.LEFT)
 
         self.checkUpdateLabelFg = "blue"
         self.checkUpdateLabelText = "(check for update)"
         self.checkUpdateLabelFunc = self.check_for_update
 
-        self.checkUpdateLabel = tk.Label(self.botLeftTop, text=self.checkUpdateLabelText, fg=self.checkUpdateLabelFg, font=("Segoe UI", 8))
+        self.checkUpdateLabel = tk.Label(self.frame_bot_l_t, text=self.checkUpdateLabelText, fg=self.checkUpdateLabelFg, font=("Segoe UI", 8))
         self.checkUpdateLabel.pack(padx=0, pady=2, ipadx=0, side=tk.LEFT)
         self.checkUpdateLabel.bind("<Button-1>", self.checkUpdateLabelFunc)
         self.tooltipCheckUpdate = CreateToolTip(self.checkUpdateLabel, "Click to check for update")
 
         # tk.Label for Icons credit
-        self.iconsLabel = tk.Label(self.botLeftBottom, text="Translate Icons in logo from", font=("Segoe UI", 8))
-        self.iconsLabel.pack(padx=5, pady=0, side=tk.LEFT)
+        self.lbl_icon = tk.Label(self.frame_bot_l_b, text="Translate Icons in logo from", font=("Segoe UI", 8))
+        self.lbl_icon.pack(padx=5, pady=0, side=tk.LEFT)
 
-        self.iconsLabel_2 = tk.Label(self.botLeftBottom, text="Icons8.com 🡽", font=("Segoe UI", 8), fg="blue")
-        self.iconsLabel_2.pack(padx=0, pady=0, side=tk.LEFT)
-        self.iconsLabel_2.bind("<Button-1>", self.open_icons8)
-        self.icons_8_ToolTip = CreateToolTip(self.iconsLabel_2, "Open Icons8 in web browser")
+        self.lbl_icon_link = tk.Label(self.frame_bot_l_b, text="Icons8.com 🡽", font=("Segoe UI", 8), fg="blue")
+        self.lbl_icon_link.pack(padx=0, pady=0, side=tk.LEFT)
+        self.lbl_icon_link.bind("<Button-1>", self.open_icons8)
+        self.icons_8_ToolTip = CreateToolTip(self.lbl_icon_link, "Open Icons8 in web browser")
 
         # Button
-        self.okBtn = ttk.Button(self.bottomRight, text="Ok", command=self.on_closing, width=10)
-        self.okBtn.pack(padx=5, pady=5, side=tk.RIGHT)
+        self.btn_ok = ttk.Button(self.frame_bot_r, text="Ok", command=self.on_closing, width=10)
+        self.btn_ok.pack(padx=5, pady=5, side=tk.RIGHT)
 
         # On Close
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)

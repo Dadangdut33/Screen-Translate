@@ -23,10 +23,11 @@ fJson: JsonHandler = JsonHandler(path_json_settings, path_json_history, dir_json
 # ---------------------------- #
 class Globals:
     """
-    Class containing all the static variables for the UI. It also contains some methods for the stuff to works.
+    Class containing all the need *static* variables for the UI. It also contains some methods for the stuff to works.
     Stored like this in order to allow other file to use the same thing without circular import error.
     """
 
+    # ----------------------------------------------------------------------
     def __init__(self):
         # Flags
         self.running: bool = True
@@ -41,13 +42,11 @@ class Globals:
         self.sw = None  # setting window
         self.hw = None  # history window
         self.cw = None  # capture window
-        self.about = None  # about window
+        self.aw = None  # about window
+        self.lw = None  # log window
         self.mask = None  # mask window
         self.ex_qw = None  # external query window
         self.ex_resw = None  # external result window
-
-        # Capture window opacities
-        self.cwOpac: float = 0.8
 
     def lb_start(self):
         pass
@@ -83,6 +82,9 @@ class Globals:
         pass
 
     def update_ex_opac(self, opac: float):
+        pass
+
+    def update_mw_opac_slider(self, opac: float):
         pass
 
     def hotkeyCapTLCallback(self):
