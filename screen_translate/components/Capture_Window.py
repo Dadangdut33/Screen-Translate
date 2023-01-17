@@ -9,13 +9,13 @@ from screen_translate.Globals import gClass, fJson, path_logo_icon
 from screen_translate.components.MBox import Mbox
 
 # Classes
-class CaptureUI:
+class CaptureWindow:
     """Capture Window"""
 
     # ----------------------------------------------------------------------
-    def __init__(self):
+    def __init__(self, master):
         gClass.cw = self  # type: ignore
-        self.root = tk.Tk()
+        self.root = tk.Toplevel(master)
         self.root.title("Capture Window")
         self.root.geometry("600x150")
         self.root.wm_withdraw()
@@ -23,6 +23,7 @@ class CaptureUI:
 
         # ------------------ #
         self.always_on_top = tk.IntVar()
+        self.always_on_top.set(1)
         self.tooltip_disabled = tk.IntVar()
         self.hidden_top = tk.IntVar()
         self.clickThrough = tk.IntVar()
@@ -37,6 +38,10 @@ class CaptureUI:
         self.fTooltip = CreateToolTip(self.frame_1, "Right click for interaction menu", wrapLength=400)
 
         # ----------------------------------------------------------------------
+        # drag label
+        self.lbl_drag = tk.Label(self.frame_1, text="▶", font=("Arial", 16, "bold"), foreground="gray")
+        self.lbl_drag.pack(side=tk.LEFT, fill=tk.X, expand=False)
+
         # Label for opacity slider
         self.lbl_opacity = ttk.Label(self.frame_1, text="Opacity: 0.8")
         self.lbl_opacity.pack(padx=5, pady=5, side=tk.LEFT)
@@ -78,8 +83,26 @@ class CaptureUI:
         self.menuDropdown.add_separator()
         self.menuDropdown.add_command(label="Keyboard Shortcut Keys", command=lambda: self.show_shortcut_keys())
 
+        # ------------------------------------------------------------------------
+        # Binds
         # On Close
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
+
+        # rclick menu
+        self.root.bind("<Button-3>", lambda event: self.menuDropdown.post(event.x_root, event.y_root))
+
+        # keybinds
+        if platform.system() == "Windows":
+            self.root.bind("<Alt-KeyPress-s>", lambda event: self.toggle_click_through())
+        self.root.bind("<Alt-KeyPress-t>", lambda event: self.toggle_hidden_top())
+        self.root.bind("<Alt-KeyPress-o>", lambda event: self.toggle_always_on_top())
+        self.root.bind("<Alt-KeyPress-x>", lambda event: self.disable_tooltip())
+        self.root.bind("<Alt-MouseWheel>", lambda event: self.change_opacity(event))
+
+        # bind drag on label text
+        self.lbl_drag.bind("<ButtonPress-1>", self.StartMove)
+        self.lbl_drag.bind("<ButtonRelease-1>", self.StopMove)
+        self.lbl_drag.bind("<B1-Motion>", self.OnMotion)
 
         # ------------------ Set Icon ------------------
         try:
@@ -105,13 +128,26 @@ class CaptureUI:
     def on_closing(self):
         self.root.wm_withdraw()
 
+    def StartMove(self, event):
+        self.x = event.x
+        self.y = event.y
+
+    def StopMove(self, event):
+        self.x = None
+        self.y = None
+
+    def OnMotion(self, event):
+        x = event.x_root - self.x - self.lbl_drag.winfo_rootx() + self.lbl_drag.winfo_rootx()
+        y = event.y_root - self.y - self.lbl_drag.winfo_rooty() + self.lbl_drag.winfo_rooty()
+        self.root.geometry("+%s+%s" % (x, y))
+
     def show_shortcut_keys(self):
         """
         Method to show shortcut keys.
         """
         Mbox(
-            "Shortcut keys command for detached window",
-            "Alt + scroll to change opacity\nAlt + t to toggle title bar (remove title bar)\nAlt + s to toggle click through or transparent window\nAlt + o to toggle always on top\nAlt + x to toggle on/off this tooltip\n\nTips: If the window seems missing or you cannot find it click generate from main window title bar to set opacity to normal",
+            "Shortcut keys command for detached window (Must be focused)",
+            "Alt + scroll to change opacity\nAlt + t to toggle title bar (remove title bar)\nAlt + s to toggle click through or transparent window\nAlt + o to toggle always on top\nAlt + x to toggle on/off this tooltip\n\nTips: You can drag the window by dragging the ▶ label",
             0,
         )
 

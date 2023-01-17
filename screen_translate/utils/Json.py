@@ -46,16 +46,21 @@ default_setting = {
     "enhance_background": "Auto-Detect",
     "enhance_debugmode": False,
     # ------------------ #
+    # mask window
+    "mask_window_bg_color": "#FFFFFF",
+    # ------------------ #
     # libre
     "libre_api_key": "",
     "libre_host": "libretranslate.de",
     "libre_port": "",
     "libre_https": True,
+    # ------------------ #
     # hotkey
     "hk_cap_tl": "",
     "hk_cap_tl_delay": 1000,
     "hk_snip_cap_tl": "",
     "hk_snip_cap_tl_delay": 0,
+    # ------------------ #
     # detached window
     "tb_mw_q_font": "TKDefaultFont",
     "tb_mw_q_font_bold": False,

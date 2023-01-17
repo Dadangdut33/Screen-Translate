@@ -1,64 +1,40 @@
 import tkinter as tk
-import tkinter.ttk as ttk
-import platform
-from typing import Literal
+from tkinter import colorchooser
 
+from screen_translate.components.MBox import Mbox
+
+from .Tooltip import CreateToolTip
 from screen_translate.Globals import fJson, gClass, path_logo_icon
 from screen_translate.utils.Beep import beep
-from .Tooltip import CreateToolTip
-from .MBox import Mbox
-
 
 # Classes
-class AbstractDetachedWindow:
-    """Detached Window"""
+class MaskWindow:
+    """Mask Window"""
 
     # ----------------------------------------------------------------------
-    def __init__(self, master, title: str, winType: Literal["q", "res"]):
+    def __init__(self, master):
+        gClass.mask = self  # type: ignore
         self.root = tk.Toplevel(master)
-        self.root.title(title)
+        self.root.title("Mask Window")
         self.root.geometry("600x160")
         self.root.wm_withdraw()
 
         # ------------------ #
-        self.winType = winType
-        self.x = 0
-        self.y = 0
-        self.curText = ""
-        self.updateTb = False
-        self.getTbVal = False
         self.currentOpacity = 1.0
         self.always_on_top = tk.IntVar()
         self.tooltip_disabled = tk.IntVar()
         self.hidden_top = tk.IntVar()
         self.clickThrough = tk.IntVar()
-        if winType == "q":
-            gClass.ex_qw = self  # type: ignore
-        elif winType == "res":
-            gClass.ex_resw = self  # type: ignore
 
-        # ------------------ #
         # Top frame
-        self.frame_1 = ttk.Frame(self.root)
+        self.frame_1 = tk.Frame(self.root, background=fJson.settingCache["mask_window_bg_color"])
         self.frame_1.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
-        self.fTooltip = CreateToolTip(self.frame_1, "Right click for interaction menu\n\nTips: You can drag the window by dragging from the label", wrapLength=400)
-
-        self.labelText = tk.Label(
-            self.frame_1,
-            font=(fJson.settingCache[f"tb_ex_{winType}_font"], fJson.settingCache[f"tb_ex_{winType}_font_size"], "bold" if fJson.settingCache[f"tb_ex_{winType}_font_bold"] else "normal"),
-            fg=fJson.settingCache[f"tb_ex_{winType}_font_color"],
-            bg=fJson.settingCache[f"tb_ex_{winType}_bg_color"],
-            wraplength=600,
-            justify=tk.LEFT,
-        )
-        self.labelText.pack(side=tk.TOP)
+        self.fTooltip = CreateToolTip(self.frame_1, "Right click for interaction menu", wrapLength=400)
 
         self.menuDropdown = tk.Menu(self.root, tearoff=0)
-        self.menuDropdown.add_command(label="Copy", command=lambda: self.copy_tb_content(), accelerator="Alt + C")
+        self.menuDropdown.add_command(label=f"Color: {fJson.settingCache['mask_window_bg_color']}", command=lambda: self.windowColorChooser(), accelerator="Click to change color")
         self.menuDropdown.add_separator()
         self.menuDropdown.add_checkbutton(label="Hide Title bar", command=lambda: self.toggle_hidden_top(False), onvalue=1, offvalue=0, variable=self.hidden_top, accelerator="Alt + T")
-        if platform.system() == "Windows":
-            self.menuDropdown.add_checkbutton(label="Click Through/Transparent", command=lambda: self.toggle_click_through(False), onvalue=1, offvalue=0, variable=self.clickThrough, accelerator="Alt + S")
         self.menuDropdown.add_checkbutton(label="Always On Top", command=lambda: self.toggle_always_on_top(False), onvalue=1, offvalue=0, variable=self.always_on_top, accelerator="Alt + O")
         self.menuDropdown.add_separator()
         self.menuDropdown.add_command(label="Increase Opacity by 0.1", command=lambda: self.increase_opacity(), accelerator="Alt + Mouse Wheel Up")
@@ -77,21 +53,10 @@ class AbstractDetachedWindow:
         self.root.bind("<Button-3>", lambda event: self.menuDropdown.post(event.x_root, event.y_root))
 
         # keybinds
-        if platform.system() == "Windows":
-            self.root.bind("<Alt-KeyPress-s>", lambda event: self.toggle_click_through())
-        self.root.bind("<Alt-KeyPress-c>", lambda event: self.copy_tb_content())
         self.root.bind("<Alt-KeyPress-t>", lambda event: self.toggle_hidden_top())
         self.root.bind("<Alt-KeyPress-o>", lambda event: self.toggle_always_on_top())
         self.root.bind("<Alt-KeyPress-x>", lambda event: self.disable_tooltip())
         self.root.bind("<Alt-MouseWheel>", lambda event: self.change_opacity(event))
-
-        # bind resize
-        self.frame_1.bind("<Configure>", lambda event: self.on_resize(event))
-
-        # bind drag on label text
-        self.labelText.bind("<ButtonPress-1>", self.StartMove)
-        self.labelText.bind("<ButtonRelease-1>", self.StopMove)
-        self.labelText.bind("<B1-Motion>", self.OnMotion)
 
         # ------------------ Set Icon ------------------
         try:
@@ -99,55 +64,13 @@ class AbstractDetachedWindow:
         except:
             pass
 
+    # Show/Hide
     def show(self):
-        """
-        Method to show the window.
-        """
+        self.root.attributes("-alpha", 0.8)
         self.root.wm_deiconify()
-        self.root.attributes("-alpha", 1)
-        if platform.system() == "Windows":
-            self.clickThrough.set(0)
-            self.root.wm_attributes("-transparentcolor", "")
 
     def on_closing(self):
         self.root.wm_withdraw()
-
-    def on_resize(self, event):
-        """
-        Method to resize the window.
-        """
-        # update wraplength
-        self.labelText.config(wraplength=event.width)
-
-    def StartMove(self, event):
-        self.x = event.x
-        self.y = event.y
-
-    def StopMove(self, event):
-        self.x = None
-        self.y = None
-
-    def OnMotion(self, event):
-        x = event.x_root - self.x - self.labelText.winfo_rootx() + self.labelText.winfo_rootx()
-        y = event.y_root - self.y - self.labelText.winfo_rooty() + self.labelText.winfo_rooty()
-        self.root.geometry("+%s+%s" % (x, y))
-
-    def check_height_resize(self):
-        """
-        Method to resize the window height if label text height is more than the window height.
-        """
-        if self.labelText.winfo_height() > self.frame_1.winfo_height():
-            self.root.geometry(f"{self.root.winfo_width()}x{self.labelText.winfo_height()}")
-
-    def show_shortcut_keys(self):
-        """
-        Method to show shortcut keys.
-        """
-        Mbox(
-            "Shortcut keys command for detached window (Must be focused)",
-            "Alt + scroll to change opacity\nAlt + c to copy text\nAlt + t to toggle title bar (remove title bar)\nAlt + s to toggle click through or transparent window\nAlt + o to toggle always on top\nAlt + x to toggle on/off this tooltip\n\nTips: You can drag the window by dragging the text label",
-            0,
-        )
 
     # disable tooltip
     def disable_tooltip(self, fromKeyBind=True):
@@ -175,19 +98,6 @@ class AbstractDetachedWindow:
             self.hidden_top.set(0 if self.hidden_top.get() == 1 else 1)
 
         self.root.overrideredirect(True if self.hidden_top.get() == 1 else False)
-
-    def toggle_click_through(self, fromKeyBind=True):
-        """
-        Method to toggle click through. Only on windows.
-        """
-        beep()
-        if fromKeyBind:
-            self.clickThrough.set(0 if self.clickThrough.get() == 1 else 1)
-
-        if self.clickThrough.get() == 1:
-            self.root.wm_attributes("-transparentcolor", self.root["bg"])
-        else:
-            self.root.wm_attributes("-transparentcolor", "")
 
     def toggle_always_on_top(self, fromKeyBind=True):
         """
@@ -241,9 +151,26 @@ class AbstractDetachedWindow:
         self.root.attributes("-alpha", self.currentOpacity)
         self.fTooltip.opacity = self.currentOpacity
 
-    def copy_tb_content(self):
+    def show_shortcut_keys(self):
         """
-        Method to copy the textbox content to clipboard.
+        Method to show shortcut keys.
         """
-        self.root.clipboard_clear()
-        self.root.clipboard_append(self.labelText.cget("text").strip())
+        Mbox(
+            "Shortcut keys command for mask window (Must be focused)",
+            "Alt + scroll to change opacity\nAlt + t to toggle title bar (remove title bar)\nAlt + o to toggle always on top\nAlt + x to toggle on/off this tooltip\n\nTips: If the window is missing because of low opacity, you can generate it again. It will set opacity to normal.",
+            0,
+        )
+
+    # Bg Color chooser
+    def windowColorChooser(self):
+        """window color chooser
+
+        Args:
+            event : Ignored. Defaults to None.
+        """
+        colorGet = colorchooser.askcolor(color=fJson.settingCache["mask_window_bg_color"], title="Choose a color")
+        if colorGet[1] != None:
+            self.root["bg"] = colorGet[1]
+            self.frame_1["bg"] = colorGet[1]
+            self.menuDropdown.entryconfig(0, label=f"Color: {colorGet[1]}")
+            fJson.savePartialSetting("mask_window_bg_color", colorGet[1])

@@ -8,7 +8,7 @@ from screen_translate.Logging import logger, current_log, dir_log
 from screen_translate.utils.Helper import startFile, tb_copy_only
 
 # Classes
-class Log:
+class LogWindow:
     """Logger but shown in toplevel window"""
 
     # ----------------------------------------------------------------------

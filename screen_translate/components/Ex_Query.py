@@ -1,7 +1,7 @@
 from .Detached import AbstractDetachedWindow
 
 # Classes
-class TcsWindow(AbstractDetachedWindow):
+class QueryWindow(AbstractDetachedWindow):
     """Tcs Window"""
 
     # ----------------------------------------------------------------------

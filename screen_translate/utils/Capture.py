@@ -63,7 +63,7 @@ def captureImg(coords, sourceLang):
         background = fJson.settingCache["enhance_background"]
         replaceNewLine = fJson.settingCache["replaceNewLine"]
         saveImg = fJson.settingCache["saveImg"]
-        saveName = os.path.join(dir_captured, "captured_" + datetime.now().strftime("%Y-%m-%d_%H%M%S") + ".png")
+        saveName = os.path.join(dir_captured, "ScreenTranslate_" + datetime.now().strftime("%Y-%m-%d_%H%M%S") + ".png")
 
         # Enhance with cv2 if selected
         if enhance_withCv2:
@@ -173,7 +173,7 @@ def captureAll():
     # Capture all screens
     try:
         captured = pyautogui.screenshot()  # type: ignore
-        saveName = os.path.join(dir_captured, "Full Captured Monitor(s) View.png")
+        saveName = os.path.join(dir_captured, "Screentranslate_Full Captured Monitor(s) View.png")
         createPicDirIfGone()
         captured.save(saveName)
         startFile(saveName)

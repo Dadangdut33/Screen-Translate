@@ -8,7 +8,7 @@ from screen_translate.Logging import logger
 
 
 # ----------------------------------------------------------------------
-class HistoryUI:
+class HistoryWindow:
     """History Window"""
 
     # ----------------------------------------------------------------

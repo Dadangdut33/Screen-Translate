@@ -2,6 +2,7 @@ import os
 import subprocess
 import webbrowser
 from notifypy import Notify, exceptions
+from typing import Tuple
 
 from screen_translate.Logging import logger
 
@@ -71,3 +72,17 @@ def tb_copy_only(event):
 
     # If not allowed
     return "break"
+
+
+def hex_to_rgb(value: str):
+    value = value.lstrip("#")
+    lv = len(value)
+    return tuple(int(value[i : i + lv // 3], 16) for i in range(0, lv, lv // 3))
+
+
+def rgb_to_hex(rgb: Tuple):
+    return "%02x%02x%02x" % rgb
+
+def invert_color(hex_color: str):
+    r, g, b = hex_to_rgb(hex_color)
+    return rgb_to_hex((255 - r, 255 - g, 255 - b))
