@@ -80,6 +80,9 @@ logger.addHandler(f_handler)
 if __name__ == "__main__":
     print("This is a normal print text")
     print("This is a looooooooooooooong print text")
+    x = {"a": 1, "b": 2, "c": 3}
+
+    logger.info(f"X is: {x}")
 
     logger.info("This is an info")
     logger.info("This is a looooooooooooooooooong info")

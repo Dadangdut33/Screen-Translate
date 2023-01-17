@@ -1,7 +1,6 @@
 import os
 
 from .utils.Json import JsonHandler
-from .utils.Monitor import MonitorInfo
 
 # ---------------------------- #
 # Dir Paths
@@ -42,6 +41,7 @@ class Globals:
         self.sw = None  # setting window
         self.hw = None  # history window
         self.cw = None  # capture window
+        self.csw = None  # capture snip window
         self.aw = None  # about window
         self.lw = None  # log window
         self.mask = None  # mask window
@@ -98,4 +98,3 @@ class Globals:
 
 # --------------------- #
 gClass: Globals = Globals()
-mInfo: MonitorInfo = MonitorInfo()
