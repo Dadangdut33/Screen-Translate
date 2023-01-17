@@ -1,6 +1,7 @@
 import json
 import os
 import logging
+from typing import List
 
 from notifypy import Notify
 
@@ -36,6 +37,7 @@ default_setting = {
     # Capture
     "tesseract_loc": "C:/Program Files/Tesseract-OCR/tesseract.exe",
     "replaceNewLine": True,
+    "replaceNewLineWith": " ",
     "captureLastValDelete": 0,
     "saveImg": True,
     # capture enhancement
@@ -241,7 +243,7 @@ class JsonHandler:
         finally:
             return is_Success, status
 
-    def deleteCertainHistory(self, index):
+    def deleteCertainHistory(self, indexList: List[int]):
         """Delete certain history
 
         Args:
@@ -258,7 +260,8 @@ class JsonHandler:
             x, file_data = self.readHistory()
 
             # Pop the selected value first
-            file_data["tl_history"].pop(index)  # type: ignore
+            for i in indexList:
+                file_data["tl_history"].pop(i)  # type: ignore
 
             # Then
             # Overwrite the ID and add the new data
@@ -274,7 +277,7 @@ class JsonHandler:
             with open(self.historyPath, "w", encoding="utf-8") as f:
                 json.dump(newHistory, f, ensure_ascii=False, indent=4)
                 is_Success = True
-                status = "Selected History Has Been Deleted Successfully"
+                status = f"{len(indexList)} Selected History Has Been Deleted Successfully"
         except FileNotFoundError:  # If file not found create new History.json but empty
             with open(self.historyPath, "w", encoding="utf-8") as f:
                 file_data = {"tl_history": []}
