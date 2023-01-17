@@ -1,10 +1,8 @@
-__all__ = ['engineList', 'tesseract_Lang', 'google_Lang', 'myMemory_Lang', 'deepl_Lang', 'pons_Lang', 'libre_Lang']
-
 # Engines available
 engineList = ["Google Translate", "MyMemoryTranslator", "Deepl", "PONS", "LibreTranslate", "None"]
 
 # List of supported languages by Tesseract OCR
-tesseract_Lang = {
+tesseract_lang = {
     "Auto-Detect": "auto",
     "Afrikaans": "afr",
     "Amharic": "amh",
@@ -118,11 +116,11 @@ tesseract_Lang = {
     "Uzbek - Cyrilic": "uzb_cyrl",
     "Vietnamese": "vie",
     "Yiddish": "yid",
-    "Yoruba": "yor"
+    "Yoruba": "yor",
 }
 
 # List of supported languages by Google TL
-google_Lang = {
+google_lang = {
     "Auto-Detect": "auto",
     "Afrikaans": "af",
     "Amharic": "am",
@@ -210,11 +208,11 @@ google_Lang = {
     "Uzbek": "uz",
     "Vietnamese": "vi",
     "Yiddish": "yi",
-    "Yoruba": "yo"
+    "Yoruba": "yo",
 }
 
 # List of supported languages by MyMemoryTranslator
-myMemory_Lang = {
+myMemory_lang = {
     "Auto-Detect": "auto",
     "Afrikaans": "af",
     "Albanian": "sq",
@@ -227,7 +225,7 @@ myMemory_Lang = {
     "Bengali": "bn",
     "Bosnian": "bs",
     "Bulgarian": "bg",
-    "Catalan": "ca",
+    "Catalan:Valencian": "ca",
     "Cebuano": "ceb",
     "Chinese (Simplified)": "zh-cn",
     "Chinese (Traditional)": "zh-tw",
@@ -303,11 +301,11 @@ myMemory_Lang = {
     "Xhosa": "xh",
     "Yiddish": "yi",
     "Yoruba": "yo",
-    "Filipino": "fil"
+    "Filipino": "fil",
 }
 
 # List of supported languages by Deepl
-deepl_Lang = {
+deepl_lang = {
     "Auto-Detect": "auto",
     "Bulgarian": "bg",
     "Chinese (Simplified)": "zh",
@@ -331,11 +329,11 @@ deepl_Lang = {
     "Romanian": "ro",
     "Russian": "ru",
     "Spanish": "es",
-    "Swedish": "sv"
+    "Swedish": "sv",
 }
 
 # List of supported languages by Pons
-pons_Lang = {
+pons_lang = {
     "Arabic": "ar",
     "Bulgarian": "bg",
     "Chinese (Simplified)": "zh-cn",
@@ -359,7 +357,8 @@ pons_Lang = {
     "Turkish": "tr",
 }
 
-libre_Lang = {
+# List of supported languages by libretranslate
+libre_lang = {
     "Auto-Detect": "auto",
     "English": "en",
     "Arabic": "ar",
@@ -384,4 +383,68 @@ libre_Lang = {
     "Turkish": "tr",
     "Ukrainian": "uk",
     "Vietnamese": "vi",
+}
+
+# ------------------ #
+# target
+none_target = list(tesseract_lang.keys())
+none_target.pop(0)
+
+google_target = list(google_lang.keys())
+google_target.pop(0)
+
+myMemory_target = list(myMemory_lang.keys())
+myMemory_target.pop(0)
+
+deepl_target = list(deepl_lang.keys())
+deepl_target.pop(0)
+
+pons_target = list(pons_lang.keys())  # pons dont have auto-detect
+
+libre_target = list(libre_lang.keys())
+libre_target.pop(0)
+
+engine_select_target_dict = {
+    "Google Translate": google_target,
+    "MyMemoryTranslator": myMemory_target,
+    "Deepl": deepl_target,
+    "PONS": pons_target,
+    "LibreTranslate": libre_target,
+    "None": none_target,
+}
+
+# source
+google_tesseract_compatible_source = list(google_lang.keys())
+for lang in google_tesseract_compatible_source:
+    if lang not in tesseract_lang.keys():
+        google_tesseract_compatible_source.remove(lang)
+
+myMemory_tesseract_compatible_source = list(myMemory_lang.keys())
+for lang in myMemory_tesseract_compatible_source:
+    if lang not in tesseract_lang.keys():
+        myMemory_tesseract_compatible_source.remove(lang)
+
+deepl_tesseract_compatible_source = list(deepl_lang.keys())
+for lang in deepl_tesseract_compatible_source:
+    if lang not in tesseract_lang.keys():
+        deepl_tesseract_compatible_source.remove(lang)
+
+pons_tesseract_compatible_source = list(pons_lang.keys())
+for lang in pons_tesseract_compatible_source:
+    if lang not in tesseract_lang.keys():
+        pons_tesseract_compatible_source.remove(lang)
+
+libre_tesseract_compatible_source = list(libre_lang.keys())
+for lang in libre_tesseract_compatible_source:
+    if lang not in tesseract_lang.keys():
+        libre_tesseract_compatible_source.remove(lang)
+
+
+engine_select_source_dict = {
+    "Google Translate": google_tesseract_compatible_source,
+    "MyMemoryTranslator": myMemory_tesseract_compatible_source,
+    "Deepl": deepl_tesseract_compatible_source,
+    "PONS": pons_tesseract_compatible_source,
+    "LibreTranslate": libre_tesseract_compatible_source,
+    "None": list(tesseract_lang.keys()),
 }
