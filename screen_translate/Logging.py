@@ -59,13 +59,13 @@ class f_formatter(logging.Formatter):
 # ------------------ #
 # Create a custom logger
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)
 
 # Create handlers
 c_handler = logging.StreamHandler()
-f_handler = logging.FileHandler(dir_log + "/" + current_log, encoding="utf-8")
+f_handler = logging.FileHandler(dir_log + "/" + current_log, encoding="utf-8", mode="w")
 c_handler.setLevel(logging.DEBUG)
-f_handler.setLevel(logging.WARNING)
+f_handler.setLevel(logging.DEBUG)
 
 # Create formatters and add it to handlers
 c_handler.setFormatter(c_formatter())

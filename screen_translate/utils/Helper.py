@@ -55,3 +55,19 @@ def nativeNotify(title: str, message: str, logo: str, app_name: str):
         pass
 
     notification.send()
+
+
+def tb_copy_only(event):
+    key = event.keysym
+
+    # Allow
+    allowedEventState = [4, 8, 12]
+    if key.lower() in ["left", "right"]:  # Arrow left right
+        return
+    if event.state in allowedEventState and key.lower() == "a":  # Ctrl + a
+        return
+    if event.state in allowedEventState and key.lower() == "c":  # Ctrl + c
+        return
+
+    # If not allowed
+    return "break"

@@ -26,7 +26,7 @@ default_setting = {
     # ------------------ #
     # logging
     "keep_log": False,
-    "log_level": "INFO",
+    "log_level": "DEBUG",  # INFO DEBUG WARNING ERROR
     # ------------------ #
     # runtime option
     "engine": "Google Translate",
