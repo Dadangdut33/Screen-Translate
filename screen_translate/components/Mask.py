@@ -27,9 +27,9 @@ class MaskWindow:
         self.clickThrough = tk.IntVar()
 
         # Top frame
-        self.frame_1 = tk.Frame(self.root, background=fJson.settingCache["mask_window_bg_color"])
-        self.frame_1.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
-        self.fTooltip = CreateToolTip(self.frame_1, "Right click for interaction menu", wrapLength=400)
+        self.f_1 = tk.Frame(self.root, background=fJson.settingCache["mask_window_bg_color"])
+        self.f_1.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+        self.fTooltip = CreateToolTip(self.f_1, "Right click for interaction menu", wrapLength=400)
 
         self.menuDropdown = tk.Menu(self.root, tearoff=0)
         self.menuDropdown.add_command(label=f"Color: {fJson.settingCache['mask_window_bg_color']}", command=lambda: self.windowColorChooser(), accelerator="Click to change color")
@@ -171,6 +171,6 @@ class MaskWindow:
         colorGet = colorchooser.askcolor(color=fJson.settingCache["mask_window_bg_color"], title="Choose a color")
         if colorGet[1] != None:
             self.root["bg"] = colorGet[1]
-            self.frame_1["bg"] = colorGet[1]
+            self.f_1["bg"] = colorGet[1]
             self.menuDropdown.entryconfig(0, label=f"Color: {colorGet[1]}")
             fJson.savePartialSetting("mask_window_bg_color", colorGet[1])

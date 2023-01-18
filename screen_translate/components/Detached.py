@@ -39,12 +39,12 @@ class AbstractDetachedWindow:
 
         # ------------------ #
         # Top frame
-        self.frame_1 = ttk.Frame(self.root)
-        self.frame_1.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
-        self.fTooltip = CreateToolTip(self.frame_1, "Right click for interaction menu\n\nTips: You can drag the window by dragging from the label", wrapLength=400)
+        self.f_1 = ttk.Frame(self.root)
+        self.f_1.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+        self.fTooltip = CreateToolTip(self.f_1, "Right click for interaction menu\n\nTips: You can drag the window by dragging from the label", wrapLength=400)
 
         self.labelText = tk.Label(
-            self.frame_1,
+            self.f_1,
             font=(fJson.settingCache[f"tb_ex_{winType}_font"], fJson.settingCache[f"tb_ex_{winType}_font_size"], "bold" if fJson.settingCache[f"tb_ex_{winType}_font_bold"] else "normal"),
             fg=fJson.settingCache[f"tb_ex_{winType}_font_color"],
             bg=fJson.settingCache[f"tb_ex_{winType}_bg_color"],
@@ -86,7 +86,7 @@ class AbstractDetachedWindow:
         self.root.bind("<Alt-MouseWheel>", lambda event: self.change_opacity(event))
 
         # bind resize
-        self.frame_1.bind("<Configure>", lambda event: self.on_resize(event))
+        self.f_1.bind("<Configure>", lambda event: self.on_resize(event))
 
         # bind drag on label text
         self.labelText.bind("<ButtonPress-1>", self.StartMove)
@@ -136,7 +136,7 @@ class AbstractDetachedWindow:
         """
         Method to resize the window height if label text height is more than the window height.
         """
-        if self.labelText.winfo_height() > self.frame_1.winfo_height():
+        if self.labelText.winfo_height() > self.f_1.winfo_height():
             self.root.geometry(f"{self.root.winfo_width()}x{self.labelText.winfo_height()}")
 
     def show_shortcut_keys(self):

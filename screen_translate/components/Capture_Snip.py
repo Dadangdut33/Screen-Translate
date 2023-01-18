@@ -24,11 +24,11 @@ class SnipWindow:
         self.root.wm_withdraw()
 
         # mask
-        self.snip_mask = tk.Toplevel(self.root)
-        self.snip_mask.wm_withdraw()  # Hide the window
-        self.snip_mask.overrideredirect(True)  # Hide the top bar
-        self.snip_mask.attributes("-transparent", "blue")  # Make it transparent with blue backgrounds
-        self.snip_mask.geometry("500x500")  # placeholder
+        self.tl_snipmask = tk.Toplevel(self.root)
+        self.tl_snipmask.wm_withdraw()  # Hide the window
+        self.tl_snipmask.overrideredirect(True)  # Hide the top bar
+        self.tl_snipmask.attributes("-transparent", "blue")  # Make it transparent with blue backgrounds
+        self.tl_snipmask.geometry("500x500")  # placeholder
 
         # variables
         self.rect = None
@@ -39,15 +39,15 @@ class SnipWindow:
         self.curY = 0
 
         # image canvas
-        self.screenshotCanvas = tk.Canvas(self.root, highlightthickness=0, cursor="cross")
-        self.screenshotCanvas.pack(fill=tk.BOTH, expand=True)  # ocupy main whole window
+        self.canvas_ss = tk.Canvas(self.root, highlightthickness=0, cursor="cross")
+        self.canvas_ss.pack(fill=tk.BOTH, expand=True)  # ocupy main whole window
 
         # binds
-        self.snip_mask.bind("<Escape>", self.exitScreenshotMode)
-        self.screenshotCanvas.bind("<ButtonPress-1>", self.on_button_press)
-        self.screenshotCanvas.bind("<ButtonPress-3>", self.exitScreenshotMode)
-        self.screenshotCanvas.bind("<B1-Motion>", self.on_move_press)
-        self.screenshotCanvas.bind("<ButtonRelease-1>", self.on_button_release)
+        self.tl_snipmask.bind("<Escape>", self.exitScreenshotMode)
+        self.canvas_ss.bind("<ButtonPress-1>", self.on_button_press)
+        self.canvas_ss.bind("<ButtonPress-3>", self.exitScreenshotMode)
+        self.canvas_ss.bind("<B1-Motion>", self.on_move_press)
+        self.canvas_ss.bind("<ButtonRelease-1>", self.on_button_release)
 
         # ------------------ Set Icon ------------------
         try:
@@ -57,22 +57,22 @@ class SnipWindow:
 
     def onInit(self):
         self.root.geometry(getScreenTotalGeometry()[0])
-        self.snip_mask.geometry(getScreenTotalGeometry()[0])
+        self.tl_snipmask.geometry(getScreenTotalGeometry()[0])
 
     def start_snipping(self, imagePath: str):
         logger.info(">> Snipped mode entered! Loading image...")
         imgObj = Image.open(imagePath)
         tkImg = ImageTk.PhotoImage(imgObj)
-        self.screenshotCanvas.create_image(0, 0, anchor=tk.NW, image=tkImg)
+        self.canvas_ss.create_image(0, 0, anchor=tk.NW, image=tkImg)
         logger.info(">> Image loaded to canvas")
 
         # show window
         self.root.deiconify()
 
-        self.snip_mask.attributes("-alpha", 0.3)
-        self.snip_mask.lift()
-        self.snip_mask.attributes("-topmost", True)
-        self.snip_mask.focus_force()
+        self.tl_snipmask.attributes("-alpha", 0.3)
+        self.tl_snipmask.lift()
+        self.tl_snipmask.attributes("-topmost", True)
+        self.tl_snipmask.focus_force()
 
     def on_button_release(self, event):
         """
@@ -86,7 +86,7 @@ class SnipWindow:
             return
 
         # Change canvas cursor to watch
-        self.screenshotCanvas.configure(cursor="watch")
+        self.canvas_ss.configure(cursor="watch")
         self.root.update_idletasks()
 
         if self.start_x <= self.curX and self.start_y <= self.curY:
@@ -142,7 +142,7 @@ class SnipWindow:
             event : Ignored. Defaults to None.
         """
         logger.info(">> Snipped mode exited")
-        self.snip_mask.wm_withdraw()
+        self.tl_snipmask.wm_withdraw()
         self.root.wm_withdraw()
 
     def on_button_press(self, event):
@@ -153,10 +153,10 @@ class SnipWindow:
             event : Mouse event
         """
         # save mouse drag start position
-        self.start_x = self.screenshotCanvas.canvasx(event.x)
-        self.start_y = self.screenshotCanvas.canvasy(event.y)
+        self.start_x = self.canvas_ss.canvasx(event.x)
+        self.start_y = self.canvas_ss.canvasy(event.y)
 
-        self.rect = self.screenshotCanvas.create_rectangle(self.x, self.y, 1, 1, outline="red", width=3, fill="blue")
+        self.rect = self.canvas_ss.create_rectangle(self.x, self.y, 1, 1, outline="red", width=3, fill="blue")
 
     def on_move_press(self, event):
         """
@@ -167,7 +167,7 @@ class SnipWindow:
         """
         self.curX, self.curY = (event.x, event.y)
         # expand rectangle as you drag the mouse
-        self.screenshotCanvas.coords(self.rect, self.start_x, self.start_y, self.curX, self.curY)  # type: ignore
+        self.canvas_ss.coords(self.rect, self.start_x, self.start_y, self.curX, self.curY)  # type: ignore
 
     def recPosition(self):
         """

@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Literal, Optional
 from screeninfo import get_monitors
 
 from screen_translate.Logging import logger
@@ -58,28 +58,41 @@ def getScreenInfo():
     return mInfo.mInfoCache
 
 
-def get_offset(offSetX, offSetY, offSetW, offSetH, offSetXYType, custom=False):
+def get_offset(offSetType: Literal["x", "y", "w", "h"]) -> int:
     """
     Calculate and get the offset settings for the monitor.
     """
-    x, y, w, h = 0, 0, 0, 0
+    logger.info(f"Getting offset for {offSetType}")
+    if offSetType == "w":
+        w = 60 if fJson.settingCache["offSetW"] == "auto" else fJson.settingCache["offSetW"]
+        logger.debug(f"Offset W: {w}")
+        return w
+    elif offSetType == "h":
+        h = 60 if fJson.settingCache["offSetH"] == "auto" else fJson.settingCache["offSetH"]
+        logger.debug(f"Offset H: {h}")
+        return h
+    else:
+        if fJson.settingCache["offSetX"] != "auto" and offSetType == "x":  # if x and manual
+            logger.debug(f"Offset X: {fJson.settingCache['offSetX']}")
+            return fJson.settingCache["offSetX"]
+        elif fJson.settingCache["offSetY"] != "auto" and offSetType == "y":  # if y and manual
+            logger.debug(f"Offset Y: {fJson.settingCache['offSetY']}")
+            return fJson.settingCache["offSetY"]
 
-    if not custom:
-        offSetX = "auto"
-        offSetY = "auto"
+        # else check auto offset for x and y
+        mGet = get_monitors()
+        totalMonitor = len(mGet)
 
-    w = 60 if offSetW == "auto" else offSetW
-    h = 60 if offSetH == "auto" else offSetH
+        if totalMonitor == 1:
+            logger.debug(f"Offset {offSetType}: 0")
+            return 0  # no offset if only 1 monitor on both x and y
 
-    #  If offset is set
-    if offSetXYType.lower() != "no offset" or not custom:
-        totalMonitor = len(get_monitors())
         totalX = 0
         totalY = 0
         index = 0
         primaryIn = 0
         mData = []
-        for m in get_monitors():
+        for m in mGet:
             mData.append(m)
             totalX += abs(m.x)
             totalY += abs(m.y)
@@ -87,39 +100,22 @@ def get_offset(offSetX, offSetY, offSetW, offSetH, offSetXYType, custom=False):
                 primaryIn = index
             index += 1
 
-        # If auto
-        if offSetX == "auto":
-            if totalMonitor > 1:
-                if totalX > totalY:  # Horizontal
-                    if primaryIn != 0:  # Make sure its not the first monitor
-                        x = abs(mData[primaryIn - 1].x)
-                    else:
-                        x = 0
-                else:
-                    x = 0
+        # auto x
+        if offSetType == "x":
+            if totalX > totalY and primaryIn != 0:  # Horizontal and primary not in the first monitor
+                logger.debug(f"Offset X: {abs(mData[primaryIn - 1].x)}")
+                return abs(mData[primaryIn - 1].x)
             else:
-                x = 0
-        else:  # if set manually
-            x = offSetX
-
-        # If auto
-        if offSetY == "auto":
-            if totalMonitor > 1:
-                if totalY > totalX:  # Vertical
-                    if primaryIn != 0:
-                        y = abs(mData[primaryIn - 1].y)
-                    else:
-                        y = 0
-                else:
-                    y = 0
+                logger.debug(f"Offset X: 0")
+                return 0
+        # auto y
+        elif offSetType == "y":
+            if totalY > totalX and primaryIn != 0:  # Vertical
+                logger.debug(f"Offset Y: {abs(mData[primaryIn - 1].y)}")
+                return abs(mData[primaryIn - 1].y)
             else:
-                y = 0
-        else:  # if set manually
-            y = offSetY
-
-    offSetsGet = [x, y, w, h]
-    logger.info(f"Monitor Offset: {offSetsGet}")
-    return offSetsGet
+                logger.debug(f"Offset Y: 0")
+                return 0
 
 
 def getScreenTotalGeometry():

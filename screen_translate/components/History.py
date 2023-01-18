@@ -22,37 +22,39 @@ class HistoryWindow:
 
         # Layout
         # frameOne
-        self.firstFrame = ttk.Frame(self.root)
-        self.firstFrame.pack(side=tk.TOP, fill=tk.BOTH, padx=5, expand=True)
-        self.firstFrameScrollX = ttk.Frame(self.root)
-        self.firstFrameScrollX.pack(side=tk.TOP, fill=tk.X, padx=5, expand=False)
+        self.f_1 = ttk.Frame(self.root)
+        self.f_1.pack(side=tk.TOP, fill=tk.BOTH, padx=5, expand=True)
+        self.f1_scrollFrame = ttk.Frame(self.root)
+        self.f1_scrollFrame.pack(side=tk.TOP, fill=tk.X, padx=5, expand=False)
 
-        self.bottomFrame = ttk.Frame(self.root)
-        self.bottomFrame.pack(side=tk.BOTTOM, fill=tk.BOTH, expand=False)
+        self.f_bot = ttk.Frame(self.root)
+        self.f_bot.pack(side=tk.BOTTOM, fill=tk.BOTH, expand=False)
 
         # elements
         # Treeview
-        self.historyTreeView = ttk.Treeview(self.firstFrame, columns=("Id", "From-To", "Query"))
+        self.historyTreeView = ttk.Treeview(self.f_1, columns=("Id", "From-To", "Query"))
         self.historyTreeView["columns"] = ("Id", "From-To", "Query")
 
         # Scrollbar
-        self.scrollbarY = ttk.Scrollbar(self.firstFrame, orient=tk.VERTICAL)
-        self.scrollbarY.pack(side=tk.RIGHT, fill=tk.Y)
-        self.scrollbarX = ttk.Scrollbar(self.firstFrameScrollX, orient=tk.HORIZONTAL)
-        self.scrollbarX.pack(side=tk.TOP, fill=tk.X)
+        self.sbY = ttk.Scrollbar(self.f_1, orient=tk.VERTICAL)
+        self.sbY.pack(side=tk.RIGHT, fill=tk.Y)
+        self.sbX = ttk.Scrollbar(self.f1_scrollFrame, orient=tk.HORIZONTAL)
+        self.sbX.pack(side=tk.TOP, fill=tk.X)
 
-        self.scrollbarX.config(command=self.historyTreeView.xview)
-        self.scrollbarY.config(command=self.historyTreeView.yview)
-        self.historyTreeView.config(yscrollcommand=self.scrollbarY.set, xscrollcommand=self.scrollbarX.set)
+        self.sbX.config(command=self.historyTreeView.xview)
+        self.sbY.config(command=self.historyTreeView.yview)
+        self.historyTreeView.config(yscrollcommand=self.sbY.set, xscrollcommand=self.sbX.set)
         self.historyTreeView.bind("<Button-1>", self.handle_click)
 
         # Other stuff
-        self.btnRefresh = ttk.Button(self.bottomFrame, text="🔄 Refresh", command=self.refresh)
-        self.btnCopyToClipboard = ttk.Button(self.bottomFrame, text="↳ Copy to Clipboard", command=self.copyToClipboard)
-        self.btnCopyToTranslateBox = ttk.Button(self.bottomFrame, text="↳ Copy to Translate Menu", command=self.copyToTranslateMenu)
-        self.btnDeleteSelected = ttk.Button(self.bottomFrame, text="✕ Delete Selected", command=self.deleteSelected)
-        self.btnDeleteAll = ttk.Button(self.bottomFrame, text="✕ Delete All", command=self.deleteAll)
+        self.btn_refresh = ttk.Button(self.f_bot, text="🔄 Refresh", command=self.refresh)
+        self.btn_copy_to_clipboard = ttk.Button(self.f_bot, text="↳ Copy to Clipboard", command=self.copyToClipboard)
+        self.btn_copy_to_translate_box = ttk.Button(self.f_bot, text="↳ Copy to Translate Menu", command=self.copyToTranslateMenu)
+        self.btn_delete_selected = ttk.Button(self.f_bot, text="✕ Delete Selected", command=self.deleteSelected)
+        self.btn_delete_all = ttk.Button(self.f_bot, text="✕ Delete All", command=self.deleteAll)
 
+        # ----------------------------------------------------------------
+        # pack stuff
         self.historyTreeView.heading("#0", text="", anchor=tk.CENTER)
         self.historyTreeView.heading("Id", text="Id", anchor=tk.CENTER)
         self.historyTreeView.heading("From-To", text="From-To", anchor=tk.CENTER)
@@ -64,11 +66,11 @@ class HistoryWindow:
         self.historyTreeView.column("Query", anchor=tk.W, width=10000, stretch=False)  # Make the width ridiculuosly long so it can use the x scrollbar
 
         self.historyTreeView.pack(side=tk.TOP, padx=5, pady=5, fill=tk.BOTH, expand=True)
-        self.btnRefresh.pack(side=tk.LEFT, fill=tk.X, padx=(10, 5), pady=5, expand=False)
-        self.btnCopyToClipboard.pack(side=tk.LEFT, fill=tk.X, padx=5, pady=5, expand=False)
-        self.btnCopyToTranslateBox.pack(side=tk.LEFT, fill=tk.X, padx=5, pady=5, expand=False)
-        self.btnDeleteSelected.pack(side=tk.LEFT, fill=tk.X, padx=5, pady=5, expand=False)
-        self.btnDeleteAll.pack(side=tk.LEFT, fill=tk.X, padx=5, pady=5, expand=False)
+        self.btn_refresh.pack(side=tk.LEFT, fill=tk.X, padx=(10, 5), pady=5, expand=False)
+        self.btn_copy_to_clipboard.pack(side=tk.LEFT, fill=tk.X, padx=5, pady=5, expand=False)
+        self.btn_copy_to_translate_box.pack(side=tk.LEFT, fill=tk.X, padx=5, pady=5, expand=False)
+        self.btn_delete_selected.pack(side=tk.LEFT, fill=tk.X, padx=5, pady=5, expand=False)
+        self.btn_delete_all.pack(side=tk.LEFT, fill=tk.X, padx=5, pady=5, expand=False)
 
         # On Close
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)

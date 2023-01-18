@@ -33,26 +33,26 @@ class CaptureWindow:
         self.debugMode = tk.IntVar()
 
         # Frame-1
-        self.frame_1 = tk.Frame(self.root)
-        self.frame_1.pack(side=tk.TOP, fill=tk.X, expand=False)
-        self.fTooltip = CreateToolTip(self.frame_1, "Right click for interaction menu", wrapLength=400)
+        self.f_1 = tk.Frame(self.root)
+        self.f_1.pack(side=tk.TOP, fill=tk.X, expand=False)
+        self.fTooltip = CreateToolTip(self.f_1, "Right click for interaction menu", wrapLength=400)
 
         # ----------------------------------------------------------------------
         # drag label
-        self.lbl_drag = tk.Label(self.frame_1, text="▶", font=("Arial", 16, "bold"), foreground="gray")
+        self.lbl_drag = tk.Label(self.f_1, text="▶", font=("Arial", 16, "bold"), foreground="gray")
         self.lbl_drag.pack(side=tk.LEFT, fill=tk.X, expand=False)
 
         # Label for opacity slider
-        self.lbl_opacity = ttk.Label(self.frame_1, text="Opacity: 0.8")
+        self.lbl_opacity = ttk.Label(self.f_1, text="Opacity: 0.8")
         self.lbl_opacity.pack(padx=5, pady=5, side=tk.LEFT)
 
         # opacity slider
-        self.slider_opacity = ttk.Scale(self.frame_1, from_=0.25, to=1.0, value=0.8, orient=tk.HORIZONTAL, command=self.change_opacity)
+        self.slider_opacity = ttk.Scale(self.f_1, from_=0.25, to=1.0, value=0.8, orient=tk.HORIZONTAL, command=self.change_opacity)
         self.slider_opacity.pack(padx=5, pady=5, side=tk.LEFT)
 
         # Button
         assert gClass.mw is not None
-        self.captureBtn = ttk.Button(self.frame_1, text="Capture & Translate", command=gClass.mw.capwin_callback)
+        self.captureBtn = ttk.Button(self.f_1, text="Capture & Translate", command=gClass.mw.capwin_callback)
         self.captureBtn.pack(padx=5, pady=5, side=tk.LEFT)
 
         # menu

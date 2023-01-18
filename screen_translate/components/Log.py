@@ -22,31 +22,31 @@ class LogWindow:
         self.currentOpacity = 1.0
 
         # Frames
-        self.firstFrame = ttk.Frame(self.root)
-        self.firstFrame.pack(side=tk.TOP, fill=tk.BOTH, padx=5, expand=True)
+        self.f_1 = ttk.Frame(self.root)
+        self.f_1.pack(side=tk.TOP, fill=tk.BOTH, padx=5, expand=True)
 
-        self.bottomFrame = ttk.Frame(self.root)
-        self.bottomFrame.pack(side=tk.BOTTOM, fill=tk.BOTH, expand=False)
+        self.f_bot = ttk.Frame(self.root)
+        self.f_bot.pack(side=tk.BOTTOM, fill=tk.BOTH, expand=False)
 
         # Scrollbar
-        self.scrollbarY = ttk.Scrollbar(self.firstFrame, orient=tk.VERTICAL)
-        self.scrollbarY.pack(side=tk.RIGHT, fill=tk.Y)
+        self.sbY = ttk.Scrollbar(self.f_1, orient=tk.VERTICAL)
+        self.sbY.pack(side=tk.RIGHT, fill=tk.Y)
 
-        self.tbLogger = tk.Text(self.firstFrame, height=5, width=100)
+        self.tbLogger = tk.Text(self.f_1, height=5, width=100)
         self.tbLogger.bind("<Key>", lambda event: tb_copy_only(event))  # Disable textbox input
         self.tbLogger.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-        self.tbLogger.config(yscrollcommand=self.scrollbarY.set)
-        self.scrollbarY.config(command=self.tbLogger.yview)
+        self.tbLogger.config(yscrollcommand=self.sbY.set)
+        self.sbY.config(command=self.tbLogger.yview)
 
         # Other stuff
-        self.btnClear = ttk.Button(self.bottomFrame, text="⚠ Clear", command=self.clearLog)
-        self.btnClear.pack(side=tk.LEFT, padx=5, pady=5)
+        self.btn_clear = ttk.Button(self.f_bot, text="⚠ Clear", command=self.clearLog)
+        self.btn_clear.pack(side=tk.LEFT, padx=5, pady=5)
 
-        self.btnRefresh = ttk.Button(self.bottomFrame, text="🔄 Refresh", command=lambda: self.updateLog)
-        self.btnRefresh.pack(side=tk.LEFT, padx=5, pady=5)
+        self.btn_refresh = ttk.Button(self.f_bot, text="🔄 Refresh", command=lambda: self.updateLog)
+        self.btn_refresh.pack(side=tk.LEFT, padx=5, pady=5)
 
-        self.btnOpenDefaultLog = ttk.Button(self.bottomFrame, text="🗁 Open Log Folder", command=lambda: startFile(dir_log))
-        self.btnOpenDefaultLog.pack(side=tk.LEFT, padx=5, pady=5)
+        self.btn_open_default_log = ttk.Button(self.f_bot, text="🗁 Open Log Folder", command=lambda: startFile(dir_log))
+        self.btn_open_default_log.pack(side=tk.LEFT, padx=5, pady=5)
 
         # On Close
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
