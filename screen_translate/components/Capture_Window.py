@@ -13,7 +13,7 @@ class CaptureWindow:
     """Capture Window"""
 
     # ----------------------------------------------------------------------
-    def __init__(self, master):
+    def __init__(self, master: tk.Tk):
         gClass.cw = self  # type: ignore
         self.root = tk.Toplevel(master)
         self.root.title("Capture Window")
@@ -67,16 +67,14 @@ class CaptureWindow:
         self.menuDropdown.add_command(label="Decrease Opacity by 0.1", command=lambda: self.decrease_opacity(), accelerator="Alt + Mouse Wheel Down")
 
         self.menuDropdown.add_separator()
-        self.menuDropdown.add_checkbutton(
-            label="Detect contour using CV2", command=lambda: beep() or fJson.savePartialSetting("enhance_with_cv2_Contour", self.cv2Contour.get()), onvalue=1, offvalue=0, variable=self.cv2Contour
-        )
-        self.menuDropdown.add_checkbutton(label="Grayscale", command=lambda: beep() or fJson.savePartialSetting("grayscale", self.grayscale.get()), onvalue=1, offvalue=0, variable=self.grayscale)
+        self.menuDropdown.add_checkbutton(label="Detect contour using CV2", command=lambda: beep() or fJson.savePartialSetting("enhance_with_cv2_Contour", self.cv2Contour.get()) or gClass.sw.updateInternal(), onvalue=1, offvalue=0, variable=self.cv2Contour)  # type: ignore
+        self.menuDropdown.add_checkbutton(label="Grayscale", command=lambda: beep() or fJson.savePartialSetting("grayscale", self.grayscale.get()) or gClass.sw.updateInternal(), onvalue=1, offvalue=0, variable=self.grayscale)  # type: ignore
         self.bgTypeMenu = tk.Menu(self.menuDropdown, tearoff=0)
         self.menuDropdown.add_cascade(label="Background Type", menu=self.bgTypeMenu)
-        self.bgTypeMenu.add_radiobutton(label="Auto-Detect", command=lambda: beep() or fJson.savePartialSetting("enhance_background", "Auto-Detect"), value="Auto-Detect", variable=self.bgType)
-        self.bgTypeMenu.add_radiobutton(label="Light", command=lambda: beep() or fJson.savePartialSetting("enhance_background", "Light"), value="Light", variable=self.bgType)
-        self.bgTypeMenu.add_radiobutton(label="Dark", command=lambda: beep() or fJson.savePartialSetting("enhance_background", "Dark"), value="Dark", variable=self.bgType)
-        self.menuDropdown.add_checkbutton(label="Debug Mode", command=lambda: beep() or fJson.savePartialSetting("enhance_debugmode", self.debugMode.get()), onvalue=1, offvalue=0, variable=self.debugMode)
+        self.bgTypeMenu.add_radiobutton(label="Auto-Detect", command=lambda: beep() or fJson.savePartialSetting("enhance_background", "Auto-Detect") or gClass.sw.updateInternal(), value="Auto-Detect", variable=self.bgType)  # type: ignore
+        self.bgTypeMenu.add_radiobutton(label="Light", command=lambda: beep() or fJson.savePartialSetting("enhance_background", "Light") or gClass.sw.updateInternal(), value="Light", variable=self.bgType)  # type: ignore
+        self.bgTypeMenu.add_radiobutton(label="Dark", command=lambda: beep() or fJson.savePartialSetting("enhance_background", "Dark") or gClass.sw.updateInternal(), value="Dark", variable=self.bgType)  # type: ignore
+        self.menuDropdown.add_checkbutton(label="Debug Mode", command=lambda: beep() or fJson.savePartialSetting("enhance_debugmode", self.debugMode.get()) or gClass.sw.updateInternal(), onvalue=1, offvalue=0, variable=self.debugMode) # type: ignore
 
         self.menuDropdown.add_separator()
         self.menuDropdown.add_checkbutton(label="Hide Tooltip", command=lambda: self.disable_tooltip(False), onvalue=1, offvalue=0, variable=self.tooltip_disabled, accelerator="Alt + X")
@@ -243,3 +241,15 @@ class CaptureWindow:
         self.root.attributes("-alpha", self.currentOpacity)
         self.fTooltip.opacity = self.currentOpacity
         self.lbl_opacity.config(text=f"Opacity: {round(self.currentOpacity, 3)}")
+
+    def updateInternal(self, valDict):
+        """
+        Method to update internal value.
+
+        Args:
+            valDict (dict): dictionary of value
+        """
+        self.bgType.set(valDict["enhance_background"])
+        self.cv2Contour.set(valDict["enhance_with_cv2_Contour"])
+        self.grayscale.set(valDict["enhance_with_grayscale"])
+        self.debugMode.set(valDict["enhance_debugmode"])

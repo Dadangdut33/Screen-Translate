@@ -16,7 +16,7 @@ class AboutWindow:
     """About Window"""
 
     # ----------------------------------------------------------------------
-    def __init__(self, master):
+    def __init__(self, master: tk.Tk):
         gClass.aw = self  # type: ignore
         self.root = tk.Toplevel(master)
         self.root.title("About Screen Translate")

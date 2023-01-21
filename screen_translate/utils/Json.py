@@ -14,20 +14,24 @@ default_setting = {
     "checkUpdateOnStart": True,
     # ------------------ #
     # App settings
-    "cached": True,
-    "autoCopy": True,
+    "keep_image": True,
+    "auto_copy": True,
+    "save_history": True,
+    "supress_no_text_alert": True,
+    # ------------------ #
+    # logging
+    "keep_log": False,
+    "log_level": "DEBUG",  # INFO DEBUG WARNING ERROR
+    # ------------------ #
+    # capture window offsets
     "offSetXYType": "No Offset",
     "offSetX": "auto",
     "offSetY": "auto",
     "offSetW": "auto",
     "offSetH": "auto",
-    "snippingWindowGeometry": "auto",
-    "saveHistory": True,
-    "supress_alert": True,
     # ------------------ #
-    # logging
-    "keep_log": False,
-    "log_level": "DEBUG",  # INFO DEBUG WARNING ERROR
+    # snipping window geometry
+    "snippingWindowGeometry": "auto",
     # ------------------ #
     # runtime option
     "engine": "Google Translate",
@@ -39,11 +43,10 @@ default_setting = {
     "replaceNewLine": True,
     "replaceNewLineWith": " ",
     "captureLastValDelete": 0,
-    "saveImg": True,
     # capture enhancement
+    "enhance_background": "Auto-Detect",
     "enhance_with_cv2_Contour": True,
     "enhance_with_grayscale": False,
-    "enhance_background": "Auto-Detect",
     "enhance_debugmode": False,
     # ------------------ #
     # mask window
@@ -56,10 +59,10 @@ default_setting = {
     "libre_https": True,
     # ------------------ #
     # hotkey
-    "hk_cap_tl": "",
-    "hk_cap_tl_delay": 1000,
-    "hk_snip_cap_tl": "",
-    "hk_snip_cap_tl_delay": 0,
+    "hk_cap_window": "",
+    "hk_cap_window_delay": 1000,
+    "hk_snip_cap": "",
+    "hk_snip_cap_delay": 0,
     # ------------------ #
     # detached window
     "tb_mw_q_font": "TKDefaultFont",
@@ -82,7 +85,7 @@ default_setting = {
     "tb_ex_res_font_size": 10,
     "tb_ex_res_font_color": "#FFFFFF",
     "tb_ex_res_bg_color": "#000000",
-    "masking_window_color": "#555555",
+    "mask_window_color": "#555555",
 }
 
 
@@ -356,6 +359,8 @@ class JsonHandler:
             localNotify("Error saving setting file", "Reason: " + msg)
             logger.error("Error saving setting file: " + msg)
 
+        return success, msg
+
     def loadSetting(self):
         """
         Load json file
@@ -395,3 +400,12 @@ class JsonHandler:
         Get setting value
         """
         return self.settingCache
+
+    def setDefaultSetting(self):
+        """
+        Set default setting
+        """
+        self.settingCache = default_setting
+        success, msg = self.saveSetting(self.settingCache)
+
+        return success, msg

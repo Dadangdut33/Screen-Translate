@@ -12,7 +12,7 @@ class HistoryWindow:
     """History Window"""
 
     # ----------------------------------------------------------------
-    def __init__(self, master):
+    def __init__(self, master: tk.Tk):
         gClass.hw = self  # type: ignore
         self.root = tk.Toplevel(master)
         self.root.title("History")

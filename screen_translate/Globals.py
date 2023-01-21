@@ -87,11 +87,11 @@ class Globals:
     def update_mw_opac_slider(self, opac: float):
         pass
 
-    def hotkeyCapTLCallback(self):
+    def hk_cap_window_callback(self):
         """Callback for the hotkey to capture the screen"""
         self.hotkeyCapTlPressed = True
 
-    def hotkeySnipCapTLCallback(self):
+    def hk_snip_mode_callback(self):
         """Callback for the hotkey to snip the screen"""
         self.hotkeySnipCapTlPressed = True
 

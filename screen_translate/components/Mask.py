@@ -12,7 +12,7 @@ class MaskWindow:
     """Mask Window"""
 
     # ----------------------------------------------------------------------
-    def __init__(self, master):
+    def __init__(self, master: tk.Tk):
         gClass.mask = self  # type: ignore
         self.root = tk.Toplevel(master)
         self.root.title("Mask Window")
@@ -27,7 +27,7 @@ class MaskWindow:
         self.clickThrough = tk.IntVar()
 
         # Top frame
-        self.f_1 = tk.Frame(self.root, background=fJson.settingCache["mask_window_bg_color"])
+        self.f_1 = tk.Frame(self.root, background=fJson.settingCache["mask_window_color"])
         self.f_1.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
         self.fTooltip = CreateToolTip(self.f_1, "Right click for interaction menu", wrapLength=400)
 
@@ -174,3 +174,14 @@ class MaskWindow:
             self.f_1["bg"] = colorGet[1]
             self.menuDropdown.entryconfig(0, label=f"Color: {colorGet[1]}")
             fJson.savePartialSetting("mask_window_bg_color", colorGet[1])
+
+            assert gClass.sw is not None
+            gClass.sw.updateInternal()
+
+    def updateInternal(self, bgColor):
+        """
+        Method to update the internal data.
+        """
+        self.root["bg"] = bgColor
+        self.f_1["bg"] = bgColor
+        self.menuDropdown.entryconfig(0, label=f"Color: {bgColor}")

@@ -12,7 +12,7 @@ class LogWindow:
     """Logger but shown in toplevel window"""
 
     # ----------------------------------------------------------------------
-    def __init__(self, master):
+    def __init__(self, master: tk.Tk):
         gClass.lw = self  # type: ignore
         self.root = tk.Toplevel(master)
         self.root.title("Log")

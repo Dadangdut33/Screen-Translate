@@ -14,7 +14,7 @@ class AbstractDetachedWindow:
     """Detached Window"""
 
     # ----------------------------------------------------------------------
-    def __init__(self, master, title: str, winType: Literal["q", "res"]):
+    def __init__(self, master: tk.Tk, title: str, winType: Literal["q", "res"]):
         self.root = tk.Toplevel(master)
         self.root.title(title)
         self.root.geometry("600x160")

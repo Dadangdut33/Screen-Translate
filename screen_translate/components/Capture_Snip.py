@@ -14,10 +14,10 @@ from PIL import Image, ImageTk
 class SnipWindow:
     """Snip Window"""
 
-    def __init__(self, master):
+    def __init__(self, master: tk.Tk):
         gClass.csw = self  # type: ignore
         self.root = tk.Toplevel(master)
-        self.root.title("STL Snipper")
+        self.root.title("Snipper")
         self.root.geometry("500x500")  # placeholder
         self.root.overrideredirect(True)  # borderless
         self.root.wm_attributes("-topmost", True)  # topmost
