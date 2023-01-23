@@ -1,12 +1,18 @@
 import platform
+import threading
 import tkinter as tk
 import tkinter.ttk as ttk
 
-from screen_translate.utils.Beep import beep
-
 from .Tooltip import CreateToolTip
+from .MBox import Mbox
+
 from screen_translate.Globals import gClass, fJson, path_logo_icon
-from screen_translate.components.MBox import Mbox
+from screen_translate.Logging import logger
+from screen_translate.utils.Beep import beep
+from screen_translate.utils.Monitor import get_offset
+from screen_translate.utils.Capture import ocrFromCoords
+from screen_translate.utils.Translate import translate
+
 
 # Classes
 class CaptureWindow:
@@ -14,12 +20,13 @@ class CaptureWindow:
 
     # ----------------------------------------------------------------------
     def __init__(self, master: tk.Tk):
-        gClass.cw = self  # type: ignore
         self.root = tk.Toplevel(master)
         self.root.title("Capture Window")
         self.root.geometry("600x150")
         self.root.wm_withdraw()
         self.root.attributes("-alpha", 0.8)
+        self.currentOpacity = 0.8
+        gClass.cw = self  # type: ignore
 
         # ------------------ #
         self.always_on_top = tk.IntVar()
@@ -52,7 +59,7 @@ class CaptureWindow:
 
         # Button
         assert gClass.mw is not None
-        self.captureBtn = ttk.Button(self.f_1, text="Capture & Translate", command=gClass.mw.capwin_callback)
+        self.captureBtn = ttk.Button(self.f_1, text="Capture & Translate", command=self.start_capping)
         self.captureBtn.pack(padx=5, pady=5, side=tk.LEFT)
 
         # menu
@@ -74,7 +81,7 @@ class CaptureWindow:
         self.bgTypeMenu.add_radiobutton(label="Auto-Detect", command=lambda: beep() or fJson.savePartialSetting("enhance_background", "Auto-Detect") or gClass.sw.updateInternal(), value="Auto-Detect", variable=self.bgType)  # type: ignore
         self.bgTypeMenu.add_radiobutton(label="Light", command=lambda: beep() or fJson.savePartialSetting("enhance_background", "Light") or gClass.sw.updateInternal(), value="Light", variable=self.bgType)  # type: ignore
         self.bgTypeMenu.add_radiobutton(label="Dark", command=lambda: beep() or fJson.savePartialSetting("enhance_background", "Dark") or gClass.sw.updateInternal(), value="Dark", variable=self.bgType)  # type: ignore
-        self.menuDropdown.add_checkbutton(label="Debug Mode", command=lambda: beep() or fJson.savePartialSetting("enhance_debugmode", self.debugMode.get()) or gClass.sw.updateInternal(), onvalue=1, offvalue=0, variable=self.debugMode) # type: ignore
+        self.menuDropdown.add_checkbutton(label="Debug Mode", command=lambda: beep() or fJson.savePartialSetting("enhance_debugmode", self.debugMode.get()) or gClass.sw.updateInternal(), onvalue=1, offvalue=0, variable=self.debugMode)  # type: ignore
 
         self.menuDropdown.add_separator()
         self.menuDropdown.add_checkbutton(label="Hide Tooltip", command=lambda: self.disable_tooltip(False), onvalue=1, offvalue=0, variable=self.tooltip_disabled, accelerator="Alt + X")
@@ -95,7 +102,7 @@ class CaptureWindow:
         self.root.bind("<Alt-KeyPress-t>", lambda event: self.toggle_hidden_top())
         self.root.bind("<Alt-KeyPress-o>", lambda event: self.toggle_always_on_top())
         self.root.bind("<Alt-KeyPress-x>", lambda event: self.disable_tooltip())
-        self.root.bind("<Alt-MouseWheel>", lambda event: self.change_opacity(event))
+        self.root.bind("<Alt-MouseWheel>", lambda event: self.change_opacity(event, fromOutside=True))
 
         # bind drag on label text
         self.lbl_drag.bind("<ButtonPress-1>", self.StartMove)
@@ -116,6 +123,7 @@ class CaptureWindow:
 
     # Show/Hide
     def show(self):
+        gClass.cw_hidden = False
         self.initVar()
         self.root.wm_deiconify()
         self.root.attributes("-alpha", 0.8)
@@ -124,6 +132,7 @@ class CaptureWindow:
             self.root.wm_attributes("-transparentcolor", "")
 
     def on_closing(self):
+        gClass.cw_hidden = True
         self.root.wm_withdraw()
 
     def StartMove(self, event):
@@ -221,17 +230,23 @@ class CaptureWindow:
         self.fTooltip.opacity = self.currentOpacity
 
     # opacity change
-    def change_opacity(self, event):
+    def change_opacity(self, event, fromOutside=False):
         """
         Method to change the opacity of the window by scrolling.
 
         Args:
-            event (event): event object
+            event (event | str): event object
         """
-        if event.delta > 0:
-            self.currentOpacity += 0.025
+        if type(event) == str:
+            value = float(event)
+            self.currentOpacity = value
         else:
-            self.currentOpacity -= 0.025
+            value = event.delta
+
+            if value > 0:
+                self.currentOpacity += 0.025
+            else:
+                self.currentOpacity -= 0.025
 
         if self.currentOpacity > 1:
             self.currentOpacity = 1
@@ -241,6 +256,14 @@ class CaptureWindow:
         self.root.attributes("-alpha", self.currentOpacity)
         self.fTooltip.opacity = self.currentOpacity
         self.lbl_opacity.config(text=f"Opacity: {round(self.currentOpacity, 3)}")
+
+        assert gClass.mw is not None
+        if not fromOutside:  # if not from main update main slider
+            gClass.mw.slider_capture_opac.config(value=self.currentOpacity)
+        else:  # from main # update local slider
+            self.slider_opacity.config(value=self.currentOpacity)
+
+        gClass.mw.lbl_capture_opac.config(text=f"Capture Window Opacity: {round(self.currentOpacity, 3)}")
 
     def updateInternal(self, valDict):
         """
@@ -253,3 +276,43 @@ class CaptureWindow:
         self.cv2Contour.set(valDict["enhance_with_cv2_Contour"])
         self.grayscale.set(valDict["enhance_with_grayscale"])
         self.debugMode.set(valDict["enhance_debugmode"])
+
+    def start_capping(self):
+        gClass.lb_start()
+        opacBefore = self.currentOpacity
+        self.root.attributes("-alpha", 0)
+
+        # Get xywh of the screen
+        x, y, w, h = self.root.winfo_x(), self.root.winfo_y(), self.root.winfo_width(), self.root.winfo_height()
+
+        x += get_offset("x")
+        y += get_offset("y")
+        w += get_offset("w")
+        h += get_offset("h")
+
+        success, res = ocrFromCoords([x, y, w, h])
+
+        if success:
+            gClass.clear_mw_q()
+            gClass.clear_ex_q()
+            gClass.insert_mw_q(res)
+            gClass.insert_ex_q(res)
+            # translate if translate
+            if fJson.settingCache["engine"] != "None":
+                # check params
+                tlThread = threading.Thread(target=translate, args=(res, fJson.settingCache["from_lang"], fJson.settingCache["to_lang"], fJson.settingCache["engine"]))
+                tlThread.start()
+        else:
+            if "is not installed or it's not in your PATH" in res:
+                Mbox("Error: Tesseract Could not be Found", "Invalid path location for tesseract.exe, please change it in the setting!", 2)
+            elif "Failed loading language" in res:
+                Mbox(
+                    "Error: Failed Loading Language",
+                    "Language data not found! It could be that the language data is not installed! Please reinstall tesseract or download the language data and put it into Tesseract-OCR\\tessdata!\n\nThe official version that is used for this program is v5.0.0-alpha.20210811. You can download it from https://github.com/UB-Mannheim/tesseract/wiki or https://digi.bib.uni-mannheim.de/tesseract/",
+                    2,
+                )
+            else:
+                Mbox("Error", res, 2)
+
+        gClass.lb_stop()
+        self.root.attributes("-alpha", opacBefore)

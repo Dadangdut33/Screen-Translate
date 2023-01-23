@@ -13,11 +13,11 @@ class MaskWindow:
 
     # ----------------------------------------------------------------------
     def __init__(self, master: tk.Tk):
-        gClass.mask = self  # type: ignore
         self.root = tk.Toplevel(master)
         self.root.title("Mask Window")
         self.root.geometry("600x160")
         self.root.wm_withdraw()
+        gClass.mask = self  # type: ignore
 
         # ------------------ #
         self.currentOpacity = 1.0

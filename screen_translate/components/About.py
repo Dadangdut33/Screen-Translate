@@ -17,11 +17,12 @@ class AboutWindow:
 
     # ----------------------------------------------------------------------
     def __init__(self, master: tk.Tk):
-        gClass.aw = self  # type: ignore
         self.root = tk.Toplevel(master)
         self.root.title("About Screen Translate")
         self.root.geometry("450x325")
         self.root.wm_withdraw()
+        self.checking = False
+        gClass.aw = self  # type: ignore
 
         # Top frame
         self.f_top = tk.Frame(self.root, bg="white")
@@ -145,8 +146,7 @@ class AboutWindow:
             req = requests.get("https://raw.githubusercontent.com/Dadangdut33/Screen-Translate/main/version.txt")
 
             if req is not None and req.status_code == 200:
-                data = req.json()
-                latest_version = str(data["tag_name"])
+                latest_version = str(req.text)
                 if __version__ < latest_version:
                     logger.info(f"New version found: {latest_version}")
                     self.checkUpdateLabelText = "New version available"

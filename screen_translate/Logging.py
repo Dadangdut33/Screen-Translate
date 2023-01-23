@@ -57,23 +57,35 @@ class f_formatter(logging.Formatter):
 
 
 # ------------------ #
-# Create a custom logger
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
 
-# Create handlers
-c_handler = logging.StreamHandler()
-f_handler = logging.FileHandler(dir_log + "/" + current_log, encoding="utf-8", mode="w")
-c_handler.setLevel(logging.DEBUG)
-f_handler.setLevel(logging.DEBUG)
 
-# Create formatters and add it to handlers
-c_handler.setFormatter(c_formatter())
-f_handler.setFormatter(f_formatter())
+def initLogging():
+    global logger
+    logger = logging.getLogger(__name__)
 
-# Add handlers to the logger
-logger.addHandler(c_handler)
-logger.addHandler(f_handler)
+    # reset logger
+    for handler in logger.handlers[:]:  # make a copy of the list
+        logger.removeHandler(handler)
+
+    # Create a custom logger
+    logger.setLevel(logging.DEBUG)
+
+    # Create handlers
+    c_handler = logging.StreamHandler()
+    f_handler = logging.FileHandler(dir_log + "/" + current_log, encoding="utf-8", mode="w")
+    c_handler.setLevel(logging.DEBUG)
+    f_handler.setLevel(logging.DEBUG)
+
+    # Create formatters and add it to handlers
+    c_handler.setFormatter(c_formatter())
+    f_handler.setFormatter(f_formatter())
+
+    # Add handlers to the logger
+    logger.addHandler(c_handler)
+    logger.addHandler(f_handler)
+
+
+initLogging()
 
 # ------------------ #
 # to debug/test the logger

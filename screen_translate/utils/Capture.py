@@ -64,7 +64,7 @@ def ocrFromCoords(coords: List[int]):
         debugmode = fJson.settingCache["enhance_debugmode"]
         background = fJson.settingCache["enhance_background"]
         replaceNewLine = fJson.settingCache["replaceNewLine"]
-        saveImg = fJson.settingCache["saveImg"]
+        saveImg = fJson.settingCache["keep_image"]
         saveName = os.path.join(dir_captured, "ScreenTranslate_" + datetime.now().strftime("%Y-%m-%d_%H%M%S") + ".png")
 
         # Enhance with cv2 if selected
@@ -170,6 +170,7 @@ def captureFullScreen():
         captured = pyautogui.screenshot()  # type: ignore
         createPicDirIfGone()
         captured.save(saveName)
+        success = True
         logger.info("Captured full screen!")
     except Exception as e:
         logger.exception("Error: " + str(e))

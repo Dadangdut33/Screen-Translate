@@ -22,6 +22,8 @@ default_setting = {
     # logging
     "keep_log": False,
     "log_level": "DEBUG",  # INFO DEBUG WARNING ERROR
+    "auto_scroll_log": True,
+    "auto_refresh_log": True,
     # ------------------ #
     # capture window offsets
     "offSetXYType": "No Offset",
@@ -43,6 +45,8 @@ default_setting = {
     "replaceNewLine": True,
     "replaceNewLineWith": " ",
     "captureLastValDelete": 0,
+    # window hide on capture
+    "hide_this_windows_on_cap": ["ex_qw", "ex_resw"], # options: mw ex_qw ex_resw # TODO: IMPLEMENT THIS
     # capture enhancement
     "enhance_background": "Auto-Detect",
     "enhance_with_cv2_Contour": True,
@@ -301,7 +305,7 @@ class JsonHandler:
             return is_Success, status
 
     # Read History
-    def readHistory(self):
+    def readHistory(self, onStartUp: bool = False):
         """Read history
 
         Returns:
@@ -321,12 +325,14 @@ class JsonHandler:
                 json.dump(file_data, f, ensure_ascii=False, indent=4)
                 is_Success = False
                 data = r"Couldn't found History.Json, History now empty"
-                Mbox("Error", data, 2)
+                if not onStartUp:
+                    Mbox("Error", data, 2)
 
         except Exception as e:
             data = str(e)
             logger.exception(e)
-            Mbox("Error: ", str(e), 2)
+            if not onStartUp:
+                Mbox("Error: ", str(e), 2)
         finally:
             return is_Success, data
 

@@ -41,8 +41,9 @@ class SettingWindow:
         self.root.geometry("1110x425")
         self.root.wm_attributes("-topmost", False)  # Default False
         self.root.wm_withdraw()
-
         self.fonts = font.families()
+        self.onStart = True
+        gClass.sw = self  # type: ignore
 
         # ----------------------------------------------------------------------
         # Main frame
@@ -53,11 +54,11 @@ class SettingWindow:
         self.f_m_bot.pack(side=tk.BOTTOM, fill=tk.X, pady=(5, 0), padx=5)
 
         # Left frame for categorization
-        self.f_m_bg_l = tk.LabelFrame(self.f_m_top, text="Menu", labelanchor=tk.N)
-        self.f_m_bg_l.pack(side=tk.LEFT, fill=tk.Y, padx=5, pady=5)
+        self.lf_m_bg_l = tk.LabelFrame(self.f_m_top, text="Menu", labelanchor=tk.N)
+        self.lf_m_bg_l.pack(side=tk.LEFT, fill=tk.Y, padx=5, pady=5)
 
         # Listbox for the category list
-        self.lb_cat = tk.Listbox(self.f_m_bg_l, selectmode=tk.SINGLE, exportselection=False)
+        self.lb_cat = tk.Listbox(self.lf_m_bg_l, selectmode=tk.SINGLE, exportselection=False)
         self.lb_cat.pack(side=tk.LEFT, fill=tk.BOTH, padx=5, pady=5)
 
         self.lb_cat.insert(1, "Capturing/Offset")
@@ -73,8 +74,8 @@ class SettingWindow:
 
         # ----------------------------------------------------------------------
         # * CAT 1 - Capturing/Offset
-        self.f_cat_1_cap = tk.Frame(self.f_m_top)
-        self.f_cat_1_cap.pack(side=tk.LEFT, fill=tk.BOTH, padx=5, pady=5)
+        self.f_cat_1_cap = ttk.Frame(self.f_m_top)
+        self.f_cat_1_cap.pack(side=tk.LEFT, fill=tk.X, padx=5, pady=5, expand=True)
 
         # -----------------------
         # [Capture Setting]
@@ -82,7 +83,7 @@ class SettingWindow:
         self.lf_capture.pack(side=tk.TOP, fill=tk.X, expand=True, padx=5, pady=(0, 5))
 
         self.f_capture = tk.Frame(self.lf_capture)
-        self.f_capture.pack(side=tk.TOP, fill=tk.X, expand=False)
+        self.f_capture.pack(side=tk.TOP, fill=tk.X, expand=True)
 
         self.cbtn_auto_copy = ttk.Checkbutton(self.f_capture, text="Auto Copy Captured Text To Clipboard")
         self.cbtn_auto_copy.pack(side=tk.LEFT, padx=5, pady=5)
@@ -103,13 +104,13 @@ class SettingWindow:
         self.lf_cw_offset = tk.LabelFrame(self.f_cat_1_cap, text="• Capture Window Offset")
         self.lf_cw_offset.pack(side=tk.TOP, fill=tk.X, expand=True, padx=5, pady=5)
 
-        self.f_cw_offset_1 = tk.Frame(self.lf_cw_offset)
+        self.f_cw_offset_1 = ttk.Frame(self.lf_cw_offset)
         self.f_cw_offset_1.pack(side=tk.TOP, fill=tk.X, expand=True)
-        self.f_cw_offset_2 = tk.Frame(self.lf_cw_offset)
+        self.f_cw_offset_2 = ttk.Frame(self.lf_cw_offset)
         self.f_cw_offset_2.pack(side=tk.TOP, fill=tk.X, expand=True)
-        self.f_cw_offset_3 = tk.Frame(self.lf_cw_offset)
+        self.f_cw_offset_3 = ttk.Frame(self.lf_cw_offset)
         self.f_cw_offset_3.pack(side=tk.TOP, fill=tk.X, expand=True)
-        self.f_cw_offset_4 = tk.Frame(self.lf_cw_offset)
+        self.f_cw_offset_4 = ttk.Frame(self.lf_cw_offset)
         self.f_cw_offset_4.pack(side=tk.TOP, fill=tk.X, expand=True)
 
         self.lbl_cw_xy_offset = ttk.Label(self.f_cw_offset_1, text="XY Offset :")
@@ -184,7 +185,7 @@ class SettingWindow:
         self.lf_snippet_geometry = tk.LabelFrame(self.f_cat_1_cap, text="• Snippet Geometry")
         self.lf_snippet_geometry.pack(side=tk.TOP, fill=tk.X, expand=True, padx=5, pady=5)
 
-        self.f_snippet_geometry = tk.Frame(self.lf_snippet_geometry)
+        self.f_snippet_geometry = ttk.Frame(self.lf_snippet_geometry)
         self.f_snippet_geometry.pack(side=tk.TOP, fill=tk.X, expand=True)
 
         self.cbtn_auto_snippet = ttk.Checkbutton(self.f_snippet_geometry, text="Auto Geometry", command=self.check_snippet_offset)
@@ -734,7 +735,7 @@ class SettingWindow:
         self.btnSave = ttk.Button(self.bottomFrame, text="🖪 Save Settings", command=self.saveSettings)
         self.btnSave.pack(side=tk.RIGHT, padx=4, pady=5)
 
-        self.btnReset = ttk.Button(self.bottomFrame, text="⟳ Cancel Changes", command=self.refresh_setting)
+        self.btnReset = ttk.Button(self.bottomFrame, text="⟳ Cancel Changes", command=self.init_setting)
         self.btnReset.pack(side=tk.RIGHT, padx=5, pady=5)
 
         self.btnRestoreDefault = ttk.Button(self.bottomFrame, text="⚠ Restore Default", command=self.restoreDefault)
@@ -744,15 +745,21 @@ class SettingWindow:
         # On Close
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
 
-        self.hideAllFrame()
-        self.lb_cat.select_set(0)
-        self.showFrame(self.f_cat_1_cap)
+        self.onInit()
 
     # ----------------------------------------------------------------
     # Functions
     # ----------------------------------------------------------------
+    def onInit(self):
+        self.hideAllFrame()
+        self.lb_cat.select_set(0)
+        self.showFrame(self.f_cat_1_cap)
+        self.deleteCapturedOnStart()
+        self.deleteLogOnStart()
+        self.init_setting()
+        self.onStart = False
+
     def show(self):
-        self.refresh_setting()  # refresh setting before showing
         self.root.wm_deiconify()
 
     def on_closing(self):
@@ -805,11 +812,17 @@ class SettingWindow:
         frame.pack(side=tk.LEFT, fill=tk.BOTH, padx=5, pady=5)
 
     def cbtnInvoker(self, settingVal: bool, widget: ttk.Checkbutton):
-        if settingVal:
-            widget.invoke()
+        if self.onStart:
+            if settingVal:
+                widget.invoke()
+            else:
+                widget.invoke()
+                widget.invoke()
         else:
-            widget.invoke()
-            widget.invoke()
+            if settingVal and not widget.instate(["selected"]):
+                widget.invoke()
+            elif not settingVal and widget.instate(["selected"]):
+                widget.invoke()
 
     def deleteLogOnStart(self):
         if not fJson.settingCache["keep_log"]:
@@ -859,7 +872,7 @@ class SettingWindow:
                 pass
 
             # Update the settings
-            self.refresh_setting()
+            self.init_setting()
 
             # Tell success
             logger.info("Restored Default Settings")
@@ -868,7 +881,7 @@ class SettingWindow:
             logger.error("Error resetting setting file to default: " + msg)
             Mbox("Error resetting setting file to default", "Reason: " + msg, 2, self.root)
 
-    def refresh_setting(self):
+    def init_setting(self):
         """
         Reset the settings to currently stored settings
         """
@@ -889,7 +902,6 @@ class SettingWindow:
 
         # snippet
         self.cbtnInvoker(fJson.settingCache["snippingWindowGeometry"] == "auto", self.cbtn_auto_snippet)
-        self.check_snippet_offset()
 
         # OCR
         self.entry_OCR_tesseract_path.delete(0, tk.END)
@@ -958,25 +970,32 @@ class SettingWindow:
         self.tb_delete()
         self.cb_mw_q_font.set(fJson.settingCache["tb_mw_q_font"])
         self.sb_mw_q_font_size.set(fJson.settingCache["tb_mw_q_font_size"])
+        self.cbtnInvoker(fJson.settingCache["tb_mw_q_font_bold"], self.cbtn_mw_q_font_bold)
         self.entry_mw_q_font_color.insert(0, fJson.settingCache["tb_mw_q_font_color"])
         self.entry_mw_q_bg_color.insert(0, fJson.settingCache["tb_mw_q_bg_color"])
 
         self.cb_mw_res_font.set(fJson.settingCache["tb_mw_res_font"])
         self.sb_mw_res_font_size.set(fJson.settingCache["tb_mw_res_font_size"])
+        self.cbtnInvoker(fJson.settingCache["tb_mw_res_font_bold"], self.cbtn_mw_res_font_bold)
         self.entry_mw_res_font_color.insert(0, fJson.settingCache["tb_mw_res_font_color"])
         self.entry_mw_res_bg_color.insert(0, fJson.settingCache["tb_mw_res_bg_color"])
 
         self.cb_ex_q_font.set(fJson.settingCache["tb_ex_q_font"])
         self.sb_ex_q_font_size.set(fJson.settingCache["tb_ex_q_font_size"])
+        self.cbtnInvoker(fJson.settingCache["tb_ex_q_font_bold"], self.cbtn_ex_q_font_bold)
         self.entry_ex_q_font_color.insert(0, fJson.settingCache["tb_ex_q_font_color"])
         self.entry_ex_q_bg_color.insert(0, fJson.settingCache["tb_ex_q_bg_color"])
 
         self.cb_ex_res_font.set(fJson.settingCache["tb_ex_res_font"])
         self.sb_ex_res_font_size.set(fJson.settingCache["tb_ex_res_font_size"])
+        self.cbtnInvoker(fJson.settingCache["tb_ex_res_font_bold"], self.cbtn_ex_res_font_bold)
         self.entry_ex_res_font_color.insert(0, fJson.settingCache["tb_ex_res_font_color"])
         self.entry_ex_res_bg_color.insert(0, fJson.settingCache["tb_ex_res_bg_color"])
 
     def preview_changes_tb(self):
+        if self.onStart:
+            return
+
         self.tb_preview_1.config(
             font=(self.cb_mw_q_font.get(), int(self.sb_mw_q_font_size.get()), "bold" if self.cbtn_mw_q_font_bold.instate(["selected"]) else "normal"),
             fg=self.entry_mw_q_font_color.get(),
@@ -1096,12 +1115,17 @@ class SettingWindow:
         except AttributeError:
             # No hotkeys to unbind
             pass
+
         # Bind hotkey
         if self.lbl_cw_hk.cget("text") != "":
             keyboard.add_hotkey(self.lbl_cw_hk["text"], gClass.hk_cap_window_callback)
 
         if self.lbl_snipping_hk.cget("text") != "":
             keyboard.add_hotkey(self.lbl_snipping_hk["text"], gClass.hk_snip_mode_callback)
+
+        # update log level
+        if fJson.settingCache["log_level"] != self.cb_log_level.get():
+            logger.setLevel(self.cb_log_level.get())
 
         logger.info("-" * 50)
         logger.info("Saving setting")
@@ -1135,13 +1159,13 @@ class SettingWindow:
 
     def updateExternal(self):
         assert gClass.mw is not None
-        gClass.mw.tb_q.config(
+        gClass.mw.tb_query.config(
             font=(self.cb_mw_q_font.get(), int(self.sb_mw_q_font_size.get()), "bold" if self.cbtn_mw_q_font_bold.instate(["selected"]) else "normal"),
             fg=self.entry_mw_q_font_color.get(),
             bg=self.entry_mw_q_bg_color.get(),
         )
 
-        gClass.mw.tb_res.config(
+        gClass.mw.tb_result.config(
             font=(self.cb_mw_res_font.get(), int(self.sb_mw_res_font_size.get()), "bold" if self.cbtn_mw_res_font_bold.instate(["selected"]) else "normal"),
             fg=self.entry_mw_res_font_color.get(),
             bg=self.entry_mw_res_bg_color.get(),
@@ -1261,10 +1285,10 @@ class SettingWindow:
 
             # unselect if selected
             if self.cbtn_cw_auto_offset_x.instate(["selected"]):
-                self.cbtn_cw_auto_offset_x.invoke()
+                self.cbtnInvoker(False, self.cbtn_cw_auto_offset_x)
 
             if self.cbtn_cw_auto_offset_y.instate(["selected"]):
-                self.cbtn_cw_auto_offset_y.invoke()
+                self.cbtnInvoker(False, self.cbtn_cw_auto_offset_y)
 
             # set sb value 0
             self.sb_cw_offset_x.set(0)
@@ -1277,7 +1301,7 @@ class SettingWindow:
             if fJson.settingCache["offSetX"] == "auto":
                 # select if not selected
                 if not self.cbtn_cw_auto_offset_x.instate(["selected"]):
-                    self.cbtn_cw_auto_offset_x.invoke()
+                    self.cbtnInvoker(True, self.cbtn_cw_auto_offset_x)
                     self.sb_cw_offset_x.config(state=tk.DISABLED)
             else:
                 self.sb_cw_offset_x.config(state=tk.NORMAL)
@@ -1285,7 +1309,7 @@ class SettingWindow:
             if fJson.settingCache["offSetY"] == "auto":
                 # select if not selected
                 if not self.cbtn_cw_auto_offset_y.instate(["selected"]):
-                    self.cbtn_cw_auto_offset_y.invoke()
+                    self.cbtnInvoker(True, self.cbtn_cw_auto_offset_y)
                     self.sb_cw_offset_y.config(state=tk.DISABLED)
             else:
                 self.sb_cw_offset_y.config(state=tk.NORMAL)

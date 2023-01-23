@@ -13,12 +13,12 @@ class HistoryWindow:
 
     # ----------------------------------------------------------------
     def __init__(self, master: tk.Tk):
-        gClass.hw = self  # type: ignore
         self.root = tk.Toplevel(master)
         self.root.title("History")
         self.root.geometry("700x300")
         self.root.wm_attributes("-topmost", False)  # Default False
         self.root.wm_withdraw()
+        gClass.hw = self  # type: ignore
 
         # Layout
         # frameOne
@@ -131,7 +131,7 @@ class HistoryWindow:
         """
         Refresh the history
         """
-        status, data = fJson.readHistory()
+        status, data = fJson.readHistory(True)
         # Error already handled in jsonHandling
         if status == True:
             listData = []

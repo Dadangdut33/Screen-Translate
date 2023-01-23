@@ -1,4 +1,6 @@
+import ast
 import os
+import shlex
 
 from .utils.Json import JsonHandler
 
@@ -9,6 +11,7 @@ dir_json: str = os.path.join(dir_project, "../json")
 dir_log: str = os.path.join(dir_project, "../log")
 dir_captured: str = os.path.join(dir_project, "../captured")
 dir_assets: str = os.path.join(dir_project, "../assets")
+dir_user_manual: str = os.path.join(dir_project, "../user_manual")
 # ---------------------------- #
 # Target Paths
 path_json_settings: str = os.path.join(dir_json, "settings.json")
@@ -32,8 +35,9 @@ class Globals:
         self.running: bool = True
         self.capturing: bool = True
         self.translating: bool = True
-        self.hotkeyCapTlPressed: bool = False
-        self.hotkeySnipCapTlPressed: bool = False
+        self.hk_cw_pressed: bool = False
+        self.hk_snip_pressed: bool = False
+        self.cw_hidden: bool = False
 
         # classes
         self.tray = None  # tray
@@ -49,51 +53,62 @@ class Globals:
         self.ex_resw = None  # external result window
 
     def lb_start(self):
-        pass
+        assert self.mw is not None
+        self.mw.lb_status.config(cursor="watch", mode="indeterminate")
+        self.mw.lb_status.start()
 
     def lb_stop(self):
-        pass
-
-    def get_query(self):
-        pass
+        assert self.mw is not None
+        self.mw.lb_status.config(cursor="arrow", mode="determinate")
+        self.mw.lb_status.stop()
 
     def insert_mw_q(self, text: str):
-        pass
+        assert self.mw is not None
+        self.mw.tb_query.insert(1.0, text)
 
     def insert_mw_res(self, text: str):
-        pass
+        assert self.mw is not None
+        self.mw.tb_result.insert(1.0, text)
 
     def clear_mw_q(self):
-        pass
+        assert self.mw is not None
+        self.mw.tb_query.delete(1.0, "end")
 
     def clear_mw_res(self):
-        pass
+        assert self.mw is not None
+        self.mw.tb_result.delete(1.0, "end")
 
     def insert_ex_q(self, text: str):
-        pass
+        assert self.ex_qw is not None
+        text = text.strip()
+        text += ast.literal_eval(shlex.quote(fJson.settingCache["replaceNewLineWith"]))  # set new text
+
+        self.ex_qw.labelText.config(text=text)
+        self.ex_qw.check_height_resize()
 
     def insert_ex_res(self, text: str):
-        pass
+        assert self.ex_resw is not None
+        text = text.strip()
+        text += ast.literal_eval(shlex.quote(fJson.settingCache["replaceNewLineWith"]))  # set new text
+
+        self.ex_resw.labelText.config(text=text)
+        self.ex_resw.check_height_resize()
 
     def clear_ex_q(self):
-        pass
+        assert self.ex_qw is not None
+        self.ex_qw.labelText.config(text="")
 
     def clear_ex_res(self):
-        pass
-
-    def update_ex_opac(self, opac: float):
-        pass
-
-    def update_mw_opac_slider(self, opac: float):
-        pass
+        assert self.ex_resw is not None
+        self.ex_resw.labelText.config(text="")
 
     def hk_cap_window_callback(self):
         """Callback for the hotkey to capture the screen"""
-        self.hotkeyCapTlPressed = True
+        self.hk_cw_pressed = True
 
     def hk_snip_mode_callback(self):
         """Callback for the hotkey to snip the screen"""
-        self.hotkeySnipCapTlPressed = True
+        self.hk_snip_pressed = True
 
 
 # --------------------- #

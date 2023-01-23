@@ -1,10 +1,12 @@
 import os
+import threading
+import time
 import tkinter as tk
 import tkinter.ttk as ttk
 
 from .MBox import Mbox
-from screen_translate.Globals import gClass, path_logo_icon
-from screen_translate.Logging import logger, current_log, dir_log
+from screen_translate.Globals import gClass, path_logo_icon, fJson
+from screen_translate.Logging import logger, current_log, dir_log, initLogging
 from screen_translate.utils.Helper import startFile, tb_copy_only
 
 # Classes
@@ -13,13 +15,15 @@ class LogWindow:
 
     # ----------------------------------------------------------------------
     def __init__(self, master: tk.Tk):
-        gClass.lw = self  # type: ignore
         self.root = tk.Toplevel(master)
         self.root.title("Log")
-        self.root.geometry("600x160")
+        self.root.geometry("1000x160")
         self.root.wm_withdraw()
-        self.root.attributes("-alpha", 1)
-        self.currentOpacity = 1.0
+        self.currentFontSize = 8
+        self.isOpen = False
+        self.stay_on_top = False
+        self.thread_refresh = None
+        gClass.lw = self  # type: ignore
 
         # Frames
         self.f_1 = ttk.Frame(self.root)
@@ -32,11 +36,12 @@ class LogWindow:
         self.sbY = ttk.Scrollbar(self.f_1, orient=tk.VERTICAL)
         self.sbY.pack(side=tk.RIGHT, fill=tk.Y)
 
-        self.tbLogger = tk.Text(self.f_1, height=5, width=100)
+        self.tbLogger = tk.Text(self.f_1, height=5, width=100, font=("Consolas", self.currentFontSize))
         self.tbLogger.bind("<Key>", lambda event: tb_copy_only(event))  # Disable textbox input
         self.tbLogger.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         self.tbLogger.config(yscrollcommand=self.sbY.set)
         self.sbY.config(command=self.tbLogger.yview)
+        self.tbLogger.bind("<Alt-MouseWheel>", lambda event: self.increase_font_size() if event.delta > 0 else self.lower_font_size())  # bind scrollwheel to change font size
 
         # Other stuff
         self.btn_clear = ttk.Button(self.f_bot, text="⚠ Clear", command=self.clearLog)
@@ -48,8 +53,21 @@ class LogWindow:
         self.btn_open_default_log = ttk.Button(self.f_bot, text="🗁 Open Log Folder", command=lambda: startFile(dir_log))
         self.btn_open_default_log.pack(side=tk.LEFT, padx=5, pady=5)
 
+        self.cbtn_auto_scroll = ttk.Checkbutton(self.f_bot, text="Auto Scroll", command=lambda: fJson.savePartialSetting("auto_scroll_log", self.cbtn_auto_scroll.instate(["selected"])))
+        self.cbtn_auto_scroll.pack(side=tk.LEFT, padx=5, pady=5)
+
+        self.cbtn_auto_refresh = ttk.Checkbutton(self.f_bot, text="Auto Refresh", command=lambda: fJson.savePartialSetting("auto_refresh_log", self.cbtn_auto_refresh.instate(["selected"])))
+        self.cbtn_auto_refresh.pack(side=tk.LEFT, padx=5, pady=5)
+
+        self.cbtn_stay_on_top = ttk.Checkbutton(self.f_bot, text="Stay on Top", command=self.toggle_stay_on_top)
+        self.cbtn_stay_on_top.pack(side=tk.LEFT, padx=5, pady=5)
+
+        self.btn_close = ttk.Button(self.f_bot, text="Ok", command=self.on_closing)
+        self.btn_close.pack(side=tk.RIGHT, padx=5, pady=5)
+
         # On Close
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
+        self.onInit()
 
         # ------------------ Set Icon ------------------
         try:
@@ -57,26 +75,80 @@ class LogWindow:
         except:
             pass
 
+    def onInit(self):
+        if fJson.settingCache["auto_scroll_log"]:
+            self.cbtn_auto_scroll.invoke()
+        else:
+            self.cbtn_auto_scroll.invoke()
+            self.cbtn_auto_scroll.invoke()
+
+        if fJson.settingCache["auto_refresh_log"]:
+            self.cbtn_auto_refresh.invoke()
+        else:
+            self.cbtn_auto_refresh.invoke()
+            self.cbtn_auto_refresh.invoke()
+
     # Show/Hide
     def show(self):
         self.root.wm_deiconify()
         self.updateLog()
+        self.isOpen = True
+        self.start_refresh_thread()
 
     def on_closing(self):
+        self.isOpen = False
         self.root.wm_withdraw()
 
+    def toggle_stay_on_top(self):
+        self.stay_on_top = not self.stay_on_top
+        self.root.wm_attributes("-topmost", self.stay_on_top)
+
+    def start_refresh_thread(self):
+        self.thread_refresh = threading.Thread(target=self.update_periodically, daemon=True)
+        self.thread_refresh.start()
+
+    def update_periodically(self):
+        while self.isOpen and fJson.settingCache["auto_refresh_log"]:
+            self.updateLog()
+
+            time.sleep(1)
+
     def updateLog(self):
-        self.tbLogger.delete(1.0, tk.END)
+        prev_content = self.tbLogger.get(1.0, tk.END).strip()
         try:
-            content = open(current_log).read()
+            content = open(os.path.join(dir_log, current_log)).read().strip()
         except FileNotFoundError:
-            logger.exception("Log file not found")
-            content = "Log file not found"
-        self.tbLogger.insert(tk.END, content)
+            logger.exception(f"Log file not found | {os.path.join(dir_log, current_log)}")
+            content = f"Log file not found | {os.path.join(dir_log, current_log)}"
+
+        if len(prev_content) != len(content):
+            if fJson.settingCache["auto_scroll_log"]:
+                self.tbLogger.delete(1.0, tk.END)
+                self.tbLogger.insert(tk.END, content)
+                self.tbLogger.see("end")  # scroll to the bottom
+            else:
+                pos = self.sbY.get()
+                self.tbLogger.delete(1.0, tk.END)
+                self.tbLogger.insert(tk.END, content)
+                self.tbLogger.yview_moveto(pos[0])
 
     def clearLog(self):
         # Ask for confirmation first
         if Mbox("Confirmation", "Are you sure you want to clear the log?", 3, self.root):
-            os.remove(current_log)
+            initLogging()
             logger.info("Log cleared")
             self.updateLog()
+
+    def lower_font_size(self):
+        logger.info("Lowering font size")
+        self.currentFontSize -= 1
+        if self.currentFontSize < 3:
+            self.currentFontSize = 3
+        self.tbLogger.config(font=("Consolas", self.currentFontSize))
+
+    def increase_font_size(self):
+        logger.info("Increasing font size")
+        self.currentFontSize += 1
+        if self.currentFontSize > 20:
+            self.currentFontSize = 20
+        self.tbLogger.config(font=("Consolas", self.currentFontSize))

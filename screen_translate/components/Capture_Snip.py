@@ -1,10 +1,10 @@
 import threading
 import tkinter as tk
-import tkinter.ttk as ttk
 
-from screen_translate.Globals import gClass, fJson, path_logo_icon
+from screen_translate.Globals import gClass, path_logo_icon, fJson
 from screen_translate.Logging import logger
 from screen_translate.components.MBox import Mbox
+from screen_translate.utils.Translate import translate
 from screen_translate.utils.Capture import ocrFromCoords
 from screen_translate.utils.Monitor import getScreenTotalGeometry
 
@@ -15,13 +15,13 @@ class SnipWindow:
     """Snip Window"""
 
     def __init__(self, master: tk.Tk):
-        gClass.csw = self  # type: ignore
         self.root = tk.Toplevel(master)
         self.root.title("Snipper")
         self.root.geometry("500x500")  # placeholder
         self.root.overrideredirect(True)  # borderless
         self.root.wm_attributes("-topmost", True)  # topmost
         self.root.wm_withdraw()
+        gClass.csw = self  # type: ignore
 
         # mask
         self.tl_snipmask = tk.Toplevel(self.root)
@@ -109,19 +109,24 @@ class SnipWindow:
 
     def takeBoundedScreenShot(self, x1, y1, x2, y2):
         coords = [x1, y1, x2, y2]
-        gClass.lb_start()
 
-        thread = threading.Thread(target=self.startOCR, args=(coords,), daemon=True)
-        thread.start()
-
-        gClass.lb_stop()
+        ocrThread = threading.Thread(target=self.startOCR, args=(coords,), daemon=True)
+        ocrThread.start()
 
     def startOCR(self, coords):
+        gClass.lb_start()
         success, res = ocrFromCoords(coords)
 
         if success:
-            gClass.insert_mw_res(res)
-            gClass.insert_ex_res(res)
+            gClass.clear_mw_q()
+            gClass.clear_ex_q()
+            gClass.insert_mw_q(res)
+            gClass.insert_ex_q(res)
+            # translate if translate
+            if fJson.settingCache["engine"] != "None":
+                # check params
+                tlThread = threading.Thread(target=translate, args=(res, fJson.settingCache["from_lang"], fJson.settingCache["to_lang"], fJson.settingCache["engine"]))
+                tlThread.start()
         else:
             if "is not installed or it's not in your PATH" in res:
                 Mbox("Error: Tesseract Could not be Found", "Invalid path location for tesseract.exe, please change it in the setting!", 2)
@@ -133,6 +138,8 @@ class SnipWindow:
                 )
             else:
                 Mbox("Error", res, 2)
+
+        gClass.lb_stop()
 
     def exitScreenshotMode(self, event=None):
         """
