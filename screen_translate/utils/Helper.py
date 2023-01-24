@@ -1,7 +1,7 @@
 import os
 import subprocess
 import webbrowser
-from notifypy import Notify, exceptions
+from notifypy import Notify
 from typing import Tuple
 
 from screen_translate.Logging import logger
@@ -50,10 +50,8 @@ def nativeNotify(title: str, message: str, logo: str, app_name: str):
     notification.application_name = app_name
     notification.title = title
     notification.message = message
-    try:
+    if os.path.exists(logo):
         notification.icon = logo
-    except exceptions:
-        pass
 
     notification.send()
 

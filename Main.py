@@ -2,12 +2,18 @@ import os
 import sys
 import threading
 import time
-from typing import Literal
 import keyboard
 import tkinter as tk
 import tkinter.ttk as ttk
 import requests
 
+from typing import Literal
+from PIL import Image, ImageDraw
+from pystray import Icon as icon
+from pystray import Menu as menu
+from pystray import MenuItem as item
+
+from screen_translate._version import __version__
 from screen_translate.Globals import gClass, path_logo_icon, dir_captured, fJson, app_name, dir_user_manual
 from screen_translate.Logging import logger
 from screen_translate.utils.Helper import nativeNotify, startFile, OpenUrl
@@ -35,6 +41,74 @@ def console():
     logger.info("Use The GUI Window to start capturing and translating")
     logger.info("You can minimize this window")
     logger.info("This window is for debugging purposes")
+
+
+# ----------------------------------------------------------------------
+class AppTray:
+    """
+    Tray app
+    """
+
+    def __init__(self):
+        self.icon: icon = None  # type: ignore
+        self.menu: menu = None  # type: ignore
+        self.menu_items = None  # type: ignore
+        gClass.tray = self  # type: ignore
+        self.create_tray()
+
+    # -- Tray icon
+    def create_image(self, width, height, color1, color2):
+        # Generate an image and draw a pattern
+        image = Image.new("RGB", (width, height), color1)
+        dc = ImageDraw.Draw(image)
+        dc.rectangle((width // 2, 0, width, height // 2), fill=color2)
+        dc.rectangle((0, height // 2, width // 2, height), fill=color2)
+
+        return image
+
+    # -- Create tray
+    def create_tray(self):
+        try:
+            trayIco = Image.open(path_logo_icon)
+        except Exception:
+            trayIco = self.create_image(64, 64, "black", "white")
+
+        self.menu_items = (
+            item("Snip and Translate", self.snip_win),
+            menu.SEPARATOR,
+            item("Show Main Window", self.open_app),
+            item("Show Query Window", self.open_query),
+            item("Show Result Window", self.open_result),
+            menu.SEPARATOR,
+            item("Exit", self.exit_app),
+        )
+        self.menu = menu(*self.menu_items)
+        self.icon = icon("Screen Translate", trayIco, f"Screen Translate V{__version__}", self.menu)
+        self.icon.run_detached()
+
+    # -- Open app
+    def open_app(self):
+        assert gClass.mw is not None  # Show main window
+        logger.info("Opening main window from tray")
+        gClass.mw.show()
+
+    def open_query(self):
+        assert gClass.ex_qw is not None
+        logger.info("Opening query window from tray")
+        gClass.ex_qw.show()
+
+    def open_result(self):
+        assert gClass.ex_resw is not None
+        logger.info("Opening result window from tray")
+        gClass.ex_resw.show()
+
+    # -- Exit app by flagging runing false to stop main loop
+    def exit_app(self):
+        gClass.running = False
+
+    def snip_win(self):
+        assert gClass.mw is not None
+        gClass.mw.start_snip_window()
 
 
 # ----------------------------------------------------------------------
@@ -234,6 +308,8 @@ class MainWindow:
         self.root.bind("<F7>", self.open_Result_Box)
 
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
+        # ------------------ on Start ------------------
+        self.root.after(1000, self.isRunningPoll)
         self.onInit()
 
         # --- Logo ---
@@ -244,6 +320,12 @@ class MainWindow:
         except Exception as e:
             logger.warning("Error loading icon")
             logger.exception(e)
+
+    def isRunningPoll(self):
+        if not gClass.running:
+            self.quit_app()
+
+        self.root.after(1000, self.isRunningPoll)
 
     # --- Functions ---
     def onInit(self):
@@ -269,6 +351,10 @@ class MainWindow:
     def quit_app(self):
         gClass.running = False
 
+        logger.info("Stopping tray...")
+        if gClass.tray:
+            gClass.tray.icon.stop()
+
         logger.info("Destroying windows...")
         gClass.sw.root.destroy()  # type: ignore  # setting window
         gClass.hw.root.destroy()  # type: ignore history window
@@ -290,6 +376,10 @@ class MainWindow:
             logger.error("Exit failed, killing process")
             os._exit(0)
 
+    # Show window
+    def show(self):
+        self.root.after(0, self.root.deiconify)
+
     # On Close
     def on_closing(self):
         """
@@ -297,7 +387,7 @@ class MainWindow:
         """
         # Only show notification once
         if not self.notified_hidden:
-            nativeNotify("Hidden to tray", "The app is still running in the background.", app_name, path_logo_icon)
+            nativeNotify("Hidden to tray", "The app is still running in the background.", path_logo_icon, app_name)
             self.notified_hidden = True
 
         self.root.withdraw()
@@ -513,7 +603,7 @@ class MainWindow:
     def get_params(self):
         return self.cb_tl_engine.get(), self.cb_from.get(), self.cb_to.get(), self.tb_query.get(1.0, tk.END)
 
-    def param_check(self, engine: Literal["Google Translate", "Deepl", "MyMemoryTranslator", "PONS", "LibreTranslate", "None"], from_lang: str, to_lang: str, query: str):
+    def param_check(self, engine: Literal["Google Translate", "Deepl", "MyMemoryTranslator", "PONS", "LibreTranslate", "None"], from_lang: str, to_lang: str, query: str, withOCR: bool = True):
         logger.info("Checking params...")
         logger.debug(f"engine: {engine} | source: {from_lang} | to: {to_lang}")
         # If source and destination are the same
@@ -523,7 +613,7 @@ class MainWindow:
             Mbox("Error: Language target is the same as source", "Language target is the same as source! Please choose a different language", 2, self.root)
             return False
 
-        if engine != "None" and from_lang == "Auto-Detect":
+        if engine != "None" and from_lang == "Auto-Detect" and withOCR:
             gClass.lb_stop()
             logger.warn("Error: Invalid Language source! Must specify source langauge when using OCR")
             Mbox("Error: Invalid Source Language Selected", "Must specify source langauge when using OCR", 2, self.root)
@@ -549,7 +639,7 @@ class MainWindow:
     def start_tl(self):
         engine, from_lang, to_lang, query = self.get_params()
 
-        if not self.param_check(engine, from_lang, to_lang, query):  # type: ignore
+        if not self.param_check(engine, from_lang, to_lang, query, False):  # type: ignore
             return
 
         if engine == "None":
@@ -598,6 +688,7 @@ class MainWindow:
 if __name__ == "__main__":
     console()
 
+    tray = AppTray()  # Start tray app in the background
     mw = MainWindow()
     cw = CaptureWindow(mw.root)
     csw = SnipWindow(mw.root)

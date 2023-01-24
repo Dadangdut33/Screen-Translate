@@ -1238,8 +1238,12 @@ class SettingWindow:
         """
         Set the hotkey for capturing and translating
         """
-        hotkey = keyboard.read_hotkey(suppress=False)
-        self.lbl_cw_hk.config(text=str(hotkey))
+        try:
+            hotkey = keyboard.read_hotkey(suppress=False)
+            if hotkey:
+                self.lbl_cw_hk.config(text=str(hotkey))
+        except Exception as e:
+            logger.exception(e)
 
     def clearHKCapTl(self):
         """
@@ -1251,8 +1255,12 @@ class SettingWindow:
         """
         Set the hotkey for snipping and translate
         """
-        hotkey = keyboard.read_hotkey(suppress=False)
-        self.lbl_snipping_hk.config(text=str(hotkey))
+        try:
+            hotkey = keyboard.read_hotkey(suppress=False)
+            if hotkey:
+                self.lbl_snipping_hk.config(text=str(hotkey))
+        except Exception as e:
+            logger.exception(e)
 
     def clearHKSnipCapTl(self):
         """

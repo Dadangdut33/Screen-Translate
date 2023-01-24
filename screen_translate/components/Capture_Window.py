@@ -115,7 +115,7 @@ class CaptureWindow:
         except:
             pass
 
-    def initVar(self):
+    def onInit(self):
         self.cv2Contour.set(fJson.settingCache["enhance_with_cv2_Contour"])
         self.grayscale.set(fJson.settingCache["enhance_with_grayscale"])
         self.bgType.set(fJson.settingCache["enhance_background"])
@@ -124,8 +124,8 @@ class CaptureWindow:
     # Show/Hide
     def show(self):
         gClass.cw_hidden = False
-        self.initVar()
-        self.root.wm_deiconify()
+        self.onInit()
+        self.root.after(100, self.root.deiconify)
         self.root.attributes("-alpha", 0.8)
         if platform.system() == "Windows":
             self.clickThrough.set(0)

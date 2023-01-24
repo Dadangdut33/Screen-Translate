@@ -103,7 +103,7 @@ class AbstractDetachedWindow:
         """
         Method to show the window.
         """
-        self.root.wm_deiconify()
+        self.root.after(100, self.root.deiconify)
         self.root.attributes("-alpha", 1)
         if platform.system() == "Windows":
             self.clickThrough.set(0)

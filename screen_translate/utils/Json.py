@@ -18,6 +18,7 @@ default_setting = {
     "auto_copy": True,
     "save_history": True,
     "supress_no_text_alert": True,
+    "run_on_startup": False,
     # ------------------ #
     # logging
     "keep_log": False,
@@ -46,7 +47,7 @@ default_setting = {
     "replaceNewLineWith": " ",
     "captureLastValDelete": 0,
     # window hide on capture
-    "hide_this_windows_on_cap": ["ex_qw", "ex_resw"],  # options: mw ex_qw ex_res
+    "hide_this_windows_on_cap": ["ex_qw", "ex_resw"],  # options: mw ex_qw ex_res # TODO: IMPLEMENT THIS
     # capture enhancement
     "enhance_background": "Auto-Detect",
     "enhance_with_cv2_Contour": True,
@@ -65,7 +66,7 @@ default_setting = {
     # hotkey
     "hk_cap_window": "",
     "hk_cap_window_delay": 1000,
-    "hk_snip_cap": "",
+    "hk_snip_cap": "ctrl+alt+t",
     "hk_snip_cap_delay": 0,
     # ------------------ #
     # detached window
