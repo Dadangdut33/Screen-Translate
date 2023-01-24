@@ -116,7 +116,7 @@ class LogWindow:
     def updateLog(self):
         prev_content = self.tbLogger.get(1.0, tk.END).strip()
         try:
-            content = open(os.path.join(dir_log, current_log)).read().strip()
+            content = open(os.path.join(dir_log, current_log), mode="utf-8").read().strip()
         except FileNotFoundError:
             logger.error(f"Log file not found | {os.path.join(dir_log, current_log)}")
             content = f"Log file not found | {os.path.join(dir_log, current_log)}"

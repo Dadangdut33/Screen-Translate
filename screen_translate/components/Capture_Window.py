@@ -282,6 +282,21 @@ class CaptureWindow:
         opacBefore = self.currentOpacity
         self.root.attributes("-alpha", 0)
 
+        # ----------------- hide other window -----------------
+        if fJson.settingCache["hide_mw_on_cap"]:
+            assert gClass.mw is not None
+            gClass.mw.root.attributes("-alpha", 0)
+
+        assert gClass.ex_qw is not None
+        prev_ex_qw_opac = gClass.ex_qw.currentOpacity
+        if fJson.settingCache["hide_ex_qw_on_cap"]:
+            gClass.ex_qw.root.attributes("-alpha", 0)
+
+        assert gClass.ex_resw is not None
+        prev_ex_resw_opac = gClass.ex_resw.currentOpacity
+        if fJson.settingCache["hide_ex_resw_on_cap"]:
+            gClass.ex_resw.root.attributes("-alpha", 0)
+
         # Get xywh of the screen
         x, y, w, h = self.root.winfo_x(), self.root.winfo_y(), self.root.winfo_width(), self.root.winfo_height()
 
@@ -318,4 +333,17 @@ class CaptureWindow:
                 Mbox("Error", res, 2)
 
         gClass.lb_stop()
+
+        if fJson.settingCache["hide_mw_on_cap"]:
+            assert gClass.mw is not None
+            gClass.mw.root.attributes("-alpha", 1)
+
+        if fJson.settingCache["hide_ex_qw_on_cap"]:
+            assert gClass.ex_qw is not None
+            gClass.ex_qw.root.attributes("-alpha", prev_ex_qw_opac)
+
+        if fJson.settingCache["hide_ex_resw_on_cap"]:
+            assert gClass.ex_resw is not None
+            gClass.ex_resw.root.attributes("-alpha", prev_ex_resw_opac)
+
         self.root.attributes("-alpha", opacBefore)

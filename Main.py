@@ -668,7 +668,7 @@ class MainWindow:
             return
 
         assert gClass.cw is not None
-        gClass.cw.start_capping()
+        gClass.cw.start_capping()  # window hiding handled in the cw window
 
     def start_snip_window(self):
         engine, from_lang, to_lang, query = self.get_params()
@@ -676,7 +676,38 @@ class MainWindow:
         if not self.param_check(engine, from_lang, to_lang, query):  # type: ignore
             return
 
+        # ----------------- hide other window -----------------
+        if fJson.settingCache["hide_mw_on_cap"]:
+            assert gClass.mw is not None
+            gClass.mw.root.attributes("-alpha", 0)
+
+        assert gClass.ex_qw is not None
+        prev_ex_qw_opac = gClass.ex_qw.currentOpacity
+        if fJson.settingCache["hide_ex_qw_on_cap"]:
+            gClass.ex_qw.root.attributes("-alpha", 0)
+
+        assert gClass.ex_resw is not None
+        prev_ex_resw_opac = gClass.ex_resw.currentOpacity
+        if fJson.settingCache["hide_ex_resw_on_cap"]:
+            gClass.ex_resw.root.attributes("-alpha", 0)
+
+        # ----------------- start snipping -----------------
         success, imgObj = captureFullScreen()
+
+        # ----------------- show other window -----------------
+        if fJson.settingCache["hide_mw_on_cap"]:
+            assert gClass.mw is not None
+            gClass.mw.root.attributes("-alpha", 1)
+
+        if fJson.settingCache["hide_ex_qw_on_cap"]:
+            assert gClass.ex_qw is not None
+            gClass.ex_qw.root.attributes("-alpha", prev_ex_qw_opac)
+
+        if fJson.settingCache["hide_ex_resw_on_cap"]:
+            assert gClass.ex_resw is not None
+            gClass.ex_resw.root.attributes("-alpha", prev_ex_resw_opac)
+
+        # check if snipping is successful
         if not success:
             Mbox("Error", f"Failed to start snipping mode.\nReason: {imgObj}", 0, self.root)
             return
