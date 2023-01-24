@@ -26,7 +26,7 @@ default_setting = {
     "auto_refresh_log": True,
     # ------------------ #
     # capture window offsets
-    "offSetXYType": "No Offset",
+    "offSetXYType": "Custom Offset",
     "offSetX": "auto",
     "offSetY": "auto",
     "offSetW": "auto",

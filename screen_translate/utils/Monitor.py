@@ -1,4 +1,4 @@
-from typing import Literal, Optional
+from typing import Literal
 from screeninfo import get_monitors
 
 from screen_translate.Logging import logger
@@ -17,7 +17,6 @@ class MonitorInfo:
 
     def getWidthAndHeight(self):
         # Better solution for this case on getting the width and height
-        # get_monitors() are not accurate sometimes
         img = ImageGrab.grab()
         totalX = img.size[0]
         totalY = img.size[1]
@@ -41,7 +40,6 @@ def getScreenInfo(supress_log=True):
         if m.is_primary:
             primaryIn = index
 
-        # print(m)
         index += 1
 
     if mInfo.mInfoCache["mData"] != mData:
@@ -61,7 +59,7 @@ def getScreenInfo(supress_log=True):
 
 def get_offset(offSetType: Literal["x", "y", "w", "h"]) -> int:
     """
-    Calculate and get the offset settings for the monitor.
+    Calculate and get the offset settings for the capture window.
     """
     if offSetType == "w":
         w = 60 if fJson.settingCache["offSetW"] == "auto" else fJson.settingCache["offSetW"]
@@ -75,36 +73,38 @@ def get_offset(offSetType: Literal["x", "y", "w", "h"]) -> int:
         elif fJson.settingCache["offSetY"] != "auto" and offSetType == "y":  # if y and manual
             return fJson.settingCache["offSetY"]
 
-        # else check auto offset for x and y
-        mGet = get_monitors()
-        totalMonitor = len(mGet)
-
-        if totalMonitor == 1:
+        screenData = getScreenInfo()
+        primaryIn = screenData["primaryIn"]
+        if len(screenData["mData"]) == 1:
             return 0  # no offset if only 1 monitor on both x and y
 
-        totalX = 0
-        totalY = 0
-        index = 0
-        primaryIn = 0
-        mData = []
-        for m in mGet:
-            mData.append(m)
-            totalX += abs(m.x)
-            totalY += abs(m.y)
-            if m.is_primary:
-                primaryIn = index
-            index += 1
-
-        # auto x
         if offSetType == "x":
-            if totalX > totalY and primaryIn != 0:  # Horizontal and primary not in the first monitor
-                return abs(mData[primaryIn - 1].x)
+            if screenData["layoutType"] == "horizontal":
+                if primaryIn == 0:
+                    return 0
+                else:
+                    counter = 0
+                    offset_X = 0
+                    for monitor in screenData["mData"]:
+                        if counter < primaryIn:
+                            offset_X += abs(monitor.x)
+                        counter += 1
+                    return offset_X
             else:
                 return 0
-        # auto y
-        elif offSetType == "y":
-            if totalY > totalX and primaryIn != 0:  # Vertical
-                return abs(mData[primaryIn - 1].y)
+
+        if offSetType == "y":
+            if screenData["layoutType"] == "vertical":
+                if primaryIn == 0:
+                    return 0
+                else:
+                    counter = 0
+                    offset_Y = 0
+                    for monitor in screenData["mData"]:
+                        if counter < primaryIn:
+                            offset_Y += abs(monitor.y)
+                        counter += 1
+                    return offset_Y
             else:
                 return 0
 
