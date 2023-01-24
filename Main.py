@@ -471,12 +471,12 @@ class MainWindow:
         self.tb_result.delete(1.0, tk.END)
         self.tb_result.insert(tk.END, tmp)
 
-        # swap cb
+        # swap cb but check first
         tmp = self.cb_from.get()
-        if self.cb_from.get() in self.cb_from["values"]:
+        if self.cb_to.get() in self.cb_from["values"]:
             self.cb_from.set(self.cb_to.get())
 
-        if self.cb_to.get() in self.cb_to["values"]:
+        if tmp in self.cb_to["values"]:
             self.cb_to.set(tmp)
 
     # Clear TB
@@ -515,6 +515,7 @@ class MainWindow:
 
     def param_check(self, engine: Literal["Google Translate", "Deepl", "MyMemoryTranslator", "PONS", "LibreTranslate", "None"], from_lang: str, to_lang: str, query: str):
         logger.info("Checking params...")
+        logger.debug(f"engine: {engine} | source: {from_lang} | to: {to_lang}")
         # If source and destination are the same
         if engine != "None" and ((from_lang) == (to_lang)):
             gClass.lb_stop()

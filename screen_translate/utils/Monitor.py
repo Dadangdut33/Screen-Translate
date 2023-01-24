@@ -63,7 +63,6 @@ def get_offset(offSetType: Literal["x", "y", "w", "h"]) -> int:
     """
     Calculate and get the offset settings for the monitor.
     """
-    logger.info(f"Getting offset for {offSetType}")
     if offSetType == "w":
         w = 60 if fJson.settingCache["offSetW"] == "auto" else fJson.settingCache["offSetW"]
         return w
@@ -81,7 +80,6 @@ def get_offset(offSetType: Literal["x", "y", "w", "h"]) -> int:
         totalMonitor = len(mGet)
 
         if totalMonitor == 1:
-            logger.debug(f"Offset {offSetType}: 0")
             return 0  # no offset if only 1 monitor on both x and y
 
         totalX = 0
@@ -102,7 +100,6 @@ def get_offset(offSetType: Literal["x", "y", "w", "h"]) -> int:
             if totalX > totalY and primaryIn != 0:  # Horizontal and primary not in the first monitor
                 return abs(mData[primaryIn - 1].x)
             else:
-                logger.debug(f"Offset X: 0")
                 return 0
         # auto y
         elif offSetType == "y":
@@ -137,30 +134,27 @@ def getScreenTotalGeometry(supress_log=True):
     # Get offset for snipping
     offset_X, offset_Y = 0, 0
     primaryIn = screenData["primaryIn"]
+    # offset would only be needed if the primary monitor is located on either the right or bottom of the other monitor
+    # so.. going by this logic, we only needed to sum the x and y of the monitor that is located on the left or top of the primary monitor
+    # if the primary monitor is located on the first monitor (meaning should be on the most left or most top), then we don't need to add any offset
     if screenData["layoutType"] == "horizontal":
-        if primaryIn != 0:  # Make sure its not the first monitor
-            counter = 0
-            for monitor in screenData["mData"]:
-                if counter != primaryIn:
-                    offset_X += monitor.x
-
-            # Set to 0 because the first monitor is the primary monitor
-            if offset_X > 0:
-                offset_X = 0
-        else:
+        if primaryIn == 0:
             offset_X = 0
-    else:
-        if primaryIn != 0:  # Make sure its not the first monitor
+        else:  # Make sure its not the first monitor
             counter = 0
             for monitor in screenData["mData"]:
-                if counter != primaryIn:
-                    offset_Y += monitor.y
-
-            # Set to 0 because the first monitor is the primary monitor
-            if offset_Y > 0:
-                offset_Y = 0
-        else:
+                if counter < primaryIn:  # the module can detect the - + of the monitor so we just need to add it
+                    offset_X += monitor.x
+                counter += 1
+    else:
+        if primaryIn == 0:
             offset_Y = 0
+        else:  # Make sure its not the first monitor
+            counter = 0
+            for monitor in screenData["mData"]:
+                if counter < primaryIn:  # the module can detect the - + of the monitor so we just need to add it
+                    offset_Y += monitor.y
+                counter += 1
 
     # ------------------
     # Result
@@ -169,6 +163,5 @@ def getScreenTotalGeometry(supress_log=True):
 
     # Get the full screen size
     screenTotalGeometry = f"{totalX}x{totalY}+{str(offset_X)}+{str(offset_Y)}"
-    logger.debug(f"Total Window Geometry: {screenTotalGeometry}")
 
     return screenTotalGeometry, totalX, totalY, int(offset_X), int(offset_Y)

@@ -735,7 +735,7 @@ class SettingWindow:
         self.btnSave = ttk.Button(self.bottomFrame, text="🖪 Save Settings", command=self.saveSettings)
         self.btnSave.pack(side=tk.RIGHT, padx=4, pady=5)
 
-        self.btnReset = ttk.Button(self.bottomFrame, text="⟳ Cancel Changes", command=self.init_setting)
+        self.btnReset = ttk.Button(self.bottomFrame, text="⟳ Cancel Changes", command=self.reset_changes)
         self.btnReset.pack(side=tk.RIGHT, padx=5, pady=5)
 
         self.btnRestoreDefault = ttk.Button(self.bottomFrame, text="⚠ Restore Default", command=self.restoreDefault)
@@ -853,7 +853,7 @@ class SettingWindow:
                     logger.warning("Failed to delete image file: " + file)
                     logger.warning("Reason " + str(e))
 
-    def resest_changes(self):
+    def reset_changes(self):
         if not Mbox("Confirmation", "Are you sure you want to reset all changes?", 3, self.root):
             return
         logger.info("Reset all changes")
