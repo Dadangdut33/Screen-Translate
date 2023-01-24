@@ -27,7 +27,7 @@ def startFile(filename: str):
             logger.exception("Cannot open the file specified.")
             nativeNotify("Error", "Cannot find the file specified.", "", "Speech Translate")
         except Exception as e:
-            logger.exception("Error: " + str(e))
+            logger.exception(e)
             nativeNotify("Error", f"Uncaught error {str(e)}", "", "Speech Translate")
 
 

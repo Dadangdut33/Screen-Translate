@@ -1,9 +1,12 @@
 import os
+import ast
+import shlex
 from datetime import datetime
 from typing import List
 
 import numpy as np
 import pyautogui
+import pyperclip
 import pytesseract
 import cv2
 
@@ -29,7 +32,7 @@ def createPicDirIfGone():
         try:
             os.makedirs(dir_captured)
         except Exception as e:
-            logger.exception("Error: " + str(e))
+            logger.exception(e)
             Mbox("Error: ", str(e), 2)
 
 
@@ -64,6 +67,7 @@ def ocrFromCoords(coords: List[int]):
         debugmode = fJson.settingCache["enhance_debugmode"]
         background = fJson.settingCache["enhance_background"]
         replaceNewLine = fJson.settingCache["replaceNewLine"]
+        replacer = ast.literal_eval(shlex.quote(fJson.settingCache["replaceNewLineWith"]))  # set new text
         saveImg = fJson.settingCache["keep_image"]
         saveName = os.path.join(dir_captured, "ScreenTranslate_" + datetime.now().strftime("%Y-%m-%d_%H%M%S") + ".png")
 
@@ -151,10 +155,19 @@ def ocrFromCoords(coords: List[int]):
                 createPicDirIfGone()
                 captured.save(saveName)
 
-        result = result.strip().replace("\n", " ") if replaceNewLine else result.strip()
+        result = result.strip().replace("\n", replacer) if replaceNewLine else result.strip()
         success = True
+        logger.info("OCR success!")
+        logger.info(f"Result length {len(result)}")
+
+        if fJson.settingCache["auto_copy"]:
+            pyperclip.copy(result)
+            logger.info("Copied to clipboard!")
+
+        if not fJson.settingCache["supress_no_text_alert"] and len(result) == 0:
+            Mbox("No text detected", "No text detected in the image. Please try again.", 1)
     except Exception as e:
-        logger.exception("Error: " + str(e))
+        logger.exception(e)
         result = str(e)
     finally:
         return success, result
@@ -173,7 +186,7 @@ def captureFullScreen():
         success = True
         logger.info("Captured full screen!")
     except Exception as e:
-        logger.exception("Error: " + str(e))
+        logger.exception(e)
         success = False
         saveName = str(e)
     finally:
@@ -192,7 +205,7 @@ def seeFullWindow():
         startFile(saveName)
         logger.info("Captured full screen!")
     except Exception as e:
-        logger.exception("Error: " + str(e))
+        logger.exception(e)
         if "Invalid argument" in str(e):
             Mbox("Error image is still opened", "Please close the previous image first!", 2)
         else:

@@ -337,7 +337,7 @@ class SettingWindow:
 
         self.entry_OCR_replace_newline_with = ttk.Entry(self.f_OCR_3, width=5)
         self.entry_OCR_replace_newline_with.pack(side=tk.LEFT, padx=5, pady=5)
-        CreateToolTip(self.entry_OCR_replace_newline_with, "Character to replace new line.\n Default is ' ' (space).")
+        CreateToolTip(self.entry_OCR_replace_newline_with, "Character to replace new line.\n Default is ' ' (space). (You can use escape character like \n for new line)")
 
         # ----------------------------------------------------------------------
         # * CAT 3 - Translate
@@ -1055,9 +1055,7 @@ class SettingWindow:
             "offSetH": int(self.sb_cw_offset_h.get()) if self.cbtn_cw_auto_offset_h.instate(["selected"]) == False else "auto",
             # ------------------ #
             # snipping window geometry
-            "snippingWindowGeometry": "auto"
-            if self.cbtn_auto_snippet.instate(["selected"])
-            else f"{self.sb_snippet_total_w.get()}x{self.sb_snippet_total_h.get()}+{self.sb_snippet_offset_x.get()}+{self.sb_snippet_offset_y.get()}",
+            "snippingWindowGeometry": "auto" if self.cbtn_auto_snippet.instate(["selected"]) else f"{self.sb_snippet_total_w.get()}x{self.sb_snippet_total_h.get()}+{self.sb_snippet_offset_x.get()}+{self.sb_snippet_offset_y.get()}",  # type: ignore
             # ------------------ #
             # Capture
             "tesseract_loc": tesseractPathInput,
@@ -1133,7 +1131,6 @@ class SettingWindow:
         errorAmount = 0
 
         for key, val in setting_collections.items():
-            logger.info(f"{key}: {val}")
             check = fJson.savePartialSetting(key, val)
             if not check[0]:
                 errorAmount += 1
@@ -1349,7 +1346,7 @@ class SettingWindow:
             self.sb_snippet_offset_x.config(state=tk.DISABLED)
             self.sb_snippet_offset_y.config(state=tk.DISABLED)
 
-        res = getScreenTotalGeometry()
+        res = getScreenTotalGeometry(False)
         self.sb_snippet_total_w.set(res[1])
         self.sb_snippet_total_h.set(res[2])
         self.sb_snippet_offset_x.set(res[3])

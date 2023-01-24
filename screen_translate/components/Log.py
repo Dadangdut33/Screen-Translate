@@ -118,7 +118,7 @@ class LogWindow:
         try:
             content = open(os.path.join(dir_log, current_log)).read().strip()
         except FileNotFoundError:
-            logger.exception(f"Log file not found | {os.path.join(dir_log, current_log)}")
+            logger.error(f"Log file not found | {os.path.join(dir_log, current_log)}")
             content = f"Log file not found | {os.path.join(dir_log, current_log)}"
 
         if len(prev_content) != len(content):

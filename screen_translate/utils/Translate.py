@@ -19,13 +19,20 @@ def translate(query: str, from_lang: str, to_lang: str, engine: Literal["Google 
     """
     gClass.lb_start()
     logger.info(f"-" * 50)
-    logger.info(f"Translate: {query} from {from_lang} to {to_lang} using {engine}")
+    logger.info(f"Translate")
+    logger.info(f"Length: {len(query)} -> {len(query.strip())} (stripped) | from {from_lang} to {to_lang} using {engine}")
+    
+    query = query.strip()
+    if len(query) == 0:
+        logger.warn("No text to translate!")
+        gClass.lb_stop()
+        return
 
     # --------------------------------
     # Deepl
     if engine == "Deepl":
         loop = asyncio.get_event_loop()  # deepl run separately because it is async
-        loop.run_until_complete(deeplTl(query, to_lang, from_lang))
+        loop.run_until_complete(deeplTl(query, from_lang, to_lang))
         return
 
     # --------------------------------
@@ -34,15 +41,15 @@ def translate(query: str, from_lang: str, to_lang: str, engine: Literal["Google 
         oldMethod = False
         if "- Alt" in from_lang or "- Alt" in to_lang:
             oldMethod = True
-        success, result = google_tl(query, to_lang, from_lang, oldMethod=oldMethod)
+        success, result = google_tl(query, from_lang, to_lang, oldMethod=oldMethod)
     # --------------------------------
     # MyMemoryTranslator
     elif engine == "MyMemoryTranslator":
-        success, result = memory_tl(query, to_lang, from_lang)
+        success, result = memory_tl(query, from_lang, to_lang)
     # --------------------------------
     # PONS
     elif engine == "PONS":
-        success, result = pons_tl(query, to_lang, from_lang)
+        success, result = pons_tl(query, from_lang, to_lang)
     # --------------------------------
     # LibreTranslate
     elif engine == "LibreTranslate":
@@ -50,18 +57,19 @@ def translate(query: str, from_lang: str, to_lang: str, engine: Literal["Google 
             query, to_lang, from_lang, https=fJson.settingCache["libre_https"], host=fJson.settingCache["libre_host"], port=fJson.settingCache["libre_port"], apiKeys=fJson.settingCache["libre_api_key"]
         )
 
-    fill_tb_save_history(success, to_lang, from_lang, query, str(result), engine)
+    fill_tb_save_history(success, from_lang, to_lang, query, str(result), engine)
 
     gClass.lb_stop()
 
 
-async def deeplTl(query: str, to_lang: str, from_lang: str):
+async def deeplTl(query: str, from_lang: str, to_lang: str):
     """Translate using deepl"""
     isSuccess, translateResult = await deepl_tl(query, to_lang, from_lang)
-    fill_tb_save_history(isSuccess, to_lang, from_lang, query, str(translateResult), "Deepl")
+    fill_tb_save_history(isSuccess, from_lang, to_lang, query, str(translateResult), "Deepl")
+    gClass.lb_stop()
 
 
-def fill_tb_save_history(isSuccess: bool, to_lang: str, from_lang: str, query: str, result: str, engine: Literal["Google Translate", "Deepl", "MyMemoryTranslator", "PONS", "LibreTranslate"]):
+def fill_tb_save_history(isSuccess: bool, from_lang: str, to_lang: str, query: str, result: str, engine: Literal["Google Translate", "Deepl", "MyMemoryTranslator", "PONS", "LibreTranslate"]):
     """Save the text to history"""
     if isSuccess:
         # clear tb

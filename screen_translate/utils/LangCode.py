@@ -446,5 +446,5 @@ engine_select_source_dict = {
     "Deepl": deepl_tesseract_compatible_source,
     "PONS": pons_tesseract_compatible_source,
     "LibreTranslate": libre_tesseract_compatible_source,
-    "None": list(tesseract_lang.keys()),
+    "None": none_target, # no auto-detect
 }

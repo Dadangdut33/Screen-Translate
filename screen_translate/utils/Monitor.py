@@ -28,7 +28,7 @@ class MonitorInfo:
 mInfo: MonitorInfo = MonitorInfo()
 
 
-def getScreenInfo():
+def getScreenInfo(supress_log=True):
     """
     Get the primary screen size.
     """
@@ -53,7 +53,8 @@ def getScreenInfo():
     layoutType = "horizontal" if totalX > totalY else "vertical"
 
     mInfo.mInfoCache = {"totalX": totalX, "totalY": totalY, "primaryIn": primaryIn, "mData": mData, "layoutType": layoutType}
-    logger.info(f"Monitor Info: {mInfo.mInfoCache}")
+    if not supress_log:
+        logger.info(f"Monitor Info: {mInfo.mInfoCache}")
 
     return mInfo.mInfoCache
 
@@ -65,18 +66,14 @@ def get_offset(offSetType: Literal["x", "y", "w", "h"]) -> int:
     logger.info(f"Getting offset for {offSetType}")
     if offSetType == "w":
         w = 60 if fJson.settingCache["offSetW"] == "auto" else fJson.settingCache["offSetW"]
-        logger.debug(f"Offset W: {w}")
         return w
     elif offSetType == "h":
         h = 60 if fJson.settingCache["offSetH"] == "auto" else fJson.settingCache["offSetH"]
-        logger.debug(f"Offset H: {h}")
         return h
     else:
         if fJson.settingCache["offSetX"] != "auto" and offSetType == "x":  # if x and manual
-            logger.debug(f"Offset X: {fJson.settingCache['offSetX']}")
             return fJson.settingCache["offSetX"]
         elif fJson.settingCache["offSetY"] != "auto" and offSetType == "y":  # if y and manual
-            logger.debug(f"Offset Y: {fJson.settingCache['offSetY']}")
             return fJson.settingCache["offSetY"]
 
         # else check auto offset for x and y
@@ -103,7 +100,6 @@ def get_offset(offSetType: Literal["x", "y", "w", "h"]) -> int:
         # auto x
         if offSetType == "x":
             if totalX > totalY and primaryIn != 0:  # Horizontal and primary not in the first monitor
-                logger.debug(f"Offset X: {abs(mData[primaryIn - 1].x)}")
                 return abs(mData[primaryIn - 1].x)
             else:
                 logger.debug(f"Offset X: 0")
@@ -111,17 +107,15 @@ def get_offset(offSetType: Literal["x", "y", "w", "h"]) -> int:
         # auto y
         elif offSetType == "y":
             if totalY > totalX and primaryIn != 0:  # Vertical
-                logger.debug(f"Offset Y: {abs(mData[primaryIn - 1].y)}")
                 return abs(mData[primaryIn - 1].y)
             else:
-                logger.debug(f"Offset Y: 0")
                 return 0
 
 
-def getScreenTotalGeometry():
+def getScreenTotalGeometry(supress_log=True):
     snippingType = None
     # Get ScreenData
-    screenData = getScreenInfo()
+    screenData = getScreenInfo(supress_log)
 
     try:  # Try catch to avoid program crash.
         snippingType = fJson.settingCache["snippingWindowGeometry"]

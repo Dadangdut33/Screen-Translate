@@ -80,7 +80,7 @@ def google_tl(text: str, from_lang: str, to_lang: str, oldMethod: bool = False):
         to_LanguageCode_Google = google_lang[to_lang]
         from_LanguageCode_Google = google_lang[from_lang]
     except KeyError as e:
-        logger.exception("Error: " + str(e))
+        logger.exception(e)
         return is_Success, "Error Language Code Undefined"
 
     # --- Translate ---
@@ -102,7 +102,7 @@ def google_tl(text: str, from_lang: str, to_lang: str, oldMethod: bool = False):
 
         is_Success = True
     except Exception as e:
-        logger.exception(str(e))
+        logger.exception(e)
         result = str(e)
     finally:
         logger.info("-" * 50)
@@ -127,7 +127,7 @@ def pons_tl(text: str, from_lang: str, to_lang: str):
         to_LanguageCode_Pons = google_lang[to_lang]
         from_LanguageCode_Pons = google_lang[from_lang]
     except KeyError as e:
-        logger.exception("Error: " + str(e))
+        logger.exception(e)
         return is_Success, "Error Language Code Undefined"
     # --- Translate ---
     try:
@@ -143,7 +143,7 @@ def pons_tl(text: str, from_lang: str, to_lang: str):
         result = tlCons.PonsTranslator(source=from_LanguageCode_Pons, target=to_LanguageCode_Pons).translate(text.strip())
         is_Success = True
     except Exception as e:
-        logger.exception(str(e))
+        logger.exception(e)
         result = str(e)
     finally:
         logger.info("-" * 50)
@@ -168,7 +168,7 @@ def memory_tl(text: str, from_lang: str, to_lang: str):
         to_LanguageCode_Memory = myMemory_lang[to_lang]
         from_LanguageCode_Memory = myMemory_lang[from_lang]
     except KeyError as e:
-        logger.exception("Error: " + str(e))
+        logger.exception(e)
         return is_Success, "Error Language Code Undefined"
     # --- Translate ---
     try:
@@ -184,7 +184,7 @@ def memory_tl(text: str, from_lang: str, to_lang: str):
         result = tlCons.MyMemoryTranslator(source=from_LanguageCode_Memory, target=to_LanguageCode_Memory).translate(text.strip())
         is_Success = True
     except Exception as e:
-        logger.exception(str(e))
+        logger.exception(e)
         result = str(e)
     finally:
         logger.info("-" * 50)
@@ -214,7 +214,7 @@ def libre_tl(text: str, from_lang: str, to_lang: str, https: bool = False, host:
         to_LanguageCode_Libre = libre_lang[to_lang]
         from_LanguageCode_Libre = libre_lang[from_lang]
     except KeyError as e:
-        logger.exception("Error: " + str(e))
+        logger.exception(e)
         return is_Success, "Error Language Code Undefined"
     # --- Translate ---
     try:
@@ -234,7 +234,7 @@ def libre_tl(text: str, from_lang: str, to_lang: str, https: bool = False, host:
             is_Success = True
     except Exception as e:
         result = str(e)
-        logger.exception(str(e))
+        logger.exception(e)
         if "NewConnectionError" in str(e):
             result = "Error: Could not connect. Please make sure that the server is running and the port is correct. If you are not hosting it yourself, please try again with an internet connection."
         if "request expecting value" in str(e):
@@ -246,13 +246,13 @@ def libre_tl(text: str, from_lang: str, to_lang: str, https: bool = False, host:
         return is_Success, result
 
 
-async def deepl_tl(text, to_lang, from_lang="auto"):
+async def deepl_tl(text, from_lang, to_lang):
     """Translate Using Deepl
 
     Args:
-        text ([str]): Text to translate
-        to_lang ([type]): Language to translate
-        from_lang (str, optional): [Language From]. Defaults to "auto".
+        text (str): Text to translate
+        from_lang (str): Language From
+        to_lang (str): Language to translate
 
     Returns:
         [type]: Translation result
@@ -264,7 +264,7 @@ async def deepl_tl(text, to_lang, from_lang="auto"):
         to_LanguageCode_Deepl = deepl_lang[to_lang]
         from_LanguageCode_Deepl = deepl_lang[from_lang]
     except KeyError as e:
-        logger.exception("Error: " + str(e))
+        logger.exception(e)
         return is_Success, "Error Language Code Undefined"
     # --- Translate ---
     try:

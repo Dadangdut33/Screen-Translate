@@ -7,7 +7,7 @@ from screen_translate._version import __version__
 
 datas = [('./assets', 'assets/'), ('./user_manual', 'user_manual'), ('./user_manual/Readme.txt', '.'), ('./user_manual/Changelog.txt', '.'),]
 
-a = Analysis(['ScreenTranslate.py'],
+a = Analysis(['Main.py'],
              pathex=['./'],
              binaries=[],
              datas=datas,

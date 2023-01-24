@@ -135,7 +135,6 @@ class AboutWindow:
         self.checkUpdateLabelFg = "black"
         self.tooltipCheckUpdate.text = "Checking... Please wait"
         self.checkUpdateLabel.config(text=self.checkUpdateLabelText, fg=self.checkUpdateLabelFg)
-        self.root.update()
         logger.info("Checking for update...")
 
         Thread(target=self.req_update_check, daemon=True).start()
@@ -171,8 +170,6 @@ class AboutWindow:
 
             self.checkUpdateLabel.config(text=self.checkUpdateLabelText, fg=self.checkUpdateLabelFg)
             self.checkUpdateLabel.bind("<Button-1>", self.checkUpdateLabelFunc)
-
-            self.checking = False
         except Exception as e:
             logger.exception(e)
             self.checkUpdateLabelText = "Fail to check for update!"

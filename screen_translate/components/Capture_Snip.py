@@ -21,14 +21,18 @@ class SnipWindow:
         self.root.overrideredirect(True)  # borderless
         self.root.wm_attributes("-topmost", True)  # topmost
         self.root.wm_withdraw()
+        self.imgobj = None
+        self.img = None
         gClass.csw = self  # type: ignore
 
         # mask
-        self.tl_snipmask = tk.Toplevel(self.root)
-        self.tl_snipmask.wm_withdraw()  # Hide the window
-        self.tl_snipmask.overrideredirect(True)  # Hide the top bar
-        self.tl_snipmask.attributes("-transparent", "blue")  # Make it transparent with blue backgrounds
-        self.tl_snipmask.geometry("500x500")  # placeholder
+        self.tlw_snipmask = tk.Toplevel(self.root)
+        self.tlw_snipmask.wm_withdraw()  # Hide the window
+        self.tlw_snipmask.overrideredirect(True)  # Hide the top bar
+        self.tlw_snipmask.attributes("-transparent", "blue")  # Make it transparent with blue backgrounds
+        self.tlw_snipmask.geometry("500x500")  # placeholder
+        self.f_snipper = tk.Frame(self.tlw_snipmask, bg="blue")  # placeholder
+        self.f_snipper.pack(fill=tk.BOTH, expand=True)
 
         # variables
         self.rect = None
@@ -39,16 +43,14 @@ class SnipWindow:
         self.curY = 0
 
         # image canvas
-        self.canvas_ss = tk.Canvas(self.root, highlightthickness=0, cursor="cross")
-        self.canvas_ss.pack(fill=tk.BOTH, expand=True)  # ocupy main whole window
+        self.img_canvas = tk.Canvas(self.root, highlightthickness=0)
+        self.img_canvas.pack(fill=tk.BOTH, expand=True)  # ocupy main whole window
 
         # binds
-        self.tl_snipmask.bind("<Escape>", self.exitScreenshotMode)
-        self.canvas_ss.bind("<ButtonPress-1>", self.on_button_press)
-        self.canvas_ss.bind("<ButtonPress-3>", self.exitScreenshotMode)
-        self.canvas_ss.bind("<B1-Motion>", self.on_move_press)
-        self.canvas_ss.bind("<ButtonRelease-1>", self.on_button_release)
+        self.tlw_snipmask.bind("<Escape>", self.exitScreenshotMode)
+        self.img_canvas.bind("<Escape>", self.exitScreenshotMode)
 
+        self.onInit()
         # ------------------ Set Icon ------------------
         try:
             self.root.iconbitmap(path_logo_icon)
@@ -57,22 +59,34 @@ class SnipWindow:
 
     def onInit(self):
         self.root.geometry(getScreenTotalGeometry()[0])
-        self.tl_snipmask.geometry(getScreenTotalGeometry()[0])
+        self.tlw_snipmask.geometry(getScreenTotalGeometry()[0])
 
     def start_snipping(self, imagePath: str):
-        logger.info(">> Snipped mode entered! Loading image...")
-        imgObj = Image.open(imagePath)
-        tkImg = ImageTk.PhotoImage(imgObj)
-        self.canvas_ss.create_image(0, 0, anchor=tk.NW, image=tkImg)
-        logger.info(">> Image loaded to canvas")
+        self.onInit()
+        logger.info("Snipped mode entered! Loading image...")
+        self.imgobj = Image.open(imagePath)
+        self.img = ImageTk.PhotoImage(self.imgobj, master=self.img_canvas)
+        self.img_canvas.create_image(0, 0, anchor=tk.NW, image=self.img)
+        logger.info("Image loaded to canvas")
 
         # show window
         self.root.deiconify()
 
-        self.tl_snipmask.attributes("-alpha", 0.3)
-        self.tl_snipmask.lift()
-        self.tl_snipmask.attributes("-topmost", True)
-        self.tl_snipmask.focus_force()
+        # ss canvas
+        self.ss_canvas = tk.Canvas(self.f_snipper, cursor="cross", bg="grey11")
+        self.ss_canvas.pack(fill=tk.BOTH, expand=True)
+
+        self.ss_canvas.bind("<Escape>", self.exitScreenshotMode)
+        self.ss_canvas.bind("<ButtonPress-1>", self.on_button_press)
+        self.ss_canvas.bind("<ButtonPress-3>", self.exitScreenshotMode)
+        self.ss_canvas.bind("<B1-Motion>", self.on_move_press)
+        self.ss_canvas.bind("<ButtonRelease-1>", self.on_button_release)
+
+        self.tlw_snipmask.deiconify()
+        self.tlw_snipmask.attributes("-alpha", 0.3)
+        self.tlw_snipmask.lift()
+        self.tlw_snipmask.attributes("-topmost", True)
+        self.tlw_snipmask.focus_force()
 
     def on_button_release(self, event):
         """
@@ -86,23 +100,23 @@ class SnipWindow:
             return
 
         # Change canvas cursor to watch
-        self.canvas_ss.configure(cursor="watch")
+        self.ss_canvas.configure(cursor="watch")
         self.root.update_idletasks()
 
         if self.start_x <= self.curX and self.start_y <= self.curY:
-            logger.info(">> Detected position direction: right down")
+            logger.info("Detected position direction: right down")
             self.takeBoundedScreenShot(self.start_x, self.start_y, self.curX - self.start_x, self.curY - self.start_y)
 
         elif self.start_x >= self.curX and self.start_y <= self.curY:
-            logger.info(">> Detected position direction: left down")
+            logger.info("Detected position direction: left down")
             self.takeBoundedScreenShot(self.curX, self.start_y, self.start_x - self.curX, self.curY - self.start_y)
 
         elif self.start_x <= self.curX and self.start_y >= self.curY:
-            logger.info(">> Detected position direction: right up")
+            logger.info("Detected position direction: right up")
             self.takeBoundedScreenShot(self.start_x, self.curY, self.curX - self.start_x, self.start_y - self.curY)
 
         elif self.start_x >= self.curX and self.start_y >= self.curY:
-            logger.info(">> Detected position direction: left up")
+            logger.info("Detected position direction: left up")
             self.takeBoundedScreenShot(self.curX, self.curY, self.start_x - self.curX, self.start_y - self.curY)
 
         self.exitScreenshotMode()
@@ -122,11 +136,15 @@ class SnipWindow:
             gClass.clear_ex_q()
             gClass.insert_mw_q(res)
             gClass.insert_ex_q(res)
+
             # translate if translate
             if fJson.settingCache["engine"] != "None":
-                # check params
-                tlThread = threading.Thread(target=translate, args=(res, fJson.settingCache["from_lang"], fJson.settingCache["to_lang"], fJson.settingCache["engine"]))
-                tlThread.start()
+                try:
+                    tlThread = threading.Thread(target=translate, args=(res, fJson.settingCache["sourceLang"], fJson.settingCache["targetLang"], fJson.settingCache["engine"]))
+                    tlThread.start()
+                except Exception as e:
+                    logger.exception(e)
+                    Mbox("Error", "Error while translating: " + str(e), 2)
         else:
             if "is not installed or it's not in your PATH" in res:
                 Mbox("Error: Tesseract Could not be Found", "Invalid path location for tesseract.exe, please change it in the setting!", 2)
@@ -148,8 +166,9 @@ class SnipWindow:
         Args:
             event : Ignored. Defaults to None.
         """
-        logger.info(">> Snipped mode exited")
-        self.tl_snipmask.wm_withdraw()
+        logger.info("Snipped mode exited")
+        self.ss_canvas.destroy()
+        self.tlw_snipmask.wm_withdraw()
         self.root.wm_withdraw()
 
     def on_button_press(self, event):
@@ -160,10 +179,10 @@ class SnipWindow:
             event : Mouse event
         """
         # save mouse drag start position
-        self.start_x = self.canvas_ss.canvasx(event.x)
-        self.start_y = self.canvas_ss.canvasy(event.y)
+        self.start_x = self.ss_canvas.canvasx(event.x)
+        self.start_y = self.ss_canvas.canvasy(event.y)
 
-        self.rect = self.canvas_ss.create_rectangle(self.x, self.y, 1, 1, outline="red", width=3, fill="blue")
+        self.rect = self.ss_canvas.create_rectangle(self.x, self.y, 1, 1, outline="red", width=1, fill="blue")
 
     def on_move_press(self, event):
         """
@@ -174,15 +193,15 @@ class SnipWindow:
         """
         self.curX, self.curY = (event.x, event.y)
         # expand rectangle as you drag the mouse
-        self.canvas_ss.coords(self.rect, self.start_x, self.start_y, self.curX, self.curY)  # type: ignore
+        self.ss_canvas.coords(self.rect, self.start_x, self.start_y, self.curX, self.curY)  # type: ignore
 
     def recPosition(self):
         """
         Get the position details
         """
         if self.curX is not None:
-            logger.info(">> Captured")
-            logger.debug("Starting position x:", self.start_x)
-            logger.debug("End position x:", self.curX)
-            logger.debug("Starting position y:", self.start_y)
-            logger.debug("End position y:", self.curY)
+            logger.info("Captured")
+            logger.debug(f"Starting position x: {self.start_x}")
+            logger.debug(f"End position x: {self.curX}")
+            logger.debug(f"Starting position y: {self.start_y}")
+            logger.debug(f"End position y: {self.curY}")

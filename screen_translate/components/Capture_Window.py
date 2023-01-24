@@ -299,9 +299,12 @@ class CaptureWindow:
             gClass.insert_ex_q(res)
             # translate if translate
             if fJson.settingCache["engine"] != "None":
-                # check params
-                tlThread = threading.Thread(target=translate, args=(res, fJson.settingCache["from_lang"], fJson.settingCache["to_lang"], fJson.settingCache["engine"]))
-                tlThread.start()
+                try:
+                    tlThread = threading.Thread(target=translate, args=(res, fJson.settingCache["sourceLang"], fJson.settingCache["targetLang"], fJson.settingCache["engine"]))
+                    tlThread.start()
+                except Exception as e:
+                    logger.exception(e)
+                    Mbox("Error", "Error while translating: " + str(e), 2)
         else:
             if "is not installed or it's not in your PATH" in res:
                 Mbox("Error: Tesseract Could not be Found", "Invalid path location for tesseract.exe, please change it in the setting!", 2)

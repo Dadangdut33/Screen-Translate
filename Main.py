@@ -94,7 +94,7 @@ class MainWindow:
         self.frame_status = tk.Frame(self.frame_1)
         self.frame_status.pack(side=tk.RIGHT, fill=tk.X, expand=False)
 
-        self.lb_status = ttk.Progressbar(self.frame_status, orient=tk.HORIZONTAL, length=100, mode="determinate")
+        self.lb_status = ttk.Progressbar(self.frame_status, orient=tk.HORIZONTAL, length=120, mode="determinate")
         self.lb_status.pack(side=tk.RIGHT, padx=5, pady=5)
 
         # --- Top frame_2 ---
@@ -251,6 +251,8 @@ class MainWindow:
         self.cb_tl_engine.set(fJson.settingCache["engine"])
         self.cb_from.set(fJson.settingCache["sourceLang"])
         self.cb_to.set(fJson.settingCache["targetLang"])
+        if self.cb_tl_engine.get() == "None":
+            self.cb_to["state"] = "disabled"
 
         try:
             if fJson.settingCache["hk_cap_window"] != "":
@@ -463,11 +465,19 @@ class MainWindow:
     # -----------------------------------------------------------------
     # Widgets functions
     def swapTl(self):
-        tmp = self.tb_query.get(1.0, tk.END)
+        tmp = self.tb_query.get(1.0, tk.END).strip()
         self.tb_query.delete(1.0, tk.END)
-        self.tb_query.insert(tk.END, self.tb_result.get(1.0, tk.END))
+        self.tb_query.insert(tk.END, self.tb_result.get(1.0, tk.END).strip())
         self.tb_result.delete(1.0, tk.END)
         self.tb_result.insert(tk.END, tmp)
+
+        # swap cb
+        tmp = self.cb_from.get()
+        if self.cb_from.get() in self.cb_from["values"]:
+            self.cb_from.set(self.cb_to.get())
+
+        if self.cb_to.get() in self.cb_to["values"]:
+            self.cb_to.set(tmp)
 
     # Clear TB
     def clear_tb(self):
@@ -490,6 +500,11 @@ class MainWindow:
         if self.cb_to.get() not in self.cb_to["values"]:
             self.cb_to.current(0)
 
+        if self.cb_tl_engine.get() == "None":
+            self.cb_to["state"] = "disabled"
+        else:
+            self.cb_to["state"] = "readonly"
+
         # save
         fJson.savePartialSetting("sourceLang", self.cb_from.get())
         fJson.savePartialSetting("targetLang", self.cb_to.get())
@@ -504,21 +519,27 @@ class MainWindow:
         if engine != "None" and ((from_lang) == (to_lang)):
             gClass.lb_stop()
             logger.warn("Error Language is the same as source! Please choose a different language")
-            Mbox("Error: Language target is the same as source", "Language target is the same as source! Please choose a different language", 2, gClass.mw)
+            Mbox("Error: Language target is the same as source", "Language target is the same as source! Please choose a different language", 2, self.root)
+            return False
+
+        if engine != "None" and from_lang == "Auto-Detect":
+            gClass.lb_stop()
+            logger.warn("Error: Invalid Language source! Must specify source langauge when using OCR")
+            Mbox("Error: Invalid Source Language Selected", "Must specify source langauge when using OCR", 2, self.root)
             return False
 
         # If langto not set
         if to_lang == "Auto-Detect":
             gClass.lb_stop()
             logger.warn("Error: Invalid Language Selected! Must specify language destination")
-            Mbox("Error: Invalid Language Selected", "Must specify language destination", 2, gClass.mw)
+            Mbox("Error: Invalid Language Selected", "Must specify language destination", 2, self.root)
             return False
 
         # If the text is empty
         if len(query) == 0:
             gClass.lb_stop()
             logger.warn("Error: No text detected! Please select a text to translate")
-            Mbox("Error: No text detected", "Please select a text to translate", 2, gClass.mw)
+            Mbox("Error: No text detected", "Please select a text to translate", 2, self.root)
             return False
 
         logger.info("Passed param check!")
@@ -530,9 +551,18 @@ class MainWindow:
         if not self.param_check(engine, from_lang, to_lang, query):  # type: ignore
             return
 
+        if engine == "None":
+            logger.warn("Error: No translation engine selected! Please select a translation engine if only translate!")
+            Mbox("Error", "Please select a translation engine if only translate!", 0, self.root)
+            return
+
         gClass.lb_start()
-        self.tlThread = threading.Thread(target=translate, args=(query, to_lang, from_lang, engine), daemon=True)
-        self.tlThread.start()
+        try:
+            self.tlThread = threading.Thread(target=translate, args=(query, from_lang, to_lang, engine), daemon=True)
+            self.tlThread.start()
+        except Exception as e:
+            logger.exception(e)
+            Mbox("Error", str(e), 0, self.root)
         gClass.lb_stop()
 
     def start_capture_window(self):
@@ -568,13 +598,13 @@ if __name__ == "__main__":
     console()
 
     mw = MainWindow()
-    aw = AboutWindow(mw.root)
     cw = CaptureWindow(mw.root)
     csw = SnipWindow(mw.root)
     ex_qw = QueryWindow(mw.root)
     ex_resw = ResultWindow(mw.root)
     mask = MaskWindow(mw.root)
-    sw = SettingWindow(mw.root)
     hw = HistoryWindow(mw.root)
     lw = LogWindow(mw.root)
+    sw = SettingWindow(mw.root)
+    aw = AboutWindow(mw.root)
     mw.root.mainloop()

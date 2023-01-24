@@ -46,7 +46,7 @@ default_setting = {
     "replaceNewLineWith": " ",
     "captureLastValDelete": 0,
     # window hide on capture
-    "hide_this_windows_on_cap": ["ex_qw", "ex_resw"], # options: mw ex_qw ex_resw # TODO: IMPLEMENT THIS
+    "hide_this_windows_on_cap": ["ex_qw", "ex_resw"],  # options: mw ex_qw ex_res
     # capture enhancement
     "enhance_background": "Auto-Detect",
     "enhance_with_cv2_Contour": True,
