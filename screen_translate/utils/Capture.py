@@ -177,20 +177,19 @@ def captureFullScreen():
     """Capture all screens and save the result"""
     # Capture all screens
     success = False
-    saveName = os.path.join(dir_captured, "ScreenTranslate_" + datetime.now().strftime("%Y-%m-%d_%H%M%S") + ".png")
+    capturedObj = None
     try:
         logger.info("Capturing full screen...")
-        captured = pyautogui.screenshot()  # type: ignore
+        capturedObj = pyautogui.screenshot()  # type: ignore
         createPicDirIfGone()
-        captured.save(saveName)
         success = True
         logger.info("Captured full screen!")
     except Exception as e:
         logger.exception(e)
         success = False
-        saveName = str(e)
+        capturedObj = str(e)
     finally:
-        return success, saveName
+        return success, capturedObj
 
 
 def seeFullWindow():

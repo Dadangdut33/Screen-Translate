@@ -61,10 +61,10 @@ class SnipWindow:
         self.root.geometry(getScreenTotalGeometry()[0])
         self.tlw_snipmask.geometry(getScreenTotalGeometry()[0])
 
-    def start_snipping(self, imagePath: str):
+    def start_snipping(self, imgObj: Image.Image):
         self.onInit()
         logger.info("Snipped mode entered! Loading image...")
-        self.imgobj = Image.open(imagePath)
+        self.imgobj = imgObj
         self.img = ImageTk.PhotoImage(self.imgobj, master=self.img_canvas)
         self.img_canvas.create_image(0, 0, anchor=tk.NW, image=self.img)
         logger.info("Image loaded to canvas")

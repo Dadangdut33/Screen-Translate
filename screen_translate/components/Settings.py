@@ -853,12 +853,17 @@ class SettingWindow:
                     logger.warning("Failed to delete image file: " + file)
                     logger.warning("Reason " + str(e))
 
+    def resest_changes(self):
+        if not Mbox("Confirmation", "Are you sure you want to reset all changes?", 3, self.root):
+            return
+        logger.info("Reset all changes")
+        self.init_setting()
+
     def restoreDefault(self):
         """
         Restore default settings
         """
-        x = Mbox("Confirmation", "Are you sure you want to set the settings to default?\n\n**WARNING! CURRENTLY SAVED SETTING WILL BE OVERWRITTEN**", 3, self.root)
-        if x == False:
+        if not Mbox("Confirmation", "Are you sure you want to set the settings to default?\n\n**WARNING! CURRENTLY SAVED SETTING WILL BE OVERWRITTEN**", 3, self.root):
             return
 
         # Restore Default Settings
@@ -1273,42 +1278,38 @@ class SettingWindow:
         xyOffSetType = self.cb_cw_xy_offset_type.get()
 
         # Check offset or not
-        if xyOffSetType == "No Offset":
+        if xyOffSetType == "No Offset":  # No offset means auto
+            self.cbtnInvoker(False, self.cbtn_cw_auto_offset_x)
+            self.cbtnInvoker(False, self.cbtn_cw_auto_offset_y)
+
             # Disable spinner and the selector, also set stuff in spinner to 0
             self.cbtn_cw_auto_offset_x.config(state=tk.DISABLED)
             self.cbtn_cw_auto_offset_y.config(state=tk.DISABLED)
             self.sb_cw_offset_x.config(state=tk.DISABLED)
             self.sb_cw_offset_y.config(state=tk.DISABLED)
 
-            # unselect if selected
-            if self.cbtn_cw_auto_offset_x.instate(["selected"]):
-                self.cbtnInvoker(False, self.cbtn_cw_auto_offset_x)
-
-            if self.cbtn_cw_auto_offset_y.instate(["selected"]):
-                self.cbtnInvoker(False, self.cbtn_cw_auto_offset_y)
-
             # set sb value 0
             self.sb_cw_offset_x.set(0)
             self.sb_cw_offset_y.set(0)
-        else:
+        else:  # auto
             # enable changes
             self.cbtn_cw_auto_offset_x.config(state=tk.NORMAL)
             self.cbtn_cw_auto_offset_y.config(state=tk.NORMAL)
 
+            # if x auto
             if fJson.settingCache["offSetX"] == "auto":
-                # select if not selected
-                if not self.cbtn_cw_auto_offset_x.instate(["selected"]):
-                    self.cbtnInvoker(True, self.cbtn_cw_auto_offset_x)
-                    self.sb_cw_offset_x.config(state=tk.DISABLED)
+                self.cbtnInvoker(True, self.cbtn_cw_auto_offset_x)
+                self.sb_cw_offset_x.config(state=tk.DISABLED)
             else:
+                self.cbtnInvoker(False, self.cbtn_cw_auto_offset_x)
                 self.sb_cw_offset_x.config(state=tk.NORMAL)
 
+            # if y auto
             if fJson.settingCache["offSetY"] == "auto":
-                # select if not selected
-                if not self.cbtn_cw_auto_offset_y.instate(["selected"]):
-                    self.cbtnInvoker(True, self.cbtn_cw_auto_offset_y)
-                    self.sb_cw_offset_y.config(state=tk.DISABLED)
+                self.cbtnInvoker(True, self.cbtn_cw_auto_offset_y)
+                self.sb_cw_offset_y.config(state=tk.DISABLED)
             else:
+                self.cbtnInvoker(False, self.cbtn_cw_auto_offset_y)
                 self.sb_cw_offset_y.config(state=tk.NORMAL)
 
             # set value

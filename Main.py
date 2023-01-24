@@ -585,13 +585,13 @@ class MainWindow:
         if not self.param_check(engine, from_lang, to_lang, query):  # type: ignore
             return
 
-        success, img = captureFullScreen()
+        success, imgObj = captureFullScreen()
         if not success:
-            Mbox("Error", f"Failed to start snipping mode.\nReason: {img}", 0, self.root)
+            Mbox("Error", f"Failed to start snipping mode.\nReason: {imgObj}", 0, self.root)
             return
 
         assert gClass.csw is not None
-        gClass.csw.start_snipping(img)
+        gClass.csw.start_snipping(imgObj)
 
 
 if __name__ == "__main__":
