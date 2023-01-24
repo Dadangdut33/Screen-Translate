@@ -47,9 +47,11 @@ class SettingWindow:
 
         # ----------------------------------------------------------------------
         # Main frame
+        # top frame
         self.f_m_top = tk.Frame(self.root)
         self.f_m_top.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
+        # botom
         self.f_m_bot = tk.Frame(self.root, bg="#7E7E7E")
         self.f_m_bot.pack(side=tk.BOTTOM, fill=tk.X, pady=(5, 0), padx=5)
 
@@ -58,8 +60,8 @@ class SettingWindow:
         self.lf_m_bg_l.pack(side=tk.LEFT, fill=tk.Y, padx=5, pady=5)
 
         # Listbox for the category list
-        self.lb_cat = tk.Listbox(self.lf_m_bg_l, selectmode=tk.SINGLE, exportselection=False)
-        self.lb_cat.pack(side=tk.LEFT, fill=tk.BOTH, padx=5, pady=5)
+        self.lb_cat = tk.Listbox(self.lf_m_bg_l, selectmode=tk.SINGLE, exportselection=False)  # inside the label frame
+        self.lb_cat.pack(side=tk.LEFT, fill=tk.BOTH, padx=0, pady=0)
 
         self.lb_cat.insert(1, "Capturing/Offset")
         self.lb_cat.insert(2, "OCR Engine/Enhance")
@@ -69,13 +71,17 @@ class SettingWindow:
         self.lb_cat.insert(6, "Mask window")
         self.lb_cat.insert(7, "Other")
 
+        # Right frame for the setting
+        self.f_m_bg_r = tk.Frame(self.f_m_top)
+        self.f_m_bg_r.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=5, pady=5)
+
         # Bind the listbox to the function
         self.lb_cat.bind("<<ListboxSelect>>", self.on_category_select)
 
         # ----------------------------------------------------------------------
         # * CAT 1 - Capturing/Offset
-        self.f_cat_1_cap = ttk.Frame(self.f_m_top)
-        self.f_cat_1_cap.pack(side=tk.LEFT, fill=tk.X, padx=5, pady=5, expand=True)
+        self.f_cat_1_cap = tk.Frame(self.f_m_bg_r)
+        self.f_cat_1_cap.pack(side=tk.TOP, fill=tk.BOTH, padx=5, pady=5, expand=False)
 
         # -----------------------
         # [Capture Setting]
@@ -248,8 +254,8 @@ class SettingWindow:
 
         # ----------------------------------------------------------------------
         # * CAT 2 - OCR Engine
-        self.f_cat_2_ocr = tk.Frame(self.f_m_top)
-        self.f_cat_2_ocr.pack(side=tk.LEFT, fill=tk.BOTH, padx=5, pady=5)
+        self.f_cat_2_ocr = tk.Frame(self.f_m_bg_r)
+        self.f_cat_2_ocr.pack(side=tk.TOP, fill=tk.BOTH, padx=5, pady=5, expand=False)
 
         self.lf_OCR_setting = tk.LabelFrame(self.f_cat_2_ocr, text="• Tesseract OCR Settings")
         self.lf_OCR_setting.pack(side=tk.TOP, fill=tk.X, expand=True, padx=5, pady=(0, 5))
@@ -331,7 +337,7 @@ class SettingWindow:
         \rSet this to 0 if it deletes an actual character!""",
         )
 
-        self.cbtn_OCR_replace_newline = ttk.Checkbutton(self.f_OCR_3, text="Replace New Line")
+        self.cbtn_OCR_replace_newline = ttk.Checkbutton(self.f_OCR_3, text="Replace New Line With")
         self.cbtn_OCR_replace_newline.pack(side=tk.LEFT, padx=5, pady=5)
         CreateToolTip(self.cbtn_OCR_replace_newline, "Replace new line with preferred character.")
 
@@ -341,8 +347,8 @@ class SettingWindow:
 
         # ----------------------------------------------------------------------
         # * CAT 3 - Translate
-        self.f_cat_3_tl = tk.Frame(self.f_m_top)
-        self.f_cat_3_tl.pack(side=tk.LEFT, fill=tk.BOTH, padx=5, pady=5)
+        self.f_cat_3_tl = tk.Frame(self.f_m_bg_r)
+        self.f_cat_3_tl.pack(side=tk.TOP, fill=tk.BOTH, padx=5, pady=5, expand=False)
 
         self.lf_tl_setting = tk.LabelFrame(self.f_cat_3_tl, text="• Translation Settings")
         self.lf_tl_setting.pack(side=tk.TOP, fill=tk.X, expand=True, padx=5, pady=(0, 5))
@@ -398,8 +404,8 @@ class SettingWindow:
 
         # ----------------------------------------------------------------------
         # * CAT 4 - Hotkey
-        self.f_cat_4_hotkey = tk.Frame(self.f_m_top)
-        self.f_cat_4_hotkey.pack(side=tk.LEFT, fill=tk.BOTH, padx=5, pady=5)
+        self.f_cat_4_hotkey = tk.Frame(self.f_m_bg_r)
+        self.f_cat_4_hotkey.pack(side=tk.TOP, fill=tk.BOTH, padx=5, pady=5, expand=False)
 
         # [Capture Window]
         self.lf_cw_hk = tk.LabelFrame(self.f_cat_4_hotkey, text="• Capture Window Hotkey Settings")
@@ -459,8 +465,8 @@ class SettingWindow:
 
         # ----------------------------------------------------------------------
         # * CAT 5 - Textbox
-        self.f_cat_5_textbox = tk.Frame(self.f_m_top)
-        self.f_cat_5_textbox.pack(side=tk.LEFT, fill=tk.BOTH, padx=5, pady=5)
+        self.f_cat_5_textbox = tk.Frame(self.f_m_bg_r)
+        self.f_cat_5_textbox.pack(side=tk.TOP, fill=tk.BOTH, padx=5, pady=5, expand=False)
 
         # [mw q]
         self.lf_mw_q = tk.LabelFrame(self.f_cat_5_textbox, text="• Main Window Query Textbox")
@@ -675,8 +681,8 @@ class SettingWindow:
 
         # ----------------------------------------------------------------------
         # * CAT 6 - Mask window
-        self.f_cat_6_maskwindow = tk.Frame(self.f_m_top)
-        self.f_cat_6_maskwindow.pack(side=tk.LEFT, fill=tk.BOTH, padx=5, pady=5)
+        self.f_cat_6_maskwindow = tk.Frame(self.f_m_bg_r)
+        self.f_cat_6_maskwindow.pack(side=tk.TOP, fill=tk.BOTH, padx=5, pady=5, expand=False)
 
         self.lf_maskwindow = tk.LabelFrame(self.f_cat_6_maskwindow, text="• Mask Window")
         self.lf_maskwindow.pack(side=tk.TOP, fill=tk.X, expand=True, padx=5, pady=5)
@@ -699,8 +705,8 @@ class SettingWindow:
 
         # ----------------------------------------------------------------------
         # * CAT 7 - Other
-        self.f_cat_7_other = tk.Frame(self.f_m_top)
-        self.f_cat_7_other.pack(side=tk.LEFT, fill=tk.BOTH, padx=5, pady=5)
+        self.f_cat_7_other = tk.Frame(self.f_m_bg_r)
+        self.f_cat_7_other.pack(side=tk.TOP, fill=tk.BOTH, padx=5, pady=5, expand=False)
 
         self.lf_other = tk.LabelFrame(self.f_cat_7_other, text="• Other Settings")
         self.lf_other.pack(side=tk.TOP, fill=tk.X, expand=True, padx=5, pady=(0, 5))
@@ -733,7 +739,7 @@ class SettingWindow:
 
         # Create the buttons
         self.btnSave = ttk.Button(self.bottomFrame, text="🖪 Save Settings", command=self.saveSettings)
-        self.btnSave.pack(side=tk.RIGHT, padx=4, pady=5)
+        self.btnSave.pack(side=tk.RIGHT, padx=5, pady=5)
 
         self.btnReset = ttk.Button(self.bottomFrame, text="⟳ Cancel Changes", command=self.reset_changes)
         self.btnReset.pack(side=tk.RIGHT, padx=5, pady=5)
@@ -809,7 +815,7 @@ class SettingWindow:
         Args:
             frame ([type]): The frame that will be displayed
         """
-        frame.pack(side=tk.LEFT, fill=tk.BOTH, padx=5, pady=5)
+        frame.pack(side=tk.TOP, fill=tk.BOTH, padx=5, pady=0, expand=False)
 
     def cbtnInvoker(self, settingVal: bool, widget: ttk.Checkbutton):
         if self.onStart:
