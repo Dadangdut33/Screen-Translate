@@ -76,9 +76,9 @@ class AppTray:
         self.menu_items = (
             item("Snip and Translate", self.snip_win),
             menu.SEPARATOR,
-            item("Show Main Window", self.open_app),
             item("Show Query Window", self.open_query),
             item("Show Result Window", self.open_result),
+            item("Show Main Window", self.open_app),
             menu.SEPARATOR,
             item("Exit", self.exit_app),
         )

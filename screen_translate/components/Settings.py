@@ -1,5 +1,4 @@
 import os
-import json
 import keyboard
 import tkinter as tk
 import tkinter.ttk as ttk
@@ -9,10 +8,11 @@ from send2trash import send2trash
 
 from .MBox import Mbox
 from .Tooltip import CreateToolTip
-from screen_translate.Globals import gClass, path_logo_icon, dir_captured, fJson, app_name
+from screen_translate.Globals import gClass, path_logo_icon, dir_captured, fJson, app_name, path_to_app_exe
 from screen_translate.Logging import logger, current_log, dir_log
 from screen_translate.utils.Helper import nativeNotify, startFile, tb_copy_only
 from screen_translate.utils.Monitor import get_offset, getScreenTotalGeometry
+from screen_translate.utils.AutoStart import set_autostart_registry, check_autostart_registry
 from screen_translate.utils.Capture import seeFullWindow
 
 
@@ -88,21 +88,39 @@ class SettingWindow:
         self.lf_capture = tk.LabelFrame(self.f_cat_1_cap, text="• Capturing Setting")
         self.lf_capture.pack(side=tk.TOP, fill=tk.X, expand=True, padx=5, pady=(0, 5))
 
-        self.f_capture = tk.Frame(self.lf_capture)
-        self.f_capture.pack(side=tk.TOP, fill=tk.X, expand=True)
+        self.f_capture_1 = tk.Frame(self.lf_capture)
+        self.f_capture_1.pack(side=tk.TOP, fill=tk.X, expand=True)
 
-        self.cbtn_auto_copy = ttk.Checkbutton(self.f_capture, text="Auto Copy Captured Text To Clipboard")
+        self.f_capture_2 = tk.Frame(self.lf_capture)
+        self.f_capture_2.pack(side=tk.TOP, fill=tk.X, expand=True)
+
+        self.f_capture_3 = tk.Frame(self.lf_capture)
+        self.f_capture_3.pack(side=tk.TOP, fill=tk.X, expand=True)
+
+        self.cbtn_hide_mw_on_cap = ttk.Checkbutton(self.f_capture_1, text="Hide main window on capture")
+        self.cbtn_hide_mw_on_cap.pack(side=tk.LEFT, padx=5, pady=5)
+        CreateToolTip(self.cbtn_hide_mw_on_cap, "Hide the main window when capturing")
+
+        self.cbtn_hide_ex_qw_on_cap = ttk.Checkbutton(self.f_capture_1, text="Hide detached query window on capture")
+        self.cbtn_hide_ex_qw_on_cap.pack(side=tk.LEFT, padx=5, pady=5)
+        CreateToolTip(self.cbtn_hide_ex_qw_on_cap, "Hide the detached query window when capturing")
+
+        self.cbtn_hide_ex_resw_on_cap = ttk.Checkbutton(self.f_capture_1, text="Hide detached result box on capture")
+        self.cbtn_hide_ex_resw_on_cap.pack(side=tk.LEFT, padx=5, pady=5)
+        CreateToolTip(self.cbtn_hide_ex_resw_on_cap, "Hide the detached result window when capturing")
+
+        self.cbtn_auto_copy = ttk.Checkbutton(self.f_capture_2, text="Auto copy captured text")
         self.cbtn_auto_copy.pack(side=tk.LEFT, padx=5, pady=5)
         CreateToolTip(self.cbtn_auto_copy, "Copy the captured text to clipboard automatically")
 
-        self.cbtn_keep_img = ttk.Checkbutton(self.f_capture, text="Save Captured Image")
+        self.cbtn_keep_img = ttk.Checkbutton(self.f_capture_2, text="Save captured image")
         self.cbtn_keep_img.pack(side=tk.LEFT, padx=5, pady=5)
         CreateToolTip(self.cbtn_keep_img, "Save the captured image to img_captured folder")
 
-        self.btn_open_dir_cap = ttk.Button(self.f_capture, text="🗁 Open Captured Image", command=lambda: startFile(dir_captured))
+        self.btn_open_dir_cap = ttk.Button(self.f_capture_3, text="🗁 Open Captured Image", command=lambda: startFile(dir_captured))
         self.btn_open_dir_cap.pack(side=tk.LEFT, padx=5, pady=5)
 
-        self.btn_delete_all_cap = ttk.Button(self.f_capture, text="⚠ Delete All Captured Image", command=self.deleteAllCaptured)
+        self.btn_delete_all_cap = ttk.Button(self.f_capture_3, text="⚠ Delete All Captured Image", command=self.deleteAllCaptured)
         self.btn_delete_all_cap.pack(side=tk.LEFT, padx=5, pady=5)
 
         # -----------------------
@@ -119,7 +137,7 @@ class SettingWindow:
         self.f_cw_offset_4 = ttk.Frame(self.lf_cw_offset)
         self.f_cw_offset_4.pack(side=tk.TOP, fill=tk.X, expand=True)
 
-        self.lbl_cw_xy_offset = ttk.Label(self.f_cw_offset_1, text="XY Offset :")
+        self.lbl_cw_xy_offset = ttk.Label(self.f_cw_offset_1, text="XY Offset")
         self.lbl_cw_xy_offset.pack(side=tk.LEFT, padx=5, pady=5)
         CreateToolTip(self.lbl_cw_xy_offset, "The offset mode")
 
@@ -147,7 +165,7 @@ class SettingWindow:
         self.cbtn_cw_auto_offset_h.pack(side=tk.LEFT, padx=5, pady=5)
 
         # [Offset X]
-        self.lbl_cw_offset_x = ttk.Label(self.f_cw_offset_3, text="Offset X :")
+        self.lbl_cw_offset_x = ttk.Label(self.f_cw_offset_3, text="Offset X")
         self.lbl_cw_offset_x.pack(side=tk.LEFT, padx=5, pady=5)
         CreateToolTip(self.lbl_cw_offset_x, "X Coordinates offset of the capture window")
 
@@ -157,7 +175,7 @@ class SettingWindow:
         self.sb_cw_offset_x.pack(side=tk.LEFT, padx=5, pady=5)
 
         # [Offset Y]
-        self.lbl_cw_offset_y = ttk.Label(self.f_cw_offset_4, text="Offset Y :")
+        self.lbl_cw_offset_y = ttk.Label(self.f_cw_offset_4, text="Offset Y")
         self.lbl_cw_offset_y.pack(side=tk.LEFT, padx=5, pady=5)
         CreateToolTip(self.lbl_cw_offset_y, "Y Coordinates offset of the capture window")
 
@@ -167,7 +185,7 @@ class SettingWindow:
         self.sb_cw_offset_y.pack(side=tk.LEFT, padx=5, pady=5)
 
         # [Offset W]
-        self.lbl_cw_offset_w = ttk.Label(self.f_cw_offset_3, text="Offset W :")
+        self.lbl_cw_offset_w = ttk.Label(self.f_cw_offset_3, text="Offset W")
         self.lbl_cw_offset_w.pack(side=tk.LEFT, padx=5, pady=5)
         CreateToolTip(self.lbl_cw_offset_w, "Width offset of the capture window")
 
@@ -177,7 +195,7 @@ class SettingWindow:
         self.sb_cw_offset_w.pack(side=tk.LEFT, padx=5, pady=5)
 
         # [Offset H]
-        self.lbl_cw_offset_h = ttk.Label(self.f_cw_offset_4, text="Offset H :")
+        self.lbl_cw_offset_h = ttk.Label(self.f_cw_offset_4, text="Offset H")
         self.lbl_cw_offset_h.pack(side=tk.LEFT, padx=5, pady=5)
         CreateToolTip(self.lbl_cw_offset_h, "Height offset of the capture window")
 
@@ -263,7 +281,7 @@ class SettingWindow:
         self.f_OCR_setting = tk.Frame(self.lf_OCR_setting)
         self.f_OCR_setting.pack(side=tk.TOP, fill=tk.X, expand=True)
 
-        self.lbl_OCR_tesseract_path = ttk.Label(self.f_OCR_setting, text="Tesseract Path :")
+        self.lbl_OCR_tesseract_path = ttk.Label(self.f_OCR_setting, text="Tesseract Path")
         self.lbl_OCR_tesseract_path.pack(side=tk.LEFT, padx=5, pady=5)
         CreateToolTip(self.f_OCR_setting, "Tesseract.exe location")
 
@@ -279,30 +297,33 @@ class SettingWindow:
         self.lf_OCR_enhancement = tk.LabelFrame(self.f_cat_2_ocr, text="• OCR Enhancement", width=900, height=75)
         self.lf_OCR_enhancement.pack(side=tk.TOP, fill=tk.X, expand=False, padx=5, pady=5)
 
-        self.f_OCR_enhancement = tk.Frame(self.lf_OCR_enhancement)
-        self.f_OCR_enhancement.pack(side=tk.TOP, fill=tk.X, expand=False)
+        self.f_OCR_enhancement_1 = tk.Frame(self.lf_OCR_enhancement)
+        self.f_OCR_enhancement_1.pack(side=tk.TOP, fill=tk.X, expand=False)
 
-        self.lbl_OCR_cbbg = ttk.Label(self.f_OCR_enhancement, text="Background :")
+        self.f_OCR_enhancement_2 = tk.Frame(self.lf_OCR_enhancement)
+        self.f_OCR_enhancement_2.pack(side=tk.TOP, fill=tk.X, expand=False)
+
+        self.lbl_OCR_cbbg = ttk.Label(self.f_OCR_enhancement_1, text="Background")
         self.lbl_OCR_cbbg.pack(side=tk.LEFT, padx=5, pady=5)
         CreateToolTip(self.lbl_OCR_cbbg, "Background type of the area that will be captured. This variable is used only if detect contour using CV2 is checked.")
 
-        self.cb_OCR_bg = ttk.Combobox(self.f_OCR_enhancement, values=["Auto-Detect", "Light", "Dark"], state="readonly")
+        self.cb_OCR_bg = ttk.Combobox(self.f_OCR_enhancement_1, values=["Auto-Detect", "Light", "Dark"], state="readonly")
         self.cb_OCR_bg.pack(side=tk.LEFT, padx=5, pady=5)
         CreateToolTip(self.cb_OCR_bg, "Background type of the area that will be captured. This variable is used only if detect contour using CV2 is checked.")
 
-        self.cbtn_OCR_cv2contour = ttk.Checkbutton(self.f_OCR_enhancement, text="Detect Contour using CV2")
+        self.cbtn_OCR_cv2contour = ttk.Checkbutton(self.f_OCR_enhancement_2, text="Detect Contour using CV2")
         self.cbtn_OCR_cv2contour.pack(side=tk.LEFT, padx=5, pady=5)
         CreateToolTip(self.cbtn_OCR_cv2contour, text="Enhance the OCR by applying filters and outlining the contour of the words.")
 
-        self.cbtn_OCR_grayscale = ttk.Checkbutton(self.f_OCR_enhancement, text="Grayscale")
+        self.cbtn_OCR_grayscale = ttk.Checkbutton(self.f_OCR_enhancement_2, text="Grayscale")
         self.cbtn_OCR_grayscale.pack(side=tk.LEFT, padx=5, pady=5)
         CreateToolTip(self.cbtn_OCR_grayscale, text="Enhance the OCR by making the captured picture grayscale on the character reading part.")
 
-        self.cbtn_OCR_debug = ttk.Checkbutton(self.f_OCR_enhancement, text="Debug Mode")
+        self.cbtn_OCR_debug = ttk.Checkbutton(self.f_OCR_enhancement_2, text="Debug Mode")
         self.cbtn_OCR_debug.pack(side=tk.LEFT, padx=5, pady=5)
         CreateToolTip(self.cbtn_OCR_debug, text="Enable debug mode.")
 
-        self.lbl_hint_OCR_enhance = ttk.Label(self.f_OCR_enhancement, text="❓")
+        self.lbl_hint_OCR_enhance = ttk.Label(self.f_OCR_enhancement_1, text="❓")
         self.lbl_hint_OCR_enhance.pack(side=tk.RIGHT, padx=5, pady=5)
         CreateToolTip(
             self.lbl_hint_OCR_enhance,
@@ -312,13 +333,19 @@ class SettingWindow:
         )
 
         # [Captured Result]
-        self.lf_OCR_3 = tk.LabelFrame(self.f_cat_2_ocr, text="• Result", width=900, height=75)
-        self.lf_OCR_3.pack(side=tk.TOP, fill=tk.X, expand=False, padx=5, pady=5)
+        self.lf_OCR_result = tk.LabelFrame(self.f_cat_2_ocr, text="• Result", width=900, height=75)
+        self.lf_OCR_result.pack(side=tk.TOP, fill=tk.X, expand=False, padx=5, pady=5)
 
-        self.f_OCR_3 = tk.Frame(self.lf_OCR_3)
-        self.f_OCR_3.pack(side=tk.TOP, fill=tk.X, expand=False)
+        self.f_OCR_result_1 = tk.Frame(self.lf_OCR_result)
+        self.f_OCR_result_1.pack(side=tk.TOP, fill=tk.X, expand=False)
 
-        self.lbl_OCR_delete_lastchar = ttk.Label(self.f_OCR_3, text="Delete Last Char :")
+        self.f_OCR_result_2 = tk.Frame(self.lf_OCR_result)
+        self.f_OCR_result_2.pack(side=tk.TOP, fill=tk.X, expand=False)
+
+        self.f_OCR_result_3 = tk.Frame(self.lf_OCR_result)
+        self.f_OCR_result_3.pack(side=tk.TOP, fill=tk.X, expand=False)
+
+        self.lbl_OCR_delete_lastchar = ttk.Label(self.f_OCR_result_1, text="Delete Last Char")
         self.lbl_OCR_delete_lastchar.pack(side=tk.LEFT, padx=5, pady=5)
         CreateToolTip(
             self.lbl_OCR_delete_lastchar,
@@ -327,7 +354,7 @@ class SettingWindow:
         \rSet this to 0 if it deletes an actual character!""",
         )
 
-        self.sb_OCR_delete_lastchar = ttk.Spinbox(self.f_OCR_3, from_=0, to=25, width=5)
+        self.sb_OCR_delete_lastchar = ttk.Spinbox(self.f_OCR_result_1, from_=0, to=25, width=5)
         self.sb_OCR_delete_lastchar.configure(validate="key", validatecommand=(self.root.register(lambda event: self.validateSpinbox(event, self.sb_OCR_delete_lastchar)), "%P"))
         self.sb_OCR_delete_lastchar.pack(side=tk.LEFT, padx=5, pady=5)
         CreateToolTip(
@@ -337,13 +364,17 @@ class SettingWindow:
         \rSet this to 0 if it deletes an actual character!""",
         )
 
-        self.cbtn_OCR_replace_newline = ttk.Checkbutton(self.f_OCR_3, text="Replace New Line With")
+        self.cbtn_OCR_replace_newline = ttk.Checkbutton(self.f_OCR_result_2, text="Replace New Line With", command=self.toggle_OCR_replace_newline)
         self.cbtn_OCR_replace_newline.pack(side=tk.LEFT, padx=5, pady=5)
         CreateToolTip(self.cbtn_OCR_replace_newline, "Replace new line with preferred character.")
 
-        self.entry_OCR_replace_newline_with = ttk.Entry(self.f_OCR_3, width=5)
-        self.entry_OCR_replace_newline_with.pack(side=tk.LEFT, padx=5, pady=5)
-        CreateToolTip(self.entry_OCR_replace_newline_with, "Character to replace new line.\n Default is ' ' (space). (You can use escape character like \n for new line)")
+        self.entry_OCR_replace_newline_with = ttk.Entry(self.f_OCR_result_2, width=5)
+        self.entry_OCR_replace_newline_with.pack(side=tk.LEFT, padx=5, pady=5, fill=tk.X, expand=True)
+        CreateToolTip(self.entry_OCR_replace_newline_with, "Character to replace new line.\n Default is ' ' (space). (You can use escape character like \n for new line)", wrapLength=300)
+
+        self.cbtn_alert_no_text = ttk.Checkbutton(self.f_OCR_result_3, text="Show No Text Entered Alert")
+        self.cbtn_alert_no_text.pack(side=tk.LEFT, padx=5, pady=5)
+        CreateToolTip(self.cbtn_alert_no_text, text="Show alert when no text is entered or captured by the OCR")
 
         # ----------------------------------------------------------------------
         # * CAT 3 - Translate
@@ -363,10 +394,6 @@ class SettingWindow:
         self.cbtn_tl_save_history.pack(side=tk.LEFT, padx=5, pady=5)
         CreateToolTip(self.cbtn_tl_save_history, text="Save the translation to history")
 
-        self.cbtn_alert_no_text = ttk.Checkbutton(self.f_tl_setting_2, text="Show No Text Entered Alert")
-        self.cbtn_alert_no_text.pack(side=tk.LEFT, padx=5, pady=5)
-        CreateToolTip(self.cbtn_alert_no_text, text="Show alert when no text is entered or captured by the OCR")
-
         # Libretranslate
         self.lf_tl_libre_setting = tk.LabelFrame(self.f_cat_3_tl, text="• Libretranslate Settings")
         self.lf_tl_libre_setting.pack(side=tk.TOP, fill=tk.X, expand=True, padx=5, pady=(0, 5))
@@ -374,7 +401,7 @@ class SettingWindow:
         self.f_tl_libre_setting = tk.Frame(self.lf_tl_libre_setting)
         self.f_tl_libre_setting.pack(side=tk.TOP, fill=tk.X, expand=False)
 
-        self.lbl_tl_libre_setting_key = ttk.Label(self.f_tl_libre_setting, text="API Key :")
+        self.lbl_tl_libre_setting_key = ttk.Label(self.f_tl_libre_setting, text="API Key")
         self.lbl_tl_libre_setting_key.pack(side=tk.LEFT, padx=5, pady=5)
         CreateToolTip(self.lbl_tl_libre_setting_key, text="The API key for Libretranslate. Default: Empty.\n\nNot needed unless translating using the libretranslate.com domain/host.")
 
@@ -382,7 +409,7 @@ class SettingWindow:
         self.entry_tl_libre_setting_key.pack(side=tk.LEFT, padx=5, pady=5)
         CreateToolTip(self.entry_tl_libre_setting_key, text="The API key for Libretranslate. Default: Empty.\n\nNot needed unless translating using the libretranslate.com domain/host.")
 
-        self.lbl_tl_libre_setting_host = ttk.Label(self.f_tl_libre_setting, text="Host :")
+        self.lbl_tl_libre_setting_host = ttk.Label(self.f_tl_libre_setting, text="Host")
         self.lbl_tl_libre_setting_host.pack(side=tk.LEFT, padx=5, pady=5)
         CreateToolTip(self.lbl_tl_libre_setting_host, text="Host address of Libletranslate server. Default: libretranslate.de\n\nYou can find full lists of other dedicated server on Libretranslate github repository.")
 
@@ -390,7 +417,7 @@ class SettingWindow:
         self.entry_tl_libre_setting_host.pack(side=tk.LEFT, padx=5, pady=5)
         CreateToolTip(self.entry_tl_libre_setting_host, text="Host address of Libletranslate server. Default: libretranslate.de\n\nYou can find full lists of other dedicated server on Libretranslate github repository.")
 
-        self.lbl_tl_libre_setting_port = ttk.Label(self.f_tl_libre_setting, text="Port :")
+        self.lbl_tl_libre_setting_port = ttk.Label(self.f_tl_libre_setting, text="Port")
         self.lbl_tl_libre_setting_port.pack(side=tk.LEFT, padx=5, pady=5)
         CreateToolTip(self.lbl_tl_libre_setting_port, text="Port of Libletranslate server. Default: Empty\n\nSet it to empty if you are not using local server.")
 
@@ -414,7 +441,7 @@ class SettingWindow:
         self.f_cwh_k = tk.Frame(self.lf_cw_hk)
         self.f_cwh_k.pack(side=tk.TOP, fill=tk.X, expand=False)
 
-        self.lbl_cw_hk_delay = ttk.Label(self.f_cwh_k, text="Time delay (ms) : ")
+        self.lbl_cw_hk_delay = ttk.Label(self.f_cwh_k, text="Time delay (ms)")
         self.lbl_cw_hk_delay.pack(side=tk.LEFT, padx=5, pady=5)
         CreateToolTip(self.lbl_cw_hk_delay, text="The time delay to capture when the hotkey is pressed")
 
@@ -428,7 +455,7 @@ class SettingWindow:
         self.btn_clear_cw_hk = ttk.Button(self.f_cwh_k, text="✕ Clear", command=self.clearHKCapTl)
         self.btn_clear_cw_hk.pack(side=tk.LEFT, padx=5, pady=5)
 
-        self.lbl_cw_hk_is = ttk.Label(self.f_cwh_k, text="Current hotkey : ")
+        self.lbl_cw_hk_is = ttk.Label(self.f_cwh_k, text="Current hotkey :")
         self.lbl_cw_hk_is.pack(side=tk.LEFT, padx=5, pady=5)
         CreateToolTip(self.lbl_cw_hk_is, text="Currently set hotkey for capturing")
 
@@ -442,7 +469,7 @@ class SettingWindow:
         self.f_snipping_hk = tk.Frame(self.lf_snipping_hk)
         self.f_snipping_hk.pack(side=tk.TOP, fill=tk.X, expand=False)
 
-        self.lbl_snipping_hk_delay = ttk.Label(self.f_snipping_hk, text="Time delay (ms) : ")
+        self.lbl_snipping_hk_delay = ttk.Label(self.f_snipping_hk, text="Time delay (ms)")
         self.lbl_snipping_hk_delay.pack(side=tk.LEFT, padx=5, pady=5)
         CreateToolTip(self.lbl_cw_hk_delay, text="The time delay to activate snipping mode when the hotkey is pressed")
 
@@ -456,7 +483,7 @@ class SettingWindow:
         self.btn_clear_snipping_hk = ttk.Button(self.f_snipping_hk, text="✕ Clear", command=self.clearHKSnipCapTl)
         self.btn_clear_snipping_hk.pack(side=tk.LEFT, padx=5, pady=5)
 
-        self.lbl_snipping_hk_is = ttk.Label(self.f_snipping_hk, text="Current hotkey : ")
+        self.lbl_snipping_hk_is = ttk.Label(self.f_snipping_hk, text="Current hotkey :")
         self.lbl_snipping_hk_is.pack(side=tk.LEFT, padx=5, pady=5)
         CreateToolTip(self.lbl_snipping_hk_is, text="Currently set hotkey for snip & capture")
 
@@ -690,7 +717,7 @@ class SettingWindow:
         self.f_maskwindow = tk.Frame(self.lf_maskwindow)
         self.f_maskwindow.pack(side=tk.TOP, fill=tk.X, expand=True)
 
-        self.lbl_maskwindow_color = ttk.Label(self.f_maskwindow, text="Color : ")
+        self.lbl_maskwindow_color = ttk.Label(self.f_maskwindow, text="Color")
         self.lbl_maskwindow_color.pack(side=tk.LEFT, padx=5, pady=5)
         CreateToolTip(self.lbl_maskwindow_color, "Set mask window color")
 
@@ -717,18 +744,25 @@ class SettingWindow:
         self.f_other_2 = tk.Frame(self.lf_other)
         self.f_other_2.pack(side=tk.TOP, fill=tk.X, expand=False)
 
+        self.f_other_3 = tk.Frame(self.lf_other)
+        self.f_other_3.pack(side=tk.TOP, fill=tk.X, expand=False)
+
         # Checkbox for check for update
         self.cbtn_update = ttk.Checkbutton(self.f_other_1, text="Check for update on app start")
         self.cbtn_update.pack(side=tk.LEFT, padx=5, pady=5)
         CreateToolTip(self.cbtn_update, "Check for update on app start. You can also check manually by going to help in menubar")
 
+        self.cbtn_run_on_startup = ttk.Checkbutton(self.f_other_1, text="Run app on startup")
+        self.cbtn_run_on_startup.pack(side=tk.LEFT, padx=5, pady=5)
+        CreateToolTip(self.cbtn_run_on_startup, "Run app on startup. Only on Windows")
+
         self.cbtn_keep_log = ttk.Checkbutton(self.f_other_2, text="Keep Log")
         self.cbtn_keep_log.pack(side=tk.LEFT, padx=(5, 4), pady=(4, 6))
 
-        self.lbl_loglevel = ttk.Label(self.f_other_2, text="Log Level : ")
-        self.lbl_loglevel.pack(side=tk.LEFT, padx=0, pady=5)
+        self.lbl_loglevel = ttk.Label(self.f_other_3, text="Log Level")
+        self.lbl_loglevel.pack(side=tk.LEFT, padx=5, pady=5)
 
-        self.cb_log_level = ttk.Combobox(self.f_other_2, values=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"], state="readonly")
+        self.cb_log_level = ttk.Combobox(self.f_other_3, values=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"], state="readonly")
         self.cb_log_level.pack(side=tk.LEFT, padx=0, pady=5)
 
         # ----------------------------------------------------------------
@@ -900,6 +934,9 @@ class SettingWindow:
         if not os.path.exists(fJson.settingCache["tesseract_loc"]):
             nativeNotify("Error: Set tesseract Not Found!", "Please set tesseract location in Setting.json.\nYou can set this in setting menu or modify it manually in json/Setting.json", path_logo_icon, app_name)
 
+        self.cbtnInvoker(fJson.settingCache["hide_mw_on_cap"], self.cbtn_hide_mw_on_cap)
+        self.cbtnInvoker(fJson.settingCache["hide_ex_qw_on_cap"], self.cbtn_hide_ex_qw_on_cap)
+        self.cbtnInvoker(fJson.settingCache["hide_ex_resw_on_cap"], self.cbtn_hide_ex_resw_on_cap)
         self.cbtnInvoker(fJson.settingCache["keep_image"], self.cbtn_keep_img)
         self.cbtnInvoker(fJson.settingCache["auto_copy"], self.cbtn_auto_copy)
 
@@ -928,9 +965,10 @@ class SettingWindow:
         self.entry_OCR_replace_newline_with.delete(0, tk.END)
         self.entry_OCR_replace_newline_with.insert(0, fJson.settingCache["replaceNewLineWith"])
 
+        self.cbtnInvoker(not fJson.settingCache["supress_no_text_alert"], self.cbtn_alert_no_text)
+
         # tl
         self.cbtnInvoker(fJson.settingCache["save_history"], self.cbtn_tl_save_history)
-        self.cbtnInvoker(not fJson.settingCache["supress_no_text_alert"], self.cbtn_alert_no_text)
 
         self.entry_tl_libre_setting_key.delete(0, tk.END)
         self.entry_tl_libre_setting_key.insert(0, fJson.settingCache["libre_api_key"])
@@ -959,6 +997,7 @@ class SettingWindow:
 
         # other
         self.cbtnInvoker(fJson.settingCache["checkUpdateOnStart"], self.cbtn_update)
+        self.cbtnInvoker(fJson.settingCache["run_on_startup"], self.cbtn_run_on_startup)
         self.cbtnInvoker(fJson.settingCache["keep_log"], self.cbtn_keep_log)
         self.cb_log_level.set(fJson.settingCache["log_level"])
 
@@ -1053,6 +1092,7 @@ class SettingWindow:
             "auto_copy": self.cbtn_auto_copy.instate(["selected"]),
             "save_history": self.cbtn_tl_save_history.instate(["selected"]),
             "supress_no_text_alert": not self.cbtn_alert_no_text.instate(["selected"]),  # Inverted
+            "run_on_startup": self.cbtn_run_on_startup.instate(["selected"]),
             # ------------------ #
             # logging
             "keep_log": self.cbtn_keep_log.instate(["selected"]),
@@ -1073,6 +1113,10 @@ class SettingWindow:
             "replaceNewLine": self.cbtn_OCR_replace_newline.instate(["selected"]),
             "replaceNewLineWith": self.entry_OCR_replace_newline_with.get(),
             "captureLastValDelete": self.sb_OCR_delete_lastchar.get(),
+            # window hide on capture
+            "hide_mw_on_cap": self.cbtn_hide_mw_on_cap.instate(["selected"]),
+            "hide_ex_qw_on_cap": self.cbtn_hide_ex_qw_on_cap.instate(["selected"]),
+            "hide_ex_resw_on_cap": self.cbtn_hide_ex_resw_on_cap.instate(["selected"]),
             # capture enhancement
             "enhance_background": self.cb_OCR_bg.get(),
             "enhance_with_cv2_Contour": self.cbtn_OCR_cv2contour.instate(["selected"]),
@@ -1136,6 +1180,16 @@ class SettingWindow:
         if fJson.settingCache["log_level"] != self.cb_log_level.get():
             logger.setLevel(self.cb_log_level.get())
 
+        # check run on startup
+        if setting_collections["run_on_startup"]:
+            if not check_autostart_registry(app_name):
+                x = set_autostart_registry(app_name, path_to_app_exe)
+                logger.info(f"Set autostart registry: {x}")
+        else:
+            if check_autostart_registry(app_name):
+                x = set_autostart_registry(app_name, autostart=False)
+                logger.info(f"Remove autostart registry: {x}")
+
         logger.info("-" * 50)
         logger.info("Saving setting")
         statusMsg = ""
@@ -1154,6 +1208,7 @@ class SettingWindow:
         else:
             statusMsg = f"{errorAmount} error(s) encountered"
 
+        logger.info(f"Saved settings with {statusMsg}")
         Mbox("Success", f"Saved settings with {statusMsg}", 0, self.root)
 
     def updateInternal(self):
@@ -1348,7 +1403,7 @@ class SettingWindow:
         """Disable/Enable the snip spinbox
 
         Args:
-            event : Ignored. Defaults to None.
+            eventIgnored. Defaults to None.
         """
         if not self.cbtn_auto_snippet.instate(["selected"]):  # IF disabled then enable it
             self.sb_snippet_total_w.config(state=tk.NORMAL)
@@ -1366,6 +1421,17 @@ class SettingWindow:
         self.sb_snippet_total_h.set(res[2])
         self.sb_snippet_offset_x.set(res[3])
         self.sb_snippet_offset_y.set(res[4])
+
+    def toggle_OCR_replace_newline(self, event=None):
+        """Toggle OCR replace newline
+
+        Args:
+            event: Ignored. Defaults to None.
+        """
+        if self.cbtn_OCR_replace_newline.instate(["selected"]):
+            self.entry_OCR_replace_newline_with.config(state=tk.NORMAL)
+        else:
+            self.entry_OCR_replace_newline_with.config(state=tk.DISABLED)
 
     # ----------------------------------------------------------------
     # Spinbox validation
@@ -1407,7 +1473,7 @@ class SettingWindow:
         """Delete all the cap images
 
         Args:
-            event : Ignored. Defaults to None.
+            eventIgnored. Defaults to None.
         """
         # Ask for confirmation first
         if Mbox("Confirmation", "Are you sure you want to delete all captured images?", 3, self.root):

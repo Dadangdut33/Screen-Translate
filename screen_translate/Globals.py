@@ -14,6 +14,9 @@ dir_assets: str = os.path.join(dir_project, "../assets")
 dir_user_manual: str = os.path.join(dir_project, "../user_manual")
 # ---------------------------- #
 # Target Paths
+path_to_app_exe: str = os.path.join(dir_project, "../ScreenTranslate.exe")
+# convert without the ..
+path_to_app_exe: str = shlex.quote(path_to_app_exe)
 path_json_settings: str = os.path.join(dir_json, "settings.json")
 path_json_history: str = os.path.join(dir_json, "history.json")
 path_logo_icon: str = os.path.join(dir_assets, "logo.ico")

@@ -9,7 +9,7 @@ set_autostart_registry('App name', r'C:\test\tes.exe')
 
 Update autostart:
 
-set_autostart_registry('App name', r'C:\test\tes.exe')
+set_autostart_registry('App name', r'C:\test\tus.exe')
 
 Delete autostart:
 
