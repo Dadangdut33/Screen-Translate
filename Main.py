@@ -16,7 +16,7 @@ from pystray import MenuItem as item
 from screen_translate._version import __version__
 from screen_translate.Globals import gClass, path_logo_icon, dir_captured, fJson, app_name, dir_user_manual
 from screen_translate.Logging import logger
-from screen_translate.utils.Helper import nativeNotify, startFile, OpenUrl
+from screen_translate.utils.Helper import get_opac_value, nativeNotify, startFile, OpenUrl
 from screen_translate.utils.Capture import captureFullScreen
 from screen_translate.utils.Translate import translate
 from screen_translate.utils.LangCode import engine_select_source_dict, engine_select_target_dict, engineList
@@ -159,7 +159,7 @@ class MainWindow:
         CreateToolTip(self.btn_snip_translate, "Snip and translate the selected text.")
 
         # Opacity
-        self.slider_capture_opac = ttk.Scale(self.frame_1, from_=0.0, to=1.0, orient=tk.HORIZONTAL, command=self.opac_change)
+        self.slider_capture_opac = ttk.Scale(self.frame_1, from_=0.0, to=1.0, value=0.8, orient=tk.HORIZONTAL, command=self.opac_change)
         self.slider_capture_opac.pack(side=tk.LEFT, padx=5, pady=5)
 
         self.lbl_capture_opac = tk.Label(self.frame_1, text="Capture Window Opacity: " + "0.8")
@@ -209,17 +209,17 @@ class MainWindow:
         self.lbl_source.pack(side=tk.LEFT, padx=5, pady=5)
         CreateToolTip(self.lbl_source, "Source Language (Text to be translated)")
 
-        self.cb_from = ttk.Combobox(self.frame_3, values=engine_select_source_dict["Google Translate"], state="readonly", width=29)
-        self.cb_from.pack(side=tk.LEFT, padx=5, pady=5)
-        self.cb_from.bind("<<ComboboxSelected>>", lambda e: fJson.savePartialSetting("sourceLang", self.cb_from.get()))
+        self.cb_sourceLang = ttk.Combobox(self.frame_3, values=engine_select_source_dict[fJson.settingCache["engine"]], state="readonly", width=29)
+        self.cb_sourceLang.pack(side=tk.LEFT, padx=5, pady=5)
+        self.cb_sourceLang.bind("<<ComboboxSelected>>", self.cb_source_change)
 
-        self.lbl_to = tk.Label(self.frame_3, text="To:")
-        self.lbl_to.pack(side=tk.LEFT, padx=5, pady=5)
-        CreateToolTip(self.lbl_to, "Target Language (Results)")
+        self.lbl_target = tk.Label(self.frame_3, text="To:")
+        self.lbl_target.pack(side=tk.LEFT, padx=5, pady=5)
+        CreateToolTip(self.lbl_target, "Target Language (Results)")
 
-        self.cb_to = ttk.Combobox(self.frame_3, values=engine_select_target_dict["Google Translate"], state="readonly", width=29)
-        self.cb_to.pack(side=tk.LEFT, padx=5, pady=5)
-        self.cb_to.bind("<<ComboboxSelected>>", lambda e: fJson.savePartialSetting("targetLang", self.cb_to.get()))
+        self.cb_targetLang = ttk.Combobox(self.frame_3, values=engine_select_target_dict[fJson.settingCache["engine"]], state="readonly", width=29)
+        self.cb_targetLang.pack(side=tk.LEFT, padx=5, pady=5)
+        self.cb_targetLang.bind("<<ComboboxSelected>>", self.cb_target_change)
 
         self.btn_swap = ttk.Button(self.frame_3, text="⮁ Swap", command=self.swapTl)
         self.btn_swap.pack(side=tk.LEFT, padx=5, pady=5)
@@ -329,12 +329,11 @@ class MainWindow:
 
     # --- Functions ---
     def onInit(self):
-        self.slider_capture_opac.set(0.8)
         self.cb_tl_engine.set(fJson.settingCache["engine"])
-        self.cb_from.set(fJson.settingCache["sourceLang"])
-        self.cb_to.set(fJson.settingCache["targetLang"])
+        self.cb_sourceLang.set(fJson.settingCache["sourceLang"])
+        self.cb_targetLang.set(fJson.settingCache["targetLang"])
         if self.cb_tl_engine.get() == "None":
-            self.cb_to["state"] = "disabled"
+            self.cb_targetLang["state"] = "disabled"
 
         try:
             if fJson.settingCache["hk_cap_window"] != "":
@@ -453,14 +452,9 @@ class MainWindow:
 
     # Slider
     def opac_change(self, event):
-        value = float(event)
-        if value < 0.025:
-            value = 0.025
-
+        value = get_opac_value(event)
         self.lbl_capture_opac.config(text=f"Capture Window Opacity: {round(value, 3)}")
-
-        if gClass.cw is not None:
-            gClass.cw.change_opacity(str(value), fromOutside=True)
+        gClass.slider_cw_change(value, update_slider=True)
 
     def tb_query_change(self, event):
         gClass.insert_ex_q(self.tb_query.get(1.0, tk.END).strip())
@@ -549,7 +543,7 @@ class MainWindow:
                 with open(dir_user_manual + r"\changelog.txt", "wb") as f:
                     f.write(req.content)
             except Exception as e:
-                print("Error: " + str(e))
+                logger.exception(e)
                 Mbox("Error", str(e), 0, self.root)
 
     # -----------------------------------------------------------------
@@ -562,12 +556,16 @@ class MainWindow:
         self.tb_result.insert(tk.END, tmp)
 
         # swap cb but check first
-        tmp = self.cb_from.get()
-        if self.cb_to.get() in self.cb_from["values"]:
-            self.cb_from.set(self.cb_to.get())
+        tmp = self.cb_sourceLang.get()
+        if self.cb_targetLang.get() in self.cb_sourceLang["values"]:
+            self.cb_sourceLang.set(self.cb_targetLang.get())
 
-        if tmp in self.cb_to["values"]:
-            self.cb_to.set(tmp)
+        if tmp in self.cb_targetLang["values"]:
+            self.cb_targetLang.set(tmp)
+
+        fJson.savePartialSetting("sourceLang", self.cb_sourceLang.get())
+        fJson.savePartialSetting("targetLang", self.cb_targetLang.get())
+        gClass.update_ex_cw_setting()
 
     # Clear TB
     def clear_tb(self):
@@ -581,27 +579,40 @@ class MainWindow:
 
     def cb_lang_update(self):
         # update
-        self.cb_from["values"] = engine_select_source_dict[self.cb_tl_engine.get()]
-        self.cb_to["values"] = engine_select_target_dict[self.cb_tl_engine.get()]
+        self.cb_sourceLang["values"] = engine_select_source_dict[self.cb_tl_engine.get()]
+        self.cb_targetLang["values"] = engine_select_target_dict[self.cb_tl_engine.get()]
 
-        if self.cb_from.get() not in self.cb_from["values"]:
-            self.cb_from.current(0)
+        if self.cb_sourceLang.get() not in self.cb_sourceLang["values"]:
+            self.cb_sourceLang.current(0)
 
-        if self.cb_to.get() not in self.cb_to["values"]:
-            self.cb_to.current(0)
+        if self.cb_targetLang.get() not in self.cb_targetLang["values"]:
+            self.cb_targetLang.current(0)
 
         if self.cb_tl_engine.get() == "None":
-            self.cb_to["state"] = "disabled"
+            self.cb_targetLang["state"] = "disabled"
         else:
-            self.cb_to["state"] = "readonly"
+            self.cb_targetLang["state"] = "readonly"
 
         # save
-        fJson.savePartialSetting("sourceLang", self.cb_from.get())
-        fJson.savePartialSetting("targetLang", self.cb_to.get())
+        fJson.savePartialSetting("sourceLang", self.cb_sourceLang.get())
+        fJson.savePartialSetting("targetLang", self.cb_targetLang.get())
+
+        # update external
+        gClass.update_ex_cw_setting()
+
+    def cb_source_change(self, _event=None):
+        fJson.savePartialSetting("sourceLang", self.cb_sourceLang.get())
+        # update external
+        gClass.update_ex_cw_setting()
+
+    def cb_target_change(self, _event=None):
+        fJson.savePartialSetting("targetLang", self.cb_targetLang.get())
+        # update external
+        gClass.update_ex_cw_setting()
 
     # -----------------------------------------------------------------
     def get_params(self):
-        return self.cb_tl_engine.get(), self.cb_from.get(), self.cb_to.get(), self.tb_query.get(1.0, tk.END)
+        return self.cb_tl_engine.get(), self.cb_sourceLang.get(), self.cb_targetLang.get(), self.tb_query.get(1.0, tk.END)
 
     def param_check(self, engine: Literal["Google Translate", "Deepl", "MyMemoryTranslator", "PONS", "LibreTranslate", "None"], from_lang: str, to_lang: str, query: str, withOCR: bool = True):
         logger.info("Checking params...")
@@ -609,27 +620,27 @@ class MainWindow:
         # If source and destination are the same
         if engine != "None" and ((from_lang) == (to_lang)):
             gClass.lb_stop()
-            logger.warn("Error Language is the same as source! Please choose a different language")
+            logger.warning("Error Language is the same as source! Please choose a different language")
             Mbox("Error: Language target is the same as source", "Language target is the same as source! Please choose a different language", 2, self.root)
             return False
 
         if engine != "None" and from_lang == "Auto-Detect" and withOCR:
             gClass.lb_stop()
-            logger.warn("Error: Invalid Language source! Must specify source langauge when using OCR")
+            logger.warning("Error: Invalid Language source! Must specify source langauge when using OCR")
             Mbox("Error: Invalid Source Language Selected", "Must specify source langauge when using OCR", 2, self.root)
             return False
 
         # If langto not set
         if to_lang == "Auto-Detect":
             gClass.lb_stop()
-            logger.warn("Error: Invalid Language Selected! Must specify language destination")
+            logger.warning("Error: Invalid Language Selected! Must specify language destination")
             Mbox("Error: Invalid Language Selected", "Must specify language destination", 2, self.root)
             return False
 
         # If the text is empty
         if len(query) == 0:
             gClass.lb_stop()
-            logger.warn("Error: No text detected! Please select a text to translate")
+            logger.warning("Error: No text detected! Please select a text to translate")
             Mbox("Error: No text detected", "Please select a text to translate", 2, self.root)
             return False
 
@@ -643,7 +654,7 @@ class MainWindow:
             return
 
         if engine == "None":
-            logger.warn("Error: No translation engine selected! Please select a translation engine if only translate!")
+            logger.warning("Error: No translation engine selected! Please select a translation engine if only translate!")
             Mbox("Error", "Please select a translation engine if only translate!", 0, self.root)
             return
 

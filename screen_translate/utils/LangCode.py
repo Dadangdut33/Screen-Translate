@@ -125,6 +125,7 @@ google_lang = {
     "Afrikaans": "af",
     "Amharic": "am",
     "Arabic": "ar",
+    "Armenian": "hy",
     "Azerbaijani": "aze_cyrl",
     "Belarusian": "be",
     "Bengali": "bn",
@@ -157,7 +158,6 @@ google_lang = {
     "Hebrew": "iw",
     "Hindi": "hi",
     "Hungarian": "hu",
-    "Armenian": "hy",
     "Indonesian": "id",
     "Icelandic": "is",
     "Italian": "it",
@@ -389,20 +389,25 @@ libre_lang = {
 # target
 none_target = list(tesseract_lang.keys())
 none_target.pop(0)
+none_target.sort()
 
 google_target = list(google_lang.keys())
 google_target.pop(0)
+google_target.sort()
 
 myMemory_target = list(myMemory_lang.keys())
 myMemory_target.pop(0)
+myMemory_target.sort()
 
 deepl_target = list(deepl_lang.keys())
 deepl_target.pop(0)
+deepl_target.sort()
 
 pons_target = list(pons_lang.keys())  # pons dont have auto-detect
 
 libre_target = list(libre_lang.keys())
 libre_target.pop(0)
+libre_target.sort()
 
 engine_select_target_dict = {
     "Google Translate": google_target,
@@ -418,26 +423,31 @@ google_tesseract_compatible_source = list(google_lang.keys())
 for lang in google_tesseract_compatible_source:
     if lang not in tesseract_lang.keys():
         google_tesseract_compatible_source.remove(lang)
+google_tesseract_compatible_source.sort()
 
 myMemory_tesseract_compatible_source = list(myMemory_lang.keys())
 for lang in myMemory_tesseract_compatible_source:
     if lang not in tesseract_lang.keys():
         myMemory_tesseract_compatible_source.remove(lang)
+myMemory_tesseract_compatible_source.sort()
 
 deepl_tesseract_compatible_source = list(deepl_lang.keys())
 for lang in deepl_tesseract_compatible_source:
     if lang not in tesseract_lang.keys():
         deepl_tesseract_compatible_source.remove(lang)
+deepl_tesseract_compatible_source.sort()
 
 pons_tesseract_compatible_source = list(pons_lang.keys())
 for lang in pons_tesseract_compatible_source:
     if lang not in tesseract_lang.keys():
         pons_tesseract_compatible_source.remove(lang)
+pons_tesseract_compatible_source.sort()
 
 libre_tesseract_compatible_source = list(libre_lang.keys())
 for lang in libre_tesseract_compatible_source:
     if lang not in tesseract_lang.keys():
         libre_tesseract_compatible_source.remove(lang)
+libre_tesseract_compatible_source.sort()
 
 
 engine_select_source_dict = {
@@ -446,5 +456,5 @@ engine_select_source_dict = {
     "Deepl": deepl_tesseract_compatible_source,
     "PONS": pons_tesseract_compatible_source,
     "LibreTranslate": libre_tesseract_compatible_source,
-    "None": none_target, # no auto-detect
+    "None": none_target,  # no auto-detect
 }

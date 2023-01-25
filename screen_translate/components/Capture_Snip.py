@@ -1,12 +1,13 @@
 import threading
 import tkinter as tk
 
+from .MBox import Mbox
 from screen_translate.Globals import gClass, path_logo_icon, fJson
 from screen_translate.Logging import logger
-from screen_translate.components.MBox import Mbox
 from screen_translate.utils.Translate import translate
 from screen_translate.utils.Capture import ocrFromCoords
 from screen_translate.utils.Monitor import getScreenTotalGeometry
+from screen_translate.utils.LangCode import engine_select_source_dict, engine_select_target_dict, engineList
 
 from PIL import Image, ImageTk
 
@@ -25,7 +26,22 @@ class SnipWindow:
         self.img = None
         gClass.csw = self  # type: ignore
 
-        # mask
+        # ------------------ Variables ------------------
+        self.rect = None
+        self.x = self.y = 0
+        self.start_x = 0
+        self.start_y = 0
+        self.curX = 0
+        self.curY = 0
+        self.cv2Contour = tk.IntVar()
+        self.grayscale = tk.IntVar()
+        self.bgType = tk.StringVar()
+        self.debugMode = tk.IntVar()
+        self.engine = tk.StringVar()
+        self.sourceLang = tk.StringVar()
+        self.targetLang = tk.StringVar()
+
+        # ------------------ Mask ------------------
         self.tlw_snipmask = tk.Toplevel(self.root)
         self.tlw_snipmask.wm_withdraw()  # Hide the window
         self.tlw_snipmask.overrideredirect(True)  # Hide the top bar
@@ -34,18 +50,43 @@ class SnipWindow:
         self.f_snipper = tk.Frame(self.tlw_snipmask, bg="blue")  # placeholder
         self.f_snipper.pack(fill=tk.BOTH, expand=True)
 
-        # variables
-        self.rect = None
-        self.x = self.y = 0
-        self.start_x = 0
-        self.start_y = 0
-        self.curX = 0
-        self.curY = 0
-
+        # ------------------ Image canvas ------------------
         # image canvas
         self.img_canvas = tk.Canvas(self.root, highlightthickness=0)
         self.img_canvas.pack(fill=tk.BOTH, expand=True)  # ocupy main whole window
 
+        # ------------------ Menu ------------------
+        self.menuDropdown = tk.Menu(self.root, tearoff=0)
+
+        self.menuDropdown.add_checkbutton(label="Detect contour using CV2", command=lambda: beep() or fJson.savePartialSetting("enhance_with_cv2_Contour", self.cv2Contour.get()) or gClass.update_sw_setting(), onvalue=1, offvalue=0, variable=self.cv2Contour)  # type: ignore
+        self.menuDropdown.add_checkbutton(label="Grayscale", command=lambda: beep() or fJson.savePartialSetting("grayscale", self.grayscale.get()) or gClass.update_sw_setting(), onvalue=1, offvalue=0, variable=self.grayscale)  # type: ignore
+
+        self.bgTypeMenu = tk.Menu(self.menuDropdown, tearoff=0)
+        self.menuDropdown.add_cascade(label="Background Type", menu=self.bgTypeMenu)
+        self.bgTypeMenu.add_radiobutton(label="Auto-Detect", command=lambda: beep() or fJson.savePartialSetting("enhance_background", "Auto-Detect") or gClass.update_sw_setting(), value="Auto-Detect", variable=self.bgType)  # type: ignore
+        self.bgTypeMenu.add_radiobutton(label="Light", command=lambda: beep() or fJson.savePartialSetting("enhance_background", "Light") or gClass.update_sw_setting(), value="Light", variable=self.bgType)  # type: ignore
+        self.bgTypeMenu.add_radiobutton(label="Dark", command=lambda: beep() or fJson.savePartialSetting("enhance_background", "Dark") or gClass.update_sw_setting(), value="Dark", variable=self.bgType)  # type: ignore
+        self.menuDropdown.add_checkbutton(label="Debug Mode", command=lambda: beep() or fJson.savePartialSetting("enhance_debugmode", self.debugMode.get()) or gClass.update_sw_setting(), onvalue=1, offvalue=0, variable=self.debugMode)  # type: ignore
+
+        self.menuDropdown.add_separator()
+        self.submenu_engine = tk.Menu(self.menuDropdown, tearoff=0)
+        self.menuDropdown.add_cascade(label="TL Engine", menu=self.submenu_engine)
+        for engine in engineList:
+            self.submenu_engine.add_radiobutton(label=engine, command=self.engine_update, value=engine, variable=self.engine)
+
+        self.submenu_sourceLang = tk.Menu(self.menuDropdown, tearoff=0)
+        self.menuDropdown.add_cascade(label="From", menu=self.submenu_sourceLang)
+        for item in engine_select_source_dict[fJson.settingCache["engine"]]:
+            self.submenu_sourceLang.add_radiobutton(label=item, command=self.source_update, value=item, variable=self.sourceLang)
+
+        self.submenu_targetLang = tk.Menu(self.menuDropdown, tearoff=0)
+        self.menuDropdown.add_cascade(label="To", menu=self.submenu_targetLang)
+        for item in engine_select_target_dict[fJson.settingCache["engine"]]:
+            self.submenu_targetLang.add_radiobutton(label=item, command=self.target_update, value=item, variable=self.targetLang)
+
+        self.menuDropdown.add_separator()
+        self.menuDropdown.add_command(label="Exit / Cancel snipping", command=self.exitScreenshotMode)
+        # ------------------ Bindings ------------------
         # binds
         self.tlw_snipmask.bind("<Escape>", self.exitScreenshotMode)
         self.img_canvas.bind("<Escape>", self.exitScreenshotMode)
@@ -58,6 +99,14 @@ class SnipWindow:
             pass
 
     def onInit(self):
+        """Init variable on snipping / every time entering snipping mode"""
+        self.bgType.set(fJson.settingCache["enhance_background"])
+        self.cv2Contour.set(fJson.settingCache["enhance_with_cv2_Contour"])
+        self.grayscale.set(fJson.settingCache["enhance_with_grayscale"])
+        self.debugMode.set(fJson.settingCache["enhance_debugmode"])
+        self.engine.set(fJson.settingCache["engine"])
+        self.sourceLang.set(fJson.settingCache["sourceLang"])
+        self.targetLang.set(fJson.settingCache["targetLang"])
         self.root.geometry(getScreenTotalGeometry()[0])
         self.tlw_snipmask.geometry(getScreenTotalGeometry()[0])
 
@@ -78,7 +127,7 @@ class SnipWindow:
 
         self.ss_canvas.bind("<Escape>", self.exitScreenshotMode)
         self.ss_canvas.bind("<ButtonPress-1>", self.on_button_press)
-        self.ss_canvas.bind("<ButtonPress-3>", self.exitScreenshotMode)
+        self.ss_canvas.bind("<ButtonPress-3>", lambda event: self.menuDropdown.post(event.x_root, event.y_root))
         self.ss_canvas.bind("<B1-Motion>", self.on_move_press)
         self.ss_canvas.bind("<ButtonRelease-1>", self.on_button_release)
 
@@ -205,3 +254,52 @@ class SnipWindow:
             logger.debug(f"End position x: {self.curX}")
             logger.debug(f"Starting position y: {self.start_y}")
             logger.debug(f"End position y: {self.curY}")
+
+    # engine update
+    def engine_update(self):
+        fJson.savePartialSetting("engine", self.engine.get())
+        # update
+        prev_source = self.sourceLang.get()
+        prev_target = self.targetLang.get()
+        source_list = engine_select_source_dict[self.engine.get()]
+        target_list = engine_select_target_dict[self.engine.get()]
+
+        # delete all in the submenu
+        self.submenu_sourceLang.delete(0, "end")
+        self.submenu_targetLang.delete(0, "end")
+
+        # add new items
+        for item in source_list:
+            self.submenu_sourceLang.add_radiobutton(label=item, command=self.source_update, value=item, variable=self.sourceLang)
+
+        for item in target_list:
+            self.submenu_targetLang.add_radiobutton(label=item, command=self.target_update, value=item, variable=self.targetLang)
+
+        if prev_source not in source_list:
+            self.sourceLang.set(source_list[0])
+
+        if prev_target not in target_list:
+            self.targetLang.set(target_list[0])
+
+        if self.engine.get() == "None":
+            self.menuDropdown.entryconfig("To", state="disabled")
+        else:
+            self.menuDropdown.entryconfig("To", state="normal")
+
+        gClass.update_mw_setting()
+
+    def source_update(self):
+        """
+        Method to update the source language.
+        """
+        fJson.savePartialSetting("sourceLang", self.sourceLang.get())
+        gClass.update_mw_setting()
+        gClass.update_ex_cw_setting()
+
+    def target_update(self):
+        """
+        Method to update the target language.
+        """
+        fJson.savePartialSetting("targetLang", self.targetLang.get())
+        gClass.update_mw_setting()
+        gClass.update_ex_cw_setting()

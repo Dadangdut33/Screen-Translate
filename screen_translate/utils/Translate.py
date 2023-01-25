@@ -24,7 +24,7 @@ def translate(query: str, from_lang: str, to_lang: str, engine: Literal["Google 
     
     query = query.strip()
     if len(query) == 0:
-        logger.warn("No text to translate!")
+        logger.warning("No text to translate!")
         gClass.lb_stop()
         return
 

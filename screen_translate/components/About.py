@@ -5,11 +5,11 @@ import requests
 from PIL import Image, ImageTk
 
 
+from .Tooltip import CreateToolTip
 from screen_translate._version import __version__
 from screen_translate.Logging import logger
 from screen_translate.Globals import gClass, path_logo_png, path_logo_icon, app_name, fJson
 from screen_translate.utils.Helper import OpenUrl, nativeNotify
-from .Tooltip import CreateToolTip
 
 # Classes
 class AboutWindow:

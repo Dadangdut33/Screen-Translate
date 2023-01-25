@@ -44,4 +44,4 @@ coll = COLLECT(exe,
                strip=False,
                upx=True,
                upx_exclude=[],
-               name=f"ScreenTranslate {__version__} No Console")
+               name=f"ScreenTranslate {__version__} NC")

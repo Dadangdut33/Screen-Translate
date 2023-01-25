@@ -72,6 +72,26 @@ def tb_copy_only(event):
     return "break"
 
 
+def get_opac_value(event):
+    value = 1
+    try:
+        value = event.delta
+        if value > 0:
+            value += 0.025
+        else:
+            value -= 0.025
+
+    except AttributeError:
+        value = float(event)
+
+    if value > 1:
+        value = 1
+    elif value < 0.025:
+        value = 0.025
+
+    return value
+
+
 def hex_to_rgb(value: str):
     value = value.lstrip("#")
     lv = len(value)
@@ -80,6 +100,7 @@ def hex_to_rgb(value: str):
 
 def rgb_to_hex(rgb: Tuple):
     return "%02x%02x%02x" % rgb
+
 
 def invert_color(hex_color: str):
     r, g, b = hex_to_rgb(hex_color)

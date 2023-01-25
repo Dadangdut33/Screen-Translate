@@ -4,8 +4,6 @@
 
 <h1 align="center"> Screen Translate - An Easy to Use OCR Translator </h1>
 <p align="center">
-    <a href="https://lgtm.com/projects/g/Dadangdut33/Screen-Translate/alerts/"><img alt="Total alerts" src="https://img.shields.io/lgtm/alerts/g/Dadangdut33/Screen-Translate.svg?logo=lgtm&logoWidth=18"/></a>
-    <a href="https://lgtm.com/projects/g/Dadangdut33/Screen-Translate/context:python"><img alt="Language grade: Python" src="https://img.shields.io/lgtm/grade/python/g/Dadangdut33/Screen-Translate.svg?logo=lgtm&logoWidth=18"/></a>
     <a href="https://github.com/Dadangdut33/Screen-Translate/issues"><img alt="GitHub issues" src="https://img.shields.io/github/issues/Dadangdut33/Screen-Translate"></a>
     <a href="https://github.com/Dadangdut33/Screen-Translate/pulls"><img alt="GitHub pull requests" src="https://img.shields.io/github/issues-pr/Dadangdut33/Screen-Translate"></a>
     <a href="https://github.com/Dadangdut33/Screen-Translate/releases/latest"><img alt="github downloads"  src="https://img.shields.io/github/downloads/Dadangdut33/Screen-Translate/total?label=downloads (github)"></a><a href="https://sourceforge.net/projects/screen-translate/files/latest/download"><img alt="sourceforge downloads" src="https://img.shields.io/sourceforge/dt/screen-translate.svg?label=downloads (sourceforge)"></a> <br>
@@ -33,9 +31,8 @@ Inspired by Visual Novel Reader (VNR), [Visual Novel OCR](https://github.com/lem
 - [How To Uninstall](#how-to-uninstall)
 - [How To Compile It To .exe Yourself](#how-to-compile-it-to-exe-yourself)
 - [How To Use](#how-to-use)
-- [Reporting bugs and feature requests](#reporting-bugs-and-feature-requests)
+- [Contributing](#contributing)
 - [Attribution](#attribution)
-- [Disclaimer](#disclaimer)
 - [Other](#other)
 
 ---
@@ -171,17 +168,13 @@ Read [this stackoverflow post](https://stackoverflow.com/questions/5458048/how-c
 
 For more information you can check the [user_manual](https://github.com/Dadangdut33/Screen-Translate/tree/main/user_manual) folder
 
-# Reporting bugs and feature requests
+# Contributing
 
-If you encounter any bugs with the program, please report them by opening an issue on the github repository. You can also request a feature by opening an issue.
+If you encounter any bugs with the program, please report them by opening an issue on the github repository. You can also request a feature by opening an issue or posting in discussion.
 
 # Attribution
 
 Translate Icon in the logo is taken from [Icons8](https://icons8.com/)
-
-# Disclaimer
-
-This is a free open source software, you can use it for any purpose. However, I am not responsible for any damage caused by this software. Use it at your own risk. **(It won't create any damage though don't worry)**. This is also non profit, I gain no money from creating this.
 
 # Other
 

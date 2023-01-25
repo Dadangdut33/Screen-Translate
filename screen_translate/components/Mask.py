@@ -174,14 +174,4 @@ class MaskWindow:
             self.f_1["bg"] = colorGet[1]
             self.menuDropdown.entryconfig(0, label=f"Color: {colorGet[1]}")
             fJson.savePartialSetting("mask_window_bg_color", colorGet[1])
-
-            assert gClass.sw is not None
-            gClass.sw.updateInternal()
-
-    def updateInternal(self, bgColor):
-        """
-        Method to update the internal data.
-        """
-        self.root["bg"] = bgColor
-        self.f_1["bg"] = bgColor
-        self.menuDropdown.entryconfig(0, label=f"Color: {bgColor}")
+            gClass.update_sw_setting()

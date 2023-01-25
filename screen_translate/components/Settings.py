@@ -1080,7 +1080,7 @@ class SettingWindow:
 
         # # If tesseract is not found
         if not os.path.exists(tesseractPathInput):
-            logger.warn("Tesseract Not Found Error")
+            logger.warning("Tesseract Not Found Error")
             Mbox("Error: Tesseract not found", "Invalid Path Provided For Tesseract!", 2, self.root)
             return
 
@@ -1211,15 +1211,6 @@ class SettingWindow:
         logger.info(f"Saved settings with {statusMsg}")
         Mbox("Success", f"Saved settings with {statusMsg}", 0, self.root)
 
-    def updateInternal(self):
-        self.cb_OCR_bg.set(fJson.settingCache["enhance_background"])
-        self.cbtnInvoker(fJson.settingCache["enhance_with_cv2_Contour"], self.cbtn_OCR_cv2contour)
-        self.cbtnInvoker(fJson.settingCache["enhance_with_grayscale"], self.cbtn_OCR_grayscale)
-        self.cbtnInvoker(fJson.settingCache["enhance_debugmode"], self.cbtn_OCR_debug)
-
-        self.entry_maskwindow_color.delete(0, tk.END)
-        self.entry_maskwindow_color.insert(0, fJson.settingCache["mask_window_color"])
-
     def updateExternal(self):
         assert gClass.mw is not None
         gClass.mw.tb_query.config(
@@ -1248,17 +1239,8 @@ class SettingWindow:
             bg=self.entry_ex_res_bg_color.get(),
         )
 
-        assert gClass.cw is not None
-        toUpdate = {
-            "enhance_background": self.cb_OCR_bg.get(),
-            "enhance_with_cv2_Contour": self.cbtn_OCR_cv2contour.instate(["selected"]),
-            "enhance_with_grayscale": self.cbtn_OCR_grayscale.instate(["selected"]),
-            "enhance_debugmode": self.cbtn_OCR_debug.instate(["selected"]),
-        }
-        gClass.cw.updateInternal(toUpdate)
-
-        assert gClass.mask is not None
-        gClass.mask.updateInternal(self.entry_maskwindow_color.get())
+        gClass.update_ex_cw_setting()
+        gClass.update_mask_setting()
 
     # --------------------------------------------------
     # Offset capturing settings

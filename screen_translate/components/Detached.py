@@ -3,10 +3,10 @@ import tkinter.ttk as ttk
 import platform
 from typing import Literal
 
-from screen_translate.Globals import fJson, gClass, path_logo_icon
-from screen_translate.utils.Beep import beep
 from .Tooltip import CreateToolTip
 from .MBox import Mbox
+from screen_translate.Globals import fJson, gClass, path_logo_icon
+from screen_translate.utils.Beep import beep
 
 
 # Classes
