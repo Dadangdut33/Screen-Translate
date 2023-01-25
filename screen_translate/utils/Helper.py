@@ -86,8 +86,8 @@ def get_opac_value(event):
 
     if value > 1:
         value = 1
-    elif value < 0.025:
-        value = 0.025
+    elif value < 0:
+        value = 0
 
     return value
 

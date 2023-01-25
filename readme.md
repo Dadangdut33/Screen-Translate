@@ -54,6 +54,7 @@ Inspired by software such as Visual Novel Reader (VNR), [Visual Novel OCR](https
 - Capture and translate
   <details open>
   <summary>Example</summary>
+    <img src="user_manual/5_4_usage_example.png" width="700" alt="Screen Translate Looks">
     <img src="user_manual/5_2_capture_window.png" width="700" alt="Screen Translate Looks">
     <img src="user_manual/5_3_capture_window.png" width="700" alt="Screen Translate Looks">
   </details>

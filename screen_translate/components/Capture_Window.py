@@ -61,7 +61,7 @@ class CaptureWindow:
         self.lbl_opacity.pack(padx=5, pady=5, side=tk.LEFT)
 
         # opacity slider
-        self.slider_opacity = ttk.Scale(self.f_1, from_=0.25, to=1.0, value=0.8, orient=tk.HORIZONTAL, command=self.change_opacity)
+        self.slider_opacity = ttk.Scale(self.f_1, from_=0.0, to=1.0, value=0.8, orient=tk.HORIZONTAL, command=self.change_opacity)
         self.slider_opacity.pack(padx=5, pady=5, side=tk.LEFT)
 
         # Button
