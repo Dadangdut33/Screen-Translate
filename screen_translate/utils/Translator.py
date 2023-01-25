@@ -1,10 +1,9 @@
 import requests
 from notifypy import Notify, exceptions
 
+from .LangCode import google_lang, libre_lang, myMemory_lang, deepl_lang
 from screen_translate.Globals import path_logo_icon, app_name
 from screen_translate.Logging import logger
-
-from .LangCode import google_lang, libre_lang, myMemory_lang, deepl_lang
 
 
 def no_connection_notify(

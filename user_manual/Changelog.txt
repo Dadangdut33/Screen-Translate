@@ -1,8 +1,18 @@
 # Changelog
 Latest V2.0.0
 
-[V2.0.0 TBA] 
-...
+[V2.0.0 Tray app and lots of improvement] 
+- Added tray app
+- Added option to run on startup
+- Added right click context menu to capture window, detached window, and snipping mode 
+- Refactor and improve code structure
+- Better logging
+- Fix getting offset 
+- Some settings are now saved dynamically
+- Setting window component now dynamically resize
+- Auto reconnect to internet for translation
+- Snipping mode now capture the window first before snipping
+- Now uses thread so window won't freeze when capturing / translating
 
 [V1.8.5 Resizable setting window]
 - To counter scaling problem, you can now resize the setting window. It is also bigger now.

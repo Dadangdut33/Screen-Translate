@@ -62,10 +62,10 @@ def get_offset(offSetType: Literal["x", "y", "w", "h"]) -> int:
     Calculate and get the offset settings for the capture window.
     """
     if offSetType == "w":
-        w = 60 if fJson.settingCache["offSetW"] == "auto" else fJson.settingCache["offSetW"]
+        w = 0 if fJson.settingCache["offSetW"] == "auto" else fJson.settingCache["offSetW"]
         return w
     elif offSetType == "h":
-        h = 60 if fJson.settingCache["offSetH"] == "auto" else fJson.settingCache["offSetH"]
+        h = 0 if fJson.settingCache["offSetH"] == "auto" else fJson.settingCache["offSetH"]
         return h
     else:
         if fJson.settingCache["offSetX"] != "auto" and offSetType == "x":  # if x and manual

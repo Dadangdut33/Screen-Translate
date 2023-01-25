@@ -28,6 +28,7 @@ class CaptureWindow:
         self.root.geometry("600x150")
         self.root.wm_withdraw()
         self.root.attributes("-alpha", 0.8)
+        self.root.wm_attributes("-topmost", True)
         self.currentOpacity = 0.8
         gClass.cw = self  # type: ignore
 
@@ -156,7 +157,7 @@ class CaptureWindow:
         gClass.cw_hidden = False
         self.onInit()
         self.root.after(100, self.root.deiconify)
-        self.root.attributes("-alpha", 0.8)
+        self.slider_opacity.set(0.8)
         if platform.system() == "Windows":
             self.clickThrough.set(0)
             self.root.wm_attributes("-transparentcolor", "")
@@ -186,6 +187,7 @@ class CaptureWindow:
             "Shortcut keys command for detached window (Must be focused)",
             "Alt + scroll to change opacity\nAlt + t to toggle title bar (remove title bar)\nAlt + s to toggle click through or transparent window\nAlt + o to toggle always on top\nAlt + x to toggle on/off this tooltip\n\nTips: You can drag the window by dragging the ▶ label",
             0,
+            self.root
         )
 
     # disable tooltip

@@ -40,7 +40,7 @@ class Globals:
         self.translating: bool = True
         self.hk_cw_pressed: bool = False
         self.hk_snip_pressed: bool = False
-        self.cw_hidden: bool = False
+        self.cw_hidden: bool = True
 
         # ---------------------------- #
         # classes

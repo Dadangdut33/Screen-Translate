@@ -61,7 +61,7 @@ class SettingWindow:
 
         # Listbox for the category list
         self.lb_cat = tk.Listbox(self.lf_m_bg_l, selectmode=tk.SINGLE, exportselection=False)  # inside the label frame
-        self.lb_cat.pack(side=tk.LEFT, fill=tk.BOTH, padx=0, pady=0)
+        self.lb_cat.pack(side=tk.LEFT, fill=tk.BOTH, padx=5, pady=2)
 
         self.lb_cat.insert(1, "Capturing/Offset")
         self.lb_cat.insert(2, "OCR Engine/Enhance")
@@ -1183,7 +1183,7 @@ class SettingWindow:
         # check run on startup
         if setting_collections["run_on_startup"]:
             if not check_autostart_registry(app_name):
-                x = set_autostart_registry(app_name, path_to_app_exe)
+                x = set_autostart_registry(app_name, path_to_app_exe + " -s")
                 logger.info(f"Set autostart registry: {x}")
         else:
             if check_autostart_registry(app_name):

@@ -1,10 +1,10 @@
 import asyncio
 from typing import Literal
 
+from .Translator import google_tl, memory_tl, libre_tl, deepl_tl, pons_tl
 from screen_translate.Logging import logger
 from screen_translate.Globals import fJson, gClass
 from screen_translate.components.MBox import Mbox
-from screen_translate.utils.Translator import google_tl, memory_tl, libre_tl, deepl_tl, pons_tl
 
 
 def translate(query: str, from_lang: str, to_lang: str, engine: Literal["Google Translate", "Deepl", "MyMemoryTranslator", "PONS", "LibreTranslate"]):
@@ -31,7 +31,15 @@ def translate(query: str, from_lang: str, to_lang: str, engine: Literal["Google 
     # --------------------------------
     # Deepl
     if engine == "Deepl":
-        loop = asyncio.get_event_loop()  # deepl run separately because it is async
+        try:
+            loop = asyncio.get_event_loop()
+        except RuntimeError as e:
+            if str(e).startswith('There is no current event loop in thread'):
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+            else:
+                raise
+
         loop.run_until_complete(deeplTl(query, from_lang, to_lang))
         return
 

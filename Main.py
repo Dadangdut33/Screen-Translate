@@ -75,6 +75,7 @@ class AppTray:
 
         self.menu_items = (
             item("Snip and Translate", self.snip_win),
+            item("Generate Capture Window", self.open_capture_window),
             menu.SEPARATOR,
             item("Show Query Window", self.open_query),
             item("Show Result Window", self.open_result),
@@ -102,13 +103,18 @@ class AppTray:
         logger.info("Opening result window from tray")
         gClass.ex_resw.show()
 
-    # -- Exit app by flagging runing false to stop main loop
-    def exit_app(self):
-        gClass.running = False
+    def open_capture_window(self):
+        assert gClass.cw is not None
+        logger.info("Opening capture window from tray")
+        gClass.cw.show()
 
     def snip_win(self):
         assert gClass.mw is not None
         gClass.mw.start_snip_window()
+
+    # -- Exit app by flagging runing false to stop main loop
+    def exit_app(self):
+        gClass.running = False
 
 
 # ----------------------------------------------------------------------
@@ -346,6 +352,13 @@ class MainWindow:
 
         self.hkPollThread = threading.Thread(target=self.hkPoll, daemon=True)
         self.hkPollThread.start()
+
+        # detect if run from startup or not using sys, with -s as argument marking silent start (hide window)
+        logger.info("Checking if run from startup...")
+        logger.debug(sys.argv)
+        if "-s" in sys.argv:
+            logger.info("Run from startup, hiding window...")
+            self.root.withdraw()
 
     def quit_app(self):
         gClass.running = False

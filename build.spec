@@ -3,9 +3,9 @@
 block_cipher = None
 
 from PyInstaller.utils.hooks import copy_metadata
-from screen_translate._version import __version__
 
 datas = [('./assets', 'assets/'), ('./user_manual', 'user_manual'), ('./user_manual/Readme.txt', '.'), ('./user_manual/Changelog.txt', '.'),]
+datas += copy_metadata('pyppeteer')
 
 a = Analysis(['Main.py'],
              pathex=['./'],
@@ -44,4 +44,4 @@ coll = COLLECT(exe,
                strip=False,
                upx=True,
                upx_exclude=[],
-               name=f"ScreenTranslate {__version__}")
+               name=f"ScreenTranslate 2.0.0")

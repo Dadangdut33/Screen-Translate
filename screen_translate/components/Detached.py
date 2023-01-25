@@ -3,8 +3,8 @@ import tkinter.ttk as ttk
 import platform
 from typing import Literal
 
-from .Tooltip import CreateToolTip
 from .MBox import Mbox
+from .Tooltip import CreateToolTip
 from screen_translate.Globals import fJson, gClass, path_logo_icon
 from screen_translate.utils.Beep import beep
 
@@ -19,6 +19,7 @@ class AbstractDetachedWindow:
         self.root.title(title)
         self.root.geometry("600x160")
         self.root.wm_withdraw()
+        self.root.wm_attributes("-topmost", True)
 
         # ------------------ #
         self.winType = winType
@@ -29,6 +30,7 @@ class AbstractDetachedWindow:
         self.getTbVal = False
         self.currentOpacity = 1.0
         self.always_on_top = tk.IntVar()
+        self.always_on_top.set(1)
         self.tooltip_disabled = tk.IntVar()
         self.hidden_top = tk.IntVar()
         self.clickThrough = tk.IntVar()
@@ -154,8 +156,8 @@ class AbstractDetachedWindow:
         """
         Method to toggle tooltip.
         """
-        beep()
         if fromKeyBind:
+            beep()
             self.tooltip_disabled.set(0 if self.tooltip_disabled.get() == 1 else 1)
 
         if self.tooltip_disabled.get() == 1:
@@ -170,8 +172,8 @@ class AbstractDetachedWindow:
         """
         Method to toggle hidden top.
         """
-        beep()
         if fromKeyBind:
+            beep()
             self.hidden_top.set(0 if self.hidden_top.get() == 1 else 1)
 
         self.root.overrideredirect(True if self.hidden_top.get() == 1 else False)
@@ -180,8 +182,8 @@ class AbstractDetachedWindow:
         """
         Method to toggle click through. Only on windows.
         """
-        beep()
         if fromKeyBind:
+            beep()
             self.clickThrough.set(0 if self.clickThrough.get() == 1 else 1)
 
         if self.clickThrough.get() == 1:
@@ -194,8 +196,8 @@ class AbstractDetachedWindow:
         Method to toggle always on top.
         """
 
-        beep()
         if fromKeyBind:
+            beep()
             self.always_on_top.set(0 if self.always_on_top.get() == 1 else 1)
 
         self.root.wm_attributes("-topmost", True if self.always_on_top.get() == 1 else False)
