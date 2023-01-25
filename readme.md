@@ -84,7 +84,7 @@ Inspired by Visual Novel Reader (VNR), [Visual Novel OCR](https://github.com/lem
 
 **For Dev**
 
-- Python 3.6, checked using [vermin](https://github.com/netromdk/vermin) (I am using python 3.10.2)
+- Python 3.6, checked using [vermin](https://github.com/netromdk/vermin) (I am using python 3.10.8)
 - Install [the dependencies](https://github.com/Dadangdut33/Screen-Translate/blob/main/requirements.txt) You can install them by running `pip_install.bat` or by typing `pip install -r requirements.txt`.
 
 # Downloads
@@ -136,7 +136,7 @@ If you use the installer version, you can run the uninstaller inside the app fol
 
 # How To Compile It To .exe Yourself
 
-You can use [p2exe](https://www.py2exe.org/) or many other stuff. I use [pyinstaller](https://www.pyinstaller.org/) to compile it.<br>
+You can use [p2exe](https://www.py2exe.org/), [cx freeze](https://cx-freeze.readthedocs.io/en/latest/), or many other stuff. I use [pyinstaller](https://www.pyinstaller.org/) to compile it.<br>
 There are 2 options for compiling, command used are:
 
 ```
@@ -150,10 +150,10 @@ pyinstaller ScreenTranslate_NoConsole.spec
 # If installing using virtualenviroment
 # Change venv to your virtualenviroment name
 # With console window
-pyinstaller --paths venv/lib/site-packages ScreenTranslate_Console.spec
+pyinstaller --paths venv/lib/site-packages build.spec
 
 # No console window
-pyinstaller --paths venv/lib/site-packages ScreenTranslate_NoConsole.spec
+pyinstaller --paths venv/lib/site-packages build_with_console.spec
 ```
 
 Read [this stackoverflow post](https://stackoverflow.com/questions/5458048/how-can-i-make-a-python-script-standalone-executable-to-run-without-any-dependen) to learn more on how to do it.

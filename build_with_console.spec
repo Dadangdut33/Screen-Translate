@@ -36,7 +36,7 @@ exe = EXE(pyz,
           disable_windowed_traceback=False,
           target_arch=None,
           codesign_identity=None,
-          entitlements_file=None , icon='logo.ico')
+          entitlements_file=None , icon='./assets/logo.ico')
 coll = COLLECT(exe,
                a.binaries,
                a.zipfiles,
@@ -44,4 +44,4 @@ coll = COLLECT(exe,
                strip=False,
                upx=True,
                upx_exclude=[],
-               name=f"ScreenTranslate {__version__} NC")
+               name=f"ScreenTranslate {__version__} C")
