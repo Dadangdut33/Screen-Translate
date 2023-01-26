@@ -5,7 +5,6 @@ block_cipher = None
 from PyInstaller.utils.hooks import copy_metadata
 
 datas = [('./assets', 'assets/'), ('./user_manual', 'user_manual'), ('./user_manual/Readme.txt', '.'), ('./user_manual/Changelog.txt', '.'),]
-datas += copy_metadata('pyppeteer')
 
 a = Analysis(['Main.py'],
              pathex=['./'],

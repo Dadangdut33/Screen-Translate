@@ -1,5 +1,6 @@
+import os
 import requests
-from notifypy import Notify, exceptions
+from notifypy import Notify
 
 from .LangCode import google_lang, libre_lang, myMemory_lang, deepl_lang
 from screen_translate.Globals import path_logo_icon, app_name
@@ -14,10 +15,9 @@ def no_connection_notify(
     notification.title = customTitle
     notification.message = customMessage
     notification.application_name = app_name
-    try:
+    if os.path.exists(path_logo_icon):
         notification.icon = path_logo_icon
-    except exceptions.InvalidIconPath:
-        pass
+
     notification.send()
 
 
@@ -36,7 +36,9 @@ except Exception as e:
 
 
 try:
-    from deepl_scraper_pp.deepl_tr import deepl_tr
+    from deepl import deepl
+
+    deepl_tr = deepl.DeepLCLI("ja", "en")
 except Exception as e:
     deepl_tr = None
     no_connection_notify()
@@ -245,7 +247,7 @@ def libre_tl(text: str, from_lang: str, to_lang: str, https: bool = False, host:
         return is_Success, result
 
 
-async def deepl_tl(text, from_lang, to_lang):
+def deepl_tl(text, from_lang, to_lang):
     """Translate Using Deepl
 
     Args:
@@ -269,14 +271,16 @@ async def deepl_tl(text, from_lang, to_lang):
     try:
         if tlCons.deepl_tr is None:
             try:
-                from deepl_scraper_pp.deepl_tr import deepl_tr
+                from deepl import deepl
 
-                tlCons.deepl_tr = deepl_tr
+                tlCons.deepl_tr = deepl.DeepLCLI(from_LanguageCode_Deepl, to_LanguageCode_Deepl)
             except Exception as e:
                 no_connection_notify()
                 return is_Success, "Error: Not connected to internet"
 
-        result = await tlCons.deepl_tr(text.strip(), from_LanguageCode_Deepl, to_LanguageCode_Deepl)
+        tlCons.deepl_tr.fr_lang = from_LanguageCode_Deepl
+        tlCons.deepl_tr.to_lang = to_LanguageCode_Deepl
+        result = tlCons.deepl_tr.translate(text.strip())
         is_Success = True
     except Exception as e:
         logger.exception(e)

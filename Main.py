@@ -673,8 +673,8 @@ class MainWindow:
 
         gClass.lb_start()
         try:
-            self.tlThread = threading.Thread(target=translate, args=(query, from_lang, to_lang, engine), daemon=True)
-            self.tlThread.start()
+            tlThread = threading.Thread(target=translate, args=(query, from_lang, to_lang, engine), daemon=True)
+            tlThread.start()
         except Exception as e:
             logger.exception(e)
             Mbox("Error", str(e), 0, self.root)

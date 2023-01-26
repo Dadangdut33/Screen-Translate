@@ -1,4 +1,3 @@
-import asyncio
 from typing import Literal
 
 from .Translator import google_tl, memory_tl, libre_tl, deepl_tl, pons_tl
@@ -21,26 +20,11 @@ def translate(query: str, from_lang: str, to_lang: str, engine: Literal["Google 
     logger.info(f"-" * 50)
     logger.info(f"Translate")
     logger.info(f"Length: {len(query)} -> {len(query.strip())} (stripped) | from {from_lang} to {to_lang} using {engine}")
-    
+
     query = query.strip()
     if len(query) == 0:
         logger.warning("No text to translate!")
         gClass.lb_stop()
-        return
-
-    # --------------------------------
-    # Deepl
-    if engine == "Deepl":
-        try:
-            loop = asyncio.get_event_loop()
-        except RuntimeError as e:
-            if str(e).startswith('There is no current event loop in thread'):
-                loop = asyncio.new_event_loop()
-                asyncio.set_event_loop(loop)
-            else:
-                raise
-
-        loop.run_until_complete(deeplTl(query, from_lang, to_lang))
         return
 
     # --------------------------------
@@ -50,6 +34,10 @@ def translate(query: str, from_lang: str, to_lang: str, engine: Literal["Google 
         if "- Alt" in from_lang or "- Alt" in to_lang:
             oldMethod = True
         success, result = google_tl(query, from_lang, to_lang, oldMethod=oldMethod)
+    # --------------------------------
+    # Deepl
+    elif engine == "Deepl":
+        success, result = deepl_tl(query, from_lang, to_lang)
     # --------------------------------
     # MyMemoryTranslator
     elif engine == "MyMemoryTranslator":
@@ -61,19 +49,10 @@ def translate(query: str, from_lang: str, to_lang: str, engine: Literal["Google 
     # --------------------------------
     # LibreTranslate
     elif engine == "LibreTranslate":
-        success, result = libre_tl(
-            query, to_lang, from_lang, https=fJson.settingCache["libre_https"], host=fJson.settingCache["libre_host"], port=fJson.settingCache["libre_port"], apiKeys=fJson.settingCache["libre_api_key"]
-        )
+        success, result = libre_tl(query, to_lang, from_lang, https=fJson.settingCache["libre_https"], host=fJson.settingCache["libre_host"], port=fJson.settingCache["libre_port"], apiKeys=fJson.settingCache["libre_api_key"])  # type: ignore
 
     fill_tb_save_history(success, from_lang, to_lang, query, str(result), engine)
 
-    gClass.lb_stop()
-
-
-async def deeplTl(query: str, from_lang: str, to_lang: str):
-    """Translate using deepl"""
-    isSuccess, translateResult = await deepl_tl(query, to_lang, from_lang)
-    fill_tb_save_history(isSuccess, from_lang, to_lang, query, str(translateResult), "Deepl")
     gClass.lb_stop()
 
 
