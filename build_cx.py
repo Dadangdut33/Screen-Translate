@@ -20,7 +20,7 @@ build_options = {
 import sys
 
 # ask for console or not
-console = input("Do you want to hide console window? (y/n) (default y): ")
+console = input("Do you want to hide console window? (y/n) (default y): ").lower()
 if console == "n":
     base = None
     print(">> Console window will be shown")

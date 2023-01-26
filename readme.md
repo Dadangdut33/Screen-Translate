@@ -29,6 +29,7 @@ Inspired by software such as Visual Novel Reader (VNR), [Visual Novel OCR](https
 - [How To Uninstall](#how-to-uninstall)
   - [Setup](#setup)
   - [Building](#building)
+  - [Packaging](#packaging)
   - [Contributing](#contributing)
 - [Attribution](#attribution)
 - [Other](#other)
@@ -102,6 +103,9 @@ If you use the installer version, you can run the uninstaller inside the app fol
 
 ## Building
 
+> **Warning** \
+> As of now cx_Freeze setup is not working properly for DeepL so use the pyinstaller script instead if you want to compile the app by yourself.
+
 Before building, we gotta make sure that the dependencies and playwright driver is installed. For **playwright** (used for deepl scraper), we need to install the browser driver first, which is explained in the [playwright documentation](https://playwright.dev/python/docs/library#pyinstaller). **It is stated there that if we want to bundle our code we need to run the following code first**:
 
 ```bash
@@ -117,17 +121,14 @@ set PLAYWRIGHT_BROWSERS_PATH=0
 playwright install chromium
 ```
 
-After dependencies are installed, we can start building the app. There are 2 options for building, using pyinstaller or cx_freeze. The command used are:
+After dependencies are installed, we can start building the app. There are 2 options that i have provided for building, using pyinstaller or cx_freeze. The command used are:
 
-**For pyinstaller you can use the following command:**
+**For pyinstaller, I have created custom script which you can use in the following command:**
 
 ```bash
 # On Source Code Directory
-# No console window
-pyinstaller build.spec
-
-# With console window
-pyinstaller build_with_console.spec
+python build_pyinstaller.py
+# you will be prompted to build with console or not
 ```
 
 This will create a folder called `dist` in the source code directory. Inside the folder there will be a folder called `ScreenTranslate <version>` which contains the executable file.
@@ -141,6 +142,10 @@ python build_cx.py build
 ```
 
 This will create a folder called `build` in the source code directory. Inside the folder there will be a folder called `exe.<platform>-<version>` which contains the executable file.
+
+## Packaging
+
+I use innosetup to package the app. You can download it [here](https://jrsoftware.org/isdl.php). After installing it, you can setup the path in `ScreenTranslate.iss` file and run the .iss script.
 
 ## Contributing
 
