@@ -404,7 +404,7 @@ class SettingWindow:
         self.lbl_tl_libre_setting_key.pack(side=tk.LEFT, padx=5, pady=5)
         CreateToolTip(self.lbl_tl_libre_setting_key, text="The API key for Libretranslate. Default: Empty.\n\nNot needed unless translating using the libretranslate.com domain/host.")
 
-        self.entry_tl_libre_setting_key = ttk.Entry(self.f_tl_libre_setting)
+        self.entry_tl_libre_setting_key = ttk.Entry(self.f_tl_libre_setting, width=25)
         self.entry_tl_libre_setting_key.pack(side=tk.LEFT, padx=5, pady=5)
         CreateToolTip(self.entry_tl_libre_setting_key, text="The API key for Libretranslate. Default: Empty.\n\nNot needed unless translating using the libretranslate.com domain/host.")
 
@@ -412,7 +412,7 @@ class SettingWindow:
         self.lbl_tl_libre_setting_host.pack(side=tk.LEFT, padx=5, pady=5)
         CreateToolTip(self.lbl_tl_libre_setting_host, text="Host address of Libletranslate server. Default: libretranslate.de\n\nYou can find full lists of other dedicated server on Libretranslate github repository.")
 
-        self.entry_tl_libre_setting_host = ttk.Entry(self.f_tl_libre_setting)
+        self.entry_tl_libre_setting_host = ttk.Entry(self.f_tl_libre_setting, width=30)
         self.entry_tl_libre_setting_host.pack(side=tk.LEFT, padx=5, pady=5)
         CreateToolTip(self.entry_tl_libre_setting_host, text="Host address of Libletranslate server. Default: libretranslate.de\n\nYou can find full lists of other dedicated server on Libretranslate github repository.")
 
@@ -420,7 +420,7 @@ class SettingWindow:
         self.lbl_tl_libre_setting_port.pack(side=tk.LEFT, padx=5, pady=5)
         CreateToolTip(self.lbl_tl_libre_setting_port, text="Port of Libletranslate server. Default: Empty\n\nSet it to empty if you are not using local server.")
 
-        self.entry_tl_libre_setting_port = ttk.Entry(self.f_tl_libre_setting)
+        self.entry_tl_libre_setting_port = ttk.Entry(self.f_tl_libre_setting, width=20)
         self.entry_tl_libre_setting_port.pack(side=tk.LEFT, padx=5, pady=5)
         CreateToolTip(self.entry_tl_libre_setting_port, text="Port of Libletranslate server. Default: Empty\n\nSet it to empty if you are not using local server.")
 

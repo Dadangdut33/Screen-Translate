@@ -61,7 +61,7 @@ default_setting = {
     # ------------------ #
     # libre
     "libre_api_key": "",
-    "libre_host": "libretranslate.de",
+    "libre_host": "translate.argosopentech.com",
     "libre_port": "",
     "libre_https": True,
     # ------------------ #

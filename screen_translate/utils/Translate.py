@@ -30,10 +30,7 @@ def translate(query: str, from_lang: str, to_lang: str, engine: Literal["Google 
     # --------------------------------
     # Google Translate
     if engine == "Google Translate":
-        oldMethod = False
-        if "- Alt" in from_lang or "- Alt" in to_lang:
-            oldMethod = True
-        success, result = google_tl(query, from_lang, to_lang, oldMethod=oldMethod)
+        success, result = google_tl(query, from_lang, to_lang)
     # --------------------------------
     # Deepl
     elif engine == "Deepl":
@@ -49,7 +46,7 @@ def translate(query: str, from_lang: str, to_lang: str, engine: Literal["Google 
     # --------------------------------
     # LibreTranslate
     elif engine == "LibreTranslate":
-        success, result = libre_tl(query, to_lang, from_lang, https=fJson.settingCache["libre_https"], host=fJson.settingCache["libre_host"], port=fJson.settingCache["libre_port"], apiKeys=fJson.settingCache["libre_api_key"])  # type: ignore
+        success, result = libre_tl(query, from_lang, to_lang, https=fJson.settingCache["libre_https"], host=fJson.settingCache["libre_host"], port=fJson.settingCache["libre_port"], apiKeys=fJson.settingCache["libre_api_key"])  # type: ignore
 
     fill_tb_save_history(success, from_lang, to_lang, query, str(result), engine)
 

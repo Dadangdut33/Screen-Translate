@@ -525,8 +525,7 @@ class MainWindow:
     def open_KnownBugs(self):
         Mbox(
             "Known Bugs",
-            """- Monitor scaling needs to be 100% or it won't capture accurately (You can fix this easily by setting offset or set your monitor scaling to 100%)
-        \r- Chinese translation doesn't work with the original method (deep_translator library) I don't know why. So i provided an alternative and that's why there is an \"alt\" options for chinese when using google translate (You should use it when translating chinese using google translate).""",
+            """- Monitor scaling needs to be 100% or it won't capture accurately (You can fix this easily by setting offset or set your monitor scaling to 100%)""",
             0,
             self.root,
         )

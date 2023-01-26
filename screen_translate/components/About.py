@@ -19,7 +19,7 @@ class AboutWindow:
     def __init__(self, master: tk.Tk):
         self.root = tk.Toplevel(master)
         self.root.title("About Screen Translate")
-        self.root.geometry("450x325")
+        self.root.geometry("400x300")
         self.root.wm_withdraw()
         self.checking = False
         gClass.aw = self  # type: ignore

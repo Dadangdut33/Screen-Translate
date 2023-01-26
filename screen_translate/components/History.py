@@ -66,12 +66,12 @@ class HistoryWindow:
         self.historyTreeView.column("Query - Result", anchor=tk.W, width=10000, stretch=False)  # Make the width ridiculuosly long so it can use the x scrollbar
 
         self.historyTreeView.pack(side=tk.TOP, padx=5, pady=5, fill=tk.BOTH, expand=True)
-        self.btn_refresh.pack(side=tk.LEFT, fill=tk.X, padx=(10, 5), pady=5, expand=False)
+        self.btn_refresh.pack(side=tk.LEFT, fill=tk.X, padx=5, pady=5, expand=False)
         self.btn_copy_to_clipboard.pack(side=tk.LEFT, fill=tk.X, padx=5, pady=5, expand=False)
         self.btn_copy_to_translate_box.pack(side=tk.LEFT, fill=tk.X, padx=5, pady=5, expand=False)
         self.btn_delete_selected.pack(side=tk.LEFT, fill=tk.X, padx=5, pady=5, expand=False)
         self.btn_delete_all.pack(side=tk.LEFT, fill=tk.X, padx=5, pady=5, expand=False)
-        self.btn_ok.pack(side=tk.RIGHT, fill=tk.X, padx=(5, 10), pady=5, expand=False)
+        self.btn_ok.pack(side=tk.RIGHT, fill=tk.X, padx=5, pady=5, expand=False)
 
         # On Close
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)

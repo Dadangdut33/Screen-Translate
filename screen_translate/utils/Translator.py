@@ -2,7 +2,7 @@ import os
 import requests
 from notifypy import Notify
 
-from .LangCode import google_lang, libre_lang, myMemory_lang, deepl_lang
+from .LangCode import google_lang, libre_lang, myMemory_lang, deepl_lang, pons_lang
 from screen_translate.Globals import path_logo_icon, app_name
 from screen_translate.Logging import logger
 
@@ -63,7 +63,7 @@ class tl_cons:
 tlCons = tl_cons(GoogleTranslator, MyMemoryTranslator, PonsTranslator, deepl_tr)
 
 
-def google_tl(text: str, from_lang: str, to_lang: str, oldMethod: bool = False):
+def google_tl(text: str, from_lang: str, to_lang: str):
     """Translate Using Google Translate
     Args:
         text (str): Text to translate
@@ -86,7 +86,7 @@ def google_tl(text: str, from_lang: str, to_lang: str, oldMethod: bool = False):
 
     # --- Translate ---
     try:
-        if tlCons.GoogleTranslator is None:  # type: ignore
+        if tlCons.GoogleTranslator is None:
             try:
                 from deep_translator import GoogleTranslator
 
@@ -95,12 +95,7 @@ def google_tl(text: str, from_lang: str, to_lang: str, oldMethod: bool = False):
                 no_connection_notify()
                 return is_Success, "Error: Not connected to internet"
 
-        if not oldMethod:
-            result = tlCons.GoogleTranslator(source=from_LanguageCode_Google, target=to_LanguageCode_Google).translate(text.strip())  # type: ignore
-        else:
-            url = "https://translate.googleapis.com/translate_a/single?client=gtx&sl={}&tl={}&dt=t&q={}".format(from_LanguageCode_Google, to_LanguageCode_Google, text.replace("\n", " ").replace(" ", "%20").strip())
-            result = requests.get(url).json()[0][0][0]
-
+        result = tlCons.GoogleTranslator(source=from_LanguageCode_Google, target=to_LanguageCode_Google).translate(text.strip())
         is_Success = True
     except Exception as e:
         logger.exception(e)
@@ -125,8 +120,8 @@ def pons_tl(text: str, from_lang: str, to_lang: str):
     result = ""
     # --- Get lang code ---
     try:
-        to_LanguageCode_Pons = google_lang[to_lang]
-        from_LanguageCode_Pons = google_lang[from_lang]
+        to_LanguageCode_Pons = pons_lang[to_lang]
+        from_LanguageCode_Pons = pons_lang[from_lang]
     except KeyError as e:
         logger.exception(e)
         return is_Success, "Error Language Code Undefined"
@@ -219,8 +214,10 @@ def libre_tl(text: str, from_lang: str, to_lang: str, https: bool = False, host:
         return is_Success, "Error Language Code Undefined"
     # --- Translate ---
     try:
-        request = {"q": text, "source": from_LanguageCode_Libre, "target": to_LanguageCode_Libre, "format": "text", "api_key": apiKeys}
+        request = {"q": text, "source": from_LanguageCode_Libre, "target": to_LanguageCode_Libre, "format": "text"}
         httpStr = "https" if https else "http"
+        if apiKeys != "":
+            request["api_key"] = apiKeys
 
         if port != "":
             adr = httpStr + "://" + host + ":" + port + "/translate"
