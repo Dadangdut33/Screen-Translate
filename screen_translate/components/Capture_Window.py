@@ -381,6 +381,7 @@ class CaptureWindow:
         h += get_offset("h")
 
         success, res = ocrFromCoords([x, y, w, h])
+        gClass.lb_stop()
 
         if success:
             gClass.clear_mw_q()
@@ -406,8 +407,6 @@ class CaptureWindow:
                 )
             else:
                 Mbox("Error", res, 2)
-
-        gClass.lb_stop()
 
         if fJson.settingCache["hide_mw_on_cap"]:
             assert gClass.mw is not None

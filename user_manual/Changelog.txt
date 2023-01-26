@@ -5,6 +5,7 @@ Latest V2.0.0
 - Added tray app
 - Added option to run on startup
 - Added right click context menu to capture window, detached window, and snipping mode 
+- Added loadbar for loading indicator
 - Refactor and improve code structure
 - Better logging
 - Fix getting offset 

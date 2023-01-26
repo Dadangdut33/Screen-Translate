@@ -96,13 +96,31 @@ If you use the installer version, you can run the uninstaller inside the app fol
 
 1. Clone the repo or download the source code of the latest release
 2. Create your virtual environment by running `python -m venv venv`
-3. Activate your virtual environment by running `source venv/bin/activate`
+3. Activate your virtual environment
 4. Install all the dependencies needed by running `pip install -r requirements.txt`
 5. Get to root directory and Run the script by typing `python Main.py`
 
 ## Building
 
-There are 2 options for building, using pyinstaller or cx_freeze. The command used are:
+Before building, we gotta make sure that the dependencies and playwright driver is installed. For **playwright** (used for deepl scraper), we need to install the browser driver first, which is explained in the [playwright documentation](https://playwright.dev/python/docs/library#pyinstaller). **It is stated there that if we want to bundle our code we need to run the following code first**:
+
+```bash
+# bash
+PLAYWRIGHT_BROWSERS_PATH=0 playwright install chromium
+pyinstaller -F main.py
+
+# powershell
+$env:PLAYWRIGHT_BROWSERS_PATH="0"
+playwright install chromium
+pyinstaller -F main.py
+
+# batch
+set PLAYWRIGHT_BROWSERS_PATH=0
+playwright install chromium
+pyinstaller -F main.py
+```
+
+After dependencies are installed, we can start building the app. There are 2 options for building, using pyinstaller or cx_freeze. The command used are:
 
 **For pyinstaller you can use the following command:**
 

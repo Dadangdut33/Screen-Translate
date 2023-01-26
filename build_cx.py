@@ -1,11 +1,14 @@
 from screen_translate._version import __version__
 from cx_Freeze import setup, Executable
 
-# Dependencies are automatically detected, but it might need
-# fine tuning.
+# ! DEEPL SCRAPER IS NOT SUPPORTED when build using cx_freeze !
+# I don't really know why but it just get stuck there when calling sync_playwright()
+
+
 build_options = {
-    "packages": [],
-    "excludes": [],
+    "packages": ["asyncio"],
+    "includes": [],
+    "excludes": ["pyinstaller", "cx_freeze"],
     "include_files": [
         ("user_manual", "user_manual"),
         ("assets", "lib/assets"),

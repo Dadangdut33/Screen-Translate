@@ -179,6 +179,7 @@ class SnipWindow:
     def startOCR(self, coords):
         gClass.lb_start()
         success, res = ocrFromCoords(coords)
+        gClass.lb_stop()
 
         if success:
             gClass.clear_mw_q()
@@ -206,7 +207,6 @@ class SnipWindow:
             else:
                 Mbox("Error", res, 2)
 
-        gClass.lb_stop()
 
     def exitScreenshotMode(self, event=None):
         """

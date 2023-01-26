@@ -36,9 +36,7 @@ except Exception as e:
 
 
 try:
-    from deepl import deepl
-
-    deepl_tr = deepl.DeepLCLI("ja", "en")
+    from .Deepl_Scraper import deepl_tr
 except Exception as e:
     deepl_tr = None
     no_connection_notify()
@@ -268,16 +266,14 @@ def deepl_tl(text, from_lang, to_lang):
     try:
         if tlCons.deepl_tr is None:
             try:
-                from deepl import deepl
+                from .Deepl_Scraper import deepl_tr
 
-                tlCons.deepl_tr = deepl.DeepLCLI(from_LanguageCode_Deepl, to_LanguageCode_Deepl)
+                tlCons.deepl_tr = deepl_tr
             except Exception as e:
                 no_connection_notify()
                 return is_Success, "Error: Not connected to internet"
 
-        tlCons.deepl_tr.fr_lang = from_LanguageCode_Deepl
-        tlCons.deepl_tr.to_lang = to_LanguageCode_Deepl
-        result = tlCons.deepl_tr.translate(text.strip())
+        result = tlCons.deepl_tr(text.strip(), from_LanguageCode_Deepl, to_LanguageCode_Deepl)
         is_Success = True
     except Exception as e:
         logger.exception(e)

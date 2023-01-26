@@ -11,3 +11,5 @@ opencv-contrib-python == 4.7.0.68
 screeninfo == 0.8.1
 notify-py==0.3.41
 simpleaudio==1.0.4
+playwright==1.30.0
+pyquery==1.4.3
