@@ -8,7 +8,7 @@ from cx_Freeze import setup, Executable
 build_options = {
     "packages": ["asyncio"],
     "includes": [],
-    "excludes": ["pyinstaller", "cx_freeze"],
+    "excludes": ["pyinstaller", "cx_Freeze"],
     "include_files": [
         ("user_manual", "user_manual"),
         ("assets", "lib/assets"),

@@ -107,17 +107,14 @@ Before building, we gotta make sure that the dependencies and playwright driver 
 ```bash
 # bash
 PLAYWRIGHT_BROWSERS_PATH=0 playwright install chromium
-pyinstaller -F main.py
 
 # powershell
 $env:PLAYWRIGHT_BROWSERS_PATH="0"
 playwright install chromium
-pyinstaller -F main.py
 
 # batch
 set PLAYWRIGHT_BROWSERS_PATH=0
 playwright install chromium
-pyinstaller -F main.py
 ```
 
 After dependencies are installed, we can start building the app. There are 2 options for building, using pyinstaller or cx_freeze. The command used are:

@@ -7,3 +7,4 @@ user/
 log/
 .vscode/
 venv/
+*.spec
