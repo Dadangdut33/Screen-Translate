@@ -104,7 +104,7 @@ If you use the installer version, you can run the uninstaller inside the app fol
 ## Building
 
 > **Warning** \
-> As of now cx_Freeze setup is not working properly for DeepL so use the pyinstaller script instead if you want to compile the app by yourself.
+> As of now cx_Freeze setup is not working properly for DeepL scraper so use the pyinstaller script instead if you want to compile the app by yourself.
 
 Before building, we gotta make sure that the dependencies and playwright driver is installed. For **playwright** (used for deepl scraper), we need to install the browser driver first, which is explained in the [playwright documentation](https://playwright.dev/python/docs/library#pyinstaller). **It is stated there that if we want to bundle our code we need to run the following code first**:
 

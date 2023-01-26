@@ -23,7 +23,7 @@ AppUpdatesURL={#MyAppURL}
 DefaultDirName={autopf}\{#MyAppName}
 DefaultGroupName={#MyAppName}
 AllowNoIcons=yes
-LicenseFile={#AbsolutePath}\dist\ScreenTranslate {#MyAppVersion}\LICENSE.txt
+LicenseFile={#AbsolutePath}\ScreenTranslate {#MyAppVersion}\LICENSE.txt
 InfoBeforeFile={#AbsolutePath}\ScreenTranslate {#MyAppVersion}\Readme.txt
 InfoAfterFile={#AbsolutePath}\ScreenTranslate {#MyAppVersion}\Changelog.txt
 ; Remove the following line to run in administrative install mode (install for all users.)
