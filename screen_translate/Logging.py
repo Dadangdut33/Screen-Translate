@@ -4,7 +4,7 @@ import os
 
 # ------------------ #
 dir_project: str = os.path.dirname(os.path.realpath(__file__))
-dir_log: str = os.path.join(dir_project, "../log")
+dir_log: str = os.path.abspath(os.path.join(dir_project, "..", "log"))
 current_log: str = f"{time.strftime('%Y-%m-%d %H-%M-%S')}.log"
 # make sure log folder exist
 if not os.path.exists(dir_log):
@@ -21,8 +21,8 @@ class c_formatter(logging.Formatter):
     bold_red = "\x1b[31;1m"
     blue = "\x1b[34;20m"
     reset = "\x1b[0m"
-    textFormat = "%(levelname)-7s - %(message)s"
     timeFormat = blue + "%(asctime)s " + reset
+    textFormat = "%(levelname)-7s - %(message)s"
     fileLineFormat = green + " (%(filename)s:%(lineno)d) [%(threadName)s]" + reset
 
     FORMATS = {
@@ -40,7 +40,7 @@ class c_formatter(logging.Formatter):
 
 
 class f_formatter(logging.Formatter):
-    textFormat = "%(asctime)s - %(name)s - %(levelname)s - %(message)s (%(filename)s:%(lineno)d)"
+    textFormat = "%(asctime)s - %(levelname)s - %(message)s (%(filename)s:%(lineno)d) [%(threadName)s]"
 
     FORMATS = {
         logging.DEBUG: textFormat,

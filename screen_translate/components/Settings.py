@@ -4,7 +4,6 @@ import tkinter as tk
 import tkinter.ttk as ttk
 from typing import Literal
 from tkinter import filedialog, font, colorchooser
-from send2trash import send2trash
 
 from .MBox import Mbox
 from .Tooltip import CreateToolTip
@@ -1462,7 +1461,7 @@ class SettingWindow:
             try:
                 for file in os.listdir(dir_captured):
                     if file.endswith(".png"):
-                        send2trash(os.path.join(dir_captured, file))
+                        os.remove(os.path.join(dir_captured, file))
 
                 Mbox("Success", "All captured images have been deleted successfully.", 0, self.root)
             except Exception as e:

@@ -17,7 +17,7 @@ class LogWindow:
     def __init__(self, master: tk.Tk):
         self.root = tk.Toplevel(master)
         self.root.title("Log")
-        self.root.geometry("1000x160")
+        self.root.geometry("800x250")
         self.root.wm_withdraw()
         self.currentFontSize = 8
         self.isOpen = False
@@ -88,6 +88,10 @@ class LogWindow:
             self.cbtn_auto_refresh.invoke()
             self.cbtn_auto_refresh.invoke()
 
+        # deselect stay on top
+        self.cbtn_stay_on_top.invoke()
+        self.cbtn_stay_on_top.invoke()
+
     # Show/Hide
     def show(self):
         self.root.wm_deiconify()
@@ -116,7 +120,7 @@ class LogWindow:
     def updateLog(self):
         prev_content = self.tbLogger.get(1.0, tk.END).strip()
         try:
-            content = open(os.path.join(dir_log, current_log), mode="utf-8").read().strip()
+            content = open(os.path.join(dir_log, current_log), encoding="utf-8").read().strip()
         except FileNotFoundError:
             logger.error(f"Log file not found | {os.path.join(dir_log, current_log)}")
             content = f"Log file not found | {os.path.join(dir_log, current_log)}"

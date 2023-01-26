@@ -274,9 +274,9 @@ class JsonHandler:
             # Get current history, ignore the status
             x, file_data = self.readHistory()
 
-            # Pop the selected value first
-            for i in indexList:
-                file_data["tl_history"].pop(i)  # type: ignore
+            # remove the id from the list
+            for index in indexList:
+                file_data["tl_history"] = [item for item in file_data["tl_history"] if item["id"] != index] # type: ignore
 
             # Then
             # Overwrite the ID and add the new data

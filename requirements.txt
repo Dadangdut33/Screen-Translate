@@ -9,7 +9,6 @@ pytesseract == 0.3.8
 requests == 2.26.0
 opencv-contrib-python == 4.5.5.64
 screeninfo == 0.7
-send2trash == 1.8.0
 notify-py==0.3.3
 sounddevice==0.4.5
 soundfile==0.11.0

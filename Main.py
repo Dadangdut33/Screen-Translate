@@ -36,7 +36,6 @@ from screen_translate.components.Log import LogWindow
 
 # ----------------------------------------------------------------
 def console():
-    logger.info("=" * 50)
     logger.info("--- Welcome to Screen Translate ---")
     logger.info("Use The GUI Window to start capturing and translating")
     logger.info("You can minimize this window")

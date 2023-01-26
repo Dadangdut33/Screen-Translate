@@ -32,8 +32,7 @@ class HistoryWindow:
 
         # elements
         # Treeview
-        self.historyTreeView = ttk.Treeview(self.f_1, columns=("Id", "From-To", "Query"))
-        self.historyTreeView["columns"] = ("Id", "From-To", "Query")
+        self.historyTreeView = ttk.Treeview(self.f_1, columns=("Id", "From - To", "Query - Result"))
 
         # Scrollbar
         self.sbY = ttk.Scrollbar(self.f_1, orient=tk.VERTICAL)
@@ -52,18 +51,19 @@ class HistoryWindow:
         self.btn_copy_to_translate_box = ttk.Button(self.f_bot, text="↳ Copy to Translate Menu", command=self.copyToTranslateMenu)
         self.btn_delete_selected = ttk.Button(self.f_bot, text="✕ Delete Selected", command=self.deleteSelected)
         self.btn_delete_all = ttk.Button(self.f_bot, text="✕ Delete All", command=self.deleteAll)
+        self.btn_ok = ttk.Button(self.f_bot, text="Ok", command=self.on_closing)
 
         # ----------------------------------------------------------------
         # pack stuff
         self.historyTreeView.heading("#0", text="", anchor=tk.CENTER)
         self.historyTreeView.heading("Id", text="Id", anchor=tk.CENTER)
-        self.historyTreeView.heading("From-To", text="From-To", anchor=tk.CENTER)
-        self.historyTreeView.heading("Query", text="Query", anchor=tk.W)
+        self.historyTreeView.heading("From - To", text="From - To", anchor=tk.CENTER)
+        self.historyTreeView.heading("Query - Result", text="Query - Result", anchor=tk.W)
 
         self.historyTreeView.column("#0", width=20, stretch=False)
         self.historyTreeView.column("Id", anchor=tk.CENTER, width=50, stretch=True)
-        self.historyTreeView.column("From-To", anchor=tk.CENTER, width=150, stretch=False)
-        self.historyTreeView.column("Query", anchor=tk.W, width=10000, stretch=False)  # Make the width ridiculuosly long so it can use the x scrollbar
+        self.historyTreeView.column("From - To", anchor=tk.CENTER, width=150, stretch=False)
+        self.historyTreeView.column("Query - Result", anchor=tk.W, width=10000, stretch=False)  # Make the width ridiculuosly long so it can use the x scrollbar
 
         self.historyTreeView.pack(side=tk.TOP, padx=5, pady=5, fill=tk.BOTH, expand=True)
         self.btn_refresh.pack(side=tk.LEFT, fill=tk.X, padx=(10, 5), pady=5, expand=False)
@@ -71,6 +71,7 @@ class HistoryWindow:
         self.btn_copy_to_translate_box.pack(side=tk.LEFT, fill=tk.X, padx=5, pady=5, expand=False)
         self.btn_delete_selected.pack(side=tk.LEFT, fill=tk.X, padx=5, pady=5, expand=False)
         self.btn_delete_all.pack(side=tk.LEFT, fill=tk.X, padx=5, pady=5, expand=False)
+        self.btn_ok.pack(side=tk.RIGHT, fill=tk.X, padx=(5, 10), pady=5, expand=False)
 
         # On Close
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
@@ -97,16 +98,18 @@ class HistoryWindow:
         Delete selected history
         """
         selected = self.historyTreeView.selection()
+        selected = selected[::2]  # remove the odd index
 
         if len(selected) > 0:
             if Mbox("Confirmation", "Are you sure you want to delete the selected history?", 3, self.root):
                 toDeleteList = []
                 for item in selected:
-                    toDeleteList.append(self.historyTreeView.item(item, "values")[0])
+                    toDeleteList.append(int(self.historyTreeView.item(item, "values")[0]))
 
+                logger.debug("Deleting: " + str(toDeleteList))
                 status, statusText = fJson.deleteCertainHistory(toDeleteList)
                 if status == True:
-                    logger.info("Delete status: " + statusText)
+                    logger.info(statusText)
                     Mbox("Info", statusText, 0, self.root)
                 # Error already handled in jsonHandling
 
@@ -152,7 +155,7 @@ class HistoryWindow:
 
                 count += 1
                 # Child
-                self.historyTreeView.insert(parent=str(parentID), index="end", text="", iid=str(count), values=(record[0], "Using " + record[5], record[4].replace("\n", " ")))
+                self.historyTreeView.insert(parent=str(parentID), index="end", text="", iid=str(count), values=(record[0], "via " + record[5], record[4].replace("\n", " ")))
 
                 count += 1
             # ------------------------------------------------------------
