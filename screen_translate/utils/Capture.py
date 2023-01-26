@@ -89,7 +89,7 @@ def ocrFromCoords(coords: List[int]):
 
             # Performing OTSU threshold
             logger.info("Performing OTSU threshold...")
-            ret, thresh = cv2.threshold(grayImg, 0, 255, cv2.THRESH_OTSU | threshType)  # TODO: CHECK what if use rgb img, because i forgor 💀
+            ret, thresh = cv2.threshold(grayImg, 0, 255, cv2.THRESH_OTSU | threshType)  #  must use grayImg
 
             # Specify structure shape and kernel size.
             # Kernel size increases or decreases the area

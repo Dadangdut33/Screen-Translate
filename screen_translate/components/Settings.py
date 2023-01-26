@@ -37,7 +37,7 @@ class SettingWindow:
     def __init__(self, master: tk.Tk):
         self.root = tk.Toplevel(master)
         self.root.title("Setting")
-        self.root.geometry("1110x425")
+        self.root.geometry("1110x450")
         self.root.wm_attributes("-topmost", False)  # Default False
         self.root.wm_withdraw()
         self.fonts = font.families()
@@ -369,7 +369,7 @@ class SettingWindow:
 
         self.entry_OCR_replace_newline_with = ttk.Entry(self.f_OCR_result_2, width=5)
         self.entry_OCR_replace_newline_with.pack(side=tk.LEFT, padx=5, pady=5, fill=tk.X, expand=True)
-        CreateToolTip(self.entry_OCR_replace_newline_with, "Character to replace new line.\n Default is ' ' (space). (You can use escape character like \n for new line)", wrapLength=300)
+        CreateToolTip(self.entry_OCR_replace_newline_with, "Character to replace new line.\nDefault is ' ' (space). (You can use escape character like \\n for new line)", wrapLength=400)
 
         self.cbtn_alert_no_text = ttk.Checkbutton(self.f_OCR_result_3, text="Show No Text Entered Alert")
         self.cbtn_alert_no_text.pack(side=tk.LEFT, padx=5, pady=5)
@@ -508,7 +508,7 @@ class SettingWindow:
         self.lbl_mw_q_font_size = ttk.Label(self.lf_mw_q, text="Font Size")
         self.lbl_mw_q_font_size.pack(side=tk.LEFT, padx=5, pady=5)
 
-        self.sb_mw_q_font_size = ttk.Spinbox(self.lf_mw_q, from_=3, to=120, width=10)
+        self.sb_mw_q_font_size = ttk.Spinbox(self.lf_mw_q, from_=3, to=120, width=10, command=self.preview_changes_tb)
         self.sb_mw_q_font_size.configure(validate="key", validatecommand=(self.root.register(lambda event: self.validateSpinbox(event, self.sb_mw_q_font_size)), "%P") or self.preview_changes_tb())
         self.sb_mw_q_font_size.bind("<MouseWheel>", lambda event: self.preview_changes_tb())
         self.sb_mw_q_font_size.pack(side=tk.LEFT, padx=5, pady=5)
@@ -549,7 +549,7 @@ class SettingWindow:
         self.lbl_mw_res_font_size = ttk.Label(self.lf_mw_res, text="Font Size")
         self.lbl_mw_res_font_size.pack(side=tk.LEFT, padx=5, pady=5)
 
-        self.sb_mw_res_font_size = ttk.Spinbox(self.lf_mw_res, from_=3, to=120, width=10)
+        self.sb_mw_res_font_size = ttk.Spinbox(self.lf_mw_res, from_=3, to=120, width=10, command=self.preview_changes_tb)
         self.sb_mw_res_font_size.configure(validate="key", validatecommand=(self.root.register(lambda event: self.validateSpinbox(event, self.sb_mw_res_font_size)), "%P") or self.preview_changes_tb())
         self.sb_mw_res_font_size.bind("<MouseWheel>", lambda event: self.preview_changes_tb())
         self.sb_mw_res_font_size.pack(side=tk.LEFT, padx=5, pady=5)
@@ -587,7 +587,7 @@ class SettingWindow:
         self.lbl_ex_q_font_size = ttk.Label(self.lf_ex_q, text="Font Size")
         self.lbl_ex_q_font_size.pack(side=tk.LEFT, padx=5, pady=5)
 
-        self.sb_ex_q_font_size = ttk.Spinbox(self.lf_ex_q, from_=3, to=120, width=10)
+        self.sb_ex_q_font_size = ttk.Spinbox(self.lf_ex_q, from_=3, to=120, width=10, command=self.preview_changes_tb)
         self.sb_ex_q_font_size.configure(validate="key", validatecommand=(self.root.register(lambda event: self.validateSpinbox(event, self.sb_ex_q_font_size)), "%P") or self.preview_changes_tb())
         self.sb_ex_q_font_size.bind("<MouseWheel>", lambda event: self.preview_changes_tb())
         self.sb_ex_q_font_size.pack(side=tk.LEFT, padx=5, pady=5)
@@ -625,7 +625,7 @@ class SettingWindow:
         self.lbl_ex_res_font_size = ttk.Label(self.lf_ex_res, text="Font Size")
         self.lbl_ex_res_font_size.pack(side=tk.LEFT, padx=5, pady=5)
 
-        self.sb_ex_res_font_size = ttk.Spinbox(self.lf_ex_res, from_=3, to=120, width=10)
+        self.sb_ex_res_font_size = ttk.Spinbox(self.lf_ex_res, from_=3, to=120, width=10, command=self.preview_changes_tb)
         self.sb_ex_res_font_size.configure(validate="key", validatecommand=(self.root.register(lambda event: self.validateSpinbox(event, self.sb_ex_res_font_size)), "%P") or self.preview_changes_tb())
         self.sb_ex_res_font_size.bind("<MouseWheel>", lambda event: self.preview_changes_tb())
         self.sb_ex_res_font_size.pack(side=tk.LEFT, padx=5, pady=5)
@@ -655,7 +655,7 @@ class SettingWindow:
 
         self.tb_preview_1 = tk.Text(
             self.f_tb_preview,
-            height=5,
+            height=3,
             width=27,
             wrap=tk.WORD,
             font=(fJson.settingCache["tb_mw_q_font"], fJson.settingCache["tb_mw_q_font_size"], "bold" if fJson.settingCache["tb_mw_q_font_bold"] else "normal"),
@@ -668,7 +668,7 @@ class SettingWindow:
 
         self.tb_preview_2 = tk.Text(
             self.f_tb_preview,
-            height=5,
+            height=3,
             width=27,
             wrap=tk.WORD,
             font=(fJson.settingCache["tb_mw_res_font"], fJson.settingCache["tb_mw_res_font_size"], "bold" if fJson.settingCache["tb_mw_res_font_bold"] else "normal"),
@@ -681,7 +681,7 @@ class SettingWindow:
 
         self.tb_preview_3 = tk.Text(
             self.f_tb_preview,
-            height=5,
+            height=3,
             width=27,
             wrap=tk.WORD,
             font=(fJson.settingCache["tb_ex_q_font"], fJson.settingCache["tb_ex_q_font_size"], "bold" if fJson.settingCache["tb_ex_q_font_bold"] else "normal"),
@@ -694,7 +694,7 @@ class SettingWindow:
 
         self.tb_preview_4 = tk.Text(
             self.f_tb_preview,
-            height=5,
+            height=3,
             width=27,
             wrap=tk.WORD,
             font=(fJson.settingCache["tb_ex_res_font"], fJson.settingCache["tb_ex_res_font_size"], "bold" if fJson.settingCache["tb_ex_res_font_bold"] else "normal"),
