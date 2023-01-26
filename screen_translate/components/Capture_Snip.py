@@ -58,15 +58,15 @@ class SnipWindow:
         # ------------------ Menu ------------------
         self.menuDropdown = tk.Menu(self.root, tearoff=0)
 
-        self.menuDropdown.add_checkbutton(label="Detect contour using CV2", command=lambda: beep() or fJson.savePartialSetting("enhance_with_cv2_Contour", self.cv2Contour.get()) or gClass.update_sw_setting(), onvalue=1, offvalue=0, variable=self.cv2Contour)  # type: ignore
-        self.menuDropdown.add_checkbutton(label="Grayscale", command=lambda: beep() or fJson.savePartialSetting("grayscale", self.grayscale.get()) or gClass.update_sw_setting(), onvalue=1, offvalue=0, variable=self.grayscale)  # type: ignore
+        self.menuDropdown.add_checkbutton(label="Detect contour using CV2", command=self.cv2_update, onvalue=1, offvalue=0, variable=self.cv2Contour)
+        self.menuDropdown.add_checkbutton(label="Grayscale", command=self.grayscale_update, onvalue=1, offvalue=0, variable=self.grayscale)
 
         self.bgTypeMenu = tk.Menu(self.menuDropdown, tearoff=0)
         self.menuDropdown.add_cascade(label="Background Type", menu=self.bgTypeMenu)
-        self.bgTypeMenu.add_radiobutton(label="Auto-Detect", command=lambda: beep() or fJson.savePartialSetting("enhance_background", "Auto-Detect") or gClass.update_sw_setting(), value="Auto-Detect", variable=self.bgType)  # type: ignore
-        self.bgTypeMenu.add_radiobutton(label="Light", command=lambda: beep() or fJson.savePartialSetting("enhance_background", "Light") or gClass.update_sw_setting(), value="Light", variable=self.bgType)  # type: ignore
-        self.bgTypeMenu.add_radiobutton(label="Dark", command=lambda: beep() or fJson.savePartialSetting("enhance_background", "Dark") or gClass.update_sw_setting(), value="Dark", variable=self.bgType)  # type: ignore
-        self.menuDropdown.add_checkbutton(label="Debug Mode", command=lambda: beep() or fJson.savePartialSetting("enhance_debugmode", self.debugMode.get()) or gClass.update_sw_setting(), onvalue=1, offvalue=0, variable=self.debugMode)  # type: ignore
+        self.bgTypeMenu.add_radiobutton(label="Auto-Detect", command=self.bgType_update, value="Auto-Detect", variable=self.bgType)  # type: ignore
+        self.bgTypeMenu.add_radiobutton(label="Light", command=self.bgType_update, value="Light", variable=self.bgType)  # type: ignore
+        self.bgTypeMenu.add_radiobutton(label="Dark", command=self.bgType_update, value="Dark", variable=self.bgType)  # type: ignore
+        self.menuDropdown.add_checkbutton(label="Debug Mode", command=self.debugMode_update, onvalue=1, offvalue=0, variable=self.debugMode)  # type: ignore
 
         self.menuDropdown.add_separator()
         self.submenu_engine = tk.Menu(self.menuDropdown, tearoff=0)
@@ -302,4 +302,36 @@ class SnipWindow:
         """
         fJson.savePartialSetting("targetLang", self.targetLang.get())
         gClass.update_mw_setting()
+        gClass.update_ex_cw_setting()
+
+    def cv2_update(self):
+        """
+        Method to update the cv2 setting.
+        """
+        fJson.savePartialSetting("enhance_with_cv2_Contour", True if self.cv2Contour.get() == 1 else False)
+        gClass.update_sw_setting()
+        gClass.update_ex_cw_setting()
+
+    def grayscale_update(self):
+        """
+        Method to update the grayscale setting.
+        """
+        fJson.savePartialSetting("enhance_with_grayscale", True if self.grayscale.get() == 1 else False)
+        gClass.update_sw_setting()
+        gClass.update_ex_cw_setting()
+
+    def bgType_update(self):
+        """
+        Method to update the background type setting.
+        """
+        fJson.savePartialSetting("enhance_background", self.bgType.get())
+        gClass.update_sw_setting()
+        gClass.update_ex_cw_setting()
+
+    def debugMode_update(self):
+        """
+        Method to update the debug setting.
+        """
+        fJson.savePartialSetting("enhance_debugmode", True if self.debugMode.get() == 1 else False)
+        gClass.update_sw_setting()
         gClass.update_ex_cw_setting()

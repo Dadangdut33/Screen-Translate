@@ -62,8 +62,8 @@ class SettingWindow:
         self.lb_cat = tk.Listbox(self.lf_m_bg_l, selectmode=tk.SINGLE, exportselection=False)  # inside the label frame
         self.lb_cat.pack(side=tk.LEFT, fill=tk.BOTH, padx=5, pady=2)
 
-        self.lb_cat.insert(1, "Capturing/Offset")
-        self.lb_cat.insert(2, "OCR Engine/Enhance")
+        self.lb_cat.insert(1, "Capturing - Offset")
+        self.lb_cat.insert(2, "OCR")
         self.lb_cat.insert(3, "Translate")
         self.lb_cat.insert(4, "Hotkey")
         self.lb_cat.insert(5, "Textbox")
@@ -72,7 +72,7 @@ class SettingWindow:
 
         # Right frame for the setting
         self.f_m_bg_r = tk.Frame(self.f_m_top)
-        self.f_m_bg_r.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=5, pady=5)
+        self.f_m_bg_r.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=(0, 5), pady=5)
 
         # Bind the listbox to the function
         self.lb_cat.bind("<<ListboxSelect>>", self.on_category_select)
@@ -1255,12 +1255,11 @@ class SettingWindow:
         cbtnval = cbtns[offSetType].instate(["selected"])
 
         if cbtnval:  # if auto
-            offsets = get_offset(offSetType)
+            spinners[offSetType].set(get_offset(offSetType))
             spinners[offSetType].config(state=tk.DISABLED)
-            spinners[offSetType].set(offsets)
         else:
+            spinners[offSetType].set(get_offset(offSetType))
             spinners[offSetType].config(state=tk.NORMAL)
-            spinners[offSetType].set(settingVal[offSetType])
 
     # ----------------------------------------------------------------
     # Engine
