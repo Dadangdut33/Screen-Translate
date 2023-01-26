@@ -102,10 +102,11 @@ If you use the installer version, you can run the uninstaller inside the app fol
 
 ## Building
 
-You can use [p2exe](https://www.py2exe.org/), [cx freeze](https://cx-freeze.readthedocs.io/en/latest/), or many other stuff. I use [pyinstaller](https://www.pyinstaller.org/) to compile it.<br>
-There are 2 options for compiling, command used are:
+There are 2 options for building, using pyinstaller or cx_freeze. The command used are:
 
-```
+**For pyinstaller you can use the following command:**
+
+```bash
 # On Source Code Directory
 # No console window
 pyinstaller build.spec
@@ -113,6 +114,18 @@ pyinstaller build.spec
 # With console window
 pyinstaller build_with_console.spec
 ```
+
+This will create a folder called `dist` in the source code directory. Inside the folder there will be a folder called `ScreenTranslate <version>` which contains the executable file.
+
+**For cx_freeze you can use the following command:**
+
+```bash
+# On Source Code Directory
+python build_cx.py build
+# you will be prompted to build with console or not
+```
+
+This will create a folder called `build` in the source code directory. Inside the folder there will be a folder called `exe.<platform>-<version>` which contains the executable file.
 
 ## Contributing
 

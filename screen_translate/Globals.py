@@ -7,7 +7,7 @@ from .utils.Json import JsonHandler
 # ---------------------------- #
 # Dir Paths
 dir_project: str = os.path.dirname(os.path.realpath(__file__))
-dir_json: str = os.path.abspath(os.path.join(dir_project, "..", "json"))
+dir_user: str = os.path.abspath(os.path.join(dir_project, "..", "user"))
 dir_log: str = os.path.abspath(os.path.join(dir_project, "..", "log"))
 dir_captured: str = os.path.abspath(os.path.join(dir_project, "..", "captured"))
 dir_assets: str = os.path.abspath(os.path.join(dir_project, "..", "assets"))
@@ -15,14 +15,14 @@ dir_user_manual: str = os.path.abspath(os.path.join(dir_project, "..", "user_man
 # ---------------------------- #
 # Target Paths
 path_to_app_exe: str = os.path.abspath(os.path.join(dir_project, "..", "ScreenTranslate.exe"))
-path_json_settings: str = os.path.join(dir_json, "settings.json")
-path_json_history: str = os.path.join(dir_json, "history.json")
+path_json_settings: str = os.path.join(dir_user, "settings.json")
+path_json_history: str = os.path.join(dir_user, "history.json")
 path_logo_icon: str = os.path.join(dir_assets, "logo.ico")
 path_logo_png: str = os.path.join(dir_assets, "logo.png")
 # ---------------------------- #
 # name
 app_name: str = "Screen Translate"
-fJson: JsonHandler = JsonHandler(path_json_settings, path_json_history, dir_json, [dir_log, dir_captured])
+fJson: JsonHandler = JsonHandler(path_json_settings, path_json_history, dir_user, [dir_log, dir_captured])
 # ---------------------------- #
 class Globals:
     """

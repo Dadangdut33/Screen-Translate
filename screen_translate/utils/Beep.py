@@ -1,16 +1,17 @@
 import os
-import sounddevice as sd
-import soundfile as sf
+import simpleaudio as sa
 
 from screen_translate.Globals import dir_assets
 from screen_translate.Logging import logger
 
 
 def beep():
-    beepPath = os.path.join(dir_assets, "beep.mp3")
+    beepPath = os.path.join(dir_assets, "beep.wav")
+    if not os.path.exists(beepPath):
+        logger.warning(f"{beepPath} not found. Beep sound will not be played.")
+        return
     try:
-        data, fs = sf.read(beepPath)
-        sd.play(data, fs, blocking=False)
+        wave_obj = sa.WaveObject.from_wave_file(beepPath)
+        wave_obj.play()
     except Exception as e:
         logger.exception(e)
-        pass

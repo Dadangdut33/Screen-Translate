@@ -38,8 +38,8 @@ default_setting = {
     # ------------------ #
     # runtime option
     "engine": "Google Translate",
-    "sourceLang": "Auto-Detect",
-    "targetLang": "English",
+    "sourceLang": "English",
+    "targetLang": "Japanese",
     # ------------------ #
     # Capture
     "tesseract_loc": "C:/Program Files/Tesseract-OCR/tesseract.exe",
@@ -276,7 +276,7 @@ class JsonHandler:
 
             # remove the id from the list
             for index in indexList:
-                file_data["tl_history"] = [item for item in file_data["tl_history"] if item["id"] != index] # type: ignore
+                file_data["tl_history"] = [item for item in file_data["tl_history"] if item["id"] != index]  # type: ignore
 
             # Then
             # Overwrite the ID and add the new data
