@@ -29,7 +29,7 @@ InfoAfterFile={#AbsolutePath}\ScreenTranslate {#MyAppVersion}\Changelog.txt
 ; Remove the following line to run in administrative install mode (install for all users.)
 PrivilegesRequired=lowest
 PrivilegesRequiredOverridesAllowed=dialog
-OutputDir={#AbsolutePath}\Release
+OutputDir={#AbsolutePath}\Release\{#MyAppVersion}
 OutputBaseFilename=ScreenTranslate-{#MyAppVersion}
 SetupIconFile={#AbsolutePath}\ScreenTranslate {#MyAppVersion}\assets\logo.ico
 Compression=lzma
