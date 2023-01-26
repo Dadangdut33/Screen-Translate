@@ -1,9 +1,10 @@
-from threading import Thread
+import re
 import tkinter.ttk as ttk
 import tkinter as tk
 import requests
-from PIL import Image, ImageTk
 
+from threading import Thread
+from PIL import Image, ImageTk
 
 from .Tooltip import CreateToolTip
 from screen_translate._version import __version__
@@ -142,10 +143,12 @@ class AboutWindow:
     def req_update_check(self):
         try:
             # request to github api, compare version. If not same tell user to update
-            req = requests.get("https://raw.githubusercontent.com/Dadangdut33/Screen-Translate/main/version.txt")
+            req = requests.get("https://api.github.com/repos/Dadangdut33/Screen-Translate/releases/latest")
 
             if req is not None and req.status_code == 200:
-                latest_version = str(req.text)
+                data = req.json()
+                latest_version = str(data["tag_name"])
+                latest_version = re.sub(r"[^\d\.]", "", latest_version) # remove non numeric and non dot
                 if __version__ < latest_version:
                     logger.info(f"New version found: {latest_version}")
                     self.checkUpdateLabelText = "New version available"
