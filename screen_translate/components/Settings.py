@@ -823,7 +823,7 @@ class SettingWindow:
             logger.info(f"Remove autostart registry: {x}")
 
     def show(self):
-        self.root.wm_deiconify()
+        self.root.after(0, self.root.deiconify)
 
     def on_closing(self):
         self.root.wm_withdraw()

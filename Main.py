@@ -73,14 +73,32 @@ class AppTray:
             trayIco = self.create_image(64, 64, "black", "white")
 
         self.menu_items = (
-            item("Snip and Translate", self.snip_win),
-            item("Generate Capture Window", self.open_capture_window),
+            item(f"{app_name} {__version__}", lambda *args: None, enabled=False),  # do nothing
             menu.SEPARATOR,
-            item("Show Query Window", self.open_query),
-            item("Show Result Window", self.open_result),
+            item("Snip and Translate", self.snip_win),
+            item("Open Capture Window", self.open_capture_window),
+            menu.SEPARATOR,
+            item(
+                "Generate",
+                menu(
+                    item("Mask Window", self.open_mask),
+                    item("Query Window", self.open_query),
+                    item("Result Window", self.open_result),
+                ),
+            ),
+            item(
+                "View",
+                menu(
+                    item("settings", self.open_settings),
+                    item("History", self.open_history),
+                    item("Captured Images", self.open_history),
+                    item("Log", self.open_log),
+                ),
+            ),
             item("Show Main Window", self.open_app),
             menu.SEPARATOR,
             item("Exit", self.exit_app),
+            item("Hidden onclick", self.open_app, default=True, visible=False),  # onclick the icon will open_app
         )
         self.menu = menu(*self.menu_items)
         self.icon = icon("Screen Translate", trayIco, f"Screen Translate V{__version__}", self.menu)
@@ -89,23 +107,35 @@ class AppTray:
     # -- Open app
     def open_app(self):
         assert gClass.mw is not None  # Show main window
-        logger.info("Opening main window from tray")
         gClass.mw.show()
 
     def open_query(self):
         assert gClass.ex_qw is not None
-        logger.info("Opening query window from tray")
         gClass.ex_qw.show()
 
     def open_result(self):
         assert gClass.ex_resw is not None
-        logger.info("Opening result window from tray")
         gClass.ex_resw.show()
 
     def open_capture_window(self):
         assert gClass.cw is not None
-        logger.info("Opening capture window from tray")
         gClass.cw.show()
+
+    def open_settings(self):
+        assert gClass.sw is not None
+        gClass.sw.show()
+
+    def open_history(self):
+        assert gClass.hw is not None
+        gClass.hw.show()
+
+    def open_log(self):
+        assert gClass.lw is not None
+        gClass.lw.show()
+
+    def open_mask(self):
+        assert gClass.mask is not None
+        gClass.mask.show()
 
     def snip_win(self):
         assert gClass.mw is not None
@@ -276,8 +306,8 @@ class MainWindow:
         self.filemenu3 = tk.Menu(self.menubar, tearoff=0)
         self.filemenu3.add_command(label="Capture Window", command=self.open_Capture_Screen, accelerator="F5")  # Open Capture Screen Window
         self.filemenu3.add_command(label="Mask Window", command=self.open_Mask_Window, accelerator="Ctrl + Alt + F5")  # Open Mask window
-        self.filemenu3.add_command(label="Query Box", command=self.open_Query_Box, accelerator="F6")
-        self.filemenu3.add_command(label="Result Box", command=self.open_Result_Box, accelerator="F7")
+        self.filemenu3.add_command(label="Query Window", command=self.open_Query_Window, accelerator="F6")
+        self.filemenu3.add_command(label="Result Window", command=self.open_Result_Window, accelerator="F7")
         self.menubar.add_cascade(label="Generate", menu=self.filemenu3)
 
         self.filemenu4 = tk.Menu(self.menubar, tearoff=0)
@@ -309,8 +339,8 @@ class MainWindow:
         self.root.bind("<F4>", self.open_Img_Captured)
         self.root.bind("<F5>", self.open_Capture_Screen)
         self.root.bind("<Control-Alt-F5>", self.open_Mask_Window)
-        self.root.bind("<F6>", self.open_Query_Box)
-        self.root.bind("<F7>", self.open_Result_Box)
+        self.root.bind("<F6>", self.open_Query_Window)
+        self.root.bind("<F7>", self.open_Result_Window)
 
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
         # ------------------ on Start ------------------
@@ -414,12 +444,12 @@ class MainWindow:
         gClass.hw.show()
 
     # Open result box
-    def open_Result_Box(self, event=None):
+    def open_Result_Window(self, event=None):
         assert gClass.ex_resw is not None
         gClass.ex_resw.show()
 
     # Open query box
-    def open_Query_Box(self, event=None):
+    def open_Query_Window(self, event=None):
         assert gClass.ex_qw is not None
         gClass.ex_qw.show()
 

@@ -94,6 +94,9 @@ class LogWindow:
 
     # Show/Hide
     def show(self):
+        self.root.after(0, self.after_show_called)
+
+    def after_show_called(self):
         self.root.wm_deiconify()
         self.updateLog()
         self.isOpen = True

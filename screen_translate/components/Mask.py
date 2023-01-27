@@ -67,7 +67,7 @@ class MaskWindow:
     # Show/Hide
     def show(self):
         self.root.attributes("-alpha", 0.8)
-        self.root.wm_deiconify()
+        self.root.after(0, self.root.deiconify)
 
     def on_closing(self):
         self.root.wm_withdraw()

@@ -3,6 +3,9 @@ from cx_Freeze import setup, Executable
 
 # ! DEEPL SCRAPER IS NOT SUPPORTED when build using cx_freeze !
 # I don't really know why but it just get stuck there when calling sync_playwright()
+print("WARNING: DEEPL SCRAPER IS NOT SUPPORTED when build using cx_freeze !")
+print("I don't really know why but it just get stuck there when calling sync_playwright()")
+print("Use pyinstaller instead if you want to build the app yourself")
 
 
 build_options = {
