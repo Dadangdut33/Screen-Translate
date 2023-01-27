@@ -18,7 +18,7 @@ default_setting = {
     "auto_copy": True,
     "save_history": True,
     "supress_no_text_alert": True,
-    "run_on_startup": False,
+    "run_on_startup": True,
     # ------------------ #
     # logging
     "keep_log": False,

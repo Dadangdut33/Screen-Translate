@@ -7,7 +7,7 @@ from tkinter import filedialog, font, colorchooser
 
 from .MBox import Mbox
 from .Tooltip import CreateToolTip
-from screen_translate.Globals import gClass, path_logo_icon, dir_captured, fJson, app_name, path_to_app_exe
+from screen_translate.Globals import gClass, path_logo_icon, dir_captured, fJson, app_name, path_to_app_exe, reg_key_name
 from screen_translate.Logging import logger, current_log, dir_log
 from screen_translate.utils.Helper import nativeNotify, startFile, tb_copy_only
 from screen_translate.utils.Monitor import get_offset, getScreenTotalGeometry
@@ -784,19 +784,43 @@ class SettingWindow:
         # On Close
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
 
-        self.onInit()
+        # --- Logo ---
+        try:
+            self.root.iconbitmap(path_logo_icon)
+        except tk.TclError:
+            logger.warning("Error Loading icon: Logo not found!")
+        except Exception as e:
+            logger.warning("Error loading icon")
+            logger.exception(e)
+
+        self.onInitOnce()
 
     # ----------------------------------------------------------------
     # Functions
     # ----------------------------------------------------------------
-    def onInit(self):
+    def onInitOnce(self):
         self.hideAllFrame()
         self.lb_cat.select_set(0)
         self.showFrame(self.f_cat_1_cap)
         self.deleteCapturedOnStart()
         self.deleteLogOnStart()
         self.init_setting()
+        self.add_reg_withcheck()
         self.onStart = False
+
+    def add_reg_withcheck(self):
+        # update registry location every time app start
+        if fJson.settingCache["run_on_startup"]:
+            check = check_autostart_registry(app_name)
+            if (check[0] and check[1] != reg_key_name) or not check[0]: # added but not invalid path or not added
+                x = set_autostart_registry(app_name, reg_key_name)  # -s for silent (hide window)
+                logger.info(f"Set autostart registry: {x}")
+
+    def remove_reg_withcheck(self):
+        check = check_autostart_registry(app_name)
+        if check[0]:
+            x = set_autostart_registry(app_name, autostart=False)
+            logger.info(f"Remove autostart registry: {x}")
 
     def show(self):
         self.root.wm_deiconify()
@@ -1181,13 +1205,9 @@ class SettingWindow:
 
         # check run on startup
         if setting_collections["run_on_startup"]:
-            if not check_autostart_registry(app_name):
-                x = set_autostart_registry(app_name, path_to_app_exe + " -s")
-                logger.info(f"Set autostart registry: {x}")
+            self.add_reg_withcheck()
         else:
-            if check_autostart_registry(app_name):
-                x = set_autostart_registry(app_name, autostart=False)
-                logger.info(f"Remove autostart registry: {x}")
+            self.remove_reg_withcheck()
 
         logger.info("-" * 50)
         logger.info("Saving setting")

@@ -20,6 +20,7 @@ Check autostart:
 if check_autostart_registry('App name'):
 """
 
+
 def set_autostart_registry(app_name, key_data=None, autostart: bool = True) -> bool:
     """
     Create/update/delete Windows autostart registry key
@@ -44,7 +45,7 @@ def set_autostart_registry(app_name, key_data=None, autostart: bool = True) -> b
     ) as key:
         try:
             if autostart:
-                winreg.SetValueEx(key, app_name, 0, winreg.REG_SZ, key_data) # type: ignore
+                winreg.SetValueEx(key, app_name, 0, winreg.REG_SZ, key_data)  # type: ignore
             else:
                 winreg.DeleteValue(key, app_name)
         except OSError:
@@ -60,11 +61,11 @@ def check_autostart_registry(value_name):
     ! If the function fails, OSError is raised.
 
     :param value_name:  A string containing the name of the application name
-    :return: True - Exist / False - Not exist
+    :return: True, Path - Exist / False, None - Not exist or error
     """
 
     if platform.system() != "Windows":
-        return False
+        return False, None
 
     with winreg.OpenKey(
         key=winreg.HKEY_CURRENT_USER,
@@ -75,10 +76,10 @@ def check_autostart_registry(value_name):
         idx = 0
         while idx < 1_000:  # Max 1.000 values
             try:
-                key_name, _, _ = winreg.EnumValue(key, idx)
+                key_name, data, _ = winreg.EnumValue(key, idx)
                 if key_name == value_name:
-                    return True
+                    return True, data
                 idx += 1
             except OSError:
                 break
-    return False
+    return False, None

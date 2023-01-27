@@ -22,6 +22,7 @@ path_logo_png: str = os.path.join(dir_assets, "logo.png")
 # ---------------------------- #
 # name
 app_name: str = "Screen Translate"
+reg_key_name: str = f'"{path_to_app_exe}"' + " -s"
 fJson: JsonHandler = JsonHandler(path_json_settings, path_json_history, dir_user, [dir_log, dir_captured])
 # ---------------------------- #
 class Globals:
