@@ -1,5 +1,9 @@
 # Changelog
-Latest V2.0.0
+Latest V2.0.1
+
+[V2.0.1 Minor bug fix and Update]
+- Fix run on startup showing terminal window because of wrong registry key value
+- Improve the tray app
 
 [V2.0.0 Tray app and lots of improvement] 
 - Added tray app

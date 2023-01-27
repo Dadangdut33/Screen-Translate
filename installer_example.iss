@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "Screen Translate"
-#define MyAppVersion "2.0.0"
+#define MyAppVersion "2.0.1"
 #define MyAppPublisher "Dadangdut33"
 #define MyAppURL "https://github.com/Dadangdut33/Screen-Translate"
 #define MyAppExeName "ScreenTranslate.exe"
@@ -12,7 +12,9 @@
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application. Do not use the same AppId value in installers for other applications.
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
-AppId={{F2EBD981-AD82-4898-9F9E-526C58152F71}
+; * With Console AppId: 0C2FEB81-A776-4DAA-BBEC-F76AA5D6F870
+; * NO CONSOLE AppId: F2EBD981-AD82-4898-9F9E-526C58152F71
+AppId={{xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 ;AppVerName={#MyAppName} {#MyAppVersion}

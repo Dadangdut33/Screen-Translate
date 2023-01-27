@@ -145,7 +145,7 @@ This will create a folder called `build` in the source code directory. Inside th
 
 ## Packaging
 
-I use innosetup to package the app. You can download it [here](https://jrsoftware.org/isdl.php). After installing it, you can setup the path in `ScreenTranslate.iss` file and run the .iss script.
+I use innosetup to package the app. You can download it [here](https://jrsoftware.org/isdl.php). After installing it, you can setup the path and AppId in `ScreenTranslate.iss` file and run the .iss script.
 
 ## Contributing
 
