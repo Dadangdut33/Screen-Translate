@@ -153,7 +153,8 @@ If you encounter any bugs with the program, please report them by opening an iss
 
 # Attribution
 
-Translate Icon in the logo is taken from [Icons8](https://icons8.com/)
+- Translate Icon in the logo is taken from [Icons8](https://icons8.com/)
+- [Sunvalley TTK Theme](https://github.com/rdbende/Sun-Valley-ttk-theme/) (used for app theme although i modified it a bit)
 
 # Other
 
