@@ -1,6 +1,9 @@
 import os
 import ast
 import shlex
+from typing import List, Optional
+import ts_ttk
+from tkinter import ttk
 
 from .utils.Json import JsonHandler
 
@@ -40,6 +43,11 @@ class Globals:
         self.hk_cw_pressed: bool = False
         self.hk_snip_pressed: bool = False
         self.cw_hidden: bool = True
+
+        # ---------------------------- #
+        self.native_theme: str = ""
+        self.theme_lists: List[str] = []
+        self.style: Optional[ttk.Style] = None
 
         # ---------------------------- #
         # classes

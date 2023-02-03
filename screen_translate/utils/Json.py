@@ -1,11 +1,12 @@
 import json
 import os
 import logging
-from typing import List
+import darkdetect
 
+from typing import List
 from notifypy import Notify
 
-from screen_translate.components.MBox import Mbox
+from screen_translate.components.custom.MBox import Mbox
 from screen_translate.Logging import logger
 from screen_translate._version import __setting_version__
 
@@ -19,6 +20,7 @@ default_setting = {
     "save_history": True,
     "supress_no_text_alert": True,
     "run_on_startup": True,
+    "theme": "sv-dark" if darkdetect.isDark() else "sv-light",
     # ------------------ #
     # logging
     "keep_log": False,
@@ -75,13 +77,13 @@ default_setting = {
     "tb_mw_q_font": "TKDefaultFont",
     "tb_mw_q_font_bold": False,
     "tb_mw_q_font_size": 10,
-    "tb_mw_q_font_color": "#000000",
-    "tb_mw_q_bg_color": "#FFFFFF",
+    "tb_mw_q_font_color": "#FFFFFF" if darkdetect.isDark() else "#000000",
+    "tb_mw_q_bg_color": "#424242" if darkdetect.isDark() else "#FFFFFF",
     "tb_mw_res_font": "TKDefaultFont",
     "tb_mw_res_font_bold": False,
     "tb_mw_res_font_size": 10,
-    "tb_mw_res_font_color": "#000000",
-    "tb_mw_res_bg_color": "#FFFFFF",
+    "tb_mw_res_font_color": "#FFFFFF" if darkdetect.isDark() else "#000000",
+    "tb_mw_res_bg_color": "#424242" if darkdetect.isDark() else "#FFFFFF",
     "tb_ex_q_font": "TKDefaultFont",
     "tb_ex_q_font_bold": False,
     "tb_ex_q_font_size": 10,
@@ -128,7 +130,7 @@ class JsonHandler:
             success, msg, data = self.verifyLoadedSetting(data)
             if not success:
                 self.settingCache = default_setting
-                Mbox("Error: Verifying setting file", "Setting reverted to default. Details: " + msg, 2)
+                localNotify("Error: Verifying setting file", "Setting reverted to default. Details: " + msg)
                 logger.warning("Error verifying setting file: " + msg)
 
             # verify setting version
@@ -136,12 +138,12 @@ class JsonHandler:
                 self.settingCache = default_setting  # load default
                 self.saveSetting(self.settingCache)  # save
                 # notify
-                Mbox("Setting file is outdated", "Setting has been reverted to default setting.", 2)
+                localNotify("Setting file is outdated", "Setting has been reverted to default setting.")
                 logger.warning("Setting file is outdated. Setting has been reverted to default setting.")
         else:
             self.settingCache = default_setting
             logger.error("Error loading setting file: " + msg)
-            Mbox("Error", "Error: Loading setting file. " + self.settingPath + "\nReason: " + msg, 2)
+            localNotify("Error", "Error: Loading setting file. " + self.settingPath + "\nReason: " + msg)
 
         # set logger level based on setting
         logger.setLevel(logging.getLevelName(self.settingCache["log_level"]))

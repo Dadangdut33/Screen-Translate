@@ -3,9 +3,10 @@ import sys
 import threading
 import time
 import keyboard
-import tkinter as tk
-import tkinter.ttk as ttk
 import requests
+import ts_ttk
+import tkinter as tk
+from tkinter import ttk
 
 from typing import Literal
 from PIL import Image, ImageDraw
@@ -16,22 +17,24 @@ from pystray import MenuItem as item
 from screen_translate._version import __version__
 from screen_translate.Globals import gClass, path_logo_icon, dir_captured, fJson, app_name, dir_user_manual
 from screen_translate.Logging import logger
-from screen_translate.utils.Helper import get_opac_value, nativeNotify, startFile, OpenUrl
-from screen_translate.utils.Capture import captureFullScreen
+
+from screen_translate.utils.Style import set_ui_style
 from screen_translate.utils.Translate import translate
+from screen_translate.utils.Capture import captureFullScreen
+from screen_translate.utils.Helper import get_opac_value, nativeNotify, startFile, OpenUrl
 from screen_translate.utils.LangCode import engine_select_source_dict, engine_select_target_dict, engineList
 
-from screen_translate.components.MBox import Mbox
-from screen_translate.components.Tooltip import CreateToolTip
-from screen_translate.components.History import HistoryWindow
-from screen_translate.components.Settings import SettingWindow
-from screen_translate.components.Capture_Window import CaptureWindow
-from screen_translate.components.Capture_Snip import SnipWindow
-from screen_translate.components.Mask import MaskWindow
-from screen_translate.components.About import AboutWindow
-from screen_translate.components.Ex_Query import QueryWindow
-from screen_translate.components.Ex_Result import ResultWindow
-from screen_translate.components.Log import LogWindow
+from screen_translate.components.custom.MBox import Mbox
+from screen_translate.components.custom.Tooltip import CreateToolTip
+from screen_translate.components.window.History import HistoryWindow
+from screen_translate.components.window.Settings import SettingWindow
+from screen_translate.components.window.Capture_Window import CaptureWindow
+from screen_translate.components.window.Capture_Snip import SnipWindow
+from screen_translate.components.window.Mask import MaskWindow
+from screen_translate.components.window.About import AboutWindow
+from screen_translate.components.window.Ex_Query import QueryWindow
+from screen_translate.components.window.Ex_Result import ResultWindow
+from screen_translate.components.window.Log import LogWindow
 
 
 # ----------------------------------------------------------------
@@ -164,19 +167,36 @@ class MainWindow:
         gClass.mw = self  # type: ignore
 
         # ----------------------------------------------
+        # Styles
+        self.style = ttk.Style()
+        gClass.style = self.style
+        gClass.native_theme = ts_ttk.get_current_theme()  # get first theme before changing
+        gClass.theme_lists = list(ts_ttk.get_theme_list())
+
+        # rearrange some positions
+        try:
+            gClass.theme_lists.remove("sv")
+        except Exception:
+            pass
+        gClass.theme_lists.insert(0, gClass.native_theme)  # add native theme to top of list
+        logger.debug(f"Available Theme to use: {gClass.theme_lists}")
+        gClass.theme_lists.insert(len(gClass.theme_lists), "custom")
+
+        set_ui_style(fJson.settingCache["theme"])
+        # ----------------------------------------------
         # Frames
-        self.frame_1 = tk.Frame(self.root)
+        self.frame_1 = ttk.Frame(self.root)
         self.frame_1.pack(side=tk.TOP, fill=tk.X, expand=False)
         self.frame_1.bind("<Button-1>", lambda event: self.root.focus_set())
 
-        self.frame_2_tb_q = tk.Frame(self.root)
+        self.frame_2_tb_q = ttk.Frame(self.root)
         self.frame_2_tb_q.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
-        self.frame_3 = tk.Frame(self.root)
+        self.frame_3 = ttk.Frame(self.root)
         self.frame_3.pack(side=tk.TOP, fill=tk.X, expand=False)
         self.frame_3.bind("<Button-1>", lambda event: self.root.focus_set())
 
-        self.frame_4_tb_res = tk.Frame(self.root)
+        self.frame_4_tb_res = ttk.Frame(self.root)
         self.frame_4_tb_res.pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
 
         # --- Top frame_1 ---
@@ -197,10 +217,10 @@ class MainWindow:
         self.slider_capture_opac = ttk.Scale(self.frame_1, from_=0.0, to=1.0, value=0.8, orient=tk.HORIZONTAL, command=self.opac_change)
         self.slider_capture_opac.pack(side=tk.LEFT, padx=5, pady=5)
 
-        self.lbl_capture_opac = tk.Label(self.frame_1, text="Capture Window Opacity: " + "0.8")
+        self.lbl_capture_opac = ttk.Label(self.frame_1, text="Capture Window Opacity: " + "0.8")
         self.lbl_capture_opac.pack(side=tk.LEFT, padx=5, pady=5)
 
-        self.frame_status = tk.Frame(self.frame_1)
+        self.frame_status = ttk.Frame(self.frame_1)
         self.frame_status.pack(side=tk.RIGHT, fill=tk.X, expand=False)
 
         self.lb_status = ttk.Progressbar(self.frame_status, orient=tk.HORIZONTAL, length=120, mode="determinate")
@@ -209,7 +229,7 @@ class MainWindow:
         # --- Top frame_2 ---
         # TB
         # Translation Textbox (Query/Source)
-        self.frame_tb_query_bg = tk.Frame(self.frame_2_tb_q, bg="#7E7E7E")
+        self.frame_tb_query_bg = ttk.Frame(self.frame_2_tb_q, style="Darker.TFrame")
         self.frame_tb_query_bg.pack(side=tk.TOP, fill=tk.BOTH, expand=True, padx=5, pady=5)
 
         self.sb_query = tk.Scrollbar(self.frame_tb_query_bg)
@@ -226,13 +246,13 @@ class MainWindow:
             yscrollcommand=self.sb_query.set,
         )
         self.tb_query.pack(padx=1, pady=1, fill=tk.BOTH, expand=True)
-        self.tb_query.config(yscrollcommand=self.sb_query.set)
-        self.sb_query.config(command=self.tb_query.yview)
+        self.tb_query.configure(yscrollcommand=self.sb_query.set)
+        self.sb_query.configure(command=self.tb_query.yview)
         self.tb_query.bind("<KeyRelease>", self.tb_query_change)
 
         # --- Bottom frame_3 ---
         # Langoptions onstart
-        self.lbl_engines = tk.Label(self.frame_3, text="TL Engine:")
+        self.lbl_engines = ttk.Label(self.frame_3, text="TL Engine:")
         self.lbl_engines.pack(side=tk.LEFT, padx=5, pady=5)
         CreateToolTip(self.lbl_engines, 'The provider use to translate the text. You can set it to "None" if you only want to use the OCR')
 
@@ -240,7 +260,7 @@ class MainWindow:
         self.cb_tl_engine.pack(side=tk.LEFT, padx=5, pady=5)
         self.cb_tl_engine.bind("<<ComboboxSelected>>", self.cb_engine_change)
 
-        self.lbl_source = tk.Label(self.frame_3, text="From:")
+        self.lbl_source = ttk.Label(self.frame_3, text="From:")
         self.lbl_source.pack(side=tk.LEFT, padx=5, pady=5)
         CreateToolTip(self.lbl_source, "Source Language (Text to be translated)")
 
@@ -248,7 +268,7 @@ class MainWindow:
         self.cb_sourceLang.pack(side=tk.LEFT, padx=5, pady=5)
         self.cb_sourceLang.bind("<<ComboboxSelected>>", self.cb_source_change)
 
-        self.lbl_target = tk.Label(self.frame_3, text="To:")
+        self.lbl_target = ttk.Label(self.frame_3, text="To:")
         self.lbl_target.pack(side=tk.LEFT, padx=5, pady=5)
         CreateToolTip(self.lbl_target, "Target Language (Results)")
 
@@ -265,7 +285,7 @@ class MainWindow:
         # --- Bottom tk.Frame 2 ---
         # TB
         # Translation Textbox (Result)
-        self.frame_tb_result_bg = tk.Frame(self.frame_4_tb_res, bg="#7E7E7E")
+        self.frame_tb_result_bg = ttk.Frame(self.frame_4_tb_res, style="Darker.TFrame")
         self.frame_tb_result_bg.pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True, padx=5, pady=5)
 
         self.sb_result = tk.Scrollbar(self.frame_tb_result_bg)
@@ -282,8 +302,8 @@ class MainWindow:
             yscrollcommand=self.sb_query.set,
         )
         self.tb_result.pack(padx=1, pady=1, fill=tk.BOTH, expand=True)
-        self.tb_result.config(yscrollcommand=self.sb_result.set)
-        self.sb_result.config(command=self.tb_result.yview)
+        self.tb_result.configure(yscrollcommand=self.sb_result.set)
+        self.sb_result.configure(command=self.tb_result.yview)
         self.tb_result.bind("<KeyRelease>", self.tb_result_change)
 
         # --- Menubar ---
@@ -330,7 +350,7 @@ class MainWindow:
         self.menubar.add_cascade(label="Help", menu=self.filemenu5)
 
         # Add to self.root
-        self.root.config(menu=self.menubar)
+        self.root.configure(menu=self.menubar)
 
         # Bind key shortcut
         self.root.bind("<F1>", self.open_About)
@@ -413,7 +433,7 @@ class MainWindow:
             sys.exit(0)
         except SystemExit:
             logger.info("Exit successful")
-        except:
+        except Exception:
             logger.error("Exit failed, killing process")
             os._exit(0)
 
@@ -495,7 +515,7 @@ class MainWindow:
     # Slider
     def opac_change(self, event):
         value = get_opac_value(event)
-        self.lbl_capture_opac.config(text=f"Capture Window Opacity: {round(value, 3)}")
+        self.lbl_capture_opac.configure(text=f"Capture Window Opacity: {round(value, 3)}")
         gClass.slider_cw_change(value, update_slider=True)
 
     def tb_query_change(self, event):

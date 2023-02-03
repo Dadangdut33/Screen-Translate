@@ -3,7 +3,7 @@ from typing import Literal
 from .Translator import google_tl, memory_tl, libre_tl, deepl_tl, pons_tl
 from screen_translate.Logging import logger
 from screen_translate.Globals import fJson, gClass
-from screen_translate.components.MBox import Mbox
+from screen_translate.components.custom.MBox import Mbox
 
 
 def translate(query: str, from_lang: str, to_lang: str, engine: Literal["Google Translate", "Deepl", "MyMemoryTranslator", "PONS", "LibreTranslate"]):

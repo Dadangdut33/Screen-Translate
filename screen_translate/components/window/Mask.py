@@ -1,9 +1,9 @@
 import tkinter as tk
 from tkinter import colorchooser
 
-from screen_translate.components.MBox import Mbox
+from screen_translate.components.custom.MBox import Mbox
+from screen_translate.components.custom.Tooltip import CreateToolTip
 
-from .Tooltip import CreateToolTip
 from screen_translate.Globals import fJson, gClass, path_logo_icon
 from screen_translate.utils.Beep import beep
 

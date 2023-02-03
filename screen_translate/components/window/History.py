@@ -1,12 +1,13 @@
 import tkinter as tk
 import tkinter.ttk as ttk
 import pyperclip
+import textwrap
 
-from .MBox import Mbox
+from screen_translate.components.custom.MBox import Mbox
 from screen_translate.Globals import gClass, fJson, path_logo_icon
 from screen_translate.Logging import logger
 
-
+# TODO: USE TKSHEET
 # ----------------------------------------------------------------------
 class HistoryWindow:
     """History Window"""
@@ -15,7 +16,7 @@ class HistoryWindow:
     def __init__(self, master: tk.Tk):
         self.root = tk.Toplevel(master)
         self.root.title("History")
-        self.root.geometry("700x300")
+        self.root.geometry("700x350")
         self.root.wm_attributes("-topmost", False)  # Default False
         self.root.wm_withdraw()
         gClass.hw = self  # type: ignore
@@ -24,6 +25,7 @@ class HistoryWindow:
         # frameOne
         self.f_1 = ttk.Frame(self.root)
         self.f_1.pack(side=tk.TOP, fill=tk.BOTH, padx=5, expand=True)
+
         self.f1_scrollFrame = ttk.Frame(self.root)
         self.f1_scrollFrame.pack(side=tk.TOP, fill=tk.X, padx=5, expand=False)
 
@@ -33,46 +35,50 @@ class HistoryWindow:
         # elements
         # Treeview
         self.historyTreeView = ttk.Treeview(self.f_1, columns=("Id", "From - To", "Query - Result"))
-
-        # Scrollbar
-        self.sbY = ttk.Scrollbar(self.f_1, orient=tk.VERTICAL)
-        self.sbY.pack(side=tk.RIGHT, fill=tk.Y)
-        self.sbX = ttk.Scrollbar(self.f1_scrollFrame, orient=tk.HORIZONTAL)
-        self.sbX.pack(side=tk.TOP, fill=tk.X)
-
-        self.sbX.config(command=self.historyTreeView.xview)
-        self.sbY.config(command=self.historyTreeView.yview)
-        self.historyTreeView.config(yscrollcommand=self.sbY.set, xscrollcommand=self.sbX.set)
-        self.historyTreeView.bind("<Button-1>", self.handle_click)
-
-        # Other stuff
-        self.btn_refresh = ttk.Button(self.f_bot, text="🔄 Refresh", command=self.refresh)
-        self.btn_copy_to_clipboard = ttk.Button(self.f_bot, text="↳ Copy to Clipboard", command=self.copyToClipboard)
-        self.btn_copy_to_translate_box = ttk.Button(self.f_bot, text="↳ Copy to Translate Menu", command=self.copyToTranslateMenu)
-        self.btn_delete_selected = ttk.Button(self.f_bot, text="✕ Delete Selected", command=self.deleteSelected)
-        self.btn_delete_all = ttk.Button(self.f_bot, text="✕ Delete All", command=self.deleteAll)
-        self.btn_ok = ttk.Button(self.f_bot, text="Ok", command=self.on_closing)
-
-        # ----------------------------------------------------------------
-        # pack stuff
         self.historyTreeView.heading("#0", text="", anchor=tk.CENTER)
         self.historyTreeView.heading("Id", text="Id", anchor=tk.CENTER)
         self.historyTreeView.heading("From - To", text="From - To", anchor=tk.CENTER)
         self.historyTreeView.heading("Query - Result", text="Query - Result", anchor=tk.W)
 
         self.historyTreeView.column("#0", width=20, stretch=False)
-        self.historyTreeView.column("Id", anchor=tk.CENTER, width=50, stretch=True)
+        self.historyTreeView.column("Id", anchor=tk.CENTER, stretch=False)
         self.historyTreeView.column("From - To", anchor=tk.CENTER, width=150, stretch=False)
-        self.historyTreeView.column("Query - Result", anchor=tk.W, width=10000, stretch=False)  # Make the width ridiculuosly long so it can use the x scrollbar
+        self.historyTreeView.column("Query - Result", anchor=tk.W, width=350, stretch=False)  # Make the width ridiculuosly long so it can use the x scrollbar
+
+        # Scrollbar
+        self.sbY = ttk.Scrollbar(self.f_1, orient=tk.VERTICAL)
+        self.sbY.pack(side=tk.RIGHT, fill=tk.Y)
+        self.sbY.configure(command=self.historyTreeView.yview)
 
         self.historyTreeView.pack(side=tk.TOP, padx=5, pady=5, fill=tk.BOTH, expand=True)
+
+        self.sbX = ttk.Scrollbar(self.f1_scrollFrame, orient=tk.HORIZONTAL)
+        self.sbX.pack(side=tk.TOP, fill=tk.X, expand=True)
+        self.sbX.configure(command=self.historyTreeView.xview)
+
+        self.historyTreeView.configure(yscrollcommand=self.sbY.set, xscrollcommand=self.sbX.set)
+        # self.historyTreeView.bind("<Button-1>", self.handle_click)
+
+        # Other stuff
+        self.btn_refresh = ttk.Button(self.f_bot, text="🔄 Refresh", command=self.refresh)
         self.btn_refresh.pack(side=tk.LEFT, fill=tk.X, padx=5, pady=5, expand=False)
+
+        self.btn_copy_to_clipboard = ttk.Button(self.f_bot, text="↳ Copy to Clipboard", command=self.copyToClipboard)
         self.btn_copy_to_clipboard.pack(side=tk.LEFT, fill=tk.X, padx=5, pady=5, expand=False)
+
+        self.btn_copy_to_translate_box = ttk.Button(self.f_bot, text="↳ Copy to Translate Menu", command=self.copyToTranslateMenu)
         self.btn_copy_to_translate_box.pack(side=tk.LEFT, fill=tk.X, padx=5, pady=5, expand=False)
+
+        self.btn_delete_selected = ttk.Button(self.f_bot, text="✕ Delete Selected", command=self.deleteSelected)
         self.btn_delete_selected.pack(side=tk.LEFT, fill=tk.X, padx=5, pady=5, expand=False)
+
+        self.btn_delete_all = ttk.Button(self.f_bot, text="✕ Delete All", command=self.deleteAll)
         self.btn_delete_all.pack(side=tk.LEFT, fill=tk.X, padx=5, pady=5, expand=False)
+
+        self.btn_ok = ttk.Button(self.f_bot, text="Ok", command=self.on_closing, style="Accent.TButton")
         self.btn_ok.pack(side=tk.RIGHT, fill=tk.X, padx=5, pady=5, expand=False)
 
+        # ----------------------------------------------------------------
         # On Close
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
 
@@ -151,11 +157,11 @@ class HistoryWindow:
             for record in listData:
                 # Parent
                 parentID = count
-                self.historyTreeView.insert(parent="", index="end", text="", iid=str(count), values=(record[0], record[1] + "-" + record[2], record[3].replace("\n", " ")))
+                self.historyTreeView.insert(parent="", index="end", text="", iid=str(count), values=(record[0], record[1] + "-" + record[2], "\n".join(textwrap.wrap(record[3], 50))))
 
                 count += 1
                 # Child
-                self.historyTreeView.insert(parent=str(parentID), index="end", text="", iid=str(count), values=(record[0], "via " + record[5], record[4].replace("\n", " ")))
+                self.historyTreeView.insert(parent=str(parentID), index="end", text="", iid=str(count), values=(record[0], "via " + record[5], "\n".join(textwrap.wrap(record[4], 50))))
 
                 count += 1
             # ------------------------------------------------------------

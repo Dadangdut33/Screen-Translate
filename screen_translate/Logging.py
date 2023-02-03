@@ -18,7 +18,7 @@ class c_formatter(logging.Formatter):
     cyan = "\u001b[46m"
     yellow = "\x1b[33;20m"
     red = "\x1b[31;20m"
-    bold_red = "\x1b[31;1m"
+    bold_red = "\x1b[31;1m"  
     blue = "\x1b[34;20m"
     reset = "\x1b[0m"
     timeFormat = blue + "%(asctime)s " + reset

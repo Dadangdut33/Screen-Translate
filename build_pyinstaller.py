@@ -26,6 +26,7 @@ options = [
     "--additional-hooks-dir=./_pyinstaller_hooks",
     "--runtime-hook=./_pyinstaller_hooks/add_lib.py",
     "--icon=./assets/logo.ico",
+    "--add-data=./theme;theme",
     "--add-data=./assets;assets",
     "--add-data=./user_manual;user_manual",
     "--add-data=./user_manual/Readme.txt;.",

@@ -1,7 +1,7 @@
 import threading
 import tkinter as tk
 
-from .MBox import Mbox
+from screen_translate.components.custom.MBox import Mbox
 from screen_translate.Globals import gClass, path_logo_icon, fJson
 from screen_translate.Logging import logger
 from screen_translate.utils.Translate import translate
@@ -122,7 +122,7 @@ class SnipWindow:
         self.root.deiconify()
 
         # ss canvas
-        self.ss_canvas = tk.Canvas(self.f_snipper, cursor="cross", bg="grey11")
+        self.ss_canvas = tk.Canvas(self.f_snipper, cursor="cross", bg="grey11", highlightthickness=0)
         self.ss_canvas.pack(fill=tk.BOTH, expand=True)
 
         self.ss_canvas.bind("<Escape>", self.exitScreenshotMode)
@@ -206,7 +206,6 @@ class SnipWindow:
                 )
             else:
                 Mbox("Error", res, 2)
-
 
     def exitScreenshotMode(self, event=None):
         """

@@ -5,14 +5,16 @@ import tkinter.ttk as ttk
 from typing import Literal
 from tkinter import filedialog, font, colorchooser
 
-from .MBox import Mbox
-from .Tooltip import CreateToolTip
-from screen_translate.Globals import gClass, path_logo_icon, dir_captured, fJson, app_name, path_to_app_exe, reg_key_name
+from screen_translate.components.custom.MBox import Mbox
+from screen_translate.components.custom.Tooltip import CreateToolTip
+
+from screen_translate.Globals import gClass, path_logo_icon, dir_captured, fJson, app_name, reg_key_name
 from screen_translate.Logging import logger, current_log, dir_log
 from screen_translate.utils.Helper import nativeNotify, startFile, tb_copy_only
 from screen_translate.utils.Monitor import get_offset, getScreenTotalGeometry
 from screen_translate.utils.AutoStart import set_autostart_registry, check_autostart_registry
 from screen_translate.utils.Capture import seeFullWindow
+from screen_translate.utils.Style import set_ui_style
 
 
 def chooseColor_entry(theWidget: ttk.Entry, initialColor: str, parent: tk.Toplevel):
@@ -26,7 +28,7 @@ def chooseColor_label(theWidget: ttk.Label, initialColor: str, parent: tk.Toplev
     color = colorchooser.askcolor(initialcolor=initialColor, title="Choose a color", parent=parent)
     if color[1] is not None:
         textRes = customText + " " + color[1] if customText is not None else color[1]
-        theWidget.config(text=textRes)
+        theWidget.configure(text=textRes)
 
 
 # ----------------------------------------------------------------------
@@ -47,12 +49,12 @@ class SettingWindow:
         # ----------------------------------------------------------------------
         # Main frame
         # top frame
-        self.f_m_top = tk.Frame(self.root)
+        self.f_m_top = ttk.Frame(self.root)
         self.f_m_top.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
         # botom
-        self.f_m_bot = tk.Frame(self.root, bg="#7E7E7E")
-        self.f_m_bot.pack(side=tk.BOTTOM, fill=tk.X, pady=(5, 0), padx=5)
+        self.f_m_bot = ttk.Frame(self.root, style="Bottom.TFrame")
+        self.f_m_bot.pack(side=tk.BOTTOM, fill=tk.X)
 
         # Left frame for categorization
         self.lf_m_bg_l = tk.LabelFrame(self.f_m_top, text="Menu", labelanchor=tk.N)
@@ -71,7 +73,7 @@ class SettingWindow:
         self.lb_cat.insert(7, "Other")
 
         # Right frame for the setting
-        self.f_m_bg_r = tk.Frame(self.f_m_top)
+        self.f_m_bg_r = ttk.Frame(self.f_m_top)
         self.f_m_bg_r.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=(0, 5), pady=5)
 
         # Bind the listbox to the function
@@ -79,7 +81,7 @@ class SettingWindow:
 
         # ----------------------------------------------------------------------
         # * CAT 1 - Capturing/Offset
-        self.f_cat_1_cap = tk.Frame(self.f_m_bg_r)
+        self.f_cat_1_cap = ttk.Frame(self.f_m_bg_r)
         self.f_cat_1_cap.pack(side=tk.TOP, fill=tk.BOTH, padx=5, pady=5, expand=False)
 
         # -----------------------
@@ -87,13 +89,13 @@ class SettingWindow:
         self.lf_capture = tk.LabelFrame(self.f_cat_1_cap, text="• Capturing Setting")
         self.lf_capture.pack(side=tk.TOP, fill=tk.X, expand=True, padx=5, pady=(0, 5))
 
-        self.f_capture_1 = tk.Frame(self.lf_capture)
+        self.f_capture_1 = ttk.Frame(self.lf_capture)
         self.f_capture_1.pack(side=tk.TOP, fill=tk.X, expand=True)
 
-        self.f_capture_2 = tk.Frame(self.lf_capture)
+        self.f_capture_2 = ttk.Frame(self.lf_capture)
         self.f_capture_2.pack(side=tk.TOP, fill=tk.X, expand=True)
 
-        self.f_capture_3 = tk.Frame(self.lf_capture)
+        self.f_capture_3 = ttk.Frame(self.lf_capture)
         self.f_capture_3.pack(side=tk.TOP, fill=tk.X, expand=True)
 
         self.cbtn_hide_mw_on_cap = ttk.Checkbutton(self.f_capture_1, text="Hide main window on capture")
@@ -217,46 +219,46 @@ class SettingWindow:
 
         # [total width]
         self.lbl_snippet_total_w = ttk.Label(self.f_snippet_geometry, text="Total Width:")
-        self.lbl_snippet_total_w.pack(side=tk.LEFT, padx=(0, 5), pady=0)
+        self.lbl_snippet_total_w.pack(side=tk.LEFT, padx=5, pady=0)
         CreateToolTip(self.lbl_snippet_total_w, "Total width of the monitor")
 
         self.sb_snippet_total_w = ttk.Spinbox(self.f_snippet_geometry, from_=-100000, to=100000, width=7)
         self.sb_snippet_total_w.configure(validate="key", validatecommand=(self.root.register(lambda event: self.validateSpinbox(event, self.sb_snippet_total_w)), "%P"))
         self.sb_snippet_total_w.bind("<MouseWheel>", lambda event: self.stop_scroll_if_disabled(event, theSpinner=self.sb_snippet_total_w))
-        self.sb_snippet_total_w.pack(side=tk.LEFT, padx=0, pady=(3, 0))
+        self.sb_snippet_total_w.pack(side=tk.LEFT, padx=0, pady=5)
         CreateToolTip(self.sb_snippet_total_w, "Total width of the monitor")
 
         # [total height]
         self.lbl_snippet_total_h = ttk.Label(self.f_snippet_geometry, text="Total Height:")
-        self.lbl_snippet_total_h.pack(side=tk.LEFT, padx=(5, 0), pady=5)
+        self.lbl_snippet_total_h.pack(side=tk.LEFT, padx=5, pady=5)
         CreateToolTip(self.lbl_snippet_total_h, "Total height of the monitor")
 
         self.sb_snippet_total_h = ttk.Spinbox(self.f_snippet_geometry, from_=-100000, to=100000, width=7)
         self.sb_snippet_total_h.configure(validate="key", validatecommand=(self.root.register(lambda event: self.validateSpinbox(event, self.sb_snippet_total_h)), "%P"))
         self.sb_snippet_total_h.bind("<MouseWheel>", lambda event: self.stop_scroll_if_disabled(event, theSpinner=self.sb_snippet_total_h))
-        self.sb_snippet_total_h.pack(side=tk.LEFT, padx=0, pady=(3, 0))
+        self.sb_snippet_total_h.pack(side=tk.LEFT, padx=0, pady=5)
         CreateToolTip(self.sb_snippet_total_h, "Total height of the monitor")
 
         # [x offset]
         self.lbl_snippet_offset_x = ttk.Label(self.f_snippet_geometry, text="X Offset From Primary:")
-        self.lbl_snippet_offset_x.pack(side=tk.LEFT, padx=(5, 0), pady=5)
+        self.lbl_snippet_offset_x.pack(side=tk.LEFT, padx=5, pady=5)
         CreateToolTip(self.lbl_snippet_offset_x, "X offset of the monitor from the primary monitor")
 
         self.sb_snippet_offset_x = ttk.Spinbox(self.f_snippet_geometry, from_=-100000, to=100000, width=7)
         self.sb_snippet_offset_x.configure(validate="key", validatecommand=(self.root.register(lambda event: self.validateSpinbox(event, self.sb_snippet_offset_x)), "%P"))
         self.sb_snippet_offset_x.bind("<MouseWheel>", lambda event: self.stop_scroll_if_disabled(event, theSpinner=self.sb_snippet_offset_x))
-        self.sb_snippet_offset_x.pack(side=tk.LEFT, padx=0, pady=(3, 0))
+        self.sb_snippet_offset_x.pack(side=tk.LEFT, padx=0, pady=5)
         CreateToolTip(self.sb_snippet_offset_x, "X offset of the monitor from the primary monitor")
 
         # [y offset]
         self.lbl_snippet_offset_y = ttk.Label(self.f_snippet_geometry, text="Y Offset From Primary:")
-        self.lbl_snippet_offset_y.pack(side=tk.LEFT, padx=(5, 0), pady=5)
+        self.lbl_snippet_offset_y.pack(side=tk.LEFT, padx=5, pady=5)
         CreateToolTip(self.lbl_snippet_offset_y, "Y offset of the monitor from the primary monitor")
 
         self.sb_snippet_offset_y = ttk.Spinbox(self.f_snippet_geometry, from_=-100000, to=100000, width=7)
         self.sb_snippet_offset_y.configure(validate="key", validatecommand=(self.root.register(lambda event: self.validateSpinbox(event, self.sb_snippet_offset_y)), "%P"))
         self.sb_snippet_offset_y.bind("<MouseWheel>", lambda event: self.stop_scroll_if_disabled(event, theSpinner=self.sb_snippet_offset_y))
-        self.sb_snippet_offset_y.pack(side=tk.LEFT, padx=0, pady=(3, 0))
+        self.sb_snippet_offset_y.pack(side=tk.LEFT, padx=0, pady=5)
         CreateToolTip(self.sb_snippet_offset_y, "Y offset of the monitor from the primary monitor")
 
         self.lbl_hint_snippet = ttk.Label(self.f_snippet_geometry, text="❓")
@@ -271,13 +273,13 @@ class SettingWindow:
 
         # ----------------------------------------------------------------------
         # * CAT 2 - OCR Engine
-        self.f_cat_2_ocr = tk.Frame(self.f_m_bg_r)
+        self.f_cat_2_ocr = ttk.Frame(self.f_m_bg_r)
         self.f_cat_2_ocr.pack(side=tk.TOP, fill=tk.BOTH, padx=5, pady=5, expand=False)
 
         self.lf_OCR_setting = tk.LabelFrame(self.f_cat_2_ocr, text="• Tesseract OCR Settings")
         self.lf_OCR_setting.pack(side=tk.TOP, fill=tk.X, expand=True, padx=5, pady=(0, 5))
 
-        self.f_OCR_setting = tk.Frame(self.lf_OCR_setting)
+        self.f_OCR_setting = ttk.Frame(self.lf_OCR_setting)
         self.f_OCR_setting.pack(side=tk.TOP, fill=tk.X, expand=True)
 
         self.lbl_OCR_tesseract_path = ttk.Label(self.f_OCR_setting, text="Tesseract Path")
@@ -296,10 +298,10 @@ class SettingWindow:
         self.lf_OCR_enhancement = tk.LabelFrame(self.f_cat_2_ocr, text="• OCR Enhancement", width=900, height=75)
         self.lf_OCR_enhancement.pack(side=tk.TOP, fill=tk.X, expand=False, padx=5, pady=5)
 
-        self.f_OCR_enhancement_1 = tk.Frame(self.lf_OCR_enhancement)
+        self.f_OCR_enhancement_1 = ttk.Frame(self.lf_OCR_enhancement)
         self.f_OCR_enhancement_1.pack(side=tk.TOP, fill=tk.X, expand=False)
 
-        self.f_OCR_enhancement_2 = tk.Frame(self.lf_OCR_enhancement)
+        self.f_OCR_enhancement_2 = ttk.Frame(self.lf_OCR_enhancement)
         self.f_OCR_enhancement_2.pack(side=tk.TOP, fill=tk.X, expand=False)
 
         self.lbl_OCR_cbbg = ttk.Label(self.f_OCR_enhancement_1, text="Background")
@@ -335,13 +337,13 @@ class SettingWindow:
         self.lf_OCR_result = tk.LabelFrame(self.f_cat_2_ocr, text="• Result", width=900, height=75)
         self.lf_OCR_result.pack(side=tk.TOP, fill=tk.X, expand=False, padx=5, pady=5)
 
-        self.f_OCR_result_1 = tk.Frame(self.lf_OCR_result)
+        self.f_OCR_result_1 = ttk.Frame(self.lf_OCR_result)
         self.f_OCR_result_1.pack(side=tk.TOP, fill=tk.X, expand=False)
 
-        self.f_OCR_result_2 = tk.Frame(self.lf_OCR_result)
+        self.f_OCR_result_2 = ttk.Frame(self.lf_OCR_result)
         self.f_OCR_result_2.pack(side=tk.TOP, fill=tk.X, expand=False)
 
-        self.f_OCR_result_3 = tk.Frame(self.lf_OCR_result)
+        self.f_OCR_result_3 = ttk.Frame(self.lf_OCR_result)
         self.f_OCR_result_3.pack(side=tk.TOP, fill=tk.X, expand=False)
 
         self.lbl_OCR_delete_lastchar = ttk.Label(self.f_OCR_result_1, text="Delete Last Char")
@@ -377,16 +379,16 @@ class SettingWindow:
 
         # ----------------------------------------------------------------------
         # * CAT 3 - Translate
-        self.f_cat_3_tl = tk.Frame(self.f_m_bg_r)
+        self.f_cat_3_tl = ttk.Frame(self.f_m_bg_r)
         self.f_cat_3_tl.pack(side=tk.TOP, fill=tk.BOTH, padx=5, pady=5, expand=False)
 
         self.lf_tl_setting = tk.LabelFrame(self.f_cat_3_tl, text="• Translation Settings")
         self.lf_tl_setting.pack(side=tk.TOP, fill=tk.X, expand=True, padx=5, pady=(0, 5))
 
-        self.f_tl_setting_1 = tk.Frame(self.lf_tl_setting)
+        self.f_tl_setting_1 = ttk.Frame(self.lf_tl_setting)
         self.f_tl_setting_1.pack(side=tk.TOP, fill=tk.X, expand=False)
 
-        self.f_tl_setting_2 = tk.Frame(self.lf_tl_setting)
+        self.f_tl_setting_2 = ttk.Frame(self.lf_tl_setting)
         self.f_tl_setting_2.pack(side=tk.TOP, fill=tk.X, expand=False)
 
         self.cbtn_tl_save_history = ttk.Checkbutton(self.f_tl_setting_2, text="Save to History")
@@ -397,7 +399,7 @@ class SettingWindow:
         self.lf_tl_libre_setting = tk.LabelFrame(self.f_cat_3_tl, text="• Libretranslate Settings")
         self.lf_tl_libre_setting.pack(side=tk.TOP, fill=tk.X, expand=True, padx=5, pady=(0, 5))
 
-        self.f_tl_libre_setting = tk.Frame(self.lf_tl_libre_setting)
+        self.f_tl_libre_setting = ttk.Frame(self.lf_tl_libre_setting)
         self.f_tl_libre_setting.pack(side=tk.TOP, fill=tk.X, expand=False)
 
         self.lbl_tl_libre_setting_key = ttk.Label(self.f_tl_libre_setting, text="API Key")
@@ -430,14 +432,14 @@ class SettingWindow:
 
         # ----------------------------------------------------------------------
         # * CAT 4 - Hotkey
-        self.f_cat_4_hotkey = tk.Frame(self.f_m_bg_r)
+        self.f_cat_4_hotkey = ttk.Frame(self.f_m_bg_r)
         self.f_cat_4_hotkey.pack(side=tk.TOP, fill=tk.BOTH, padx=5, pady=5, expand=False)
 
         # [Capture Window]
         self.lf_cw_hk = tk.LabelFrame(self.f_cat_4_hotkey, text="• Capture Window Hotkey Settings")
         self.lf_cw_hk.pack(side=tk.TOP, fill=tk.X, expand=True, padx=5, pady=(0, 5))
 
-        self.f_cwh_k = tk.Frame(self.lf_cw_hk)
+        self.f_cwh_k = ttk.Frame(self.lf_cw_hk)
         self.f_cwh_k.pack(side=tk.TOP, fill=tk.X, expand=False)
 
         self.lbl_cw_hk_delay = ttk.Label(self.f_cwh_k, text="Time delay (ms)")
@@ -465,7 +467,7 @@ class SettingWindow:
         self.lf_snipping_hk = tk.LabelFrame(self.f_cat_4_hotkey, text="• Snipping Mode Hotkey Settings")
         self.lf_snipping_hk.pack(side=tk.TOP, fill=tk.X, expand=True, padx=5, pady=(0, 5))
 
-        self.f_snipping_hk = tk.Frame(self.lf_snipping_hk)
+        self.f_snipping_hk = ttk.Frame(self.lf_snipping_hk)
         self.f_snipping_hk.pack(side=tk.TOP, fill=tk.X, expand=False)
 
         self.lbl_snipping_hk_delay = ttk.Label(self.f_snipping_hk, text="Time delay (ms)")
@@ -491,7 +493,7 @@ class SettingWindow:
 
         # ----------------------------------------------------------------------
         # * CAT 5 - Textbox
-        self.f_cat_5_textbox = tk.Frame(self.f_m_bg_r)
+        self.f_cat_5_textbox = ttk.Frame(self.f_m_bg_r)
         self.f_cat_5_textbox.pack(side=tk.TOP, fill=tk.BOTH, padx=5, pady=5, expand=False)
 
         # [mw q]
@@ -707,13 +709,13 @@ class SettingWindow:
 
         # ----------------------------------------------------------------------
         # * CAT 6 - Mask window
-        self.f_cat_6_maskwindow = tk.Frame(self.f_m_bg_r)
+        self.f_cat_6_maskwindow = ttk.Frame(self.f_m_bg_r)
         self.f_cat_6_maskwindow.pack(side=tk.TOP, fill=tk.BOTH, padx=5, pady=5, expand=False)
 
         self.lf_maskwindow = tk.LabelFrame(self.f_cat_6_maskwindow, text="• Mask Window")
         self.lf_maskwindow.pack(side=tk.TOP, fill=tk.X, expand=True, padx=5, pady=5)
 
-        self.f_maskwindow = tk.Frame(self.lf_maskwindow)
+        self.f_maskwindow = ttk.Frame(self.lf_maskwindow)
         self.f_maskwindow.pack(side=tk.TOP, fill=tk.X, expand=True)
 
         self.lbl_maskwindow_color = ttk.Label(self.f_maskwindow, text="Color")
@@ -725,25 +727,25 @@ class SettingWindow:
         self.entry_maskwindow_color.bind("<Button-1>", lambda e: chooseColor_entry(self.entry_maskwindow_color, self.entry_maskwindow_color.get(), self.root) or self.preview_changes_tb())
         self.entry_maskwindow_color.bind("<Key>", lambda e: "break")
 
-        self.lbl_hint_maskwindow = ttk.Label(self.f_maskwindow, text="❓")
-        self.lbl_hint_maskwindow.pack(padx=5, pady=5, side=tk.RIGHT)
-        CreateToolTip(self.lbl_hint_maskwindow, "Settings for mask window")
+        self.lbl_hint_other = ttk.Label(self.f_maskwindow, text="❓")
+        self.lbl_hint_other.pack(padx=5, pady=5, side=tk.RIGHT)
+        CreateToolTip(self.lbl_hint_other, "Settings for mask window")
 
         # ----------------------------------------------------------------------
         # * CAT 7 - Other
-        self.f_cat_7_other = tk.Frame(self.f_m_bg_r)
+        self.f_cat_7_other = ttk.Frame(self.f_m_bg_r)
         self.f_cat_7_other.pack(side=tk.TOP, fill=tk.BOTH, padx=5, pady=5, expand=False)
 
         self.lf_other = tk.LabelFrame(self.f_cat_7_other, text="• Other Settings")
         self.lf_other.pack(side=tk.TOP, fill=tk.X, expand=True, padx=5, pady=(0, 5))
 
-        self.f_other_1 = tk.Frame(self.lf_other)
+        self.f_other_1 = ttk.Frame(self.lf_other)
         self.f_other_1.pack(side=tk.TOP, fill=tk.X, expand=False)
 
-        self.f_other_2 = tk.Frame(self.lf_other)
+        self.f_other_2 = ttk.Frame(self.lf_other)
         self.f_other_2.pack(side=tk.TOP, fill=tk.X, expand=False)
 
-        self.f_other_3 = tk.Frame(self.lf_other)
+        self.f_other_3 = ttk.Frame(self.lf_other)
         self.f_other_3.pack(side=tk.TOP, fill=tk.X, expand=False)
 
         # Checkbox for check for update
@@ -756,28 +758,59 @@ class SettingWindow:
         CreateToolTip(self.cbtn_run_on_startup, "Run app on startup. Only on Windows")
 
         self.cbtn_keep_log = ttk.Checkbutton(self.f_other_2, text="Keep Log")
-        self.cbtn_keep_log.pack(side=tk.LEFT, padx=(5, 4), pady=(4, 6))
+        self.cbtn_keep_log.pack(side=tk.LEFT, padx=(5, 4), pady=5)
 
-        self.lbl_loglevel = ttk.Label(self.f_other_3, text="Log Level")
-        self.lbl_loglevel.pack(side=tk.LEFT, padx=5, pady=5)
+        self.lbl_loglevel = ttk.Label(self.f_other_2, text="— Log Level")
+        self.lbl_loglevel.pack(side=tk.LEFT, padx=(0, 5), pady=5)
 
-        self.cb_log_level = ttk.Combobox(self.f_other_3, values=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"], state="readonly")
+        self.cb_log_level = ttk.Combobox(self.f_other_2, values=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"], state="readonly")
         self.cb_log_level.pack(side=tk.LEFT, padx=0, pady=5)
 
+        # theme
+        self.lbl_theme = ttk.Label(self.f_other_3, text="Theme")
+        self.lbl_theme.pack(side=tk.LEFT, padx=5, pady=5)
+        CreateToolTip(
+            self.lbl_theme,
+            "Set theme for app.\nThe topmost selection is your default tkinter os theme.\n\nTo add custom theme you can read the readme.txt in the theme folder.\n\nMight need to reload the app for the changes to take effect.",
+            wrapLength=500,
+        )
+
+        self.cb_theme = ttk.Combobox(self.f_other_3, values=["dummy list"], state="readonly")
+        self.cb_theme.pack(side=tk.LEFT, padx=5, pady=5)
+        self.cb_theme.bind("<<ComboboxSelected>>", self.cb_theme_change)
+        CreateToolTip(
+            self.cb_theme,
+            "Set theme for app.\nThe topmost selection is your default tkinter os theme.\n\nTo add custom theme you can read the readme.txt in the theme folder.\n\nMight need to reload the app for the changes to take effect.",
+            wrapLength=500,
+        )
+
+        self.entry_theme = ttk.Entry(self.f_other_3)
+        self.entry_theme.pack(side=tk.LEFT, padx=5, pady=5, fill=tk.X, expand=True)
+        CreateToolTip(
+            self.entry_theme,
+            "Set the custom theme name if the one from dropdown is not working.\n\nThe theme name should be according to the `set_theme` parameter in the .tcl folder of the theme.\n\nMight need to reload the app for the changes to take effect.",
+            wrapLength=500,
+        )
+
         # ----------------------------------------------------------------
-        # Bottom tk.Frame
-        # Create a bottom frame to hold the buttons
-        self.bottomFrame = tk.Frame(self.f_m_bot)
-        self.bottomFrame.pack(side=tk.BOTTOM, fill=tk.X, pady=(1, 0))
+        # Bottom ttk.Frame
+        self.bottomFrame_1 = ttk.Frame(self.f_m_bot, style="Bottom.TFrame")
+        self.bottomFrame_1.pack(side=tk.TOP, fill=tk.X, pady=(0, 5), padx=5)
+
+        self.separator_bottom = ttk.Separator(self.bottomFrame_1, orient=tk.HORIZONTAL)
+        self.separator_bottom.pack(side=tk.TOP, fill=tk.X)
+
+        self.bottomFrame_2 = ttk.Frame(self.f_m_bot, style="Bottom.TFrame")
+        self.bottomFrame_2.pack(side=tk.TOP, fill=tk.X, padx=5, pady=(0, 5))
 
         # Create the buttons
-        self.btnSave = ttk.Button(self.bottomFrame, text="🖪 Save Settings", command=self.saveSettings)
+        self.btnSave = ttk.Button(self.bottomFrame_2, text="🖪 Save Settings", command=self.saveSettings, style="Accent.TButton")
         self.btnSave.pack(side=tk.RIGHT, padx=5, pady=5)
 
-        self.btnReset = ttk.Button(self.bottomFrame, text="⟳ Cancel Changes", command=self.reset_changes)
+        self.btnReset = ttk.Button(self.bottomFrame_2, text="⟳ Cancel Changes", command=self.reset_changes)
         self.btnReset.pack(side=tk.RIGHT, padx=5, pady=5)
 
-        self.btnRestoreDefault = ttk.Button(self.bottomFrame, text="⚠ Restore Default", command=self.restoreDefault)
+        self.btnRestoreDefault = ttk.Button(self.bottomFrame_2, text="⚠ Restore Default", command=self.restoreDefault)
         self.btnRestoreDefault.pack(side=tk.RIGHT, padx=5, pady=5)
 
         # ----------------------------------------------------------------
@@ -804,15 +837,29 @@ class SettingWindow:
         self.showFrame(self.f_cat_1_cap)
         self.deleteCapturedOnStart()
         self.deleteLogOnStart()
+        self.fill_theme()
         self.init_setting()
         self.add_reg_withcheck()
         self.onStart = False
+
+    def fill_theme(self):
+        self.cb_theme["values"] = gClass.theme_lists
+        self.cb_theme.set(fJson.settingCache["theme"])
+        self.entry_theme.pack_forget()
+
+    def cb_theme_change(self, _event=None):
+        if self.cb_theme.get() == "custom":
+            self.entry_theme.pack(side=tk.LEFT, padx=5, pady=5, fill=tk.X, expand=True)
+            self.entry_theme.delete(0, tk.END)
+        else:
+            self.entry_theme.pack_forget()
+            self.entry_theme.delete(0, tk.END)
 
     def add_reg_withcheck(self):
         # update registry location every time app start
         if fJson.settingCache["run_on_startup"]:
             check = check_autostart_registry(app_name)
-            if (check[0] and check[1] != reg_key_name) or not check[0]: # added but not invalid path or not added
+            if (check[0] and check[1] != reg_key_name) or not check[0]:  # added but not invalid path or not added
                 x = set_autostart_registry(app_name, reg_key_name)  # -s for silent (hide window)
                 logger.info(f"Set autostart registry: {x}")
 
@@ -1006,10 +1053,10 @@ class SettingWindow:
 
         # hk
         self.sb_cw_hk_delay.set(fJson.settingCache["hk_cap_window_delay"])
-        self.lbl_cw_hk.config(text=fJson.settingCache["hk_cap_window"])
+        self.lbl_cw_hk.configure(text=fJson.settingCache["hk_cap_window"])
 
         self.sb_snipping_hk_delay.set(fJson.settingCache["hk_snip_cap_delay"])
-        self.lbl_snipping_hk.config(text=fJson.settingCache["hk_snip_cap"])
+        self.lbl_snipping_hk.configure(text=fJson.settingCache["hk_snip_cap"])
 
         # textbox
         self.init_tb_settings()
@@ -1069,25 +1116,25 @@ class SettingWindow:
         if self.onStart:
             return
 
-        self.tb_preview_1.config(
+        self.tb_preview_1.configure(
             font=(self.cb_mw_q_font.get(), int(self.sb_mw_q_font_size.get()), "bold" if self.cbtn_mw_q_font_bold.instate(["selected"]) else "normal"),
             fg=self.entry_mw_q_font_color.get(),
             bg=self.entry_mw_q_bg_color.get(),
         )
 
-        self.tb_preview_2.config(
+        self.tb_preview_2.configure(
             font=(self.cb_mw_res_font.get(), int(self.sb_mw_res_font_size.get()), "bold" if self.cbtn_mw_res_font_bold.instate(["selected"]) else "normal"),
             fg=self.entry_mw_res_font_color.get(),
             bg=self.entry_mw_res_bg_color.get(),
         )
 
-        self.tb_preview_3.config(
+        self.tb_preview_3.configure(
             font=(self.cb_ex_q_font.get(), int(self.sb_ex_q_font_size.get()), "bold" if self.cbtn_ex_q_font_bold.instate(["selected"]) else "normal"),
             fg=self.entry_ex_q_font_color.get(),
             bg=self.entry_ex_q_bg_color.get(),
         )
 
-        self.tb_preview_4.config(
+        self.tb_preview_4.configure(
             font=(self.cb_ex_res_font.get(), int(self.sb_ex_res_font_size.get()), "bold" if self.cbtn_ex_res_font_bold.instate(["selected"]) else "normal"),
             fg=self.entry_ex_res_font_color.get(),
             bg=self.entry_ex_res_bg_color.get(),
@@ -1116,6 +1163,7 @@ class SettingWindow:
             "save_history": self.cbtn_tl_save_history.instate(["selected"]),
             "supress_no_text_alert": not self.cbtn_alert_no_text.instate(["selected"]),  # Inverted
             "run_on_startup": self.cbtn_run_on_startup.instate(["selected"]),
+            "theme": self.cb_theme.get(),
             # ------------------ #
             # logging
             "keep_log": self.cbtn_keep_log.instate(["selected"]),
@@ -1192,6 +1240,7 @@ class SettingWindow:
             # No hotkeys to unbind
             pass
 
+        # ------------------ #
         # Bind hotkey
         if self.lbl_cw_hk.cget("text") != "":
             keyboard.add_hotkey(self.lbl_cw_hk["text"], gClass.hk_cap_window_callback)
@@ -1199,15 +1248,25 @@ class SettingWindow:
         if self.lbl_snipping_hk.cget("text") != "":
             keyboard.add_hotkey(self.lbl_snipping_hk["text"], gClass.hk_snip_mode_callback)
 
+        # ------------------ #
         # update log level
         if fJson.settingCache["log_level"] != self.cb_log_level.get():
             logger.setLevel(self.cb_log_level.get())
 
+        # ------------------ #
         # check run on startup
         if setting_collections["run_on_startup"]:
             self.add_reg_withcheck()
         else:
             self.remove_reg_withcheck()
+
+        # ------------------ #
+        # set theme
+        if fJson.settingCache["theme"] != self.cb_theme.get():
+            status = set_ui_style(self.entry_theme.get() if self.cb_theme.get() == "custom" else self.cb_theme.get())
+            if not status:
+                self.cb_theme.current(0)
+                self.entry_theme.pack_forget()
 
         logger.info("-" * 50)
         logger.info("Saving setting")
@@ -1232,27 +1291,27 @@ class SettingWindow:
 
     def updateExternal(self):
         assert gClass.mw is not None
-        gClass.mw.tb_query.config(
+        gClass.mw.tb_query.configure(
             font=(self.cb_mw_q_font.get(), int(self.sb_mw_q_font_size.get()), "bold" if self.cbtn_mw_q_font_bold.instate(["selected"]) else "normal"),
             fg=self.entry_mw_q_font_color.get(),
             bg=self.entry_mw_q_bg_color.get(),
         )
 
-        gClass.mw.tb_result.config(
+        gClass.mw.tb_result.configure(
             font=(self.cb_mw_res_font.get(), int(self.sb_mw_res_font_size.get()), "bold" if self.cbtn_mw_res_font_bold.instate(["selected"]) else "normal"),
             fg=self.entry_mw_res_font_color.get(),
             bg=self.entry_mw_res_bg_color.get(),
         )
 
         assert gClass.ex_qw is not None
-        gClass.ex_qw.labelText.config(
+        gClass.ex_qw.labelText.configure(
             font=(self.cb_ex_q_font.get(), int(self.sb_ex_q_font_size.get()), "bold" if self.cbtn_ex_q_font_bold.instate(["selected"]) else "normal"),
             fg=self.entry_ex_q_font_color.get(),
             bg=self.entry_ex_q_bg_color.get(),
         )
 
         assert gClass.ex_resw is not None
-        gClass.ex_resw.labelText.config(
+        gClass.ex_resw.labelText.configure(
             font=(self.cb_ex_res_font.get(), int(self.sb_ex_res_font_size.get()), "bold" if self.cbtn_ex_res_font_bold.instate(["selected"]) else "normal"),
             fg=self.entry_ex_res_font_color.get(),
             bg=self.entry_ex_res_bg_color.get(),
@@ -1276,10 +1335,10 @@ class SettingWindow:
 
         if cbtnval:  # if auto
             spinners[offSetType].set(get_offset(offSetType))
-            spinners[offSetType].config(state=tk.DISABLED)
+            spinners[offSetType].configure(state=tk.DISABLED)
         else:
             spinners[offSetType].set(get_offset(offSetType))
-            spinners[offSetType].config(state=tk.NORMAL)
+            spinners[offSetType].configure(state=tk.NORMAL)
 
     # ----------------------------------------------------------------
     # Engine
@@ -1302,7 +1361,7 @@ class SettingWindow:
         try:
             hotkey = keyboard.read_hotkey(suppress=False)
             if hotkey:
-                self.lbl_cw_hk.config(text=str(hotkey))
+                self.lbl_cw_hk.configure(text=str(hotkey))
         except Exception as e:
             logger.exception(e)
 
@@ -1310,7 +1369,7 @@ class SettingWindow:
         """
         Clear the hotkey for capturing and translating
         """
-        self.lbl_cw_hk.config(text="")
+        self.lbl_cw_hk.configure(text="")
 
     def setHKSnipCapTl(self):
         """
@@ -1319,7 +1378,7 @@ class SettingWindow:
         try:
             hotkey = keyboard.read_hotkey(suppress=False)
             if hotkey:
-                self.lbl_snipping_hk.config(text=str(hotkey))
+                self.lbl_snipping_hk.configure(text=str(hotkey))
         except Exception as e:
             logger.exception(e)
 
@@ -1327,7 +1386,7 @@ class SettingWindow:
         """
         Clear the hotkey for snipping and translate
         """
-        self.lbl_snipping_hk.config(text="")
+        self.lbl_snipping_hk.configure(text="")
 
     # ----------------------------------------------------------------
     # Capture
@@ -1352,34 +1411,34 @@ class SettingWindow:
             self.cbtnInvoker(False, self.cbtn_cw_auto_offset_y)
 
             # Disable spinner and the selector, also set stuff in spinner to 0
-            self.cbtn_cw_auto_offset_x.config(state=tk.DISABLED)
-            self.cbtn_cw_auto_offset_y.config(state=tk.DISABLED)
-            self.sb_cw_offset_x.config(state=tk.DISABLED)
-            self.sb_cw_offset_y.config(state=tk.DISABLED)
+            self.cbtn_cw_auto_offset_x.configure(state=tk.DISABLED)
+            self.cbtn_cw_auto_offset_y.configure(state=tk.DISABLED)
+            self.sb_cw_offset_x.configure(state=tk.DISABLED)
+            self.sb_cw_offset_y.configure(state=tk.DISABLED)
 
             # set sb value 0
             self.sb_cw_offset_x.set(0)
             self.sb_cw_offset_y.set(0)
         else:  # auto
             # enable changes
-            self.cbtn_cw_auto_offset_x.config(state=tk.NORMAL)
-            self.cbtn_cw_auto_offset_y.config(state=tk.NORMAL)
+            self.cbtn_cw_auto_offset_x.configure(state=tk.NORMAL)
+            self.cbtn_cw_auto_offset_y.configure(state=tk.NORMAL)
 
             # if x auto
             if fJson.settingCache["offSetX"] == "auto":
                 self.cbtnInvoker(True, self.cbtn_cw_auto_offset_x)
-                self.sb_cw_offset_x.config(state=tk.DISABLED)
+                self.sb_cw_offset_x.configure(state=tk.DISABLED)
             else:
                 self.cbtnInvoker(False, self.cbtn_cw_auto_offset_x)
-                self.sb_cw_offset_x.config(state=tk.NORMAL)
+                self.sb_cw_offset_x.configure(state=tk.NORMAL)
 
             # if y auto
             if fJson.settingCache["offSetY"] == "auto":
                 self.cbtnInvoker(True, self.cbtn_cw_auto_offset_y)
-                self.sb_cw_offset_y.config(state=tk.DISABLED)
+                self.sb_cw_offset_y.configure(state=tk.DISABLED)
             else:
                 self.cbtnInvoker(False, self.cbtn_cw_auto_offset_y)
-                self.sb_cw_offset_y.config(state=tk.NORMAL)
+                self.sb_cw_offset_y.configure(state=tk.NORMAL)
 
             # set value
             self.sb_cw_offset_x.set(get_offset("x"))
@@ -1406,15 +1465,15 @@ class SettingWindow:
             eventIgnored. Defaults to None.
         """
         if not self.cbtn_auto_snippet.instate(["selected"]):  # IF disabled then enable it
-            self.sb_snippet_total_w.config(state=tk.NORMAL)
-            self.sb_snippet_total_h.config(state=tk.NORMAL)
-            self.sb_snippet_offset_x.config(state=tk.NORMAL)
-            self.sb_snippet_offset_y.config(state=tk.NORMAL)
+            self.sb_snippet_total_w.configure(state=tk.NORMAL)
+            self.sb_snippet_total_h.configure(state=tk.NORMAL)
+            self.sb_snippet_offset_x.configure(state=tk.NORMAL)
+            self.sb_snippet_offset_y.configure(state=tk.NORMAL)
         else:
-            self.sb_snippet_total_w.config(state=tk.DISABLED)
-            self.sb_snippet_total_h.config(state=tk.DISABLED)
-            self.sb_snippet_offset_x.config(state=tk.DISABLED)
-            self.sb_snippet_offset_y.config(state=tk.DISABLED)
+            self.sb_snippet_total_w.configure(state=tk.DISABLED)
+            self.sb_snippet_total_h.configure(state=tk.DISABLED)
+            self.sb_snippet_offset_x.configure(state=tk.DISABLED)
+            self.sb_snippet_offset_y.configure(state=tk.DISABLED)
 
         res = getScreenTotalGeometry(False)
         self.sb_snippet_total_w.set(res[1])
@@ -1429,13 +1488,13 @@ class SettingWindow:
             event: Ignored. Defaults to None.
         """
         if self.cbtn_OCR_replace_newline.instate(["selected"]):
-            self.entry_OCR_replace_newline_with.config(state=tk.NORMAL)
+            self.entry_OCR_replace_newline_with.configure(state=tk.NORMAL)
         else:
-            self.entry_OCR_replace_newline_with.config(state=tk.DISABLED)
+            self.entry_OCR_replace_newline_with.configure(state=tk.DISABLED)
 
     # ----------------------------------------------------------------
     # Spinbox validation
-    def validateSpinbox(self, event, theSpinner):
+    def validateSpinbox(self, event, theSpinner: ttk.Spinbox):
         """Validate the spinbox
 
         Args:
@@ -1452,8 +1511,8 @@ class SettingWindow:
         try:
             event = int(event)
             # Fetching minimum and maximum value of the spinbox
-            minval = int(self.root.nametowidget(theSpinner).config("from")[4])
-            maxval = int(self.root.nametowidget(theSpinner).config("to")[4])
+            minval = int(self.root.nametowidget(theSpinner).configure("from")[4])
+            maxval = int(self.root.nametowidget(theSpinner).configure("to")[4])
 
             # check if the number is within the range
             if event not in range(minval, maxval):

@@ -13,6 +13,7 @@ build_options = {
     "includes": [],
     "excludes": ["pyinstaller", "cx_Freeze"],
     "include_files": [
+        ("theme", "theme"),
         ("user_manual", "user_manual"),
         ("assets", "lib/assets"),
         ("LICENSE", "LICENSE.txt"),

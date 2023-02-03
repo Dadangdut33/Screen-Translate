@@ -4,8 +4,8 @@ import tkinter as tk
 import tkinter.ttk as ttk
 
 
-from .Tooltip import CreateToolTip
-from .MBox import Mbox
+from ..custom.Tooltip import CreateToolTip
+from screen_translate.components.custom.MBox import Mbox
 
 from screen_translate.Globals import gClass, fJson, path_logo_icon
 from screen_translate.Logging import logger
@@ -53,7 +53,7 @@ class CaptureWindow:
 
         # ----------------------------------------------------------------------
         # drag label
-        self.lbl_drag = tk.Label(self.f_1, text="▶", font=("Arial", 16, "bold"), foreground="gray")
+        self.lbl_drag = ttk.Label(self.f_1, text="▶", font=("Arial", 16, "bold"))
         self.lbl_drag.pack(side=tk.LEFT, fill=tk.X, expand=False)
 
         # Label for opacity slider
@@ -272,7 +272,7 @@ class CaptureWindow:
         self.currentOpacity = get_opac_value(event)
         self.root.attributes("-alpha", self.currentOpacity)
         self.fTooltip.opacity = self.currentOpacity
-        self.lbl_opacity.config(text=f"Opacity: {round(self.currentOpacity, 3)}")
+        self.lbl_opacity.configure(text=f"Opacity: {round(self.currentOpacity, 3)}")
         gClass.slider_mw_change(self.currentOpacity, update_slider=True)
 
     # engine update

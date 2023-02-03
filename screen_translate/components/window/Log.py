@@ -4,7 +4,7 @@ import time
 import tkinter as tk
 import tkinter.ttk as ttk
 
-from .MBox import Mbox
+from screen_translate.components.custom.MBox import Mbox
 from screen_translate.Globals import gClass, path_logo_icon, fJson
 from screen_translate.Logging import logger, current_log, dir_log, initLogging
 from screen_translate.utils.Helper import startFile, tb_copy_only
@@ -39,8 +39,8 @@ class LogWindow:
         self.tbLogger = tk.Text(self.f_1, height=5, width=100, font=("Consolas", self.currentFontSize))
         self.tbLogger.bind("<Key>", lambda event: tb_copy_only(event))  # Disable textbox input
         self.tbLogger.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-        self.tbLogger.config(yscrollcommand=self.sbY.set)
-        self.sbY.config(command=self.tbLogger.yview)
+        self.tbLogger.configure(yscrollcommand=self.sbY.set)
+        self.sbY.configure(command=self.tbLogger.yview)
         self.tbLogger.bind("<Alt-MouseWheel>", lambda event: self.increase_font_size() if event.delta > 0 else self.lower_font_size())  # bind scrollwheel to change font size
 
         # Other stuff
@@ -62,7 +62,7 @@ class LogWindow:
         self.cbtn_stay_on_top = ttk.Checkbutton(self.f_bot, text="Stay on Top", command=self.toggle_stay_on_top)
         self.cbtn_stay_on_top.pack(side=tk.LEFT, padx=5, pady=5)
 
-        self.btn_close = ttk.Button(self.f_bot, text="Ok", command=self.on_closing)
+        self.btn_close = ttk.Button(self.f_bot, text="Ok", command=self.on_closing, style="Accent.TButton")
         self.btn_close.pack(side=tk.RIGHT, padx=5, pady=5)
 
         # On Close
@@ -151,11 +151,11 @@ class LogWindow:
         self.currentFontSize -= 1
         if self.currentFontSize < 3:
             self.currentFontSize = 3
-        self.tbLogger.config(font=("Consolas", self.currentFontSize))
+        self.tbLogger.configure(font=("Consolas", self.currentFontSize))
 
     def increase_font_size(self):
         logger.info("Increasing font size")
         self.currentFontSize += 1
         if self.currentFontSize > 20:
             self.currentFontSize = 20
-        self.tbLogger.config(font=("Consolas", self.currentFontSize))
+        self.tbLogger.configure(font=("Consolas", self.currentFontSize))

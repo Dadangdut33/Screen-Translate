@@ -31,30 +31,33 @@ def getScreenInfo(supress_log=True):
     """
     Get the primary screen size.
     """
-    mData = []
-    index = 0
-    primaryIn = 0
-    layoutType = None
-    for m in get_monitors():
-        mData.append(m)
-        if m.is_primary:
-            primaryIn = index
+    try:
+        mData = []
+        index = 0
+        primaryIn = 0
+        layoutType = None
+        for m in get_monitors():
+            mData.append(m)
+            if m.is_primary:
+                primaryIn = index
 
-        index += 1
+            index += 1
 
-    if mInfo.mInfoCache["mData"] != mData:
-        totalX, totalY = mInfo.getWidthAndHeight()
-    else:
-        totalX = mInfo.mInfoCache["totalX"]
-        totalY = mInfo.mInfoCache["totalY"]
+        if mInfo.mInfoCache["mData"] != mData:
+            totalX, totalY = mInfo.getWidthAndHeight()
+        else:
+            totalX = mInfo.mInfoCache["totalX"]
+            totalY = mInfo.mInfoCache["totalY"]
 
-    layoutType = "horizontal" if totalX > totalY else "vertical"
+        layoutType = "horizontal" if totalX > totalY else "vertical"
 
-    mInfo.mInfoCache = {"totalX": totalX, "totalY": totalY, "primaryIn": primaryIn, "mData": mData, "layoutType": layoutType}
-    if not supress_log:
-        logger.info(f"Monitor Info: {mInfo.mInfoCache}")
-
-    return mInfo.mInfoCache
+        mInfo.mInfoCache = {"totalX": totalX, "totalY": totalY, "primaryIn": primaryIn, "mData": mData, "layoutType": layoutType}
+        if not supress_log:
+            logger.info(f"Monitor Info: {mInfo.mInfoCache}")
+    except:
+        logger.error("Failed to get monitor info")
+    finally:
+        return mInfo.mInfoCache
 
 
 def get_offset(offSetType: Literal["x", "y", "w", "h"]) -> int:

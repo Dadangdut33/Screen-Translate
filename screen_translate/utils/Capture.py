@@ -11,7 +11,7 @@ import pytesseract
 import cv2
 
 from screen_translate.Logging import logger
-from screen_translate.components.MBox import Mbox
+from screen_translate.components.custom.MBox import Mbox
 from screen_translate.Globals import fJson, dir_captured
 from .Helper import startFile
 from .LangCode import tesseract_lang

@@ -59,12 +59,12 @@ bind TCombobox <<ThemeChanged>> {config_input_font %W}
 bind TSpinbox <<ThemeChanged>> {config_input_font %W}
 bind Menu <<ThemeChanged>> {config_menus %W}
 
-source [file join [file dirname [info script]] theme light.tcl]
-source [file join [file dirname [info script]] theme dark.tcl]
+source [file join [file dirname [info script]] resource light.tcl]
+source [file join [file dirname [info script]] resource dark.tcl]
 
 
 proc set_theme {mode} {
-  if {$mode == "dark"} {
+  if {$mode == "sv-dark"} {
     ttk::style theme use "sun-valley-dark"
 
     ttk::style configure . \
@@ -93,7 +93,7 @@ proc set_theme {mode} {
 
     option add *tearOff 0
 
-  } elseif {$mode == "light"} {
+  } elseif {$mode == "sv-light"} {
     ttk::style theme use "sun-valley-light"
 
     ttk::style configure . \

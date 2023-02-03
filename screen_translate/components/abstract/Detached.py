@@ -3,9 +3,9 @@ import tkinter.ttk as ttk
 import platform
 from typing import Literal
 
-from .MBox import Mbox
-from .Tooltip import CreateToolTip
 from screen_translate.Globals import fJson, gClass, path_logo_icon
+from screen_translate.components.custom.MBox import Mbox
+from screen_translate.components.custom.Tooltip import CreateToolTip
 from screen_translate.utils.Beep import beep
 
 
