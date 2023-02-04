@@ -375,11 +375,11 @@ class SettingWindow:
 
         self.cbtn_auto_copy = ttk.Checkbutton(self.f_OCR_result_3, text="Auto copy captured text", style="Switch.TCheckbutton")
         self.cbtn_auto_copy.pack(side=tk.LEFT, padx=5, pady=5)
-        CreateToolTip(self.cbtn_auto_copy, "Copy the captured text to clipboard automatically")
+        CreateToolTip(self.cbtn_auto_copy, "Copy the captured text to clipboard automatically. If both is enabled will copy both with format 'captured text -> translated text'")
 
         self.cbtn_auto_copy_translated = ttk.Checkbutton(self.f_OCR_result_3, text="Auto copy translated captured text", style="Switch.TCheckbutton")
         self.cbtn_auto_copy_translated.pack(side=tk.LEFT, padx=5, pady=5)  # TODO
-        CreateToolTip(self.cbtn_auto_copy_translated, "Copy the captured text to clipboard automatically")
+        CreateToolTip(self.cbtn_auto_copy_translated, "Copy the captured text to clipboard automatically. If both is enabled will copy both with format 'captured text -> translated text'")
 
         # ----------------------------------------------------------------------
         # * CAT 3 - Translate
@@ -1110,7 +1110,8 @@ class SettingWindow:
             # ------------------ #
             # App settings
             "keep_image": self.cbtn_keep_img.instate(["selected"]),
-            "auto_copy": self.cbtn_auto_copy.instate(["selected"]),
+            "auto_copy_captured": self.cbtn_auto_copy.instate(["selected"]),
+            "auto_copy_translated": self.cbtn_auto_copy_translated.instate(["selected"]),
             "save_history": self.cbtn_tl_save_history.instate(["selected"]),
             "supress_no_text_alert": not self.cbtn_alert_no_text.instate(["selected"]),  # Inverted
             "run_on_startup": self.cbtn_run_on_startup.instate(["selected"]),

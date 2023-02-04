@@ -2,7 +2,6 @@ import os
 import ast
 import shlex
 from typing import List, Optional
-import ts_ttk
 from tkinter import ttk
 
 from .utils.Json import JsonHandler

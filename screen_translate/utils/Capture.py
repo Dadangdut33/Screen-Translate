@@ -160,9 +160,9 @@ def ocrFromCoords(coords: List[int]):
         logger.info("OCR success!")
         logger.info(f"Result length {len(result)}")
 
-        if fJson.settingCache["auto_copy"]:
+        if fJson.settingCache["auto_copy_captured"]:
             pyperclip.copy(result)
-            logger.info("Copied to clipboard!")
+            logger.info("Copied captured text to clipboard!")
 
         if not fJson.settingCache["supress_no_text_alert"] and len(result) == 0:
             Mbox("No text detected", "No text detected in the image. Please try again.", 1)

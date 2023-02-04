@@ -1,3 +1,4 @@
+import pyperclip
 from typing import Literal
 
 from .Translator import google_tl, memory_tl, libre_tl, deepl_tl, pons_tl
@@ -63,6 +64,14 @@ def fill_tb_save_history(isSuccess: bool, from_lang: str, to_lang: str, query: s
         # Fill the textbox
         gClass.insert_mw_res(result)
         gClass.insert_ex_res(result)
+
+        if fJson.settingCache["auto_copy_translated"]:
+            pyperclip.copy(result)
+            logger.info("Copied translated text to clipboard!")
+
+        if fJson.settingCache["auto_copy_captured"] and fJson.settingCache["auto_copy_translated"]:
+            pyperclip.copy(query + " -> " + result)
+            logger.info("Copied captured and translated text to clipboard!")
 
         if fJson.settingCache["save_history"]:
             # Write to History

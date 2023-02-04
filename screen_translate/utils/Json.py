@@ -16,7 +16,8 @@ default_setting = {
     # ------------------ #
     # App settings
     "keep_image": True,
-    "auto_copy": True,
+    "auto_copy_captured": True,
+    "auto_copy_translated": False,
     "save_history": True,
     "supress_no_text_alert": True,
     "run_on_startup": True,

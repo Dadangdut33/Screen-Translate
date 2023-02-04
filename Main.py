@@ -179,7 +179,7 @@ class MainWindow:
         except Exception:  # sv theme is not available
             gClass.theme_lists.remove("sv-dark")
             gClass.theme_lists.remove("sv-light")
-            
+
         gClass.theme_lists.insert(0, gClass.native_theme)  # add native theme to top of list
         logger.debug(f"Available Theme to use: {gClass.theme_lists}")
         gClass.theme_lists.insert(len(gClass.theme_lists), "custom")
