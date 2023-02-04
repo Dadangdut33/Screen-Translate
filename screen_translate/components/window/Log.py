@@ -17,9 +17,9 @@ class LogWindow:
     def __init__(self, master: tk.Tk):
         self.root = tk.Toplevel(master)
         self.root.title("Log")
-        self.root.geometry("800x250")
+        self.root.geometry("900x350")
         self.root.wm_withdraw()
-        self.currentFontSize = 8
+        self.currentFontSize = 10
         self.isOpen = False
         self.stay_on_top = False
         self.thread_refresh = None
@@ -53,13 +53,13 @@ class LogWindow:
         self.btn_open_default_log = ttk.Button(self.f_bot, text="🗁 Open Log Folder", command=lambda: startFile(dir_log))
         self.btn_open_default_log.pack(side=tk.LEFT, padx=5, pady=5)
 
-        self.cbtn_auto_scroll = ttk.Checkbutton(self.f_bot, text="Auto Scroll", command=lambda: fJson.savePartialSetting("auto_scroll_log", self.cbtn_auto_scroll.instate(["selected"])))
+        self.cbtn_auto_scroll = ttk.Checkbutton(self.f_bot, text="Auto Scroll", command=lambda: fJson.savePartialSetting("auto_scroll_log", self.cbtn_auto_scroll.instate(["selected"])), style="Switch.TCheckbutton")
         self.cbtn_auto_scroll.pack(side=tk.LEFT, padx=5, pady=5)
 
-        self.cbtn_auto_refresh = ttk.Checkbutton(self.f_bot, text="Auto Refresh", command=lambda: fJson.savePartialSetting("auto_refresh_log", self.cbtn_auto_refresh.instate(["selected"])))
+        self.cbtn_auto_refresh = ttk.Checkbutton(self.f_bot, text="Auto Refresh", command=lambda: fJson.savePartialSetting("auto_refresh_log", self.cbtn_auto_refresh.instate(["selected"])), style="Switch.TCheckbutton")
         self.cbtn_auto_refresh.pack(side=tk.LEFT, padx=5, pady=5)
 
-        self.cbtn_stay_on_top = ttk.Checkbutton(self.f_bot, text="Stay on Top", command=self.toggle_stay_on_top)
+        self.cbtn_stay_on_top = ttk.Checkbutton(self.f_bot, text="Stay on Top", command=self.toggle_stay_on_top, style="Switch.TCheckbutton")
         self.cbtn_stay_on_top.pack(side=tk.LEFT, padx=5, pady=5)
 
         self.btn_close = ttk.Button(self.f_bot, text="Ok", command=self.on_closing, style="Accent.TButton")

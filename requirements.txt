@@ -14,3 +14,4 @@ simpleaudio==1.0.4
 playwright==1.30.0
 pyquery==1.4.3
 pyinstaller==5.7.0
+tksheet==5.4.1

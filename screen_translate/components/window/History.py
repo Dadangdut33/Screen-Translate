@@ -1,13 +1,12 @@
 import tkinter as tk
-import tkinter.ttk as ttk
+from tkinter import ttk
 import pyperclip
-import textwrap
 
+from tksheet import Sheet
 from screen_translate.components.custom.MBox import Mbox
 from screen_translate.Globals import gClass, fJson, path_logo_icon
 from screen_translate.Logging import logger
 
-# TODO: USE TKSHEET
 # ----------------------------------------------------------------------
 class HistoryWindow:
     """History Window"""
@@ -24,40 +23,25 @@ class HistoryWindow:
         # Layout
         # frameOne
         self.f_1 = ttk.Frame(self.root)
-        self.f_1.pack(side=tk.TOP, fill=tk.BOTH, padx=5, expand=True)
-
-        self.f1_scrollFrame = ttk.Frame(self.root)
-        self.f1_scrollFrame.pack(side=tk.TOP, fill=tk.X, padx=5, expand=False)
+        self.f_1.pack(side=tk.TOP, fill=tk.BOTH, padx=5, pady=(5, 0), expand=True)
 
         self.f_bot = ttk.Frame(self.root)
         self.f_bot.pack(side=tk.BOTTOM, fill=tk.BOTH, expand=False)
 
+        # -----------------------
         # elements
-        # Treeview
-        self.historyTreeView = ttk.Treeview(self.f_1, columns=("Id", "From - To", "Query - Result"))
-        self.historyTreeView.heading("#0", text="", anchor=tk.CENTER)
-        self.historyTreeView.heading("Id", text="Id", anchor=tk.CENTER)
-        self.historyTreeView.heading("From - To", text="From - To", anchor=tk.CENTER)
-        self.historyTreeView.heading("Query - Result", text="Query - Result", anchor=tk.W)
-
-        self.historyTreeView.column("#0", width=20, stretch=False)
-        self.historyTreeView.column("Id", anchor=tk.CENTER, stretch=False)
-        self.historyTreeView.column("From - To", anchor=tk.CENTER, width=150, stretch=False)
-        self.historyTreeView.column("Query - Result", anchor=tk.W, width=350, stretch=False)  # Make the width ridiculuosly long so it can use the x scrollbar
-
-        # Scrollbar
-        self.sbY = ttk.Scrollbar(self.f_1, orient=tk.VERTICAL)
-        self.sbY.pack(side=tk.RIGHT, fill=tk.Y)
-        self.sbY.configure(command=self.historyTreeView.yview)
-
-        self.historyTreeView.pack(side=tk.TOP, padx=5, pady=5, fill=tk.BOTH, expand=True)
-
-        self.sbX = ttk.Scrollbar(self.f1_scrollFrame, orient=tk.HORIZONTAL)
-        self.sbX.pack(side=tk.TOP, fill=tk.X, expand=True)
-        self.sbX.configure(command=self.historyTreeView.xview)
-
-        self.historyTreeView.configure(yscrollcommand=self.sbY.set, xscrollcommand=self.sbX.set)
-        # self.historyTreeView.bind("<Button-1>", self.handle_click)
+        # sheet
+        self.sheet_history = Sheet(
+            self.f_1,
+            page_up_down_select_row=True,
+            startup_select=(0, 1, "rows"),
+            header_font="Arial 10 bold",
+            headers=["Engine", "From - To", "Query", "Result"],
+        )
+        self.sheet_history.enable_bindings()
+        self.sheet_history.change_theme("light blue" if "light" in fJson.settingCache["theme"] else "dark blue")
+        self.sheet_history.edit_bindings(enable=False)
+        self.sheet_history.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
         # Other stuff
         self.btn_refresh = ttk.Button(self.f_bot, text="🔄 Refresh", command=self.refresh)
@@ -88,8 +72,6 @@ class HistoryWindow:
         except:
             pass
 
-        self.refresh()
-
     # ----------------------------------------------------------------
     # Functions
     def show(self):
@@ -99,28 +81,28 @@ class HistoryWindow:
     def on_closing(self):
         self.root.wm_withdraw()
 
-    def deleteSelected(self):
+    def refresh(self):
         """
-        Delete selected history
+        Refresh the history
         """
-        selected = self.historyTreeView.selection()
-        selected = selected[::2]  # remove the odd index
+        success, data = fJson.readHistory(True)
+        if not success:
+            self.sheet_history.set_sheet_data(data=[["Error when fetching history!"]], redraw=True)
+            return
 
-        if len(selected) > 0:
-            if Mbox("Confirmation", "Are you sure you want to delete the selected history?", 3, self.root):
-                toDeleteList = []
-                for item in selected:
-                    toDeleteList.append(int(self.historyTreeView.item(item, "values")[0]))
+        # Error already handled in jsonHandling
+        if success:
+            listData = []
+            # convert json to list, then make it a list in list...
+            for item in data["tl_history"]:  # type: ignore
+                addToList = [item["engine"], f"{item['from']} - {item['to']}", item["query"], item["result"]]  # type: ignore
 
-                logger.debug("Deleting: " + str(toDeleteList))
-                status, statusText = fJson.deleteCertainHistory(toDeleteList)
-                if status == True:
-                    logger.info(statusText)
-                    Mbox("Info", statusText, 0, self.root)
-                # Error already handled in jsonHandling
+                listData.append(addToList)
 
-                # Refresh
-                self.refresh()
+            self.sheet_history.set_sheet_data(data=listData)
+            self.sheet_history.set_all_cell_sizes_to_text(redraw=True)
+            # ------------------------------------------------------------
+            logger.info("History loaded")
 
     def deleteAll(self):
         """
@@ -136,68 +118,63 @@ class HistoryWindow:
             # Refresh
             self.refresh()
 
-    def refresh(self):
+    def deleteSelected(self):
         """
-        Refresh the history
+        Delete selected history
         """
-        status, data = fJson.readHistory(True)
-        # Error already handled in jsonHandling
-        if status == True:
-            listData = []
-            # convert json to list, then make it a list in list...
-            for item in data["tl_history"]:  # type: ignore
-                addToList = [item["id"], item["from"], item["to"], item["query"], item["result"], item["engine"]]  # type: ignore
+        selected = list(self.sheet_history.get_selected_rows(get_cells=False, return_tuple=False, get_cells_as_rows=True))
 
-                listData.append(addToList)
+        if len(selected) > 0:
+            if Mbox("Confirmation", "Are you sure you want to delete the selected history?", 3, self.root):
 
-            for i in self.historyTreeView.get_children():
-                self.historyTreeView.delete(i)
+                logger.debug("Deleting: " + str(selected))
+                status, statusText = fJson.deleteCertainHistory(selected)
+                if status == True:
+                    logger.info(statusText)
+                    Mbox("Info", statusText, 0, self.root)
+                # Error already handled in jsonHandling
 
-            count = 0
-            for record in listData:
-                # Parent
-                parentID = count
-                self.historyTreeView.insert(parent="", index="end", text="", iid=str(count), values=(record[0], record[1] + "-" + record[2], "\n".join(textwrap.wrap(record[3], 50))))
-
-                count += 1
-                # Child
-                self.historyTreeView.insert(parent=str(parentID), index="end", text="", iid=str(count), values=(record[0], "via " + record[5], "\n".join(textwrap.wrap(record[4], 50))))
-
-                count += 1
-            # ------------------------------------------------------------
-            logger.info("History loaded")
-        else:
-            for i in self.historyTreeView.get_children():
-                self.historyTreeView.delete(i)
+                # Refresh
+                self.refresh()
 
     def copyToClipboard(self):
         """
         Copy selected history to clipboard
         """
-        sel_Index = self.historyTreeView.focus()
-        if sel_Index != "":
-            dataRow = self.historyTreeView.item(sel_Index, "values")
-            pyperclip.copy(dataRow[2].strip())
+        selected = list(self.sheet_history.get_selected_rows(get_cells=False, return_tuple=False, get_cells_as_rows=True))
 
-            Mbox("Success", "Copied to clipboard", 0, self.root)
+        if len(selected) > 0:
+            selectedData = self.sheet_history.get_row_data(selected[0], return_copy=False)
+
+            pyperclip.copy(selectedData[2] + " -> " + selectedData[3])  # type: ignore
+            
+            # update button
+            self.btn_copy_to_clipboard.config(text="✓ Copied to clipboard!")
+
+            # update button after 1.5 seconds
+            self.root.after(1500, lambda: self.btn_copy_to_clipboard.config(text="↳ Copy to Clipboard"))
+
 
     def copyToTranslateMenu(self):
         """
         Copy selected history to translate menu
         """
-        sel_Index = self.historyTreeView.focus()
-        if sel_Index != "":
-            dataRow = self.historyTreeView.item(sel_Index, "values")
+        selected = list(self.sheet_history.get_selected_rows(get_cells=False, return_tuple=False, get_cells_as_rows=True))
+
+        if len(selected) > 0:
+            selectedData = self.sheet_history.get_row_data(selected[0], return_copy=False)
+
             gClass.clear_mw_q()
+            gClass.clear_mw_res()
             gClass.clear_ex_q()
-            gClass.insert_mw_q(dataRow[2])
-            gClass.insert_ex_q(dataRow[2])
+            gClass.clear_ex_res()
+            gClass.insert_mw_q(selectedData[2])  # type: ignore
+            gClass.insert_mw_res(selectedData[3])  # type: ignore
+            gClass.insert_ex_q(selectedData[2])  # type: ignore
+            gClass.insert_ex_res(selectedData[3])  # type: ignore
 
-            Mbox("Success", "Copied to translate menu", 0, self.root)
+            # update button
+            self.btn_copy_to_translate_box.config(text="✓ Copied to Translate Menu!")
 
-    def handle_click(self, event):
-        """
-        Handler for the treeview separator. Made it so that it does not do anything.
-        """
-        if self.historyTreeView.identify_region(event.x, event.y) == "separator":
-            return "break"
+            # update button after 1.5 seconds
+            self.root.after(1500, lambda: self.btn_copy_to_translate_box.config(text="↳ Copy to Translate Menu"))

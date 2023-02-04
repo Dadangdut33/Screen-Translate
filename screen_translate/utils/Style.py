@@ -44,12 +44,16 @@ def set_ui_style(theme: str):
         gClass.style.configure("Brighter.TFrame", background="#ffffff")
         gClass.style.configure("BrighterTFrameBg.TLabel", background="#ffffff")
         gClass.style.configure("Darker.TFrame", background="#000000")
+        if gClass.hw is not None:
+            gClass.hw.sheet_history.change_theme("light blue")
     else:
         logger.debug("Setting custom dark theme style")
         gClass.style.configure("Bottom.TFrame", background="#1e1e1e")
         gClass.style.configure("Brighter.TFrame", background="#2e2e2e")
         gClass.style.configure("BrighterTFrameBg.TLabel", background="#2e2e2e")
         gClass.style.configure("Darker.TFrame", background="#bdbdbd")
+        if gClass.hw is not None:
+            gClass.hw.sheet_history.change_theme("dark blue")
 
     return success
 
@@ -91,7 +95,7 @@ def set_theme(theme: str):
     if theme not in real_theme_list:
         raise RuntimeError("not a valid theme name: {}".format(theme))
 
-    get_root().tk.call("set_theme", theme)  
+    get_root().tk.call("set_theme", theme)
 
 
 stylename_map = {
