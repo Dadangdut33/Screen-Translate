@@ -98,23 +98,19 @@ class SettingWindow:
         self.f_capture_3 = ttk.Frame(self.lf_capture)
         self.f_capture_3.pack(side=tk.TOP, fill=tk.X, expand=True)
 
-        self.cbtn_hide_mw_on_cap = ttk.Checkbutton(self.f_capture_1, text="Hide main window on capture")
+        self.cbtn_hide_mw_on_cap = ttk.Checkbutton(self.f_capture_1, text="Hide main window on capture", style="Switch.TCheckbutton")
         self.cbtn_hide_mw_on_cap.pack(side=tk.LEFT, padx=5, pady=5)
         CreateToolTip(self.cbtn_hide_mw_on_cap, "Hide the main window when capturing")
 
-        self.cbtn_hide_ex_qw_on_cap = ttk.Checkbutton(self.f_capture_1, text="Hide detached query window on capture")
+        self.cbtn_hide_ex_qw_on_cap = ttk.Checkbutton(self.f_capture_1, text="Hide detached query window on capture", style="Switch.TCheckbutton")
         self.cbtn_hide_ex_qw_on_cap.pack(side=tk.LEFT, padx=5, pady=5)
         CreateToolTip(self.cbtn_hide_ex_qw_on_cap, "Hide the detached query window when capturing")
 
-        self.cbtn_hide_ex_resw_on_cap = ttk.Checkbutton(self.f_capture_1, text="Hide detached result box on capture")
+        self.cbtn_hide_ex_resw_on_cap = ttk.Checkbutton(self.f_capture_1, text="Hide detached result box on capture", style="Switch.TCheckbutton")
         self.cbtn_hide_ex_resw_on_cap.pack(side=tk.LEFT, padx=5, pady=5)
         CreateToolTip(self.cbtn_hide_ex_resw_on_cap, "Hide the detached result window when capturing")
 
-        self.cbtn_auto_copy = ttk.Checkbutton(self.f_capture_2, text="Auto copy captured text")
-        self.cbtn_auto_copy.pack(side=tk.LEFT, padx=5, pady=5)
-        CreateToolTip(self.cbtn_auto_copy, "Copy the captured text to clipboard automatically")
-
-        self.cbtn_keep_img = ttk.Checkbutton(self.f_capture_2, text="Save captured image")
+        self.cbtn_keep_img = ttk.Checkbutton(self.f_capture_2, text="Save captured image", style="Switch.TCheckbutton")
         self.cbtn_keep_img.pack(side=tk.LEFT, padx=5, pady=5)
         CreateToolTip(self.cbtn_keep_img, "Save the captured image to img_captured folder")
 
@@ -153,16 +149,16 @@ class SettingWindow:
         self.lbl_hint_cw_offset.pack(side=tk.RIGHT, padx=5, pady=5)
         CreateToolTip(self.lbl_hint_cw_offset, "Set the offset for capturing image. Usually needed if on multiple monitor or if monitor scaling is not 100%")
 
-        self.cbtn_cw_auto_offset_x = ttk.Checkbutton(self.f_cw_offset_2, text="Auto Offset X", command=lambda: self.checkBtnOffset("x"))
+        self.cbtn_cw_auto_offset_x = ttk.Checkbutton(self.f_cw_offset_2, text="Auto Offset X", command=lambda: self.checkBtnOffset("x"), style="Switch.TCheckbutton")
         self.cbtn_cw_auto_offset_x.pack(side=tk.LEFT, padx=5, pady=5)
 
-        self.cbtn_cw_auto_offset_y = ttk.Checkbutton(self.f_cw_offset_2, text="Auto Offset Y", command=lambda: self.checkBtnOffset("y"))
+        self.cbtn_cw_auto_offset_y = ttk.Checkbutton(self.f_cw_offset_2, text="Auto Offset Y", command=lambda: self.checkBtnOffset("y"), style="Switch.TCheckbutton")
         self.cbtn_cw_auto_offset_y.pack(side=tk.LEFT, padx=5, pady=5)
 
-        self.cbtn_cw_auto_offset_w = ttk.Checkbutton(self.f_cw_offset_2, text="Auto Offset W", command=lambda: self.checkBtnOffset("w"))
+        self.cbtn_cw_auto_offset_w = ttk.Checkbutton(self.f_cw_offset_2, text="Auto Offset W", command=lambda: self.checkBtnOffset("w"), style="Switch.TCheckbutton")
         self.cbtn_cw_auto_offset_w.pack(side=tk.LEFT, padx=5, pady=5)
 
-        self.cbtn_cw_auto_offset_h = ttk.Checkbutton(self.f_cw_offset_2, text="Auto Offset H", command=lambda: self.checkBtnOffset("h"))
+        self.cbtn_cw_auto_offset_h = ttk.Checkbutton(self.f_cw_offset_2, text="Auto Offset H", command=lambda: self.checkBtnOffset("h"), style="Switch.TCheckbutton")
         self.cbtn_cw_auto_offset_h.pack(side=tk.LEFT, padx=5, pady=5)
 
         # [Offset X]
@@ -213,7 +209,7 @@ class SettingWindow:
         self.f_snippet_geometry = ttk.Frame(self.lf_snippet_geometry)
         self.f_snippet_geometry.pack(side=tk.TOP, fill=tk.X, expand=True)
 
-        self.cbtn_auto_snippet = ttk.Checkbutton(self.f_snippet_geometry, text="Auto Geometry", command=self.check_snippet_offset)
+        self.cbtn_auto_snippet = ttk.Checkbutton(self.f_snippet_geometry, text="Auto Geometry", command=self.check_snippet_offset, style="Switch.TCheckbutton")
         self.cbtn_auto_snippet.pack(side=tk.LEFT, padx=5, pady=5)
         CreateToolTip(self.cbtn_auto_snippet, text="Auto detect the layout of the monitor (May not work properly)")
 
@@ -312,15 +308,15 @@ class SettingWindow:
         self.cb_OCR_bg.pack(side=tk.LEFT, padx=5, pady=5)
         CreateToolTip(self.cb_OCR_bg, "Background type of the area that will be captured. This variable is used only if detect contour using CV2 is checked.")
 
-        self.cbtn_OCR_cv2contour = ttk.Checkbutton(self.f_OCR_enhancement_2, text="Detect Contour using CV2")
+        self.cbtn_OCR_cv2contour = ttk.Checkbutton(self.f_OCR_enhancement_2, text="Detect Contour using CV2", style="Switch.TCheckbutton")
         self.cbtn_OCR_cv2contour.pack(side=tk.LEFT, padx=5, pady=5)
         CreateToolTip(self.cbtn_OCR_cv2contour, text="Enhance the OCR by applying filters and outlining the contour of the words.")
 
-        self.cbtn_OCR_grayscale = ttk.Checkbutton(self.f_OCR_enhancement_2, text="Grayscale")
+        self.cbtn_OCR_grayscale = ttk.Checkbutton(self.f_OCR_enhancement_2, text="Grayscale", style="Switch.TCheckbutton")
         self.cbtn_OCR_grayscale.pack(side=tk.LEFT, padx=5, pady=5)
         CreateToolTip(self.cbtn_OCR_grayscale, text="Enhance the OCR by making the captured picture grayscale on the character reading part.")
 
-        self.cbtn_OCR_debug = ttk.Checkbutton(self.f_OCR_enhancement_2, text="Debug Mode")
+        self.cbtn_OCR_debug = ttk.Checkbutton(self.f_OCR_enhancement_2, text="Debug Mode", style="Switch.TCheckbutton")
         self.cbtn_OCR_debug.pack(side=tk.LEFT, padx=5, pady=5)
         CreateToolTip(self.cbtn_OCR_debug, text="Enable debug mode.")
 
@@ -365,7 +361,7 @@ class SettingWindow:
         \rSet this to 0 if it deletes an actual character!""",
         )
 
-        self.cbtn_OCR_replace_newline = ttk.Checkbutton(self.f_OCR_result_2, text="Replace New Line With", command=self.toggle_OCR_replace_newline)
+        self.cbtn_OCR_replace_newline = ttk.Checkbutton(self.f_OCR_result_2, text="Replace New Line With", command=self.toggle_OCR_replace_newline, style="Switch.TCheckbutton")
         self.cbtn_OCR_replace_newline.pack(side=tk.LEFT, padx=5, pady=5)
         CreateToolTip(self.cbtn_OCR_replace_newline, "Replace new line with preferred character.")
 
@@ -373,9 +369,17 @@ class SettingWindow:
         self.entry_OCR_replace_newline_with.pack(side=tk.LEFT, padx=5, pady=5, fill=tk.X, expand=True)
         CreateToolTip(self.entry_OCR_replace_newline_with, "Character to replace new line.\nDefault is ' ' (space). (You can use escape character like \\n for new line)", wrapLength=400)
 
-        self.cbtn_alert_no_text = ttk.Checkbutton(self.f_OCR_result_3, text="Show No Text Entered Alert")
+        self.cbtn_alert_no_text = ttk.Checkbutton(self.f_OCR_result_3, text="Show No Text Entered Alert", style="Switch.TCheckbutton")
         self.cbtn_alert_no_text.pack(side=tk.LEFT, padx=5, pady=5)
         CreateToolTip(self.cbtn_alert_no_text, text="Show alert when no text is entered or captured by the OCR")
+
+        self.cbtn_auto_copy = ttk.Checkbutton(self.f_OCR_result_3, text="Auto copy captured text", style="Switch.TCheckbutton")
+        self.cbtn_auto_copy.pack(side=tk.LEFT, padx=5, pady=5)
+        CreateToolTip(self.cbtn_auto_copy, "Copy the captured text to clipboard automatically")
+
+        self.cbtn_auto_copy_translated = ttk.Checkbutton(self.f_OCR_result_3, text="Auto copy translated captured text", style="Switch.TCheckbutton")
+        self.cbtn_auto_copy_translated.pack(side=tk.LEFT, padx=5, pady=5)  # TODO
+        CreateToolTip(self.cbtn_auto_copy_translated, "Copy the captured text to clipboard automatically")
 
         # ----------------------------------------------------------------------
         # * CAT 3 - Translate
@@ -391,7 +395,7 @@ class SettingWindow:
         self.f_tl_setting_2 = ttk.Frame(self.lf_tl_setting)
         self.f_tl_setting_2.pack(side=tk.TOP, fill=tk.X, expand=False)
 
-        self.cbtn_tl_save_history = ttk.Checkbutton(self.f_tl_setting_2, text="Save to History")
+        self.cbtn_tl_save_history = ttk.Checkbutton(self.f_tl_setting_2, text="Save to History", style="Switch.TCheckbutton")
         self.cbtn_tl_save_history.pack(side=tk.LEFT, padx=5, pady=5)
         CreateToolTip(self.cbtn_tl_save_history, text="Save the translation to history")
 
@@ -426,7 +430,7 @@ class SettingWindow:
         self.entry_tl_libre_setting_port.pack(side=tk.LEFT, padx=5, pady=5)
         CreateToolTip(self.entry_tl_libre_setting_port, text="Port of Libletranslate server. Default: Empty\n\nSet it to empty if you are not using local server.")
 
-        self.cbtn_tl_libre_setting_https = ttk.Checkbutton(self.f_tl_libre_setting, text="Use HTTPS")
+        self.cbtn_tl_libre_setting_https = ttk.Checkbutton(self.f_tl_libre_setting, text="Use HTTPS", style="Switch.TCheckbutton")
         self.cbtn_tl_libre_setting_https.pack(side=tk.LEFT, padx=5, pady=5)
         CreateToolTip(self.cbtn_tl_libre_setting_https, text="HTTPS or HTTP. Default: HTTPS (checked)\n\nSet it to http if you are using local server.")
 
@@ -518,25 +522,6 @@ class SettingWindow:
         self.cbtn_mw_q_font_bold = ttk.Checkbutton(self.lf_mw_q, text="Bold", command=lambda: self.preview_changes_tb())
         self.cbtn_mw_q_font_bold.pack(side=tk.LEFT, padx=5, pady=5)
 
-        self.lbl_mw_q_font_color = ttk.Label(self.lf_mw_q, text="Font Color")
-        self.lbl_mw_q_font_color.pack(side=tk.LEFT, padx=5, pady=5)
-
-        self.entry_mw_q_font_color = ttk.Entry(self.lf_mw_q, width=10)
-        self.entry_mw_q_font_color.pack(side=tk.LEFT, padx=5, pady=5)
-        self.entry_mw_q_font_color.bind("<Button-1>", lambda e: chooseColor_entry(self.entry_mw_q_font_color, self.entry_mw_q_font_color.get(), self.root) or self.preview_changes_tb())
-        self.entry_mw_q_font_color.bind("<Key>", lambda e: "break")
-
-        self.lbl_mw_q_bg_color = ttk.Label(self.lf_mw_q, text="Background Color")
-        self.lbl_mw_q_bg_color.pack(side=tk.LEFT, padx=5, pady=5)
-
-        self.entry_mw_q_bg_color = ttk.Entry(self.lf_mw_q, width=10)
-        self.entry_mw_q_bg_color.pack(side=tk.LEFT, padx=5, pady=5)
-        self.entry_mw_q_bg_color.bind(
-            "<Button-1>",
-            lambda e: chooseColor_entry(self.entry_mw_q_bg_color, self.entry_mw_q_bg_color.get(), self.root) or self.preview_changes_tb(),
-        )
-        self.entry_mw_q_bg_color.bind("<Key>", lambda e: "break")
-
         # [mw result]
         self.lf_mw_res = tk.LabelFrame(self.f_cat_5_textbox, text="• Main Window Result Textbox")
         self.lf_mw_res.pack(side=tk.TOP, padx=5, pady=5, fill=tk.X)
@@ -558,22 +543,6 @@ class SettingWindow:
 
         self.cbtn_mw_res_font_bold = ttk.Checkbutton(self.lf_mw_res, text="Bold", command=lambda: self.preview_changes_tb())
         self.cbtn_mw_res_font_bold.pack(side=tk.LEFT, padx=5, pady=5)
-
-        self.lbl_mw_res_font_color = ttk.Label(self.lf_mw_res, text="Font Color")
-        self.lbl_mw_res_font_color.pack(side=tk.LEFT, padx=5, pady=5)
-
-        self.entry_mw_res_font_color = ttk.Entry(self.lf_mw_res, width=10)
-        self.entry_mw_res_font_color.pack(side=tk.LEFT, padx=5, pady=5)
-        self.entry_mw_res_font_color.bind("<Button-1>", lambda e: chooseColor_entry(self.entry_mw_res_font_color, self.entry_mw_res_font_color.get(), self.root) or self.preview_changes_tb())
-        self.entry_mw_res_font_color.bind("<Key>", lambda e: "break")
-
-        self.lbl_mw_res_bg_color = ttk.Label(self.lf_mw_res, text="Background Color")
-        self.lbl_mw_res_bg_color.pack(side=tk.LEFT, padx=5, pady=5)
-
-        self.entry_mw_res_bg_color = ttk.Entry(self.lf_mw_res, width=10)
-        self.entry_mw_res_bg_color.pack(side=tk.LEFT, padx=5, pady=5)
-        self.entry_mw_res_bg_color.bind("<Button-1>", lambda e: chooseColor_entry(self.entry_mw_res_bg_color, self.entry_mw_res_bg_color.get(), self.root) or self.preview_changes_tb())
-        self.entry_mw_res_bg_color.bind("<Key>", lambda e: "break")
 
         # [detached query]
         self.lf_ex_q = tk.LabelFrame(self.f_cat_5_textbox, text="• Detached Query Window Textbox")
@@ -661,8 +630,6 @@ class SettingWindow:
             width=27,
             wrap=tk.WORD,
             font=(fJson.settingCache["tb_mw_q_font"], fJson.settingCache["tb_mw_q_font_size"], "bold" if fJson.settingCache["tb_mw_q_font_bold"] else "normal"),
-            fg=fJson.settingCache["tb_mw_q_font_color"],
-            bg=fJson.settingCache["tb_mw_q_bg_color"],
         )
         self.tb_preview_1.bind("<Key>", "break")
         self.tb_preview_1.insert(tk.END, "1234567 Preview プレビュー 预习 предварительный просмотр")
@@ -674,8 +641,6 @@ class SettingWindow:
             width=27,
             wrap=tk.WORD,
             font=(fJson.settingCache["tb_mw_res_font"], fJson.settingCache["tb_mw_res_font_size"], "bold" if fJson.settingCache["tb_mw_res_font_bold"] else "normal"),
-            fg=fJson.settingCache["tb_mw_res_font_color"],
-            bg=fJson.settingCache["tb_mw_res_bg_color"],
         )
         self.tb_preview_2.bind("<Key>", "break")
         self.tb_preview_2.insert(tk.END, "1234567 Preview プレビュー 预习 предварительный просмотр")
@@ -687,8 +652,8 @@ class SettingWindow:
             width=27,
             wrap=tk.WORD,
             font=(fJson.settingCache["tb_ex_q_font"], fJson.settingCache["tb_ex_q_font_size"], "bold" if fJson.settingCache["tb_ex_q_font_bold"] else "normal"),
-            fg=fJson.settingCache["tb_ex_q_font_color"],
-            bg=fJson.settingCache["tb_ex_q_bg_color"],
+            foreground=fJson.settingCache["tb_ex_q_font_color"],
+            background=fJson.settingCache["tb_ex_q_bg_color"],
         )
         self.tb_preview_3.bind("<Key>", "break")
         self.tb_preview_3.insert(tk.END, "1234567 Preview プレビュー 预习 предварительный просмотр")
@@ -700,8 +665,8 @@ class SettingWindow:
             width=27,
             wrap=tk.WORD,
             font=(fJson.settingCache["tb_ex_res_font"], fJson.settingCache["tb_ex_res_font_size"], "bold" if fJson.settingCache["tb_ex_res_font_bold"] else "normal"),
-            fg=fJson.settingCache["tb_ex_res_font_color"],
-            bg=fJson.settingCache["tb_ex_res_bg_color"],
+            foreground=fJson.settingCache["tb_ex_res_font_color"],
+            background=fJson.settingCache["tb_ex_res_bg_color"],
         )
         self.tb_preview_4.bind("<Key>", "break")
         self.tb_preview_4.insert(tk.END, "1234567 Preview プレビュー 预习 предварительный просмотр")
@@ -749,15 +714,15 @@ class SettingWindow:
         self.f_other_3.pack(side=tk.TOP, fill=tk.X, expand=False)
 
         # Checkbox for check for update
-        self.cbtn_update = ttk.Checkbutton(self.f_other_1, text="Check for update on app start")
+        self.cbtn_update = ttk.Checkbutton(self.f_other_1, text="Check for update on app start", style="Switch.TCheckbutton")
         self.cbtn_update.pack(side=tk.LEFT, padx=5, pady=5)
         CreateToolTip(self.cbtn_update, "Check for update on app start. You can also check manually by going to help in menubar")
 
-        self.cbtn_run_on_startup = ttk.Checkbutton(self.f_other_1, text="Run app on startup")
+        self.cbtn_run_on_startup = ttk.Checkbutton(self.f_other_1, text="Run app on startup", style="Switch.TCheckbutton")
         self.cbtn_run_on_startup.pack(side=tk.LEFT, padx=5, pady=5)
         CreateToolTip(self.cbtn_run_on_startup, "Run app on startup. Only on Windows")
 
-        self.cbtn_keep_log = ttk.Checkbutton(self.f_other_2, text="Keep Log")
+        self.cbtn_keep_log = ttk.Checkbutton(self.f_other_2, text="Keep Log", style="Switch.TCheckbutton")
         self.cbtn_keep_log.pack(side=tk.LEFT, padx=(5, 4), pady=5)
 
         self.lbl_loglevel = ttk.Label(self.f_other_2, text="— Log Level")
@@ -1074,12 +1039,6 @@ class SettingWindow:
         logger.info("Settings loaded to setting UI")
 
     def tb_delete(self):
-        self.entry_mw_q_font_color.delete(0, tk.END)
-        self.entry_mw_q_bg_color.delete(0, tk.END)
-
-        self.entry_mw_res_font_color.delete(0, tk.END)
-        self.entry_mw_res_bg_color.delete(0, tk.END)
-
         self.entry_ex_q_font_color.delete(0, tk.END)
         self.entry_ex_q_bg_color.delete(0, tk.END)
 
@@ -1091,14 +1050,10 @@ class SettingWindow:
         self.cb_mw_q_font.set(fJson.settingCache["tb_mw_q_font"])
         self.sb_mw_q_font_size.set(fJson.settingCache["tb_mw_q_font_size"])
         self.cbtnInvoker(fJson.settingCache["tb_mw_q_font_bold"], self.cbtn_mw_q_font_bold)
-        self.entry_mw_q_font_color.insert(0, fJson.settingCache["tb_mw_q_font_color"])
-        self.entry_mw_q_bg_color.insert(0, fJson.settingCache["tb_mw_q_bg_color"])
 
         self.cb_mw_res_font.set(fJson.settingCache["tb_mw_res_font"])
         self.sb_mw_res_font_size.set(fJson.settingCache["tb_mw_res_font_size"])
         self.cbtnInvoker(fJson.settingCache["tb_mw_res_font_bold"], self.cbtn_mw_res_font_bold)
-        self.entry_mw_res_font_color.insert(0, fJson.settingCache["tb_mw_res_font_color"])
-        self.entry_mw_res_bg_color.insert(0, fJson.settingCache["tb_mw_res_bg_color"])
 
         self.cb_ex_q_font.set(fJson.settingCache["tb_ex_q_font"])
         self.sb_ex_q_font_size.set(fJson.settingCache["tb_ex_q_font_size"])
@@ -1118,26 +1073,22 @@ class SettingWindow:
 
         self.tb_preview_1.configure(
             font=(self.cb_mw_q_font.get(), int(self.sb_mw_q_font_size.get()), "bold" if self.cbtn_mw_q_font_bold.instate(["selected"]) else "normal"),
-            fg=self.entry_mw_q_font_color.get(),
-            bg=self.entry_mw_q_bg_color.get(),
         )
 
         self.tb_preview_2.configure(
             font=(self.cb_mw_res_font.get(), int(self.sb_mw_res_font_size.get()), "bold" if self.cbtn_mw_res_font_bold.instate(["selected"]) else "normal"),
-            fg=self.entry_mw_res_font_color.get(),
-            bg=self.entry_mw_res_bg_color.get(),
         )
 
         self.tb_preview_3.configure(
             font=(self.cb_ex_q_font.get(), int(self.sb_ex_q_font_size.get()), "bold" if self.cbtn_ex_q_font_bold.instate(["selected"]) else "normal"),
-            fg=self.entry_ex_q_font_color.get(),
-            bg=self.entry_ex_q_bg_color.get(),
+            foreground=self.entry_ex_q_font_color.get(),
+            background=self.entry_ex_q_bg_color.get(),
         )
 
         self.tb_preview_4.configure(
             font=(self.cb_ex_res_font.get(), int(self.sb_ex_res_font_size.get()), "bold" if self.cbtn_ex_res_font_bold.instate(["selected"]) else "normal"),
-            fg=self.entry_ex_res_font_color.get(),
-            bg=self.entry_ex_res_bg_color.get(),
+            foreground=self.entry_ex_res_font_color.get(),
+            background=self.entry_ex_res_bg_color.get(),
         )
 
     # Save settings
@@ -1213,13 +1164,9 @@ class SettingWindow:
             "tb_mw_q_font": self.cb_mw_q_font.get(),
             "tb_mw_q_font_bold": self.cbtn_mw_q_font_bold.instate(["selected"]),
             "tb_mw_q_font_size": int(self.sb_mw_q_font_size.get()),
-            "tb_mw_q_font_color": self.entry_mw_q_font_color.get(),
-            "tb_mw_q_bg_color": self.entry_mw_q_bg_color.get(),
             "tb_mw_res_font": self.cb_mw_res_font.get(),
             "tb_mw_res_font_bold": self.cbtn_mw_res_font_bold.instate(["selected"]),
             "tb_mw_res_font_size": int(self.sb_mw_res_font_size.get()),
-            "tb_mw_res_font_color": self.entry_mw_res_font_color.get(),
-            "tb_mw_res_bg_color": self.entry_mw_res_bg_color.get(),
             "tb_ex_q_font": self.cb_ex_q_font.get(),
             "tb_ex_q_font_bold": self.cbtn_ex_q_font_bold.instate(["selected"]),
             "tb_ex_q_font_size": int(self.sb_ex_q_font_size.get()),
@@ -1293,28 +1240,24 @@ class SettingWindow:
         assert gClass.mw is not None
         gClass.mw.tb_query.configure(
             font=(self.cb_mw_q_font.get(), int(self.sb_mw_q_font_size.get()), "bold" if self.cbtn_mw_q_font_bold.instate(["selected"]) else "normal"),
-            fg=self.entry_mw_q_font_color.get(),
-            bg=self.entry_mw_q_bg_color.get(),
         )
 
         gClass.mw.tb_result.configure(
             font=(self.cb_mw_res_font.get(), int(self.sb_mw_res_font_size.get()), "bold" if self.cbtn_mw_res_font_bold.instate(["selected"]) else "normal"),
-            fg=self.entry_mw_res_font_color.get(),
-            bg=self.entry_mw_res_bg_color.get(),
         )
 
         assert gClass.ex_qw is not None
         gClass.ex_qw.labelText.configure(
             font=(self.cb_ex_q_font.get(), int(self.sb_ex_q_font_size.get()), "bold" if self.cbtn_ex_q_font_bold.instate(["selected"]) else "normal"),
-            fg=self.entry_ex_q_font_color.get(),
-            bg=self.entry_ex_q_bg_color.get(),
+            foreground=self.entry_ex_q_font_color.get(),
+            background=self.entry_ex_q_bg_color.get(),
         )
 
         assert gClass.ex_resw is not None
         gClass.ex_resw.labelText.configure(
             font=(self.cb_ex_res_font.get(), int(self.sb_ex_res_font_size.get()), "bold" if self.cbtn_ex_res_font_bold.instate(["selected"]) else "normal"),
-            fg=self.entry_ex_res_font_color.get(),
-            bg=self.entry_ex_res_bg_color.get(),
+            foreground=self.entry_ex_res_font_color.get(),
+            background=self.entry_ex_res_bg_color.get(),
         )
 
         gClass.update_ex_cw_setting()

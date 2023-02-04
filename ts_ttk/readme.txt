@@ -1,1 +1,0 @@
-A somewhat working theme switcher for rdbende ttk themes

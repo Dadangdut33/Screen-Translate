@@ -4,7 +4,6 @@ import threading
 import time
 import keyboard
 import requests
-import ts_ttk
 import tkinter as tk
 from tkinter import ttk
 
@@ -18,7 +17,7 @@ from screen_translate._version import __version__
 from screen_translate.Globals import gClass, path_logo_icon, dir_captured, fJson, app_name, dir_user_manual
 from screen_translate.Logging import logger
 
-from screen_translate.utils.Style import set_ui_style
+from screen_translate.utils.Style import set_ui_style, init_theme, get_theme_list, get_current_theme
 from screen_translate.utils.Translate import translate
 from screen_translate.utils.Capture import captureFullScreen
 from screen_translate.utils.Helper import get_opac_value, nativeNotify, startFile, OpenUrl
@@ -168,16 +167,19 @@ class MainWindow:
 
         # ----------------------------------------------
         # Styles
+        init_theme()
         self.style = ttk.Style()
         gClass.style = self.style
-        gClass.native_theme = ts_ttk.get_current_theme()  # get first theme before changing
-        gClass.theme_lists = list(ts_ttk.get_theme_list())
+        gClass.native_theme = get_current_theme()  # get first theme before changing
+        gClass.theme_lists = list(get_theme_list())
 
         # rearrange some positions
         try:
             gClass.theme_lists.remove("sv")
-        except Exception:
-            pass
+        except Exception:  # sv theme is not available
+            gClass.theme_lists.remove("sv-dark")
+            gClass.theme_lists.remove("sv-light")
+            
         gClass.theme_lists.insert(0, gClass.native_theme)  # add native theme to top of list
         logger.debug(f"Available Theme to use: {gClass.theme_lists}")
         gClass.theme_lists.insert(len(gClass.theme_lists), "custom")
@@ -235,16 +237,7 @@ class MainWindow:
         self.sb_query = tk.Scrollbar(self.frame_tb_query_bg)
         self.sb_query.pack(side=tk.RIGHT, fill=tk.Y)
 
-        self.tb_query = tk.Text(
-            self.frame_tb_query_bg,
-            height=5,
-            width=100,
-            relief=tk.FLAT,
-            font=(fJson.settingCache["tb_mw_q_font"], fJson.settingCache["tb_mw_q_font_size"]),
-            fg=fJson.settingCache["tb_mw_q_font_color"],
-            bg=fJson.settingCache["tb_mw_q_bg_color"],
-            yscrollcommand=self.sb_query.set,
-        )
+        self.tb_query = tk.Text(self.frame_tb_query_bg, height=5, width=100, relief=tk.FLAT, font=(fJson.settingCache["tb_mw_q_font"], fJson.settingCache["tb_mw_q_font_size"]))
         self.tb_query.pack(padx=1, pady=1, fill=tk.BOTH, expand=True)
         self.tb_query.configure(yscrollcommand=self.sb_query.set)
         self.sb_query.configure(command=self.tb_query.yview)
@@ -291,16 +284,7 @@ class MainWindow:
         self.sb_result = tk.Scrollbar(self.frame_tb_result_bg)
         self.sb_result.pack(side=tk.RIGHT, fill=tk.Y)
 
-        self.tb_result = tk.Text(
-            self.frame_tb_result_bg,
-            height=5,
-            width=100,
-            relief=tk.FLAT,
-            font=(fJson.settingCache["tb_mw_q_font"], fJson.settingCache["tb_mw_q_font_size"]),
-            fg=fJson.settingCache["tb_mw_q_font_color"],
-            bg=fJson.settingCache["tb_mw_q_bg_color"],
-            yscrollcommand=self.sb_query.set,
-        )
+        self.tb_result = tk.Text(self.frame_tb_result_bg, height=5, width=100, relief=tk.FLAT, font=(fJson.settingCache["tb_mw_q_font"], fJson.settingCache["tb_mw_q_font_size"]))
         self.tb_result.pack(padx=1, pady=1, fill=tk.BOTH, expand=True)
         self.tb_result.configure(yscrollcommand=self.sb_result.set)
         self.sb_result.configure(command=self.tb_result.yview)
@@ -333,7 +317,6 @@ class MainWindow:
         self.filemenu4 = tk.Menu(self.menubar, tearoff=0)
         self.filemenu4.add_command(label="Tesseract", command=self.openTesLink)  # Open Tesseract Downloads
         self.filemenu4.add_command(label="Libretranslate", command=self.openLibreTlLink)  # Open Tesseract Downloads
-        self.filemenu4.add_command(label="Icon source", command=self.openIconSource)
         self.menubar.add_cascade(label="Get", menu=self.filemenu4)
 
         self.filemenu5 = tk.Menu(self.menubar, tearoff=0)
@@ -566,10 +549,6 @@ class MainWindow:
     def openLibreTlLink(self):
         Mbox("Info", "You can follow the instruction on their github pages. It is recommended to build it with the models so you can use it fully offline.", 0, self.root)
         OpenUrl("https://github.com/LibreTranslate/LibreTranslate")
-
-    # Open icon source
-    def openIconSource(self):
-        OpenUrl("https://icons8.com/")
 
     # Open known bugs
     def open_KnownBugs(self):

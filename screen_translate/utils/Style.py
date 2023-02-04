@@ -11,25 +11,28 @@ https://coderslegacy.com/python/tkinter-ttk-style/
 https://stackoverflow.com/questions/45389166/how-to-know-all-style-options-of-a-ttk-widget
 
 """
-import ts_ttk
+import os
+import tkinter as tk
 from screen_translate.Logging import logger
-from screen_translate.Globals import gClass, fJson
+from screen_translate.Globals import gClass, fJson, dir_theme
 from screen_translate.components.custom.MBox import Mbox
 from tkinter import ttk, TclError
+
+theme_list = ["sv-light", "sv-dark"]
 
 
 def set_ui_style(theme: str):
     success = False
     try:
         logger.debug("Setting theme: %s", theme)
-        ts_ttk.set_theme(theme)
+        set_theme(theme)
         success = True
     except Exception as e:
         logger.exception(e)
         logger.debug("Setting theme failed, using default theme")
         Mbox("Error", f"Failed to set `{theme}` theme, converting back to default theme", 2)
         theme = gClass.native_theme
-        ts_ttk.set_theme(theme)
+        set_theme(theme)
         fJson.savePartialSetting("theme", theme)
 
     # -----------------------
@@ -46,9 +49,49 @@ def set_ui_style(theme: str):
         gClass.style.configure("Bottom.TFrame", background="#1e1e1e")
         gClass.style.configure("Brighter.TFrame", background="#2e2e2e")
         gClass.style.configure("BrighterTFrameBg.TLabel", background="#2e2e2e")
-        gClass.style.configure("Darker.TFrame", background="#f0f0f0")
+        gClass.style.configure("Darker.TFrame", background="#bdbdbd")
 
     return success
+
+
+def get_root() -> tk.Tk:
+    assert gClass.mw is not None
+    return gClass.mw.root
+
+
+def init_theme():
+    dir_theme_list = [name for name in os.listdir(dir_theme) if os.path.isdir(os.path.join(dir_theme, name))]  # only if a dir
+
+    # filter path list by making sure that the dir name contains .tcl with the same name as the dir
+    dir_theme_list = [dir for dir in dir_theme_list if dir + ".tcl" in os.listdir(os.path.join(dir_theme, dir))]
+
+    for dir in dir_theme_list:
+        path = os.path.abspath(os.path.join(dir_theme, dir, (dir + ".tcl")))
+        theme_list.append(dir)
+
+        try:
+            get_root().tk.call("source", str(path))
+        except AttributeError as e:
+            logger.exception(e)
+
+
+def get_current_theme() -> str:
+    theme = get_root().tk.call("ttk::style", "theme", "use")
+
+    return theme
+
+
+def get_theme_list():
+    return theme_list
+
+
+def set_theme(theme: str):
+    real_theme_list = list(get_root().tk.call("ttk::style", "theme", "names"))
+    real_theme_list.extend(theme_list)
+    if theme not in real_theme_list:
+        raise RuntimeError("not a valid theme name: {}".format(theme))
+
+    get_root().tk.call("set_theme", theme)  
 
 
 stylename_map = {

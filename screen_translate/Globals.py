@@ -15,6 +15,7 @@ dir_log: str = os.path.abspath(os.path.join(dir_project, "..", "log"))
 dir_captured: str = os.path.abspath(os.path.join(dir_project, "..", "captured"))
 dir_assets: str = os.path.abspath(os.path.join(dir_project, "..", "assets"))
 dir_user_manual: str = os.path.abspath(os.path.join(dir_project, "..", "user_manual"))
+dir_theme: str = os.path.abspath(os.path.join(dir_project, "..", "theme"))
 # ---------------------------- #
 # Target Paths
 path_to_app_exe: str = os.path.abspath(os.path.join(dir_project, "..", "ScreenTranslate.exe"))
