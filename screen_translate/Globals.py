@@ -1,6 +1,7 @@
 import os
 import ast
 import shlex
+import arabic_reshaper
 from typing import List, Optional
 from tkinter import ttk
 
@@ -27,6 +28,7 @@ path_logo_png: str = os.path.join(dir_assets, "logo.png")
 app_name: str = "Screen Translate"
 reg_key_name: str = f'"{path_to_app_exe}"' + " -s"
 fJson: JsonHandler = JsonHandler(path_json_settings, path_json_history, dir_user, [dir_log, dir_captured])
+reshape_lang_list = ["arabic", "urdu", "faroese"]
 # ---------------------------- #
 class Globals:
     """
@@ -100,10 +102,16 @@ class Globals:
 
     def insert_mw_q(self, text: str):
         assert self.mw is not None
+        if fJson.settingCache["sourceLang"].lower() in reshape_lang_list:
+            text = arabic_reshaper.reshape(text)
+
         self.mw.tb_query.insert(1.0, text)
 
     def insert_mw_res(self, text: str):
         assert self.mw is not None
+        if fJson.settingCache["targetLang"].lower() in reshape_lang_list:
+            text = arabic_reshaper.reshape(text)
+
         self.mw.tb_result.insert(1.0, text)
 
     def clear_mw_q(self):
@@ -117,6 +125,8 @@ class Globals:
     def insert_ex_q(self, text: str):
         assert self.ex_qw is not None
         text = text.strip()
+        if fJson.settingCache["sourceLang"].lower() in reshape_lang_list:
+            text = arabic_reshaper.reshape(text)
         text += ast.literal_eval(shlex.quote(fJson.settingCache["replaceNewLineWith"]))  # set new text
 
         self.ex_qw.labelText.config(text=text)
@@ -125,6 +135,8 @@ class Globals:
     def insert_ex_res(self, text: str):
         assert self.ex_resw is not None
         text = text.strip()
+        if fJson.settingCache["targetLang"].lower() in reshape_lang_list:
+            text = arabic_reshaper.reshape(text)
         text += ast.literal_eval(shlex.quote(fJson.settingCache["replaceNewLineWith"]))  # set new text
 
         self.ex_resw.labelText.config(text=text)

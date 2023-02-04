@@ -61,14 +61,16 @@ class AboutWindow:
         self.lbl_title = ttk.Label(self.f_top, text="Screen Translate", font=("Helvetica", 12, "bold"), style="BrighterTFrameBg.TLabel")
         self.lbl_title.pack(padx=5, pady=2, side=tk.TOP)
 
+        self.lbl_sub_title = ttk.Label(self.f_top, text="An open source OCR Translation tool.", style="BrighterTFrameBg.TLabel")
+        self.lbl_sub_title.pack(padx=5, pady=2, side=tk.TOP)
+
         self.lbl_content = ttk.Label(
             self.f_top,
-            text="An open source OCR Translation tool.\n\n"
-            + "This program is completely open source, you can improve it if you\nwant by sending a pull request, you can also submit an issue if you\n found any bugs. If you are confused on how to use it you can\n"
+            text="This program is completely open source, you can improve it if you\nwant by sending a pull request, you can also submit an issue if you\nfound any bugs. If you are confused on how to use it you can\n"
             + "check the tutorial linked in the menu bar",
             style="BrighterTFrameBg.TLabel",
         )
-        self.lbl_content.pack(padx=5, pady=0, side=tk.TOP)
+        self.lbl_content.pack(padx=5, pady=(5, 0), side=tk.TOP)
 
         # ttk.Label for version
         self.lbl_version = ttk.Label(self.f_bot_l_t, text=f"Version: {__version__}", font=("Segoe UI", 8))

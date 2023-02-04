@@ -222,7 +222,7 @@ class JsonHandler:
         except Exception as e:
             status = str(e)
             logger.exception(e)
-            Mbox("Error: ", str(e), 2)
+            Mbox("Error: ", str(e), 2)  # on uncaught error
         finally:
             return is_Success, status
 
@@ -253,7 +253,7 @@ class JsonHandler:
         except Exception as e:
             status = str(e)
             logger.exception(e)
-            Mbox("Error: ", str(e), 2)
+            Mbox("Error: ", str(e), 2)  # on uncaught error
         finally:
             return is_Success, status
 
@@ -302,12 +302,12 @@ class JsonHandler:
         except Exception as e:
             status = str(e)
             logger.exception(e)
-            Mbox("Error: ", str(e), 2)
+            Mbox("Error: ", str(e), 2)  # on uncaught error
         finally:
             return is_Success, status
 
     # Read History
-    def readHistory(self, onStartUp: bool = False):
+    def readHistory(self):
         """Read history
 
         Returns:
@@ -326,15 +326,12 @@ class JsonHandler:
 
                 json.dump(file_data, f, ensure_ascii=False, indent=4)
                 is_Success = False
-                data = r"Couldn't found History.Json, History now empty"
-                if not onStartUp:
-                    Mbox("Error", data, 2)
+                data = {"tl_history": []}
 
         except Exception as e:
             data = str(e)
             logger.exception(e)
-            if not onStartUp:
-                Mbox("Error: ", str(e), 2)
+            Mbox("Error: ", str(e), 2)  # on uncaught error
         finally:
             return is_Success, data
 

@@ -27,7 +27,7 @@ class LogWindow:
 
         # Frames
         self.f_1 = ttk.Frame(self.root)
-        self.f_1.pack(side=tk.TOP, fill=tk.BOTH, padx=5, expand=True)
+        self.f_1.pack(side=tk.TOP, fill=tk.BOTH, padx=5, pady=5, expand=True)
 
         self.f_bot = ttk.Frame(self.root)
         self.f_bot.pack(side=tk.BOTTOM, fill=tk.BOTH, expand=False)

@@ -85,7 +85,7 @@ class HistoryWindow:
         """
         Refresh the history
         """
-        success, data = fJson.readHistory(True)
+        success, data = fJson.readHistory()
         if not success:
             self.sheet_history.set_sheet_data(data=[["Error when fetching history!"]], redraw=True)
             return
@@ -147,13 +147,12 @@ class HistoryWindow:
             selectedData = self.sheet_history.get_row_data(selected[0], return_copy=False)
 
             pyperclip.copy(selectedData[2] + " -> " + selectedData[3])  # type: ignore
-            
+
             # update button
             self.btn_copy_to_clipboard.config(text="✓ Copied to clipboard!")
 
             # update button after 1.5 seconds
             self.root.after(1500, lambda: self.btn_copy_to_clipboard.config(text="↳ Copy to Clipboard"))
-
 
     def copyToTranslateMenu(self):
         """

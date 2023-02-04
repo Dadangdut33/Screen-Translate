@@ -237,7 +237,16 @@ class MainWindow:
         self.sb_query = tk.Scrollbar(self.frame_tb_query_bg)
         self.sb_query.pack(side=tk.RIGHT, fill=tk.Y)
 
-        self.tb_query = tk.Text(self.frame_tb_query_bg, height=5, width=100, relief=tk.FLAT, font=(fJson.settingCache["tb_mw_q_font"], fJson.settingCache["tb_mw_q_font_size"]))
+        self.tb_query = tk.Text(
+            self.frame_tb_query_bg,
+            height=5,
+            width=100,
+            relief=tk.FLAT,
+            font=(fJson.settingCache["tb_mw_q_font"], fJson.settingCache["tb_mw_q_font_size"]),
+            autoseparators=True,
+            undo=True,
+            maxundo=-1,
+        )
         self.tb_query.pack(padx=1, pady=1, fill=tk.BOTH, expand=True)
         self.tb_query.configure(yscrollcommand=self.sb_query.set)
         self.sb_query.configure(command=self.tb_query.yview)
@@ -284,7 +293,16 @@ class MainWindow:
         self.sb_result = tk.Scrollbar(self.frame_tb_result_bg)
         self.sb_result.pack(side=tk.RIGHT, fill=tk.Y)
 
-        self.tb_result = tk.Text(self.frame_tb_result_bg, height=5, width=100, relief=tk.FLAT, font=(fJson.settingCache["tb_mw_q_font"], fJson.settingCache["tb_mw_q_font_size"]))
+        self.tb_result = tk.Text(
+            self.frame_tb_result_bg,
+            height=5,
+            width=100,
+            relief=tk.FLAT,
+            font=(fJson.settingCache["tb_mw_q_font"], fJson.settingCache["tb_mw_q_font_size"]),
+            autoseparators=True,
+            undo=True,
+            maxundo=-1,
+        )
         self.tb_result.pack(padx=1, pady=1, fill=tk.BOTH, expand=True)
         self.tb_result.configure(yscrollcommand=self.sb_result.set)
         self.sb_result.configure(command=self.tb_result.yview)
