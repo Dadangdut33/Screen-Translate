@@ -1,5 +1,13 @@
 # Changelog
-Latest V2.0.1
+Latest V2.1.0
+
+[V2.1.0 UI improvement - Dark theme]
+- added sun valley theme with dark / light mode support
+- added auto color mode for dark / light mode on first time run
+- added option to change theme in setting and ways to add custom theme 
+- added option to auto copy translated text to clipboard
+- Use tksheet for history table to improve looks and usage experience
+- categorize the ui code directory structure
 
 [V2.0.1 Minor bug fix and Update]
 - Fix run on startup showing terminal window because of wrong registry key value

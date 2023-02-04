@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "Screen Translate"
-#define MyAppVersion "2.0.1"
+#define MyAppVersion "2.1.0"
 #define MyAppPublisher "Dadangdut33"
 #define MyAppURL "https://github.com/Dadangdut33/Screen-Translate"
 #define MyAppExeName "ScreenTranslate.exe"
