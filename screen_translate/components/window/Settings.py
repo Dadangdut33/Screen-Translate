@@ -373,9 +373,9 @@ class SettingWindow:
         self.cbtn_alert_no_text.pack(side=tk.LEFT, padx=5, pady=5)
         CreateToolTip(self.cbtn_alert_no_text, text="Show alert when no text is entered or captured by the OCR")
 
-        self.cbtn_auto_copy = ttk.Checkbutton(self.f_OCR_result_3, text="Auto copy captured text", style="Switch.TCheckbutton")
-        self.cbtn_auto_copy.pack(side=tk.LEFT, padx=5, pady=5)
-        CreateToolTip(self.cbtn_auto_copy, "Copy the captured text to clipboard automatically. If both is enabled will copy both with format 'captured text -> translated text'")
+        self.cbtn_auto_copy_captured = ttk.Checkbutton(self.f_OCR_result_3, text="Auto copy captured text", style="Switch.TCheckbutton")
+        self.cbtn_auto_copy_captured.pack(side=tk.LEFT, padx=5, pady=5)
+        CreateToolTip(self.cbtn_auto_copy_captured, "Copy the captured text to clipboard automatically. If both is enabled will copy both with format 'captured text -> translated text'")
 
         self.cbtn_auto_copy_translated = ttk.Checkbutton(self.f_OCR_result_3, text="Auto copy translated captured text", style="Switch.TCheckbutton")
         self.cbtn_auto_copy_translated.pack(side=tk.LEFT, padx=5, pady=5)  # TODO
@@ -973,7 +973,8 @@ class SettingWindow:
         self.cbtnInvoker(fJson.settingCache["hide_ex_qw_on_cap"], self.cbtn_hide_ex_qw_on_cap)
         self.cbtnInvoker(fJson.settingCache["hide_ex_resw_on_cap"], self.cbtn_hide_ex_resw_on_cap)
         self.cbtnInvoker(fJson.settingCache["keep_image"], self.cbtn_keep_img)
-        self.cbtnInvoker(fJson.settingCache["auto_copy"], self.cbtn_auto_copy)
+        self.cbtnInvoker(fJson.settingCache["auto_copy_captured"], self.cbtn_auto_copy_captured)
+        self.cbtnInvoker(fJson.settingCache["auto_copy_translated"], self.cbtn_auto_copy_translated)
 
         # cw
         # xy cw offset
@@ -1110,7 +1111,7 @@ class SettingWindow:
             # ------------------ #
             # App settings
             "keep_image": self.cbtn_keep_img.instate(["selected"]),
-            "auto_copy_captured": self.cbtn_auto_copy.instate(["selected"]),
+            "auto_copy_captured": self.cbtn_auto_copy_captured.instate(["selected"]),
             "auto_copy_translated": self.cbtn_auto_copy_translated.instate(["selected"]),
             "save_history": self.cbtn_tl_save_history.instate(["selected"]),
             "supress_no_text_alert": not self.cbtn_alert_no_text.instate(["selected"]),  # Inverted
