@@ -1,10 +1,18 @@
-test/
+# runtime project files
 *.pyc
 build/
 dist/
 captured/
 user/
 log/
-.vscode/
+test/
+
+# virtual environment
 venv/
+
+# user
+.vscode/
+
+# created when running build_pyinstaller
+LICENSE.txt 
 *.spec

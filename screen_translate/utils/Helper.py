@@ -19,16 +19,16 @@ def startFile(filename: str):
         os.startfile(filename)
     except FileNotFoundError:
         logger.exception("Cannot find the file specified.")
-        nativeNotify("Error", "Cannot find the file specified.", "", "Speech Translate")
+        nativeNotify("Error", "Cannot find the file specified.", "", "Screen Translate")
     except Exception:
         try:
             subprocess.Popen(["xdg-open", filename])
         except FileNotFoundError:
             logger.exception("Cannot open the file specified.")
-            nativeNotify("Error", "Cannot find the file specified.", "", "Speech Translate")
+            nativeNotify("Error", "Cannot find the file specified.", "", "Screen Translate")
         except Exception as e:
             logger.exception(e)
-            nativeNotify("Error", f"Uncaught error {str(e)}", "", "Speech Translate")
+            nativeNotify("Error", f"Uncaught error {str(e)}", "", "Screen Translate")
 
 
 def OpenUrl(url: str):
@@ -39,7 +39,7 @@ def OpenUrl(url: str):
         webbrowser.open_new(url)
     except Exception as e:
         logger.exception(e)
-        nativeNotify("Error", "Cannot open the url specified.", "", "Speech Translate")
+        nativeNotify("Error", "Cannot open the url specified.", "", "Screen Translate")
 
 
 def nativeNotify(title: str, message: str, logo: str, app_name: str):

@@ -62,6 +62,7 @@ def ocrFromCoords(coords: List[int]):
 
         # Set variables
         pytesseract.pytesseract.tesseract_cmd = fJson.settingCache["tesseract_loc"]
+        config = fJson.settingCache["tesseract_config"] if fJson.settingCache["tesseract_config"] else ""
         enhance_withCv2 = fJson.settingCache["enhance_with_cv2_Contour"]
         grayscale = fJson.settingCache["enhance_with_grayscale"]
         debugmode = fJson.settingCache["enhance_debugmode"]
@@ -130,7 +131,7 @@ def ocrFromCoords(coords: List[int]):
                 cropped = imgFinal[y : y + h, x : x + w]
 
                 # Apply OCR on the cropped image
-                text = pytesseract.image_to_string(cropped, langCode)
+                text = pytesseract.image_to_string(cropped, langCode, config=config)
 
                 # Append the text into wordsarr
                 result += text.strip() + "\n"
@@ -147,9 +148,9 @@ def ocrFromCoords(coords: List[int]):
                 if debugmode:
                     cv2.imshow("Grayscale Image", grayImg)
 
-                result = pytesseract.image_to_string(grayImg, langCode)
+                result = pytesseract.image_to_string(grayImg, langCode, config=config)
             else:  # no enhancement
-                result = pytesseract.image_to_string(captured, langCode)
+                result = pytesseract.image_to_string(captured, langCode, config=config)
 
             if saveImg:
                 createPicDirIfGone()
@@ -166,6 +167,9 @@ def ocrFromCoords(coords: List[int]):
 
         if not fJson.settingCache["supress_no_text_alert"] and len(result) == 0:
             Mbox("No text detected", "No text detected in the image. Please try again.", 1)
+
+        if debugmode:
+            cv2.waitKey(0)
     except Exception as e:
         logger.exception(e)
         result = str(e)

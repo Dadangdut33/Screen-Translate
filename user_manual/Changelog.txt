@@ -1,5 +1,8 @@
 # Changelog
-Latest V2.1.0
+Latest V2.1.1
+
+[V2.1.1 Add options for tesseract config]
+- added option to add extra tesseract config (config list available at https://muthu.co/all-tesseract-ocr-options)
 
 [V2.1.0 UI improvement - Dark theme]
 - added sun valley theme with dark / light mode support

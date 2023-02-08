@@ -46,6 +46,7 @@ default_setting = {
     # ------------------ #
     # Capture
     "tesseract_loc": "C:/Program Files/Tesseract-OCR/tesseract.exe",
+    "tesseract_config": "",
     "replaceNewLine": True,
     "replaceNewLineWith": " ",
     "captureLastValDelete": 0,

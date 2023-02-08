@@ -10,7 +10,7 @@ from screen_translate.components.custom.Tooltip import CreateToolTip
 
 from screen_translate.Globals import gClass, path_logo_icon, dir_captured, fJson, app_name, reg_key_name
 from screen_translate.Logging import logger, current_log, dir_log
-from screen_translate.utils.Helper import nativeNotify, startFile, tb_copy_only
+from screen_translate.utils.Helper import nativeNotify, startFile, tb_copy_only, OpenUrl
 from screen_translate.utils.Monitor import get_offset, getScreenTotalGeometry
 from screen_translate.utils.AutoStart import set_autostart_registry, check_autostart_registry
 from screen_translate.utils.Capture import seeFullWindow
@@ -275,22 +275,33 @@ class SettingWindow:
         self.lf_OCR_setting = tk.LabelFrame(self.f_cat_2_ocr, text="• Tesseract OCR Settings")
         self.lf_OCR_setting.pack(side=tk.TOP, fill=tk.X, expand=True, padx=5, pady=(0, 5))
 
-        self.f_OCR_setting = ttk.Frame(self.lf_OCR_setting)
-        self.f_OCR_setting.pack(side=tk.TOP, fill=tk.X, expand=True)
+        self.f_OCR_setting_1 = ttk.Frame(self.lf_OCR_setting)
+        self.f_OCR_setting_1.pack(side=tk.TOP, fill=tk.X, expand=True)
 
-        self.lbl_OCR_tesseract_path = ttk.Label(self.f_OCR_setting, text="Tesseract Path")
+        self.f_OCR_setting_2 = ttk.Frame(self.lf_OCR_setting)
+        self.f_OCR_setting_2.pack(side=tk.TOP, fill=tk.X, expand=True)
+
+        self.lbl_OCR_tesseract_path = ttk.Label(self.f_OCR_setting_1, text="Tesseract Path")
         self.lbl_OCR_tesseract_path.pack(side=tk.LEFT, padx=5, pady=5)
-        CreateToolTip(self.f_OCR_setting, "Tesseract.exe location")
+        CreateToolTip(self.f_OCR_setting_1, "Tesseract.exe location")
 
-        self.entry_OCR_tesseract_path = ttk.Entry(self.f_OCR_setting, width=70)
+        self.entry_OCR_tesseract_path = ttk.Entry(self.f_OCR_setting_1, width=70)
         self.entry_OCR_tesseract_path.bind("<Key>", lambda event: tb_copy_only(event))  # Disable textbox input
         self.entry_OCR_tesseract_path.pack(side=tk.LEFT, padx=5, pady=5, fill=tk.X, expand=True)
         CreateToolTip(self.entry_OCR_tesseract_path, "Tesseract.exe location")
 
-        self.btnSearchTesseract = ttk.Button(self.f_OCR_setting, text="...", command=self.searchTesseract)
+        self.btnSearchTesseract = ttk.Button(self.f_OCR_setting_1, text="...", command=self.searchTesseract)
         self.btnSearchTesseract.pack(side=tk.LEFT, padx=5, pady=5)
 
-        # [Ocr enhancement]
+        self.lbl_extra_config = ttk.Label(self.f_OCR_setting_2, text="Extra Config")
+        self.lbl_extra_config.pack(side=tk.LEFT, padx=5, pady=5)
+        CreateToolTip(self.lbl_extra_config, "Extra config for Tesseract.\n\nClick here to see available options")
+        self.lbl_extra_config.bind("<Button-1>", lambda event: OpenUrl("https://muthu.co/all-tesseract-ocr-options/"))
+
+        self.entry_OCR_config = ttk.Entry(self.f_OCR_setting_2, width=70)
+        self.entry_OCR_config.pack(side=tk.LEFT, padx=5, pady=5, fill=tk.X, expand=True)
+        CreateToolTip(self.entry_OCR_config, "Extra config for Tesseract. Click on the label to see the available config.\n\nExample input: --psm 5 --oem 1")
+
         self.lf_OCR_enhancement = tk.LabelFrame(self.f_cat_2_ocr, text="• OCR Enhancement", width=900, height=75)
         self.lf_OCR_enhancement.pack(side=tk.TOP, fill=tk.X, expand=False, padx=5, pady=5)
 
@@ -991,6 +1002,9 @@ class SettingWindow:
         self.entry_OCR_tesseract_path.delete(0, tk.END)
         self.entry_OCR_tesseract_path.insert(0, fJson.settingCache["tesseract_loc"])
 
+        self.entry_OCR_config.delete(0, tk.END)
+        self.entry_OCR_config.insert(0, fJson.settingCache["tesseract_config"])
+
         self.cb_OCR_bg.set(fJson.settingCache["enhance_background"])
         self.cbtnInvoker(fJson.settingCache["enhance_with_cv2_Contour"], self.cbtn_OCR_cv2contour)
         self.cbtnInvoker(fJson.settingCache["enhance_with_grayscale"], self.cbtn_OCR_grayscale)
@@ -1134,6 +1148,7 @@ class SettingWindow:
             # ------------------ #
             # Capture
             "tesseract_loc": tesseractPathInput,
+            "tesseract_config": self.entry_OCR_config.get(),
             "replaceNewLine": self.cbtn_OCR_replace_newline.instate(["selected"]),
             "replaceNewLineWith": self.entry_OCR_replace_newline_with.get(),
             "captureLastValDelete": self.sb_OCR_delete_lastchar.get(),
