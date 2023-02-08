@@ -1,9 +1,23 @@
+import json
+import os
+from .Helper import get_similar_keys
+from typing import List, Dict
+
+# ---------------------------- #
+# paths
+dir_project: str = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", ".."))
+dir_user: str = os.path.join(dir_project, "user")
+keys_path: str = os.path.join(dir_user, "keys.json")
+if not os.path.exists(dir_user):
+    os.makedirs(dir_user)
+
+
 # Engines available
 engineList = ["Google Translate", "MyMemoryTranslator", "Deepl", "PONS", "LibreTranslate", "None"]
 
 # List of supported languages by Tesseract OCR
 tesseract_lang = {
-    "Auto-Detect": "auto",
+    "Auto": "auto",
     "Afrikaans": "afr",
     "Amharic": "amh",
     "Arabic": "ara",
@@ -18,10 +32,10 @@ tesseract_lang = {
     "Catalan:Valencian": "cat",
     "Cebuano": "ceb",
     "Czech": "ces",
-    "Chinese (Simplified)": "chi_sim",
-    "Chinese (Traditional)": "chi_tra",
-    "Chinese (Simplified) - Alt": "chi_sim",
-    "Chinese (Traditional) - Alt": "chi_tra",
+    "Chinese Simplified": "chi_sim",
+    "Chinese Simplified (Vertical)": "chi_sim_vert",
+    "Chinese Traditional": "chi_tra",
+    "Chinese Traditional (Vertical)": "chi_tra_vert",
     "Cherokee": "chr",
     "Corsican": "cos",
     "Welsh": "cym",
@@ -55,6 +69,7 @@ tesseract_lang = {
     "Italian": "ita",
     "Javanese": "jav",
     "Japanese": "jpn",
+    "Japanese (Vertical)": "jpn_vert",
     "Kannada": "kan",
     "Georgian": "kat",
     "Kazakh": "kaz",
@@ -62,7 +77,6 @@ tesseract_lang = {
     "Kirghiz": "kir",
     "Kurmanji": "kmr",
     "Korean": "kor",
-    "Korean Vertical": "kor_vert",
     "Kurdish": "kur",
     "Lao": "lao",
     "Latin": "lat",
@@ -121,7 +135,7 @@ tesseract_lang = {
 
 # List of supported languages by Google TL
 google_lang = {
-    "Auto-Detect": "auto",
+    "Auto": "auto",
     "Afrikaans": "af",
     "Amharic": "am",
     "Arabic": "ar",
@@ -134,8 +148,10 @@ google_lang = {
     "Catalan:Valencian": "cat",
     "Cebuano": "ceb",
     "Czech": "ces",
-    "Chinese (Simplified)": "zh-CN",
-    "Chinese (Traditional)": "zh-TW",
+    "Chinese Simplified": "zh-CN",
+    "Chinese Simplified (Vertical)": "zh-CN",
+    "Chinese Traditional": "zh-TW",
+    "Chinese Traditional (Vertical)": "zh-TW",
     "Corsican": "co",
     "Welsh": "cy",
     "Danish": "da",
@@ -146,7 +162,7 @@ google_lang = {
     "Estonian": "et",
     "Basque": "eu",
     "Persian": "fa",
-    "Filipino (old-Tagalog)": "tl",
+    "Filipino": "tl",
     "Finnish": "fi",
     "French": "fr",
     "Irish": "ga",
@@ -161,12 +177,12 @@ google_lang = {
     "Italian": "it",
     "Javanese": "jw",
     "Japanese": "ja",
+    "Japanese (Vertical)": "ja",
     "Kannada": "kn",
     "Georgian": "ka",
     "Kazakh": "kk",
     "Khmer": "km",
     "Korean": "ko",
-    "Korean Vertical": "ko",
     "Kurdish": "ku",
     "Lao": "lo",
     "Latin": "la",
@@ -211,7 +227,7 @@ google_lang = {
 
 # List of supported languages by MyMemoryTranslator
 myMemory_lang = {
-    "Auto-Detect": "auto",
+    "Auto": "auto",
     "Afrikaans": "af",
     "Albanian": "sq",
     "Amharic": "am",
@@ -225,8 +241,10 @@ myMemory_lang = {
     "Bulgarian": "bg",
     "Catalan:Valencian": "ca",
     "Cebuano": "ceb",
-    "Chinese (Simplified)": "zh-CN",
-    "Chinese (Traditional)": "zh-TW",
+    "Chinese Simplified": "zh-CN",
+    "Chinese Simplified (Vertical)": "zh-CN",
+    "Chinese Traditional": "zh-TW",
+    "Chinese Traditional (Vertical)": "zh-TW",
     "Corsican": "co",
     "Czech": "cs",
     "Danish": "da",
@@ -234,7 +252,7 @@ myMemory_lang = {
     "English": "en",
     "Esperanto": "eo",
     "Estonian": "et",
-    "Filipino (Tagalog)": "tl",
+    "Filipino": "fil",
     "Finnish": "fi",
     "French": "fr",
     "Galician": "gl",
@@ -253,6 +271,7 @@ myMemory_lang = {
     "Irish": "ga",
     "Italian": "it",
     "Japanese": "ja",
+    "Japanese (Vertical)": "ja",
     "Javanese": "jw",
     "Kannada": "kn",
     "Kazakh": "kk",
@@ -286,6 +305,7 @@ myMemory_lang = {
     "Sundanese": "su",
     "Swahili": "sw",
     "Swedish": "sv",
+    "Tagalog": "tl",
     "Tajik": "tg",
     "Tamil": "ta",
     "Telugu": "te",
@@ -299,15 +319,14 @@ myMemory_lang = {
     "Xhosa": "xh",
     "Yiddish": "yi",
     "Yoruba": "yo",
-    "Filipino": "fil",
 }
 
 # List of supported languages by Deepl
 deepl_lang = {
-    "Auto-Detect": "auto",
+    "Auto": "auto",
     "Bulgarian": "bg",
-    "Chinese (Simplified)": "zh",
-    "Chinese (Traditional)": "zh",
+    "Chinese Simplified": "zh",
+    "Chinese Simplified (Vertical)": "zh",
     "Czech": "cs",
     "Danish": "da",
     "Dutch": "nl",
@@ -318,24 +337,32 @@ deepl_lang = {
     "German": "de",
     "Greek": "el",
     "Hungarian": "hu",
+    "Indonesian": "id",
     "Italian": "it",
     "Japanese": "ja",
+    "Japanese (Vertical)": "ja",
+    "Korean": "ko",
     "Latvian": "lv",
     "Lithuanian": "lt",
+    "Norwegian": "nb",
     "Polish": "pl",
     "Portuguese": "pt",
     "Romanian": "ro",
     "Russian": "ru",
+    "Slovak": "sk",
+    "Slovenian": "sl",
     "Spanish": "es",
     "Swedish": "sv",
+    "Turkish": "tr",
+    "Ukrainian": "uk",
 }
 
 # List of supported languages by Pons
 pons_lang = {
     "Arabic": "ar",
     "Bulgarian": "bg",
-    "Chinese (Simplified)": "zh-cn",
-    "Chinese (Traditional)": "zh-cn",
+    "Chinese Simplified": "zh-cn",
+    "Chinese Simplified (Vertical)": "zh-cn",
     "Czech": "cs",
     "Danish": "da",
     "Dutch": "nl",
@@ -357,11 +384,11 @@ pons_lang = {
 
 # List of supported languages by libretranslate
 libre_lang = {
-    "Auto-Detect": "auto",
+    "Auto": "auto",
     "English": "en",
     "Arabic": "ar",
-    "Chinese (Simplified)": "zh",
-    "Chinese (Traditional)": "zh",
+    "Chinese Simplified": "zh",
+    "Chinese Simplified (Vertical)": "zh",
     "Dutch": "nl",
     "Finnish": "fi",
     "French": "fr",
@@ -372,6 +399,7 @@ libre_lang = {
     "Irish": "ga",
     "Italian": "it",
     "Japanese": "ja",
+    "Japanese (Vertical)": "ja",
     "Korean": "ko",
     "Polish": "pl",
     "Portuguese": "pt",
@@ -381,30 +409,89 @@ libre_lang = {
     "Turkish": "tr",
     "Ukrainian": "uk",
     "Vietnamese": "vi",
+    "test": "a",
 }
 
 # ------------------ #
+missingKey = False
+
+
+def remove_auto_detect(lang_list: List) -> List:
+    """Remove auto detect from the list"""
+    for key in lang_list:
+        if "auto" in key.lower():
+            lang_list.remove(key)
+
+    return lang_list
+
+
+def verify_dict_data(keyList: List, keyDict: Dict, data: Dict):
+    """Verify if the data is a dict"""
+    global missingKey
+    for key in keyList:
+        if key not in data:
+            data[key] = keyDict[key]
+            missingKey = True
+
+    return data
+
+
+# if not yet created
+if not os.path.exists(keys_path):
+    key_save = {
+        "tesseract_lang": tesseract_lang,
+        "google_lang": google_lang,
+        "myMemory_lang": myMemory_lang,
+        "deepl_lang": deepl_lang,
+        "pons_lang": pons_lang,
+        "libre_lang": libre_lang,
+    }
+
+    with open(keys_path, "w") as f:
+        json.dump(key_save, f, indent=4)
+
+else:
+    with open(keys_path, "r") as f:
+        key_save = json.load(f)
+        key_save = {
+            "tesseract_lang": verify_dict_data(list(tesseract_lang.keys()), tesseract_lang, key_save["tesseract_lang"]),
+            "google_lang": verify_dict_data(list(google_lang.keys()), google_lang, key_save["google_lang"]),
+            "myMemory_lang": verify_dict_data(list(myMemory_lang.keys()), myMemory_lang, key_save["myMemory_lang"]),
+            "deepl_lang": verify_dict_data(list(deepl_lang.keys()), deepl_lang, key_save["deepl_lang"]),
+            "pons_lang": verify_dict_data(list(pons_lang.keys()), pons_lang, key_save["pons_lang"]),
+            "libre_lang": verify_dict_data(list(libre_lang.keys()), libre_lang, key_save["libre_lang"]),
+        }
+
+        if missingKey:
+            with open(keys_path, "w") as f:
+                json.dump(key_save, f, indent=4)
+
+        tesseract_lang = key_save["tesseract_lang"]
+        google_lang = key_save["google_lang"]
+        myMemory_lang = key_save["myMemory_lang"]
+        deepl_lang = key_save["deepl_lang"]
+        pons_lang = key_save["pons_lang"]
+        libre_lang = key_save["libre_lang"]
+
+
+# ------------------ #
 # target
-none_target = list(tesseract_lang.keys())
-none_target.pop(0)
+none_target = remove_auto_detect(list(tesseract_lang.keys()))
 none_target.sort()
 
-google_target = list(google_lang.keys())
-google_target.pop(0)
+google_target = remove_auto_detect(list(google_lang.keys()))
 google_target.sort()
 
-myMemory_target = list(myMemory_lang.keys())
-myMemory_target.pop(0)
+myMemory_target = remove_auto_detect(list(myMemory_lang.keys()))
 myMemory_target.sort()
 
-deepl_target = list(deepl_lang.keys())
-deepl_target.pop(0)
+deepl_target = remove_auto_detect(list(deepl_lang.keys()))
 deepl_target.sort()
 
-pons_target = list(pons_lang.keys())  # pons dont have auto-detect
+pons_target = remove_auto_detect(list(pons_lang.keys()))
+pons_target.sort()
 
-libre_target = list(libre_lang.keys())
-libre_target.pop(0)
+libre_target = remove_auto_detect(list(libre_lang.keys()))
 libre_target.sort()
 
 engine_select_target_dict = {
@@ -419,31 +506,31 @@ engine_select_target_dict = {
 # source
 google_tesseract_compatible_source = list(google_lang.keys())
 for lang in google_tesseract_compatible_source:
-    if lang not in tesseract_lang.keys():
+    if len(get_similar_keys(tesseract_lang, lang)) == 0:
         google_tesseract_compatible_source.remove(lang)
 google_tesseract_compatible_source.sort()
 
 myMemory_tesseract_compatible_source = list(myMemory_lang.keys())
 for lang in myMemory_tesseract_compatible_source:
-    if lang not in tesseract_lang.keys():
+    if len(get_similar_keys(tesseract_lang, lang)) == 0:
         myMemory_tesseract_compatible_source.remove(lang)
 myMemory_tesseract_compatible_source.sort()
 
 deepl_tesseract_compatible_source = list(deepl_lang.keys())
 for lang in deepl_tesseract_compatible_source:
-    if lang not in tesseract_lang.keys():
+    if len(get_similar_keys(tesseract_lang, lang)) == 0:
         deepl_tesseract_compatible_source.remove(lang)
 deepl_tesseract_compatible_source.sort()
 
 pons_tesseract_compatible_source = list(pons_lang.keys())
 for lang in pons_tesseract_compatible_source:
-    if lang not in tesseract_lang.keys():
+    if len(get_similar_keys(tesseract_lang, lang)) == 0:
         pons_tesseract_compatible_source.remove(lang)
 pons_tesseract_compatible_source.sort()
 
 libre_tesseract_compatible_source = list(libre_lang.keys())
 for lang in libre_tesseract_compatible_source:
-    if lang not in tesseract_lang.keys():
+    if len(get_similar_keys(tesseract_lang, lang)) == 0:
         libre_tesseract_compatible_source.remove(lang)
 libre_tesseract_compatible_source.sort()
 
@@ -454,5 +541,5 @@ engine_select_source_dict = {
     "Deepl": deepl_tesseract_compatible_source,
     "PONS": pons_tesseract_compatible_source,
     "LibreTranslate": libre_tesseract_compatible_source,
-    "None": none_target,  # no auto-detect
+    "None": none_target,  # no Auto
 }

@@ -3,6 +3,7 @@ import requests
 from notifypy import Notify
 
 from .LangCode import google_lang, libre_lang, myMemory_lang, deepl_lang, pons_lang
+from .Helper import get_similar_keys
 from screen_translate.Globals import path_logo_icon, app_name
 from screen_translate.Logging import logger
 
@@ -76,8 +77,12 @@ def google_tl(text: str, from_lang: str, to_lang: str):
     result = ""
     # --- Get lang code ---
     try:
-        to_LanguageCode_Google = google_lang[to_lang]
-        from_LanguageCode_Google = google_lang[from_lang]
+        try:
+            to_LanguageCode_Google = google_lang[to_lang]
+            from_LanguageCode_Google = google_lang[from_lang]
+        except KeyError as e:
+            to_LanguageCode_Google = google_lang[get_similar_keys(google_lang, to_lang)[0]]
+            from_LanguageCode_Google = google_lang[get_similar_keys(google_lang, from_lang)[0]]
     except KeyError as e:
         logger.exception(e)
         return is_Success, "Error Language Code Undefined"
@@ -118,8 +123,12 @@ def pons_tl(text: str, from_lang: str, to_lang: str):
     result = ""
     # --- Get lang code ---
     try:
-        to_LanguageCode_Pons = pons_lang[to_lang]
-        from_LanguageCode_Pons = pons_lang[from_lang]
+        try:
+            to_LanguageCode_Pons = pons_lang[to_lang]
+            from_LanguageCode_Pons = pons_lang[from_lang]
+        except KeyError as e:
+            to_LanguageCode_Pons = pons_lang[get_similar_keys(pons_lang, to_lang)[0]]
+            from_LanguageCode_Pons = pons_lang[get_similar_keys(pons_lang, from_lang)[0]]
     except KeyError as e:
         logger.exception(e)
         return is_Success, "Error Language Code Undefined"
@@ -159,8 +168,12 @@ def memory_tl(text: str, from_lang: str, to_lang: str):
     result = ""
     # --- Get lang code ---
     try:
-        to_LanguageCode_Memory = myMemory_lang[to_lang]
-        from_LanguageCode_Memory = myMemory_lang[from_lang]
+        try:
+            to_LanguageCode_Memory = myMemory_lang[to_lang]
+            from_LanguageCode_Memory = myMemory_lang[from_lang]
+        except KeyError as e:
+            to_LanguageCode_Memory = myMemory_lang[get_similar_keys(myMemory_lang, to_lang)[0]]
+            from_LanguageCode_Memory = myMemory_lang[get_similar_keys(myMemory_lang, from_lang)[0]]
     except KeyError as e:
         logger.exception(e)
         return is_Success, "Error Language Code Undefined"
@@ -205,8 +218,12 @@ def libre_tl(text: str, from_lang: str, to_lang: str, https: bool = False, host:
     result = ""
     # --- Get lang code ---
     try:
-        to_LanguageCode_Libre = libre_lang[to_lang]
-        from_LanguageCode_Libre = libre_lang[from_lang]
+        try:
+            to_LanguageCode_Libre = libre_lang[to_lang]
+            from_LanguageCode_Libre = libre_lang[from_lang]
+        except KeyError as e:
+            to_LanguageCode_Libre = libre_lang[get_similar_keys(libre_lang, to_lang)[0]]
+            from_LanguageCode_Libre = libre_lang[get_similar_keys(libre_lang, from_lang)[0]]
     except KeyError as e:
         logger.exception(e)
         return is_Success, "Error Language Code Undefined"
@@ -257,8 +274,12 @@ def deepl_tl(text, from_lang, to_lang):
     result = ""
     # --- Get lang code ---
     try:
-        to_LanguageCode_Deepl = deepl_lang[to_lang]
-        from_LanguageCode_Deepl = deepl_lang[from_lang]
+        try:
+            to_LanguageCode_Deepl = deepl_lang[to_lang]
+            from_LanguageCode_Deepl = deepl_lang[from_lang]
+        except KeyError as e:
+            to_LanguageCode_Deepl = deepl_lang[get_similar_keys(deepl_lang, to_lang)[0]]
+            from_LanguageCode_Deepl = deepl_lang[get_similar_keys(deepl_lang, from_lang)[0]]
     except KeyError as e:
         logger.exception(e)
         return is_Success, "Error Language Code Undefined"
@@ -281,6 +302,5 @@ def deepl_tl(text, from_lang, to_lang):
     finally:
         logger.info("-" * 50)
         logger.debug("Query: " + text.strip())
-        logger.debug("-" * 50)
         logger.debug(f"Translation get: {result}")
         return is_Success, result

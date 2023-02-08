@@ -63,6 +63,8 @@ def ocrFromCoords(coords: List[int]):
         # Set variables
         pytesseract.pytesseract.tesseract_cmd = fJson.settingCache["tesseract_loc"]
         config = fJson.settingCache["tesseract_config"] if fJson.settingCache["tesseract_config"] else ""
+        if "--psm" not in config and fJson.settingCache["tesseract_psm5_vertical"] and "vertical" in sourceLang.lower():
+            config += " --psm 5" # vertical on vertical text
         enhance_withCv2 = fJson.settingCache["enhance_with_cv2_Contour"]
         grayscale = fJson.settingCache["enhance_with_grayscale"]
         debugmode = fJson.settingCache["enhance_debugmode"]

@@ -2,13 +2,17 @@ import os
 import subprocess
 import webbrowser
 from notifypy import Notify
-from typing import Tuple
+from typing import Tuple, Dict
 
 from screen_translate.Logging import logger
 
 
 def upFirstCase(string: str):
     return string[0].upper() + string[1:]
+
+
+def get_similar_keys(_dict: Dict, key: str):
+    return [k for k in _dict.keys() if key.lower() in k.lower()]
 
 
 def startFile(filename: str):

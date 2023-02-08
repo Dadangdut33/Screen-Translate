@@ -281,6 +281,9 @@ class SettingWindow:
         self.f_OCR_setting_2 = ttk.Frame(self.lf_OCR_setting)
         self.f_OCR_setting_2.pack(side=tk.TOP, fill=tk.X, expand=True)
 
+        self.f_OCR_setting_3 = ttk.Frame(self.lf_OCR_setting)
+        self.f_OCR_setting_3.pack(side=tk.TOP, fill=tk.X, expand=True)
+
         self.lbl_OCR_tesseract_path = ttk.Label(self.f_OCR_setting_1, text="Tesseract Path")
         self.lbl_OCR_tesseract_path.pack(side=tk.LEFT, padx=5, pady=5)
         CreateToolTip(self.f_OCR_setting_1, "Tesseract.exe location")
@@ -294,47 +297,57 @@ class SettingWindow:
         self.btnSearchTesseract.pack(side=tk.LEFT, padx=5, pady=5)
 
         self.lbl_extra_config = ttk.Label(self.f_OCR_setting_2, text="Extra Config")
-        self.lbl_extra_config.pack(side=tk.LEFT, padx=5, pady=5)
+        self.lbl_extra_config.pack(side=tk.LEFT, padx=(5, 15), pady=5)
         CreateToolTip(self.lbl_extra_config, "Extra config for Tesseract.\n\nClick here to see available options")
         self.lbl_extra_config.bind("<Button-1>", lambda event: OpenUrl("https://muthu.co/all-tesseract-ocr-options/"))
 
         self.entry_OCR_config = ttk.Entry(self.f_OCR_setting_2, width=70)
         self.entry_OCR_config.pack(side=tk.LEFT, padx=5, pady=5, fill=tk.X, expand=True)
-        CreateToolTip(self.entry_OCR_config, "Extra config for Tesseract. Click on the label to see the available config.\n\nExample input: --psm 5 --oem 1")
+        CreateToolTip(self.entry_OCR_config, "Extra config for Tesseract. Right click to see the available config.\n\nExample input: --psm 5 --oem 1")
+        self.entry_OCR_config.bind("<Button-3>", lambda event: OpenUrl("https://muthu.co/all-tesseract-ocr-options/"))
 
-        self.lf_OCR_enhancement = tk.LabelFrame(self.f_cat_2_ocr, text="• OCR Enhancement", width=900, height=75)
-        self.lf_OCR_enhancement.pack(side=tk.TOP, fill=tk.X, expand=False, padx=5, pady=5)
+        self.cbtn_OCR_psm5_vertical = ttk.Checkbutton(self.f_OCR_setting_3, text="PSM 5 on Vertical Text")
+        self.cbtn_OCR_psm5_vertical.pack(side=tk.LEFT, padx=5, pady=5)
+        CreateToolTip(
+            self.cbtn_OCR_psm5_vertical,
+            "Auto add `--psm 5` parameter to tesseract config on vertical language.\n\nNote that this only works on language that has `(vertical)` on their name. \nIf you want to use this on other language, you can manually add `--psm 5` to the extra config.\n\n(Extra config will also override this setting)",
+            wrapLength=500,
+        )
 
-        self.f_OCR_enhancement_1 = ttk.Frame(self.lf_OCR_enhancement)
-        self.f_OCR_enhancement_1.pack(side=tk.TOP, fill=tk.X, expand=False)
+        # ocr enhancement
+        self.lf_CV2_enhancement = tk.LabelFrame(self.f_cat_2_ocr, text="• CV2 Enhancement", width=900, height=75)
+        self.lf_CV2_enhancement.pack(side=tk.TOP, fill=tk.X, expand=False, padx=5, pady=5)
 
-        self.f_OCR_enhancement_2 = ttk.Frame(self.lf_OCR_enhancement)
-        self.f_OCR_enhancement_2.pack(side=tk.TOP, fill=tk.X, expand=False)
+        self.f_CV2_enhancement_1 = ttk.Frame(self.lf_CV2_enhancement)
+        self.f_CV2_enhancement_1.pack(side=tk.TOP, fill=tk.X, expand=False)
 
-        self.lbl_OCR_cbbg = ttk.Label(self.f_OCR_enhancement_1, text="Background")
+        self.f_CV2_enhancement_2 = ttk.Frame(self.lf_CV2_enhancement)
+        self.f_CV2_enhancement_2.pack(side=tk.TOP, fill=tk.X, expand=False)
+
+        self.lbl_OCR_cbbg = ttk.Label(self.f_CV2_enhancement_1, text="Background")
         self.lbl_OCR_cbbg.pack(side=tk.LEFT, padx=5, pady=5)
         CreateToolTip(self.lbl_OCR_cbbg, "Background type of the area that will be captured. This variable is used only if detect contour using CV2 is checked.")
 
-        self.cb_OCR_bg = ttk.Combobox(self.f_OCR_enhancement_1, values=["Auto-Detect", "Light", "Dark"], state="readonly")
-        self.cb_OCR_bg.pack(side=tk.LEFT, padx=5, pady=5)
-        CreateToolTip(self.cb_OCR_bg, "Background type of the area that will be captured. This variable is used only if detect contour using CV2 is checked.")
+        self.cb_CV2_bg = ttk.Combobox(self.f_CV2_enhancement_1, values=["Auto-Detect", "Light", "Dark"], state="readonly")
+        self.cb_CV2_bg.pack(side=tk.LEFT, padx=5, pady=5)
+        CreateToolTip(self.cb_CV2_bg, "Background type of the area that will be captured. This variable is used only if detect contour using CV2 is checked.")
 
-        self.cbtn_OCR_cv2contour = ttk.Checkbutton(self.f_OCR_enhancement_2, text="Detect Contour using CV2", style="Switch.TCheckbutton")
-        self.cbtn_OCR_cv2contour.pack(side=tk.LEFT, padx=5, pady=5)
-        CreateToolTip(self.cbtn_OCR_cv2contour, text="Enhance the OCR by applying filters and outlining the contour of the words.")
+        self.cbtn_cv2_contour = ttk.Checkbutton(self.f_CV2_enhancement_2, text="Detect Contour using CV2", style="Switch.TCheckbutton")
+        self.cbtn_cv2_contour.pack(side=tk.LEFT, padx=5, pady=5)
+        CreateToolTip(self.cbtn_cv2_contour, text="Enhance the OCR by applying filters and outlining the contour of the words.")
 
-        self.cbtn_OCR_grayscale = ttk.Checkbutton(self.f_OCR_enhancement_2, text="Grayscale", style="Switch.TCheckbutton")
-        self.cbtn_OCR_grayscale.pack(side=tk.LEFT, padx=5, pady=5)
-        CreateToolTip(self.cbtn_OCR_grayscale, text="Enhance the OCR by making the captured picture grayscale on the character reading part.")
+        self.cbtn_CV2_grayscale = ttk.Checkbutton(self.f_CV2_enhancement_2, text="Grayscale", style="Switch.TCheckbutton")
+        self.cbtn_CV2_grayscale.pack(side=tk.LEFT, padx=5, pady=5)
+        CreateToolTip(self.cbtn_CV2_grayscale, text="Enhance the OCR by making the captured picture grayscale on the character reading part.")
 
-        self.cbtn_OCR_debug = ttk.Checkbutton(self.f_OCR_enhancement_2, text="Debug Mode", style="Switch.TCheckbutton")
-        self.cbtn_OCR_debug.pack(side=tk.LEFT, padx=5, pady=5)
-        CreateToolTip(self.cbtn_OCR_debug, text="Enable debug mode.")
+        self.cbtn_CV2_debug = ttk.Checkbutton(self.f_CV2_enhancement_2, text="Debug Mode", style="Switch.TCheckbutton")
+        self.cbtn_CV2_debug.pack(side=tk.LEFT, padx=5, pady=5)
+        CreateToolTip(self.cbtn_CV2_debug, text="Enable debug mode.")
 
-        self.lbl_hint_OCR_enhance = ttk.Label(self.f_OCR_enhancement_1, text="❓")
-        self.lbl_hint_OCR_enhance.pack(side=tk.RIGHT, padx=5, pady=5)
+        self.lbl_hint_CV2_enhance = ttk.Label(self.f_CV2_enhancement_1, text="❓")
+        self.lbl_hint_CV2_enhance.pack(side=tk.RIGHT, padx=5, pady=5)
         CreateToolTip(
-            self.lbl_hint_OCR_enhance,
+            self.lbl_hint_CV2_enhance,
             text="""Options saved in this section are for the inital value on startup.
         \rYou can experiment with the option to increase the accuracy of tesseract OCR.
         \rThe saved picture will not be affected by the options.""",
@@ -1001,14 +1014,14 @@ class SettingWindow:
         # OCR
         self.entry_OCR_tesseract_path.delete(0, tk.END)
         self.entry_OCR_tesseract_path.insert(0, fJson.settingCache["tesseract_loc"])
-
         self.entry_OCR_config.delete(0, tk.END)
         self.entry_OCR_config.insert(0, fJson.settingCache["tesseract_config"])
+        self.cbtnInvoker(fJson.settingCache["tesseract_psm5_vertical"], self.cbtn_OCR_psm5_vertical)
 
-        self.cb_OCR_bg.set(fJson.settingCache["enhance_background"])
-        self.cbtnInvoker(fJson.settingCache["enhance_with_cv2_Contour"], self.cbtn_OCR_cv2contour)
-        self.cbtnInvoker(fJson.settingCache["enhance_with_grayscale"], self.cbtn_OCR_grayscale)
-        self.cbtnInvoker(fJson.settingCache["enhance_debugmode"], self.cbtn_OCR_debug)
+        self.cb_CV2_bg.set(fJson.settingCache["enhance_background"])
+        self.cbtnInvoker(fJson.settingCache["enhance_with_cv2_Contour"], self.cbtn_cv2_contour)
+        self.cbtnInvoker(fJson.settingCache["enhance_with_grayscale"], self.cbtn_CV2_grayscale)
+        self.cbtnInvoker(fJson.settingCache["enhance_debugmode"], self.cbtn_CV2_debug)
 
         self.sb_OCR_delete_lastchar.set(fJson.settingCache["captureLastValDelete"])
         self.cbtnInvoker(fJson.settingCache["replaceNewLine"], self.cbtn_OCR_replace_newline)
@@ -1149,6 +1162,7 @@ class SettingWindow:
             # Capture
             "tesseract_loc": tesseractPathInput,
             "tesseract_config": self.entry_OCR_config.get(),
+            "tesseract_psm5_vertical": self.cbtn_OCR_psm5_vertical.instate(["selected"]),
             "replaceNewLine": self.cbtn_OCR_replace_newline.instate(["selected"]),
             "replaceNewLineWith": self.entry_OCR_replace_newline_with.get(),
             "captureLastValDelete": self.sb_OCR_delete_lastchar.get(),
@@ -1157,10 +1171,10 @@ class SettingWindow:
             "hide_ex_qw_on_cap": self.cbtn_hide_ex_qw_on_cap.instate(["selected"]),
             "hide_ex_resw_on_cap": self.cbtn_hide_ex_resw_on_cap.instate(["selected"]),
             # capture enhancement
-            "enhance_background": self.cb_OCR_bg.get(),
-            "enhance_with_cv2_Contour": self.cbtn_OCR_cv2contour.instate(["selected"]),
-            "enhance_with_grayscale": self.cbtn_OCR_grayscale.instate(["selected"]),
-            "enhance_debugmode": self.cbtn_OCR_debug.instate(["selected"]),
+            "enhance_background": self.cb_CV2_bg.get(),
+            "enhance_with_cv2_Contour": self.cbtn_cv2_contour.instate(["selected"]),
+            "enhance_with_grayscale": self.cbtn_CV2_grayscale.instate(["selected"]),
+            "enhance_debugmode": self.cbtn_CV2_debug.instate(["selected"]),
             # ------------------ #
             # mask window
             "mask_window_bg_color": self.entry_maskwindow_color.get(),
