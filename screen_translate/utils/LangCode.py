@@ -409,7 +409,6 @@ libre_lang = {
     "Turkish": "tr",
     "Ukrainian": "uk",
     "Vietnamese": "vi",
-    "test": "a",
 }
 
 # ------------------ #
