@@ -27,6 +27,7 @@ Inspired by software such as Visual Novel Reader (VNR), [Visual Novel OCR](https
 - [Downloads](#downloads)
 - [Installation and Setup](#installation-and-setup)
 - [How To Uninstall](#how-to-uninstall)
+- [Development](#--development--)
   - [Setup](#setup)
   - [Building](#building)
   - [Packaging](#packaging)
@@ -39,7 +40,7 @@ Inspired by software such as Visual Novel Reader (VNR), [Visual Novel OCR](https
 <br>
 
 <p align="center">
-    <img src="user_manual/4_1_main_window.png" width="700" alt="Screen Translate Looks">
+    <img src="user_manual/preview.png" alt="Screen Translate Preview">
 </p>
 
 # Features
@@ -123,7 +124,7 @@ playwright install chromium
 
 After dependencies are installed, we can start building the app. There are 2 options that i have provided for building, using pyinstaller or cx_freeze. The command used are:
 
-**For pyinstaller, I have created custom script which you can use in the following command:**
+**For pyinstaller:**
 
 ```bash
 # On Source Code Directory
@@ -133,7 +134,7 @@ python build_pyinstaller.py
 
 This will create a folder called `dist` in the source code directory. Inside the folder there will be a folder called `ScreenTranslate <version>` which contains the executable file.
 
-**For cx_freeze you can use the following command:**
+**For cx_freeze:**
 
 ```bash
 # On Source Code Directory
