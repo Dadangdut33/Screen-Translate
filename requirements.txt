@@ -15,5 +15,5 @@ playwright==1.30.0
 pyquery==1.4.3
 pyinstaller==5.7.0
 tksheet==5.4.1
-python-arabic-reshaper==3.0.0
+arabic-reshaper==3.0.0
 darkdetect==0.8.0
