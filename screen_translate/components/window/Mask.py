@@ -4,7 +4,8 @@ from tkinter import colorchooser
 from screen_translate.components.custom.MBox import Mbox
 from screen_translate.components.custom.Tooltip import CreateToolTip
 
-from screen_translate.Globals import fJson, gClass, path_logo_icon
+from screen_translate._path import path_logo_icon
+from screen_translate.Globals import fJson, gClass
 from screen_translate.utils.Beep import beep
 
 # Classes

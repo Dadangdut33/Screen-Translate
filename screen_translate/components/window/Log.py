@@ -2,10 +2,11 @@ import os
 import threading
 import time
 import tkinter as tk
-import tkinter.ttk as ttk
+from tkinter import ttk
 
 from screen_translate.components.custom.MBox import Mbox
-from screen_translate.Globals import gClass, path_logo_icon, fJson
+from screen_translate._path import path_logo_icon
+from screen_translate.Globals import gClass, fJson
 from screen_translate.Logging import logger, current_log, dir_log, initLogging
 from screen_translate.utils.Helper import startFile, tb_copy_only
 

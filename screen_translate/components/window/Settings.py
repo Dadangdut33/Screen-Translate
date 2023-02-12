@@ -1,14 +1,15 @@
 import os
 import keyboard
 import tkinter as tk
-import tkinter.ttk as ttk
+from tkinter import ttk
 from typing import Literal
 from tkinter import filedialog, font, colorchooser
 
 from screen_translate.components.custom.MBox import Mbox
 from screen_translate.components.custom.Tooltip import CreateToolTip
 
-from screen_translate.Globals import gClass, path_logo_icon, dir_captured, fJson, app_name, reg_key_name
+from screen_translate._path import path_logo_icon, dir_captured
+from screen_translate.Globals import gClass, fJson, app_name, reg_key_name
 from screen_translate.Logging import logger, current_log, dir_log
 from screen_translate.utils.Helper import nativeNotify, startFile, tb_copy_only, OpenUrl
 from screen_translate.utils.Monitor import get_offset, getScreenTotalGeometry

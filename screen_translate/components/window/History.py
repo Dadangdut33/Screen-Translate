@@ -4,7 +4,8 @@ import pyperclip
 
 from tksheet import Sheet
 from screen_translate.components.custom.MBox import Mbox
-from screen_translate.Globals import gClass, fJson, path_logo_icon
+from screen_translate._path import path_logo_icon
+from screen_translate.Globals import gClass, fJson
 from screen_translate.Logging import logger
 
 # ----------------------------------------------------------------------

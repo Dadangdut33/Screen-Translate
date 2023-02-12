@@ -111,7 +111,7 @@ class JsonHandler:
     """
 
     # -------------------------------------------------
-    def __init__(self, settingPath: str, historyPath: str, jsonDir: str, checkdirs: list[str]):
+    def __init__(self, settingPath: str, historyPath: str, jsonDir: str, checkdirs: List[str]):
         self.settingCache = {}
         self.settingPath = settingPath
         self.historyPath = historyPath

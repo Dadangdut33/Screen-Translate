@@ -14,7 +14,8 @@ from pystray import Menu as menu
 from pystray import MenuItem as item
 
 from screen_translate._version import __version__
-from screen_translate.Globals import gClass, path_logo_icon, dir_captured, fJson, app_name, dir_user_manual
+from screen_translate._path import path_logo_icon, dir_captured, dir_user_manual
+from screen_translate.Globals import gClass, fJson, app_name
 from screen_translate.Logging import logger
 
 from screen_translate.utils.Style import set_ui_style, init_theme, get_theme_list, get_current_theme
@@ -234,7 +235,7 @@ class MainWindow:
         self.frame_tb_query_bg = ttk.Frame(self.frame_2_tb_q, style="Darker.TFrame")
         self.frame_tb_query_bg.pack(side=tk.TOP, fill=tk.BOTH, expand=True, padx=5, pady=5)
 
-        self.sb_query = tk.Scrollbar(self.frame_tb_query_bg)
+        self.sb_query = ttk.Scrollbar(self.frame_tb_query_bg)
         self.sb_query.pack(side=tk.RIGHT, fill=tk.Y)
 
         self.tb_query = tk.Text(
@@ -290,7 +291,7 @@ class MainWindow:
         self.frame_tb_result_bg = ttk.Frame(self.frame_4_tb_res, style="Darker.TFrame")
         self.frame_tb_result_bg.pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True, padx=5, pady=5)
 
-        self.sb_result = tk.Scrollbar(self.frame_tb_result_bg)
+        self.sb_result = ttk.Scrollbar(self.frame_tb_result_bg)
         self.sb_result.pack(side=tk.RIGHT, fill=tk.Y)
 
         self.tb_result = tk.Text(

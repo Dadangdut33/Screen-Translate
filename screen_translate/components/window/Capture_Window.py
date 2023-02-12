@@ -1,13 +1,14 @@
 import platform
 import threading
 import tkinter as tk
-import tkinter.ttk as ttk
+from tkinter import ttk
 
 
 from ..custom.Tooltip import CreateToolTip
 from screen_translate.components.custom.MBox import Mbox
 
-from screen_translate.Globals import gClass, fJson, path_logo_icon
+from screen_translate._path import path_logo_icon
+from screen_translate.Globals import gClass, fJson
 from screen_translate.Logging import logger
 from screen_translate.utils.Beep import beep
 from screen_translate.utils.Helper import get_opac_value

@@ -14,7 +14,8 @@ https://stackoverflow.com/questions/45389166/how-to-know-all-style-options-of-a-
 import os
 import tkinter as tk
 from screen_translate.Logging import logger
-from screen_translate.Globals import gClass, fJson, dir_theme
+from screen_translate._path import dir_theme
+from screen_translate.Globals import gClass, fJson
 from screen_translate.components.custom.MBox import Mbox
 from tkinter import ttk, TclError
 

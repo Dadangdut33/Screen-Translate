@@ -4,7 +4,8 @@ from notifypy import Notify
 
 from .LangCode import google_lang, libre_lang, myMemory_lang, deepl_lang, pons_lang
 from .Helper import get_similar_keys
-from screen_translate.Globals import path_logo_icon, app_name
+from screen_translate._path import path_logo_icon
+from screen_translate.Globals import  app_name
 from screen_translate.Logging import logger
 
 

@@ -1,5 +1,5 @@
 import re
-import tkinter.ttk as ttk
+from tkinter import ttk
 import tkinter as tk
 import requests
 
@@ -9,7 +9,8 @@ from PIL import Image, ImageTk
 from ..custom.Tooltip import CreateToolTip
 from screen_translate._version import __version__
 from screen_translate.Logging import logger
-from screen_translate.Globals import gClass, path_logo_png, path_logo_icon, app_name, fJson
+from screen_translate._path import path_logo_png, path_logo_icon
+from screen_translate.Globals import gClass, app_name, fJson
 from screen_translate.utils.Helper import OpenUrl, nativeNotify
 
 # Classes
@@ -80,7 +81,7 @@ class AboutWindow:
         self.checkUpdateLabelText = "(check for update)"
         self.checkUpdateLabelFunc = self.check_for_update
 
-        self.checkUpdateLabel = ttk.Label(self.f_bot_l_t, text=self.checkUpdateLabelText, foreground=self.checkUpdateLabelFg, font=("Segoe UI", 8))
+        self.checkUpdateLabel = ttk.Label(self.f_bot_l_t, text=self.checkUpdateLabelText, foreground=self.checkUpdateLabelFg, font=("Segoe UI", 8), cursor="hand2")
         self.checkUpdateLabel.pack(padx=0, pady=2, ipadx=0, side=tk.LEFT)
         self.checkUpdateLabel.bind("<Button-1>", self.checkUpdateLabelFunc)
         self.tooltipCheckUpdate = CreateToolTip(self.checkUpdateLabel, "Click to check for update")
@@ -89,7 +90,7 @@ class AboutWindow:
         self.lbl_icon = ttk.Label(self.f_bot_l_b, text="Translate Icons in logo from", font=("Segoe UI", 8))
         self.lbl_icon.pack(padx=5, pady=5, side=tk.LEFT)
 
-        self.lbl_icon_link = ttk.Label(self.f_bot_l_b, text="Icons8.com 🡽", font=("Segoe UI", 8), foreground="blue")
+        self.lbl_icon_link = ttk.Label(self.f_bot_l_b, text="Icons8.com 🡽", font=("Segoe UI", 8), foreground="blue", cursor="hand2")
         self.lbl_icon_link.pack(padx=0, pady=(0, 3), side=tk.LEFT)
         self.lbl_icon_link.bind("<Button-1>", self.open_icons8)
         self.icons_8_ToolTip = CreateToolTip(self.lbl_icon_link, "Open Icons8 in web browser")

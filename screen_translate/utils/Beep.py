@@ -1,7 +1,7 @@
 import os
 import simpleaudio as sa
 
-from screen_translate.Globals import dir_assets
+from screen_translate._path import dir_assets
 from screen_translate.Logging import logger
 
 
