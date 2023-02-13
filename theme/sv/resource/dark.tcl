@@ -155,7 +155,7 @@ namespace eval ttk::theme::sv_dark {
 			}
 		}
 
-		ttk::style configure TCheckbutton -padding 2
+		ttk::style configure TCheckbutton -padding 0
 
 		ttk::style element create Checkbutton.indicator image \
 			[list $I(check-unsel-rest) \
@@ -250,7 +250,7 @@ namespace eval ttk::theme::sv_dark {
 			}
 		}
 
-		ttk::style configure TRadiobutton -padding 2
+		ttk::style configure TRadiobutton -padding 1
 
 		ttk::style element create Radiobutton.indicator image \
 			[list $I(radio-unsel-rest) \
@@ -269,7 +269,7 @@ namespace eval ttk::theme::sv_dark {
 
 		# ----------------------------------------------------------------------------------------
 		# Entry
-		ttk::style configure TEntry -foreground $theme_colors(-fg) -padding {1 1 1 1}
+		ttk::style configure TEntry -foreground $theme_colors(-fg) -padding 0
 		ttk::style map TEntry -foreground [list disabled "#757575" pressed "#cfcfcf"]
 
 		ttk::style element create Entry.field image \
@@ -292,7 +292,7 @@ namespace eval ttk::theme::sv_dark {
 			}
 		}
 
-		ttk::style configure TCombobox -foreground $theme_colors(-fg) -padding 1
+		ttk::style configure TCombobox -foreground $theme_colors(-fg) -padding 0
 		ttk::style configure ComboboxPopdownFrame -borderwidth 1 -relief solid
 		ttk::style map TCombobox -foreground [list disabled "#757575" pressed "#cfcfcf"]
 
@@ -458,7 +458,7 @@ namespace eval ttk::theme::sv_dark {
 			[list $I(tab-rest) \
 			selected $I(tab-selected) \
 			active $I(tab-hover) \
-			] -border 13 -padding {16 14 16 6} -height 32
+			] -border 13 -padding {12 8 12 2} -height 28
 
 		# ----------------------------------------------------------------------------------------
 		# Treeview

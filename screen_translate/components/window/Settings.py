@@ -830,6 +830,7 @@ class SettingWindow:
         self.fill_theme()
         self.init_setting()
         self.add_reg_withcheck()
+        logger.setLevel(fJson.settingCache["log_level"])
         self.onStart = False
 
     def fill_theme(self):
