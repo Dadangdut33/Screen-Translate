@@ -1,12 +1,12 @@
 import tkinter as tk
 from tkinter import colorchooser
 
+from screen_translate._globals import fj, gcl
+from screen_translate._path import path_logo_icon
 from screen_translate.components.custom.MBox import Mbox
 from screen_translate.components.custom.Tooltip import CreateToolTip
-
-from screen_translate._path import path_logo_icon
-from screen_translate.Globals import fJson, gClass
 from screen_translate.utils.Beep import beep
+
 
 # Classes
 class MaskWindow:
@@ -18,7 +18,7 @@ class MaskWindow:
         self.root.title("Mask Window")
         self.root.geometry("600x160")
         self.root.wm_withdraw()
-        gClass.mask = self  # type: ignore
+        gcl.mask = self  # type: ignore
 
         # ------------------ #
         self.currentOpacity = 1.0
@@ -28,20 +28,49 @@ class MaskWindow:
         self.clickThrough = tk.IntVar()
 
         # Top frame
-        self.f_1 = tk.Frame(self.root, background=fJson.settingCache["mask_window_color"])
+        self.f_1 = tk.Frame(self.root, background=fj.setting_cache["mask_window_color"])
         self.f_1.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
         self.fTooltip = CreateToolTip(self.f_1, "Right click for interaction menu", wrapLength=400)
 
         self.menuDropdown = tk.Menu(self.root, tearoff=0)
-        self.menuDropdown.add_command(label=f"Color: {fJson.settingCache['mask_window_bg_color']}", command=lambda: self.windowColorChooser(), accelerator="Click to change color")
+        self.menuDropdown.add_command(
+            label=f"Color: {fj.setting_cache['mask_window_bg_color']}",
+            command=lambda: self.windowColorChooser(),
+            accelerator="Click to change color"
+        )
         self.menuDropdown.add_separator()
-        self.menuDropdown.add_checkbutton(label="Hide Title bar", command=lambda: self.toggle_hidden_top(False), onvalue=1, offvalue=0, variable=self.hidden_top, accelerator="Alt + T")
-        self.menuDropdown.add_checkbutton(label="Always On Top", command=lambda: self.toggle_always_on_top(False), onvalue=1, offvalue=0, variable=self.always_on_top, accelerator="Alt + O")
+        self.menuDropdown.add_checkbutton(
+            label="Hide Title bar",
+            command=lambda: self.toggle_hidden_top(False),
+            onvalue=1,
+            offvalue=0,
+            variable=self.hidden_top,
+            accelerator="Alt + T"
+        )
+        self.menuDropdown.add_checkbutton(
+            label="Always On Top",
+            command=lambda: self.toggle_always_on_top(False),
+            onvalue=1,
+            offvalue=0,
+            variable=self.always_on_top,
+            accelerator="Alt + O"
+        )
         self.menuDropdown.add_separator()
-        self.menuDropdown.add_command(label="Increase Opacity by 0.1", command=lambda: self.increase_opacity(), accelerator="Alt + Mouse Wheel Up")
-        self.menuDropdown.add_command(label="Decrease Opacity by 0.1", command=lambda: self.decrease_opacity(), accelerator="Alt + Mouse Wheel Down")
+        self.menuDropdown.add_command(
+            label="Increase Opacity by 0.1", command=lambda: self.increase_opacity(), accelerator="Alt + Mouse Wheel Up"
+        )
+        self.menuDropdown.add_command(
+            label="Decrease Opacity by 0.1", command=lambda: self.decrease_opacity(), accelerator="Alt + Mouse Wheel Down"
+        )
         self.menuDropdown.add_separator()
-        self.menuDropdown.add_checkbutton(label="Hide Tooltip", command=lambda: self.disable_tooltip(False), onvalue=1, offvalue=0, variable=self.tooltip_disabled, accelerator="Alt + X")
+        self.menuDropdown.add_checkbutton(
+            label="Hide Tooltip",
+            command=lambda: self.disable_tooltip(False),
+            onvalue=1,
+            offvalue=0,
+            variable=self.tooltip_disabled,
+            accelerator="Alt + X"
+        )
         self.menuDropdown.add_separator()
         self.menuDropdown.add_command(label="Keyboard Shortcut Keys", command=lambda: self.show_shortcut_keys())
 
@@ -169,10 +198,10 @@ class MaskWindow:
         Args:
             event : Ignored. Defaults to None.
         """
-        colorGet = colorchooser.askcolor(color=fJson.settingCache["mask_window_bg_color"], title="Choose a color")
+        colorGet = colorchooser.askcolor(color=fj.setting_cache["mask_window_bg_color"], title="Choose a color")
         if colorGet[1] != None:
             self.root["bg"] = colorGet[1]
             self.f_1["bg"] = colorGet[1]
             self.menuDropdown.entryconfig(0, label=f"Color: {colorGet[1]}")
-            fJson.savePartialSetting("mask_window_bg_color", colorGet[1])
-            gClass.update_sw_setting()
+            fj.save_setting_partial("mask_window_bg_color", colorGet[1])
+            gcl.update_sw_setting()

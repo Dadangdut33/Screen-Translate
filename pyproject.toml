@@ -1,0 +1,72 @@
+[build-system]
+requires = ["setuptools >= 61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ScreenTranslate"
+version = "3.0.0"
+authors = [
+  { name = "Dadangdut33", email = "57717531+Dadangdut33@users.noreply.github.com" }
+]
+maintainers = [
+  { name = "Dadangdut33", email =  "57717531+Dadangdut33@users.noreply.github.com" }
+]
+description = "A Screen Translator/OCR Translator made by using Python and Tesseract"
+readme = "README.md"
+license = {text = "MIT License"}
+requires-python = ">=3.8"
+dependencies = [
+  "Pillow==10.2.0",
+  "pystray==0.19.5",
+  "deep_translator==1.11.1",
+  "PyDeepLX==1.0.6",
+  "langdetect",
+  "keyboard==0.13.5",
+  "pyperclip==1.8.2",
+  "pytesseract==0.3.10",
+  "requests==2.31.0",
+  "opencv-contrib-python==4.9.0.80",
+  "notify-py==0.3.42",
+  "simpleaudio==1.0.4",
+  "pyquery==2.0.0",
+  "tksheet==7.0.5",
+  "arabic-reshaper==3.0.0",
+  "darkdetect==0.8.0",
+  "PySide6==6.6.2",
+]
+keywords = ["ocr", "translator", "screen-ocr", "tesseract", "pytesseract", "pytesseract GUI", "GUI"]
+classifiers = [
+    "Programming Language :: Python",
+]
+
+[project.scripts]
+screen-translate = "screen_translate.__main__:main"
+
+[project.optional-dependencies]
+dev = [
+  "yapf",
+  "isort",
+  "pylint",
+  "cx_Freeze",
+]
+
+[project.urls]
+Homepage = "https://github.com/Dadangdut33/Screen-Translate"
+Issues = "https://github.com/Dadangdut33/Screen-Translate/issues"
+
+[tool.yapf]
+based_on_style = "pep8"
+column_limit = 125
+indent_width = 4
+BLANK_LINE_BEFORE_NESTED_CLASS_OR_DEF = false
+DEDENT_CLOSING_BRACKETS = true
+
+[tool.pylint."MESSAGES CONTROL"]
+disable = "E1101,W0718,W0603,W0719,C0114,C0116,C0302"
+max-line-length = 125
+extension-pkg-whitelist="PySide6"
+
+[tool.isort]
+multi_line_output = 3
+line_length = 125
+include_trailing_comma = true

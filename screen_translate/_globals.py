@@ -1,21 +1,24 @@
 import ast
 import shlex
-import arabic_reshaper
-from typing import List, Optional
 from tkinter import ttk
+from typing import List, Optional
 
-from .utils.Json import JsonHandler
-from ._path import path_to_app_exe, path_json_settings, path_json_history, dir_log, dir_captured, dir_user
+import arabic_reshaper
+
+from ._path import dir_captured, dir_log, path_to_app_exe
+from .utils.file import JsonHandler
 
 # ---------------------------- #
 # name
 app_name: str = "Screen Translate"
 reg_key_name: str = f'"{path_to_app_exe}"' + " -s"
-fJson: JsonHandler = JsonHandler(path_json_settings, path_json_history, dir_user, [dir_log, dir_captured])
+fj: JsonHandler = JsonHandler([dir_log, dir_captured])
 reshape_lang_list = ["arabic", "urdu", "faroese"]
+
+
 # ---------------------------- #
 class Globals:
-    """
+    """ 
     Class containing all the need *static* variables for the UI. It also contains some methods for the stuff to works.
     Stored like this in order to allow other file to use the same thing without circular import error.
     """
@@ -86,14 +89,14 @@ class Globals:
 
     def insert_mw_q(self, text: str):
         assert self.mw is not None
-        if fJson.settingCache["sourceLang"].lower() in reshape_lang_list:
+        if fj.setting_cache["sourceLang"].lower() in reshape_lang_list:
             text = arabic_reshaper.reshape(text)
 
         self.mw.tb_query.insert(1.0, text)
 
     def insert_mw_res(self, text: str):
         assert self.mw is not None
-        if fJson.settingCache["targetLang"].lower() in reshape_lang_list:
+        if fj.setting_cache["targetLang"].lower() in reshape_lang_list:
             text = arabic_reshaper.reshape(text)
 
         self.mw.tb_result.insert(1.0, text)
@@ -109,9 +112,9 @@ class Globals:
     def insert_ex_q(self, text: str):
         assert self.ex_qw is not None
         text = text.strip()
-        if fJson.settingCache["sourceLang"].lower() in reshape_lang_list:
+        if fj.setting_cache["sourceLang"].lower() in reshape_lang_list:
             text = arabic_reshaper.reshape(text)
-        text += ast.literal_eval(shlex.quote(fJson.settingCache["replaceNewLineWith"]))  # set new text
+        text += ast.literal_eval(shlex.quote(fj.setting_cache["replaceNewLineWith"]))  # set new text
 
         self.ex_qw.labelText.config(text=text)
         self.ex_qw.check_height_resize()
@@ -119,9 +122,9 @@ class Globals:
     def insert_ex_res(self, text: str):
         assert self.ex_resw is not None
         text = text.strip()
-        if fJson.settingCache["targetLang"].lower() in reshape_lang_list:
+        if fj.setting_cache["targetLang"].lower() in reshape_lang_list:
             text = arabic_reshaper.reshape(text)
-        text += ast.literal_eval(shlex.quote(fJson.settingCache["replaceNewLineWith"]))  # set new text
+        text += ast.literal_eval(shlex.quote(fj.setting_cache["replaceNewLineWith"]))  # set new text
 
         self.ex_resw.labelText.config(text=text)
         self.ex_resw.check_height_resize()
@@ -145,41 +148,41 @@ class Globals:
     def update_mw_setting(self):
         """Update the main window parameter/setting"""
         assert self.mw is not None
-        self.mw.cb_tl_engine.set(fJson.settingCache["engine"])
-        self.mw.cb_sourceLang.set(fJson.settingCache["sourceLang"])
-        self.mw.cb_targetLang.set(fJson.settingCache["targetLang"])
+        self.mw.cb_tl_engine.set(fj.setting_cache["engine"])
+        self.mw.cb_sourceLang.set(fj.setting_cache["sourceLang"])
+        self.mw.cb_targetLang.set(fj.setting_cache["targetLang"])
         self.mw.cb_lang_update()
 
     def update_ex_cw_setting(self):
         """Update the capture window parameter/setting"""
         assert self.cw is not None
-        self.cw.bgType.set(fJson.settingCache["enhance_background"])
-        self.cw.cv2Contour.set(fJson.settingCache["enhance_with_cv2_Contour"])
-        self.cw.grayscale.set(fJson.settingCache["enhance_with_grayscale"])
-        self.cw.debugMode.set(fJson.settingCache["enhance_debugmode"])
-        self.cw.engine.set(fJson.settingCache["engine"])
-        self.cw.sourceLang.set(fJson.settingCache["sourceLang"])
-        self.cw.targetLang.set(fJson.settingCache["targetLang"])
+        self.cw.bgType.set(fj.setting_cache["enhance_background"])
+        self.cw.cv2Contour.set(fj.setting_cache["enhance_with_cv2_Contour"])
+        self.cw.grayscale.set(fj.setting_cache["enhance_with_grayscale"])
+        self.cw.debugMode.set(fj.setting_cache["enhance_debugmode"])
+        self.cw.engine.set(fj.setting_cache["engine"])
+        self.cw.sourceLang.set(fj.setting_cache["sourceLang"])
+        self.cw.targetLang.set(fj.setting_cache["targetLang"])
 
     def update_sw_setting(self):
         """Update the setting window parameter/setting"""
         assert self.sw is not None
 
-        self.sw.cb_OCR_bg.set(fJson.settingCache["enhance_background"])
-        self.sw.cbtnInvoker(fJson.settingCache["enhance_with_cv2_Contour"], self.sw.cbtn_OCR_cv2contour)
-        self.sw.cbtnInvoker(fJson.settingCache["enhance_with_grayscale"], self.sw.cbtn_OCR_grayscale)
-        self.sw.cbtnInvoker(fJson.settingCache["enhance_debugmode"], self.sw.cbtn_OCR_debug)
+        self.sw.cb_OCR_bg.set(fj.setting_cache["enhance_background"])
+        self.sw.cbtnInvoker(fj.setting_cache["enhance_with_cv2_Contour"], self.sw.cbtn_OCR_cv2contour)
+        self.sw.cbtnInvoker(fj.setting_cache["enhance_with_grayscale"], self.sw.cbtn_OCR_grayscale)
+        self.sw.cbtnInvoker(fj.setting_cache["enhance_debugmode"], self.sw.cbtn_OCR_debug)
 
         self.sw.entry_maskwindow_color.delete(0, "end")
-        self.sw.entry_maskwindow_color.insert(0, fJson.settingCache["mask_window_color"])
+        self.sw.entry_maskwindow_color.insert(0, fj.setting_cache["mask_window_color"])
 
     def update_mask_setting(self):
         assert self.mask is not None
 
-        self.mask.root["bg"] = fJson.settingCache["mask_window_color"]
-        self.mask.f_1["bg"] = fJson.settingCache["mask_window_color"]
-        self.mask.menuDropdown.entryconfig(0, label=f"Color: {fJson.settingCache['mask_window_color']}")
+        self.mask.root["bg"] = fj.setting_cache["mask_window_color"]
+        self.mask.f_1["bg"] = fj.setting_cache["mask_window_color"]
+        self.mask.menuDropdown.entryconfig(0, label=f"Color: {fj.setting_cache['mask_window_color']}")
 
 
 # --------------------- #
-gClass: Globals = Globals()
+gcl: Globals = Globals()

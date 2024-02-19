@@ -4,11 +4,12 @@ import time
 import tkinter as tk
 from tkinter import ttk
 
-from screen_translate.components.custom.MBox import Mbox
+from screen_translate._globals import fj, gcl
+from screen_translate._logging import current_log, dir_log, initLogging, logger
 from screen_translate._path import path_logo_icon
-from screen_translate.Globals import gClass, fJson
-from screen_translate.Logging import logger, current_log, dir_log, initLogging
+from screen_translate.components.custom.MBox import Mbox
 from screen_translate.utils.Helper import startFile, tb_copy_only
+
 
 # Classes
 class LogWindow:
@@ -24,7 +25,7 @@ class LogWindow:
         self.isOpen = False
         self.stay_on_top = False
         self.thread_refresh = None
-        gClass.lw = self  # type: ignore
+        gcl.lw = self  # type: ignore
 
         # Frames
         self.f_1 = ttk.Frame(self.root)
@@ -42,7 +43,9 @@ class LogWindow:
         self.tbLogger.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         self.tbLogger.configure(yscrollcommand=self.sbY.set)
         self.sbY.configure(command=self.tbLogger.yview)
-        self.tbLogger.bind("<Alt-MouseWheel>", lambda event: self.increase_font_size() if event.delta > 0 else self.lower_font_size())  # bind scrollwheel to change font size
+        self.tbLogger.bind(
+            "<Alt-MouseWheel>", lambda event: self.increase_font_size() if event.delta > 0 else self.lower_font_size()
+        )  # bind scrollwheel to change font size
 
         # Other stuff
         self.btn_clear = ttk.Button(self.f_bot, text="⚠ Clear", command=self.clearLog)
@@ -54,13 +57,25 @@ class LogWindow:
         self.btn_open_default_log = ttk.Button(self.f_bot, text="🗁 Open Log Folder", command=lambda: startFile(dir_log))
         self.btn_open_default_log.pack(side=tk.LEFT, padx=5, pady=5)
 
-        self.cbtn_auto_scroll = ttk.Checkbutton(self.f_bot, text="Auto Scroll", command=lambda: fJson.savePartialSetting("auto_scroll_log", self.cbtn_auto_scroll.instate(["selected"])), style="Switch.TCheckbutton")
+        self.cbtn_auto_scroll = ttk.Checkbutton(
+            self.f_bot,
+            text="Auto Scroll",
+            command=lambda: fj.save_setting_partial("auto_scroll_log", self.cbtn_auto_scroll.instate(["selected"])),
+            style="Switch.TCheckbutton"
+        )
         self.cbtn_auto_scroll.pack(side=tk.LEFT, padx=5, pady=5)
 
-        self.cbtn_auto_refresh = ttk.Checkbutton(self.f_bot, text="Auto Refresh", command=lambda: fJson.savePartialSetting("auto_refresh_log", self.cbtn_auto_refresh.instate(["selected"])), style="Switch.TCheckbutton")
+        self.cbtn_auto_refresh = ttk.Checkbutton(
+            self.f_bot,
+            text="Auto Refresh",
+            command=lambda: fj.save_setting_partial("auto_refresh_log", self.cbtn_auto_refresh.instate(["selected"])),
+            style="Switch.TCheckbutton"
+        )
         self.cbtn_auto_refresh.pack(side=tk.LEFT, padx=5, pady=5)
 
-        self.cbtn_stay_on_top = ttk.Checkbutton(self.f_bot, text="Stay on Top", command=self.toggle_stay_on_top, style="Switch.TCheckbutton")
+        self.cbtn_stay_on_top = ttk.Checkbutton(
+            self.f_bot, text="Stay on Top", command=self.toggle_stay_on_top, style="Switch.TCheckbutton"
+        )
         self.cbtn_stay_on_top.pack(side=tk.LEFT, padx=5, pady=5)
 
         self.btn_close = ttk.Button(self.f_bot, text="Ok", command=self.on_closing, style="Accent.TButton")
@@ -77,13 +92,13 @@ class LogWindow:
             pass
 
     def onInit(self):
-        if fJson.settingCache["auto_scroll_log"]:
+        if fj.setting_cache["auto_scroll_log"]:
             self.cbtn_auto_scroll.invoke()
         else:
             self.cbtn_auto_scroll.invoke()
             self.cbtn_auto_scroll.invoke()
 
-        if fJson.settingCache["auto_refresh_log"]:
+        if fj.setting_cache["auto_refresh_log"]:
             self.cbtn_auto_refresh.invoke()
         else:
             self.cbtn_auto_refresh.invoke()
@@ -116,7 +131,7 @@ class LogWindow:
         self.thread_refresh.start()
 
     def update_periodically(self):
-        while self.isOpen and fJson.settingCache["auto_refresh_log"]:
+        while self.isOpen and fj.setting_cache["auto_refresh_log"]:
             self.updateLog()
 
             time.sleep(1)
@@ -130,7 +145,7 @@ class LogWindow:
             content = f"Log file not found | {os.path.join(dir_log, current_log)}"
 
         if len(prev_content) != len(content):
-            if fJson.settingCache["auto_scroll_log"]:
+            if fj.setting_cache["auto_scroll_log"]:
                 self.tbLogger.delete(1.0, tk.END)
                 self.tbLogger.insert(tk.END, content)
                 self.tbLogger.see("end")  # scroll to the bottom

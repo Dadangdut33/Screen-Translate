@@ -1,20 +1,19 @@
 import os
-import keyboard
 import tkinter as tk
-from tkinter import ttk
+from tkinter import colorchooser, filedialog, font, ttk
 from typing import Literal
-from tkinter import filedialog, font, colorchooser
 
+import keyboard
+
+from screen_translate._globals import app_name, fj, gcl, reg_key_name
+from screen_translate._logging import current_log, dir_log, logger
+from screen_translate._path import dir_captured, path_logo_icon
 from screen_translate.components.custom.MBox import Mbox
 from screen_translate.components.custom.Tooltip import CreateToolTip
-
-from screen_translate._path import path_logo_icon, dir_captured
-from screen_translate.Globals import gClass, fJson, app_name, reg_key_name
-from screen_translate.Logging import logger, current_log, dir_log
-from screen_translate.utils.Helper import nativeNotify, startFile, tb_copy_only, OpenUrl
+from screen_translate.utils.auto_start import check_autostart_registry, set_autostart_registry
+from screen_translate.utils.Helper import OpenUrl, nativeNotify, startFile, tb_copy_only
 from screen_translate.utils.Monitor import get_offset, getScreenTotalGeometry
-from screen_translate.utils.AutoStart import set_autostart_registry, check_autostart_registry
-from screen_translate.utils.Capture import seeFullWindow
+from screen_translate.utils.ocr.Capture import seeFullWindow
 from screen_translate.utils.Style import set_ui_style
 
 
@@ -45,7 +44,7 @@ class SettingWindow:
         self.root.wm_withdraw()
         self.fonts = font.families()
         self.onStart = True
-        gClass.sw = self  # type: ignore
+        gcl.sw = self  # type: ignore
 
         # ----------------------------------------------------------------------
         # Main frame
@@ -99,15 +98,21 @@ class SettingWindow:
         self.f_capture_3 = ttk.Frame(self.lf_capture)
         self.f_capture_3.pack(side=tk.TOP, fill=tk.X, expand=True)
 
-        self.cbtn_hide_mw_on_cap = ttk.Checkbutton(self.f_capture_1, text="Hide main window on capture", style="Switch.TCheckbutton")
+        self.cbtn_hide_mw_on_cap = ttk.Checkbutton(
+            self.f_capture_1, text="Hide main window on capture", style="Switch.TCheckbutton"
+        )
         self.cbtn_hide_mw_on_cap.pack(side=tk.LEFT, padx=5, pady=5)
         CreateToolTip(self.cbtn_hide_mw_on_cap, "Hide the main window when capturing")
 
-        self.cbtn_hide_ex_qw_on_cap = ttk.Checkbutton(self.f_capture_1, text="Hide detached query window on capture", style="Switch.TCheckbutton")
+        self.cbtn_hide_ex_qw_on_cap = ttk.Checkbutton(
+            self.f_capture_1, text="Hide detached query window on capture", style="Switch.TCheckbutton"
+        )
         self.cbtn_hide_ex_qw_on_cap.pack(side=tk.LEFT, padx=5, pady=5)
         CreateToolTip(self.cbtn_hide_ex_qw_on_cap, "Hide the detached query window when capturing")
 
-        self.cbtn_hide_ex_resw_on_cap = ttk.Checkbutton(self.f_capture_1, text="Hide detached result box on capture", style="Switch.TCheckbutton")
+        self.cbtn_hide_ex_resw_on_cap = ttk.Checkbutton(
+            self.f_capture_1, text="Hide detached result box on capture", style="Switch.TCheckbutton"
+        )
         self.cbtn_hide_ex_resw_on_cap.pack(side=tk.LEFT, padx=5, pady=5)
         CreateToolTip(self.cbtn_hide_ex_resw_on_cap, "Hide the detached result window when capturing")
 
@@ -115,10 +120,14 @@ class SettingWindow:
         self.cbtn_keep_img.pack(side=tk.LEFT, padx=5, pady=5)
         CreateToolTip(self.cbtn_keep_img, "Save the captured image to img_captured folder")
 
-        self.btn_open_dir_cap = ttk.Button(self.f_capture_3, text="🗁 Open Captured Image", command=lambda: startFile(dir_captured))
+        self.btn_open_dir_cap = ttk.Button(
+            self.f_capture_3, text="🗁 Open Captured Image", command=lambda: startFile(dir_captured)
+        )
         self.btn_open_dir_cap.pack(side=tk.LEFT, padx=5, pady=5)
 
-        self.btn_delete_all_cap = ttk.Button(self.f_capture_3, text="⚠ Delete All Captured Image", command=self.deleteAllCaptured)
+        self.btn_delete_all_cap = ttk.Button(
+            self.f_capture_3, text="⚠ Delete All Captured Image", command=self.deleteAllCaptured
+        )
         self.btn_delete_all_cap.pack(side=tk.LEFT, padx=5, pady=5)
 
         # -----------------------
@@ -143,23 +152,38 @@ class SettingWindow:
         self.cb_cw_xy_offset_type.pack(side=tk.LEFT, padx=5, pady=5)
         self.cb_cw_xy_offset_type.bind("<<ComboboxSelected>>", self.cb_xy_offset_change)
 
-        self.btn_cw_check_layout = ttk.Button(self.f_cw_offset_1, text="Click to get A Screenshot of How The Program See Your Monitor", command=self.screenShotAndOpenLayout)
+        self.btn_cw_check_layout = ttk.Button(
+            self.f_cw_offset_1,
+            text="Click to get A Screenshot of How The Program See Your Monitor",
+            command=self.screenShotAndOpenLayout
+        )
         self.btn_cw_check_layout.pack(side=tk.LEFT, padx=5, pady=5)
 
         self.lbl_hint_cw_offset = ttk.Label(self.f_cw_offset_1, text="❓")
         self.lbl_hint_cw_offset.pack(side=tk.RIGHT, padx=5, pady=5)
-        CreateToolTip(self.lbl_hint_cw_offset, "Set the offset for capturing image. Usually needed if on multiple monitor or if monitor scaling is not 100%")
+        CreateToolTip(
+            self.lbl_hint_cw_offset,
+            "Set the offset for capturing image. Usually needed if on multiple monitor or if monitor scaling is not 100%"
+        )
 
-        self.cbtn_cw_auto_offset_x = ttk.Checkbutton(self.f_cw_offset_2, text="Auto Offset X", command=lambda: self.checkBtnOffset("x"), style="Switch.TCheckbutton")
+        self.cbtn_cw_auto_offset_x = ttk.Checkbutton(
+            self.f_cw_offset_2, text="Auto Offset X", command=lambda: self.checkBtnOffset("x"), style="Switch.TCheckbutton"
+        )
         self.cbtn_cw_auto_offset_x.pack(side=tk.LEFT, padx=5, pady=5)
 
-        self.cbtn_cw_auto_offset_y = ttk.Checkbutton(self.f_cw_offset_2, text="Auto Offset Y", command=lambda: self.checkBtnOffset("y"), style="Switch.TCheckbutton")
+        self.cbtn_cw_auto_offset_y = ttk.Checkbutton(
+            self.f_cw_offset_2, text="Auto Offset Y", command=lambda: self.checkBtnOffset("y"), style="Switch.TCheckbutton"
+        )
         self.cbtn_cw_auto_offset_y.pack(side=tk.LEFT, padx=5, pady=5)
 
-        self.cbtn_cw_auto_offset_w = ttk.Checkbutton(self.f_cw_offset_2, text="Auto Offset W", command=lambda: self.checkBtnOffset("w"), style="Switch.TCheckbutton")
+        self.cbtn_cw_auto_offset_w = ttk.Checkbutton(
+            self.f_cw_offset_2, text="Auto Offset W", command=lambda: self.checkBtnOffset("w"), style="Switch.TCheckbutton"
+        )
         self.cbtn_cw_auto_offset_w.pack(side=tk.LEFT, padx=5, pady=5)
 
-        self.cbtn_cw_auto_offset_h = ttk.Checkbutton(self.f_cw_offset_2, text="Auto Offset H", command=lambda: self.checkBtnOffset("h"), style="Switch.TCheckbutton")
+        self.cbtn_cw_auto_offset_h = ttk.Checkbutton(
+            self.f_cw_offset_2, text="Auto Offset H", command=lambda: self.checkBtnOffset("h"), style="Switch.TCheckbutton"
+        )
         self.cbtn_cw_auto_offset_h.pack(side=tk.LEFT, padx=5, pady=5)
 
         # [Offset X]
@@ -168,7 +192,10 @@ class SettingWindow:
         CreateToolTip(self.lbl_cw_offset_x, "X Coordinates offset of the capture window")
 
         self.sb_cw_offset_x = ttk.Spinbox(self.f_cw_offset_3, from_=-100000, to=100000, width=20)
-        self.sb_cw_offset_x.configure(validate="key", validatecommand=(self.root.register(lambda event: self.validateSpinbox(event, self.sb_cw_offset_x)), "%P"))
+        self.sb_cw_offset_x.configure(
+            validate="key",
+            validatecommand=(self.root.register(lambda event: self.validateSpinbox(event, self.sb_cw_offset_x)), "%P")
+        )
         self.sb_cw_offset_x.bind("<MouseWheel>", lambda event: self.stop_scroll_if_disabled(event, self.sb_cw_offset_x))
         self.sb_cw_offset_x.pack(side=tk.LEFT, padx=5, pady=5)
 
@@ -178,7 +205,10 @@ class SettingWindow:
         CreateToolTip(self.lbl_cw_offset_y, "Y Coordinates offset of the capture window")
 
         self.sb_cw_offset_y = ttk.Spinbox(self.f_cw_offset_4, from_=-100000, to=100000, width=20)
-        self.sb_cw_offset_y.configure(validate="key", validatecommand=(self.root.register(lambda event: self.validateSpinbox(event, self.sb_cw_offset_y)), "%P"))
+        self.sb_cw_offset_y.configure(
+            validate="key",
+            validatecommand=(self.root.register(lambda event: self.validateSpinbox(event, self.sb_cw_offset_y)), "%P")
+        )
         self.sb_cw_offset_y.bind("<MouseWheel>", lambda event: self.stop_scroll_if_disabled(event, self.sb_cw_offset_y))
         self.sb_cw_offset_y.pack(side=tk.LEFT, padx=5, pady=5)
 
@@ -188,7 +218,10 @@ class SettingWindow:
         CreateToolTip(self.lbl_cw_offset_w, "Width offset of the capture window")
 
         self.sb_cw_offset_w = ttk.Spinbox(self.f_cw_offset_3, from_=-100000, to=100000, width=20)
-        self.sb_cw_offset_w.configure(validate="key", validatecommand=(self.root.register(lambda event: self.validateSpinbox(event, self.sb_cw_offset_w)), "%P"))
+        self.sb_cw_offset_w.configure(
+            validate="key",
+            validatecommand=(self.root.register(lambda event: self.validateSpinbox(event, self.sb_cw_offset_w)), "%P")
+        )
         self.sb_cw_offset_w.bind("<MouseWheel>", lambda event: self.stop_scroll_if_disabled(event, self.sb_cw_offset_w))
         self.sb_cw_offset_w.pack(side=tk.LEFT, padx=5, pady=5)
 
@@ -198,8 +231,13 @@ class SettingWindow:
         CreateToolTip(self.lbl_cw_offset_h, "Height offset of the capture window")
 
         self.sb_cw_offset_h = ttk.Spinbox(self.f_cw_offset_4, from_=-100000, to=100000, width=20)
-        self.sb_cw_offset_h.configure(validate="key", validatecommand=(self.root.register(lambda event: self.validateSpinbox(event, self.sb_cw_offset_h)), "%P"))
-        self.sb_cw_offset_h.bind("<MouseWheel>", lambda event: self.stop_scroll_if_disabled(event, theSpinner=self.sb_cw_offset_h))
+        self.sb_cw_offset_h.configure(
+            validate="key",
+            validatecommand=(self.root.register(lambda event: self.validateSpinbox(event, self.sb_cw_offset_h)), "%P")
+        )
+        self.sb_cw_offset_h.bind(
+            "<MouseWheel>", lambda event: self.stop_scroll_if_disabled(event, theSpinner=self.sb_cw_offset_h)
+        )
         self.sb_cw_offset_h.pack(side=tk.LEFT, padx=8, pady=5)
 
         # -----------------------
@@ -210,7 +248,9 @@ class SettingWindow:
         self.f_snippet_geometry = ttk.Frame(self.lf_snippet_geometry)
         self.f_snippet_geometry.pack(side=tk.TOP, fill=tk.X, expand=True)
 
-        self.cbtn_auto_snippet = ttk.Checkbutton(self.f_snippet_geometry, text="Auto Geometry", command=self.check_snippet_offset, style="Switch.TCheckbutton")
+        self.cbtn_auto_snippet = ttk.Checkbutton(
+            self.f_snippet_geometry, text="Auto Geometry", command=self.check_snippet_offset, style="Switch.TCheckbutton"
+        )
         self.cbtn_auto_snippet.pack(side=tk.LEFT, padx=5, pady=5)
         CreateToolTip(self.cbtn_auto_snippet, text="Auto detect the layout of the monitor (May not work properly)")
 
@@ -220,8 +260,13 @@ class SettingWindow:
         CreateToolTip(self.lbl_snippet_total_w, "Total width of the monitor")
 
         self.sb_snippet_total_w = ttk.Spinbox(self.f_snippet_geometry, from_=-100000, to=100000, width=7)
-        self.sb_snippet_total_w.configure(validate="key", validatecommand=(self.root.register(lambda event: self.validateSpinbox(event, self.sb_snippet_total_w)), "%P"))
-        self.sb_snippet_total_w.bind("<MouseWheel>", lambda event: self.stop_scroll_if_disabled(event, theSpinner=self.sb_snippet_total_w))
+        self.sb_snippet_total_w.configure(
+            validate="key",
+            validatecommand=(self.root.register(lambda event: self.validateSpinbox(event, self.sb_snippet_total_w)), "%P")
+        )
+        self.sb_snippet_total_w.bind(
+            "<MouseWheel>", lambda event: self.stop_scroll_if_disabled(event, theSpinner=self.sb_snippet_total_w)
+        )
         self.sb_snippet_total_w.pack(side=tk.LEFT, padx=0, pady=5)
         CreateToolTip(self.sb_snippet_total_w, "Total width of the monitor")
 
@@ -231,8 +276,13 @@ class SettingWindow:
         CreateToolTip(self.lbl_snippet_total_h, "Total height of the monitor")
 
         self.sb_snippet_total_h = ttk.Spinbox(self.f_snippet_geometry, from_=-100000, to=100000, width=7)
-        self.sb_snippet_total_h.configure(validate="key", validatecommand=(self.root.register(lambda event: self.validateSpinbox(event, self.sb_snippet_total_h)), "%P"))
-        self.sb_snippet_total_h.bind("<MouseWheel>", lambda event: self.stop_scroll_if_disabled(event, theSpinner=self.sb_snippet_total_h))
+        self.sb_snippet_total_h.configure(
+            validate="key",
+            validatecommand=(self.root.register(lambda event: self.validateSpinbox(event, self.sb_snippet_total_h)), "%P")
+        )
+        self.sb_snippet_total_h.bind(
+            "<MouseWheel>", lambda event: self.stop_scroll_if_disabled(event, theSpinner=self.sb_snippet_total_h)
+        )
         self.sb_snippet_total_h.pack(side=tk.LEFT, padx=0, pady=5)
         CreateToolTip(self.sb_snippet_total_h, "Total height of the monitor")
 
@@ -242,8 +292,13 @@ class SettingWindow:
         CreateToolTip(self.lbl_snippet_offset_x, "X offset of the monitor from the primary monitor")
 
         self.sb_snippet_offset_x = ttk.Spinbox(self.f_snippet_geometry, from_=-100000, to=100000, width=7)
-        self.sb_snippet_offset_x.configure(validate="key", validatecommand=(self.root.register(lambda event: self.validateSpinbox(event, self.sb_snippet_offset_x)), "%P"))
-        self.sb_snippet_offset_x.bind("<MouseWheel>", lambda event: self.stop_scroll_if_disabled(event, theSpinner=self.sb_snippet_offset_x))
+        self.sb_snippet_offset_x.configure(
+            validate="key",
+            validatecommand=(self.root.register(lambda event: self.validateSpinbox(event, self.sb_snippet_offset_x)), "%P")
+        )
+        self.sb_snippet_offset_x.bind(
+            "<MouseWheel>", lambda event: self.stop_scroll_if_disabled(event, theSpinner=self.sb_snippet_offset_x)
+        )
         self.sb_snippet_offset_x.pack(side=tk.LEFT, padx=0, pady=5)
         CreateToolTip(self.sb_snippet_offset_x, "X offset of the monitor from the primary monitor")
 
@@ -253,8 +308,13 @@ class SettingWindow:
         CreateToolTip(self.lbl_snippet_offset_y, "Y offset of the monitor from the primary monitor")
 
         self.sb_snippet_offset_y = ttk.Spinbox(self.f_snippet_geometry, from_=-100000, to=100000, width=7)
-        self.sb_snippet_offset_y.configure(validate="key", validatecommand=(self.root.register(lambda event: self.validateSpinbox(event, self.sb_snippet_offset_y)), "%P"))
-        self.sb_snippet_offset_y.bind("<MouseWheel>", lambda event: self.stop_scroll_if_disabled(event, theSpinner=self.sb_snippet_offset_y))
+        self.sb_snippet_offset_y.configure(
+            validate="key",
+            validatecommand=(self.root.register(lambda event: self.validateSpinbox(event, self.sb_snippet_offset_y)), "%P")
+        )
+        self.sb_snippet_offset_y.bind(
+            "<MouseWheel>", lambda event: self.stop_scroll_if_disabled(event, theSpinner=self.sb_snippet_offset_y)
+        )
         self.sb_snippet_offset_y.pack(side=tk.LEFT, padx=0, pady=5)
         CreateToolTip(self.sb_snippet_offset_y, "Y offset of the monitor from the primary monitor")
 
@@ -304,7 +364,10 @@ class SettingWindow:
 
         self.entry_OCR_config = ttk.Entry(self.f_OCR_setting_2, width=70)
         self.entry_OCR_config.pack(side=tk.LEFT, padx=5, pady=5, fill=tk.X, expand=True)
-        CreateToolTip(self.entry_OCR_config, "Extra config for Tesseract. Right click to see the available config.\n\nExample input: --psm 5 --oem 1")
+        CreateToolTip(
+            self.entry_OCR_config,
+            "Extra config for Tesseract. Right click to see the available config.\n\nExample input: --psm 5 --oem 1"
+        )
         self.entry_OCR_config.bind("<Button-3>", lambda event: OpenUrl("https://muthu.co/all-tesseract-ocr-options/"))
 
         self.cbtn_OCR_psm5_vertical = ttk.Checkbutton(self.f_OCR_setting_3, text="PSM 5 on Vertical Text")
@@ -327,19 +390,32 @@ class SettingWindow:
 
         self.lbl_OCR_cbbg = ttk.Label(self.f_CV2_enhancement_1, text="Background")
         self.lbl_OCR_cbbg.pack(side=tk.LEFT, padx=5, pady=5)
-        CreateToolTip(self.lbl_OCR_cbbg, "Background type of the area that will be captured. This variable is used only if detect contour using CV2 is checked.")
+        CreateToolTip(
+            self.lbl_OCR_cbbg,
+            "Background type of the area that will be captured. This variable is used only if detect contour using CV2 is checked."
+        )
 
         self.cb_CV2_bg = ttk.Combobox(self.f_CV2_enhancement_1, values=["Auto-Detect", "Light", "Dark"], state="readonly")
         self.cb_CV2_bg.pack(side=tk.LEFT, padx=5, pady=5)
-        CreateToolTip(self.cb_CV2_bg, "Background type of the area that will be captured. This variable is used only if detect contour using CV2 is checked.")
+        CreateToolTip(
+            self.cb_CV2_bg,
+            "Background type of the area that will be captured. This variable is used only if detect contour using CV2 is checked."
+        )
 
-        self.cbtn_cv2_contour = ttk.Checkbutton(self.f_CV2_enhancement_2, text="Detect Contour using CV2", style="Switch.TCheckbutton")
+        self.cbtn_cv2_contour = ttk.Checkbutton(
+            self.f_CV2_enhancement_2, text="Detect Contour using CV2", style="Switch.TCheckbutton"
+        )
         self.cbtn_cv2_contour.pack(side=tk.LEFT, padx=5, pady=5)
-        CreateToolTip(self.cbtn_cv2_contour, text="Enhance the OCR by applying filters and outlining the contour of the words.")
+        CreateToolTip(
+            self.cbtn_cv2_contour, text="Enhance the OCR by applying filters and outlining the contour of the words."
+        )
 
         self.cbtn_CV2_grayscale = ttk.Checkbutton(self.f_CV2_enhancement_2, text="Grayscale", style="Switch.TCheckbutton")
         self.cbtn_CV2_grayscale.pack(side=tk.LEFT, padx=5, pady=5)
-        CreateToolTip(self.cbtn_CV2_grayscale, text="Enhance the OCR by making the captured picture grayscale on the character reading part.")
+        CreateToolTip(
+            self.cbtn_CV2_grayscale,
+            text="Enhance the OCR by making the captured picture grayscale on the character reading part."
+        )
 
         self.cbtn_CV2_debug = ttk.Checkbutton(self.f_CV2_enhancement_2, text="Debug Mode", style="Switch.TCheckbutton")
         self.cbtn_CV2_debug.pack(side=tk.LEFT, padx=5, pady=5)
@@ -377,7 +453,12 @@ class SettingWindow:
         )
 
         self.sb_OCR_delete_lastchar = ttk.Spinbox(self.f_OCR_result_1, from_=0, to=25, width=5)
-        self.sb_OCR_delete_lastchar.configure(validate="key", validatecommand=(self.root.register(lambda event: self.validateSpinbox(event, self.sb_OCR_delete_lastchar)), "%P"))
+        self.sb_OCR_delete_lastchar.configure(
+            validate="key",
+            validatecommand=(
+                self.root.register(lambda event: self.validateSpinbox(event, self.sb_OCR_delete_lastchar)), "%P"
+            )
+        )
         self.sb_OCR_delete_lastchar.pack(side=tk.LEFT, padx=5, pady=5)
         CreateToolTip(
             self.sb_OCR_delete_lastchar,
@@ -386,25 +467,46 @@ class SettingWindow:
         \rSet this to 0 if it deletes an actual character!""",
         )
 
-        self.cbtn_OCR_replace_newline = ttk.Checkbutton(self.f_OCR_result_2, text="Replace New Line With", command=self.toggle_OCR_replace_newline, style="Switch.TCheckbutton")
+        self.cbtn_OCR_replace_newline = ttk.Checkbutton(
+            self.f_OCR_result_2,
+            text="Replace New Line With",
+            command=self.toggle_OCR_replace_newline,
+            style="Switch.TCheckbutton"
+        )
         self.cbtn_OCR_replace_newline.pack(side=tk.LEFT, padx=5, pady=5)
         CreateToolTip(self.cbtn_OCR_replace_newline, "Replace new line with preferred character.")
 
         self.entry_OCR_replace_newline_with = ttk.Entry(self.f_OCR_result_2, width=5)
         self.entry_OCR_replace_newline_with.pack(side=tk.LEFT, padx=5, pady=5, fill=tk.X, expand=True)
-        CreateToolTip(self.entry_OCR_replace_newline_with, "Character to replace new line.\nDefault is ' ' (space). (You can use escape character like \\n for new line)", wrapLength=400)
+        CreateToolTip(
+            self.entry_OCR_replace_newline_with,
+            "Character to replace new line.\nDefault is ' ' (space). (You can use escape character like \\n for new line)",
+            wrapLength=400
+        )
 
-        self.cbtn_alert_no_text = ttk.Checkbutton(self.f_OCR_result_3, text="Show No Text Entered Alert", style="Switch.TCheckbutton")
+        self.cbtn_alert_no_text = ttk.Checkbutton(
+            self.f_OCR_result_3, text="Show No Text Entered Alert", style="Switch.TCheckbutton"
+        )
         self.cbtn_alert_no_text.pack(side=tk.LEFT, padx=5, pady=5)
         CreateToolTip(self.cbtn_alert_no_text, text="Show alert when no text is entered or captured by the OCR")
 
-        self.cbtn_auto_copy_captured = ttk.Checkbutton(self.f_OCR_result_3, text="Auto copy captured text", style="Switch.TCheckbutton")
+        self.cbtn_auto_copy_captured = ttk.Checkbutton(
+            self.f_OCR_result_3, text="Auto copy captured text", style="Switch.TCheckbutton"
+        )
         self.cbtn_auto_copy_captured.pack(side=tk.LEFT, padx=5, pady=5)
-        CreateToolTip(self.cbtn_auto_copy_captured, "Copy the captured text to clipboard automatically. If both is enabled will copy both with format 'captured text -> translated text'")
+        CreateToolTip(
+            self.cbtn_auto_copy_captured,
+            "Copy the captured text to clipboard automatically. If both is enabled will copy both with format 'captured text -> translated text'"
+        )
 
-        self.cbtn_auto_copy_translated = ttk.Checkbutton(self.f_OCR_result_3, text="Auto copy translated captured text", style="Switch.TCheckbutton")
+        self.cbtn_auto_copy_translated = ttk.Checkbutton(
+            self.f_OCR_result_3, text="Auto copy translated captured text", style="Switch.TCheckbutton"
+        )
         self.cbtn_auto_copy_translated.pack(side=tk.LEFT, padx=5, pady=5)  # TODO
-        CreateToolTip(self.cbtn_auto_copy_translated, "Copy the captured text to clipboard automatically. If both is enabled will copy both with format 'captured text -> translated text'")
+        CreateToolTip(
+            self.cbtn_auto_copy_translated,
+            "Copy the captured text to clipboard automatically. If both is enabled will copy both with format 'captured text -> translated text'"
+        )
 
         # ----------------------------------------------------------------------
         # * CAT 3 - Translate
@@ -433,31 +535,58 @@ class SettingWindow:
 
         self.lbl_tl_libre_setting_key = ttk.Label(self.f_tl_libre_setting, text="API Key")
         self.lbl_tl_libre_setting_key.pack(side=tk.LEFT, padx=5, pady=5)
-        CreateToolTip(self.lbl_tl_libre_setting_key, text="The API key for Libretranslate. Default: Empty.\n\nNot needed unless translating using the libretranslate.com domain/host.")
+        CreateToolTip(
+            self.lbl_tl_libre_setting_key,
+            text=
+            "The API key for Libretranslate. Default: Empty.\n\nNot needed unless translating using the libretranslate.com domain/host."
+        )
 
         self.entry_tl_libre_setting_key = ttk.Entry(self.f_tl_libre_setting, width=25)
         self.entry_tl_libre_setting_key.pack(side=tk.LEFT, padx=5, pady=5)
-        CreateToolTip(self.entry_tl_libre_setting_key, text="The API key for Libretranslate. Default: Empty.\n\nNot needed unless translating using the libretranslate.com domain/host.")
+        CreateToolTip(
+            self.entry_tl_libre_setting_key,
+            text=
+            "The API key for Libretranslate. Default: Empty.\n\nNot needed unless translating using the libretranslate.com domain/host."
+        )
 
         self.lbl_tl_libre_setting_host = ttk.Label(self.f_tl_libre_setting, text="Host")
         self.lbl_tl_libre_setting_host.pack(side=tk.LEFT, padx=5, pady=5)
-        CreateToolTip(self.lbl_tl_libre_setting_host, text="Host address of Libletranslate server. Default: libretranslate.de\n\nYou can find full lists of other dedicated server on Libretranslate github repository.")
+        CreateToolTip(
+            self.lbl_tl_libre_setting_host,
+            text=
+            "Host address of Libletranslate server. Default: libretranslate.de\n\nYou can find full lists of other dedicated server on Libretranslate github repository."
+        )
 
         self.entry_tl_libre_setting_host = ttk.Entry(self.f_tl_libre_setting, width=30)
         self.entry_tl_libre_setting_host.pack(side=tk.LEFT, padx=5, pady=5)
-        CreateToolTip(self.entry_tl_libre_setting_host, text="Host address of Libletranslate server. Default: libretranslate.de\n\nYou can find full lists of other dedicated server on Libretranslate github repository.")
+        CreateToolTip(
+            self.entry_tl_libre_setting_host,
+            text=
+            "Host address of Libletranslate server. Default: libretranslate.de\n\nYou can find full lists of other dedicated server on Libretranslate github repository."
+        )
 
         self.lbl_tl_libre_setting_port = ttk.Label(self.f_tl_libre_setting, text="Port")
         self.lbl_tl_libre_setting_port.pack(side=tk.LEFT, padx=5, pady=5)
-        CreateToolTip(self.lbl_tl_libre_setting_port, text="Port of Libletranslate server. Default: Empty\n\nSet it to empty if you are not using local server.")
+        CreateToolTip(
+            self.lbl_tl_libre_setting_port,
+            text="Port of Libletranslate server. Default: Empty\n\nSet it to empty if you are not using local server."
+        )
 
         self.entry_tl_libre_setting_port = ttk.Entry(self.f_tl_libre_setting, width=20)
         self.entry_tl_libre_setting_port.pack(side=tk.LEFT, padx=5, pady=5)
-        CreateToolTip(self.entry_tl_libre_setting_port, text="Port of Libletranslate server. Default: Empty\n\nSet it to empty if you are not using local server.")
+        CreateToolTip(
+            self.entry_tl_libre_setting_port,
+            text="Port of Libletranslate server. Default: Empty\n\nSet it to empty if you are not using local server."
+        )
 
-        self.cbtn_tl_libre_setting_https = ttk.Checkbutton(self.f_tl_libre_setting, text="Use HTTPS", style="Switch.TCheckbutton")
+        self.cbtn_tl_libre_setting_https = ttk.Checkbutton(
+            self.f_tl_libre_setting, text="Use HTTPS", style="Switch.TCheckbutton"
+        )
         self.cbtn_tl_libre_setting_https.pack(side=tk.LEFT, padx=5, pady=5)
-        CreateToolTip(self.cbtn_tl_libre_setting_https, text="HTTPS or HTTP. Default: HTTPS (checked)\n\nSet it to http if you are using local server.")
+        CreateToolTip(
+            self.cbtn_tl_libre_setting_https,
+            text="HTTPS or HTTP. Default: HTTPS (checked)\n\nSet it to http if you are using local server."
+        )
 
         # ----------------------------------------------------------------------
         # * CAT 4 - Hotkey
@@ -476,7 +605,10 @@ class SettingWindow:
         CreateToolTip(self.lbl_cw_hk_delay, text="The time delay to capture when the hotkey is pressed")
 
         self.sb_cw_hk_delay = ttk.Spinbox(self.f_cwh_k, from_=0, to=100000, width=20)
-        self.sb_cw_hk_delay.configure(validate="key", validatecommand=(self.root.register(lambda event: self.validateSpinbox(event, self.sb_cw_hk_delay)), "%P"))
+        self.sb_cw_hk_delay.configure(
+            validate="key",
+            validatecommand=(self.root.register(lambda event: self.validateSpinbox(event, self.sb_cw_hk_delay)), "%P")
+        )
         self.sb_cw_hk_delay.pack(side=tk.LEFT, padx=5, pady=5)
 
         self.btn_set_cw_hk = tk.Button(self.f_cwh_k, text="Click to set the hotkey", command=self.setHKCapTl)
@@ -504,7 +636,10 @@ class SettingWindow:
         CreateToolTip(self.lbl_cw_hk_delay, text="The time delay to activate snipping mode when the hotkey is pressed")
 
         self.sb_snipping_hk_delay = ttk.Spinbox(self.f_snipping_hk, from_=0, to=100000, width=20)
-        self.sb_snipping_hk_delay.configure(validate="key", validatecommand=(self.root.register(lambda event: self.validateSpinbox(event, self.sb_snipping_hk_delay)), "%P"))
+        self.sb_snipping_hk_delay.configure(
+            validate="key",
+            validatecommand=(self.root.register(lambda event: self.validateSpinbox(event, self.sb_snipping_hk_delay)), "%P")
+        )
         self.sb_snipping_hk_delay.pack(side=tk.LEFT, padx=5, pady=5)
 
         self.btn_set_snipping_hk = tk.Button(self.f_snipping_hk, text="Click to set the hotkey", command=self.setHKSnipCapTl)
@@ -540,7 +675,11 @@ class SettingWindow:
         self.lbl_mw_q_font_size.pack(side=tk.LEFT, padx=5, pady=5)
 
         self.sb_mw_q_font_size = ttk.Spinbox(self.lf_mw_q, from_=3, to=120, width=10, command=self.preview_changes_tb)
-        self.sb_mw_q_font_size.configure(validate="key", validatecommand=(self.root.register(lambda event: self.validateSpinbox(event, self.sb_mw_q_font_size)), "%P") or self.preview_changes_tb())
+        self.sb_mw_q_font_size.configure(
+            validate="key",
+            validatecommand=(self.root.register(lambda event: self.validateSpinbox(event, self.sb_mw_q_font_size)), "%P")
+            or self.preview_changes_tb()
+        )
         self.sb_mw_q_font_size.bind("<MouseWheel>", lambda event: self.preview_changes_tb())
         self.sb_mw_q_font_size.pack(side=tk.LEFT, padx=5, pady=5)
 
@@ -562,7 +701,11 @@ class SettingWindow:
         self.lbl_mw_res_font_size.pack(side=tk.LEFT, padx=5, pady=5)
 
         self.sb_mw_res_font_size = ttk.Spinbox(self.lf_mw_res, from_=3, to=120, width=10, command=self.preview_changes_tb)
-        self.sb_mw_res_font_size.configure(validate="key", validatecommand=(self.root.register(lambda event: self.validateSpinbox(event, self.sb_mw_res_font_size)), "%P") or self.preview_changes_tb())
+        self.sb_mw_res_font_size.configure(
+            validate="key",
+            validatecommand=(self.root.register(lambda event: self.validateSpinbox(event, self.sb_mw_res_font_size)), "%P")
+            or self.preview_changes_tb()
+        )
         self.sb_mw_res_font_size.bind("<MouseWheel>", lambda event: self.preview_changes_tb())
         self.sb_mw_res_font_size.pack(side=tk.LEFT, padx=5, pady=5)
 
@@ -584,7 +727,11 @@ class SettingWindow:
         self.lbl_ex_q_font_size.pack(side=tk.LEFT, padx=5, pady=5)
 
         self.sb_ex_q_font_size = ttk.Spinbox(self.lf_ex_q, from_=3, to=120, width=10, command=self.preview_changes_tb)
-        self.sb_ex_q_font_size.configure(validate="key", validatecommand=(self.root.register(lambda event: self.validateSpinbox(event, self.sb_ex_q_font_size)), "%P") or self.preview_changes_tb())
+        self.sb_ex_q_font_size.configure(
+            validate="key",
+            validatecommand=(self.root.register(lambda event: self.validateSpinbox(event, self.sb_ex_q_font_size)), "%P")
+            or self.preview_changes_tb()
+        )
         self.sb_ex_q_font_size.bind("<MouseWheel>", lambda event: self.preview_changes_tb())
         self.sb_ex_q_font_size.pack(side=tk.LEFT, padx=5, pady=5)
 
@@ -596,7 +743,11 @@ class SettingWindow:
 
         self.entry_ex_q_font_color = ttk.Entry(self.lf_ex_q, width=10)
         self.entry_ex_q_font_color.pack(side=tk.LEFT, padx=5, pady=5)
-        self.entry_ex_q_font_color.bind("<Button-1>", lambda e: chooseColor_entry(self.entry_ex_q_font_color, self.entry_ex_q_font_color.get(), self.root) or self.preview_changes_tb())
+        self.entry_ex_q_font_color.bind(
+            "<Button-1>",
+            lambda e: chooseColor_entry(self.entry_ex_q_font_color, self.entry_ex_q_font_color.get(), self.root
+                                        ) or self.preview_changes_tb()
+        )
         self.entry_ex_q_font_color.bind("<Key>", lambda e: "break")
 
         self.lbl_ex_q_bg_color = ttk.Label(self.lf_ex_q, text="Background Color")
@@ -604,7 +755,10 @@ class SettingWindow:
 
         self.entry_ex_q_bg_color = ttk.Entry(self.lf_ex_q, width=10)
         self.entry_ex_q_bg_color.pack(side=tk.LEFT, padx=5, pady=5)
-        self.entry_ex_q_bg_color.bind("<Button-1>", lambda e: chooseColor_entry(self.entry_ex_q_bg_color, self.entry_ex_q_bg_color.get(), self.root) or self.preview_changes_tb())
+        self.entry_ex_q_bg_color.bind(
+            "<Button-1>", lambda e: chooseColor_entry(self.entry_ex_q_bg_color, self.entry_ex_q_bg_color.get(), self.root) or
+            self.preview_changes_tb()
+        )
         self.entry_ex_q_bg_color.bind("<Key>", lambda e: "break")
 
         # [detached result]
@@ -622,7 +776,11 @@ class SettingWindow:
         self.lbl_ex_res_font_size.pack(side=tk.LEFT, padx=5, pady=5)
 
         self.sb_ex_res_font_size = ttk.Spinbox(self.lf_ex_res, from_=3, to=120, width=10, command=self.preview_changes_tb)
-        self.sb_ex_res_font_size.configure(validate="key", validatecommand=(self.root.register(lambda event: self.validateSpinbox(event, self.sb_ex_res_font_size)), "%P") or self.preview_changes_tb())
+        self.sb_ex_res_font_size.configure(
+            validate="key",
+            validatecommand=(self.root.register(lambda event: self.validateSpinbox(event, self.sb_ex_res_font_size)), "%P")
+            or self.preview_changes_tb()
+        )
         self.sb_ex_res_font_size.bind("<MouseWheel>", lambda event: self.preview_changes_tb())
         self.sb_ex_res_font_size.pack(side=tk.LEFT, padx=5, pady=5)
 
@@ -634,7 +792,11 @@ class SettingWindow:
 
         self.entry_ex_res_font_color = ttk.Entry(self.lf_ex_res, width=10)
         self.entry_ex_res_font_color.pack(side=tk.LEFT, padx=5, pady=5)
-        self.entry_ex_res_font_color.bind("<Button-1>", lambda e: chooseColor_entry(self.entry_ex_res_font_color, self.entry_ex_res_font_color.get(), self.root) or self.preview_changes_tb())
+        self.entry_ex_res_font_color.bind(
+            "<Button-1>",
+            lambda e: chooseColor_entry(self.entry_ex_res_font_color, self.entry_ex_res_font_color.get(), self.root
+                                        ) or self.preview_changes_tb()
+        )
         self.entry_ex_res_font_color.bind("<Key>", lambda e: "break")
 
         self.lbl_ex_res_bg_color = ttk.Label(self.lf_ex_res, text="Background Color")
@@ -642,7 +804,11 @@ class SettingWindow:
 
         self.entry_ex_res_bg_color = ttk.Entry(self.lf_ex_res, width=10)
         self.entry_ex_res_bg_color.pack(side=tk.LEFT, padx=5, pady=5)
-        self.entry_ex_res_bg_color.bind("<Button-1>", lambda e: chooseColor_entry(self.entry_ex_res_bg_color, self.entry_ex_res_bg_color.get(), self.root) or self.preview_changes_tb())
+        self.entry_ex_res_bg_color.bind(
+            "<Button-1>",
+            lambda e: chooseColor_entry(self.entry_ex_res_bg_color, self.entry_ex_res_bg_color.get(), self.root
+                                        ) or self.preview_changes_tb()
+        )
         self.entry_ex_res_bg_color.bind("<Key>", lambda e: "break")
 
         # [previews]
@@ -654,7 +820,10 @@ class SettingWindow:
             height=3,
             width=27,
             wrap=tk.WORD,
-            font=(fJson.settingCache["tb_mw_q_font"], fJson.settingCache["tb_mw_q_font_size"], "bold" if fJson.settingCache["tb_mw_q_font_bold"] else "normal"),
+            font=(
+                fj.setting_cache["tb_mw_q_font"], fj.setting_cache["tb_mw_q_font_size"],
+                "bold" if fj.setting_cache["tb_mw_q_font_bold"] else "normal"
+            ),
         )
         self.tb_preview_1.bind("<Key>", "break")
         self.tb_preview_1.insert(tk.END, "1234567 Preview プレビュー 预习 предварительный просмотр")
@@ -665,7 +834,10 @@ class SettingWindow:
             height=3,
             width=27,
             wrap=tk.WORD,
-            font=(fJson.settingCache["tb_mw_res_font"], fJson.settingCache["tb_mw_res_font_size"], "bold" if fJson.settingCache["tb_mw_res_font_bold"] else "normal"),
+            font=(
+                fj.setting_cache["tb_mw_res_font"], fj.setting_cache["tb_mw_res_font_size"],
+                "bold" if fj.setting_cache["tb_mw_res_font_bold"] else "normal"
+            ),
         )
         self.tb_preview_2.bind("<Key>", "break")
         self.tb_preview_2.insert(tk.END, "1234567 Preview プレビュー 预习 предварительный просмотр")
@@ -676,9 +848,12 @@ class SettingWindow:
             height=3,
             width=27,
             wrap=tk.WORD,
-            font=(fJson.settingCache["tb_ex_q_font"], fJson.settingCache["tb_ex_q_font_size"], "bold" if fJson.settingCache["tb_ex_q_font_bold"] else "normal"),
-            foreground=fJson.settingCache["tb_ex_q_font_color"],
-            background=fJson.settingCache["tb_ex_q_bg_color"],
+            font=(
+                fj.setting_cache["tb_ex_q_font"], fj.setting_cache["tb_ex_q_font_size"],
+                "bold" if fj.setting_cache["tb_ex_q_font_bold"] else "normal"
+            ),
+            foreground=fj.setting_cache["tb_ex_q_font_color"],
+            background=fj.setting_cache["tb_ex_q_bg_color"],
         )
         self.tb_preview_3.bind("<Key>", "break")
         self.tb_preview_3.insert(tk.END, "1234567 Preview プレビュー 预习 предварительный просмотр")
@@ -689,9 +864,12 @@ class SettingWindow:
             height=3,
             width=27,
             wrap=tk.WORD,
-            font=(fJson.settingCache["tb_ex_res_font"], fJson.settingCache["tb_ex_res_font_size"], "bold" if fJson.settingCache["tb_ex_res_font_bold"] else "normal"),
-            foreground=fJson.settingCache["tb_ex_res_font_color"],
-            background=fJson.settingCache["tb_ex_res_bg_color"],
+            font=(
+                fj.setting_cache["tb_ex_res_font"], fj.setting_cache["tb_ex_res_font_size"],
+                "bold" if fj.setting_cache["tb_ex_res_font_bold"] else "normal"
+            ),
+            foreground=fj.setting_cache["tb_ex_res_font_color"],
+            background=fj.setting_cache["tb_ex_res_bg_color"],
         )
         self.tb_preview_4.bind("<Key>", "break")
         self.tb_preview_4.insert(tk.END, "1234567 Preview プレビュー 预习 предварительный просмотр")
@@ -714,7 +892,11 @@ class SettingWindow:
 
         self.entry_maskwindow_color = ttk.Entry(self.f_maskwindow, width=10)
         self.entry_maskwindow_color.pack(side=tk.LEFT, padx=5, pady=5)
-        self.entry_maskwindow_color.bind("<Button-1>", lambda e: chooseColor_entry(self.entry_maskwindow_color, self.entry_maskwindow_color.get(), self.root) or self.preview_changes_tb())
+        self.entry_maskwindow_color.bind(
+            "<Button-1>",
+            lambda e: chooseColor_entry(self.entry_maskwindow_color, self.entry_maskwindow_color.get(), self.root
+                                        ) or self.preview_changes_tb()
+        )
         self.entry_maskwindow_color.bind("<Key>", lambda e: "break")
 
         self.lbl_hint_other = ttk.Label(self.f_maskwindow, text="❓")
@@ -741,7 +923,9 @@ class SettingWindow:
         # Checkbox for check for update
         self.cbtn_update = ttk.Checkbutton(self.f_other_1, text="Check for update on app start", style="Switch.TCheckbutton")
         self.cbtn_update.pack(side=tk.LEFT, padx=5, pady=5)
-        CreateToolTip(self.cbtn_update, "Check for update on app start. You can also check manually by going to help in menubar")
+        CreateToolTip(
+            self.cbtn_update, "Check for update on app start. You can also check manually by going to help in menubar"
+        )
 
         self.cbtn_run_on_startup = ttk.Checkbutton(self.f_other_1, text="Run app on startup", style="Switch.TCheckbutton")
         self.cbtn_run_on_startup.pack(side=tk.LEFT, padx=5, pady=5)
@@ -753,7 +937,9 @@ class SettingWindow:
         self.lbl_loglevel = ttk.Label(self.f_other_2, text="— Log Level")
         self.lbl_loglevel.pack(side=tk.LEFT, padx=(0, 5), pady=5)
 
-        self.cb_log_level = ttk.Combobox(self.f_other_2, values=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"], state="readonly")
+        self.cb_log_level = ttk.Combobox(
+            self.f_other_2, values=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"], state="readonly"
+        )
         self.cb_log_level.pack(side=tk.LEFT, padx=0, pady=5)
 
         # theme
@@ -794,7 +980,9 @@ class SettingWindow:
         self.bottomFrame_2.pack(side=tk.TOP, fill=tk.X, padx=5, pady=(0, 5))
 
         # Create the buttons
-        self.btnSave = ttk.Button(self.bottomFrame_2, text="🖪 Save Settings", command=self.saveSettings, style="Accent.TButton")
+        self.btnSave = ttk.Button(
+            self.bottomFrame_2, text="🖪 Save Settings", command=self.saveSettings, style="Accent.TButton"
+        )
         self.btnSave.pack(side=tk.RIGHT, padx=5, pady=5)
 
         self.btnReset = ttk.Button(self.bottomFrame_2, text="⟳ Cancel Changes", command=self.reset_changes)
@@ -830,12 +1018,12 @@ class SettingWindow:
         self.fill_theme()
         self.init_setting()
         self.add_reg_withcheck()
-        logger.setLevel(fJson.settingCache["log_level"])
+        logger.setLevel(fj.setting_cache["log_level"])
         self.onStart = False
 
     def fill_theme(self):
-        self.cb_theme["values"] = gClass.theme_lists
-        self.cb_theme.set(fJson.settingCache["theme"])
+        self.cb_theme["values"] = gcl.theme_lists
+        self.cb_theme.set(fj.setting_cache["theme"])
         self.entry_theme.pack_forget()
 
     def cb_theme_change(self, _event=None):
@@ -848,7 +1036,7 @@ class SettingWindow:
 
     def add_reg_withcheck(self):
         # update registry location every time app start
-        if fJson.settingCache["run_on_startup"]:
+        if fj.setting_cache["run_on_startup"]:
             check = check_autostart_registry(app_name)
             if (check[0] and check[1] != reg_key_name) or not check[0]:  # added but not invalid path or not added
                 x = set_autostart_registry(app_name, reg_key_name)  # -s for silent (hide window)
@@ -926,11 +1114,11 @@ class SettingWindow:
                 widget.invoke()
 
     def deleteLogOnStart(self):
-        if not fJson.settingCache["keep_log"]:
+        if not fj.setting_cache["keep_log"]:
             self.deleteTheLog()
 
     def deleteCapturedOnStart(self):
-        if not fJson.settingCache["keep_image"]:
+        if not fj.setting_cache["keep_image"]:
             self.deleteCaptured()
 
     def deleteTheLog(self):
@@ -964,11 +1152,15 @@ class SettingWindow:
         """
         Restore default settings
         """
-        if not Mbox("Confirmation", "Are you sure you want to set the settings to default?\n\n**WARNING! CURRENTLY SAVED SETTING WILL BE OVERWRITTEN**", 3, self.root):
+        if not Mbox(
+            "Confirmation",
+            "Are you sure you want to set the settings to default?\n\n**WARNING! CURRENTLY SAVED SETTING WILL BE OVERWRITTEN**",
+            3, self.root
+        ):
             return
 
         # Restore Default Settings
-        success, msg = fJson.setDefaultSetting()
+        success, msg = fj.set_default()
         if success:
             # Unbind all hotkeys (default hotkey is empty)
             try:
@@ -992,79 +1184,83 @@ class SettingWindow:
         Reset the settings to currently stored settings
         """
         # If tesseract is not found
-        if not os.path.exists(fJson.settingCache["tesseract_loc"]):
-            nativeNotify("Error: Set tesseract Not Found!", "Please set tesseract location in Setting.json.\nYou can set this in setting menu or modify it manually in json/Setting.json", path_logo_icon, app_name)
+        if not os.path.exists(fj.setting_cache["tesseract_loc"]):
+            nativeNotify(
+                "Error: Set tesseract Not Found!",
+                "Please set tesseract location in Setting.json.\nYou can set this in setting menu or modify it manually in json/Setting.json",
+                path_logo_icon, app_name
+            )
 
-        self.cbtnInvoker(fJson.settingCache["hide_mw_on_cap"], self.cbtn_hide_mw_on_cap)
-        self.cbtnInvoker(fJson.settingCache["hide_ex_qw_on_cap"], self.cbtn_hide_ex_qw_on_cap)
-        self.cbtnInvoker(fJson.settingCache["hide_ex_resw_on_cap"], self.cbtn_hide_ex_resw_on_cap)
-        self.cbtnInvoker(fJson.settingCache["keep_image"], self.cbtn_keep_img)
-        self.cbtnInvoker(fJson.settingCache["auto_copy_captured"], self.cbtn_auto_copy_captured)
-        self.cbtnInvoker(fJson.settingCache["auto_copy_translated"], self.cbtn_auto_copy_translated)
+        self.cbtnInvoker(fj.setting_cache["hide_mw_on_cap"], self.cbtn_hide_mw_on_cap)
+        self.cbtnInvoker(fj.setting_cache["hide_ex_qw_on_cap"], self.cbtn_hide_ex_qw_on_cap)
+        self.cbtnInvoker(fj.setting_cache["hide_ex_resw_on_cap"], self.cbtn_hide_ex_resw_on_cap)
+        self.cbtnInvoker(fj.setting_cache["keep_image"], self.cbtn_keep_img)
+        self.cbtnInvoker(fj.setting_cache["auto_copy_captured"], self.cbtn_auto_copy_captured)
+        self.cbtnInvoker(fj.setting_cache["auto_copy_translated"], self.cbtn_auto_copy_translated)
 
         # cw
         # xy cw offset
-        self.cb_cw_xy_offset_type.set(fJson.settingCache["offSetXYType"])
+        self.cb_cw_xy_offset_type.set(fj.setting_cache["offSetXYType"])
         self.cb_xy_offset_change()  # update xy cw offset
 
         # wh cw offset
         self.check_wh_offset()
 
         # snippet
-        self.cbtnInvoker(fJson.settingCache["snippingWindowGeometry"] == "auto", self.cbtn_auto_snippet)
+        self.cbtnInvoker(fj.setting_cache["snippingWindowGeometry"] == "auto", self.cbtn_auto_snippet)
 
         # OCR
         self.entry_OCR_tesseract_path.delete(0, tk.END)
-        self.entry_OCR_tesseract_path.insert(0, fJson.settingCache["tesseract_loc"])
+        self.entry_OCR_tesseract_path.insert(0, fj.setting_cache["tesseract_loc"])
         self.entry_OCR_config.delete(0, tk.END)
-        self.entry_OCR_config.insert(0, fJson.settingCache["tesseract_config"])
-        self.cbtnInvoker(fJson.settingCache["tesseract_psm5_vertical"], self.cbtn_OCR_psm5_vertical)
+        self.entry_OCR_config.insert(0, fj.setting_cache["tesseract_config"])
+        self.cbtnInvoker(fj.setting_cache["tesseract_psm5_vertical"], self.cbtn_OCR_psm5_vertical)
 
-        self.cb_CV2_bg.set(fJson.settingCache["enhance_background"])
-        self.cbtnInvoker(fJson.settingCache["enhance_with_cv2_Contour"], self.cbtn_cv2_contour)
-        self.cbtnInvoker(fJson.settingCache["enhance_with_grayscale"], self.cbtn_CV2_grayscale)
-        self.cbtnInvoker(fJson.settingCache["enhance_debugmode"], self.cbtn_CV2_debug)
+        self.cb_CV2_bg.set(fj.setting_cache["enhance_background"])
+        self.cbtnInvoker(fj.setting_cache["enhance_with_cv2_Contour"], self.cbtn_cv2_contour)
+        self.cbtnInvoker(fj.setting_cache["enhance_with_grayscale"], self.cbtn_CV2_grayscale)
+        self.cbtnInvoker(fj.setting_cache["enhance_debugmode"], self.cbtn_CV2_debug)
 
-        self.sb_OCR_delete_lastchar.set(fJson.settingCache["captureLastValDelete"])
-        self.cbtnInvoker(fJson.settingCache["replaceNewLine"], self.cbtn_OCR_replace_newline)
+        self.sb_OCR_delete_lastchar.set(fj.setting_cache["captureLastValDelete"])
+        self.cbtnInvoker(fj.setting_cache["replaceNewLine"], self.cbtn_OCR_replace_newline)
         self.entry_OCR_replace_newline_with.delete(0, tk.END)
-        self.entry_OCR_replace_newline_with.insert(0, fJson.settingCache["replaceNewLineWith"])
+        self.entry_OCR_replace_newline_with.insert(0, fj.setting_cache["replaceNewLineWith"])
 
-        self.cbtnInvoker(not fJson.settingCache["supress_no_text_alert"], self.cbtn_alert_no_text)
+        self.cbtnInvoker(not fj.setting_cache["supress_no_text_alert"], self.cbtn_alert_no_text)
 
         # tl
-        self.cbtnInvoker(fJson.settingCache["save_history"], self.cbtn_tl_save_history)
+        self.cbtnInvoker(fj.setting_cache["save_history"], self.cbtn_tl_save_history)
 
         self.entry_tl_libre_setting_key.delete(0, tk.END)
-        self.entry_tl_libre_setting_key.insert(0, fJson.settingCache["libre_api_key"])
+        self.entry_tl_libre_setting_key.insert(0, fj.setting_cache["libre_api_key"])
 
         self.entry_tl_libre_setting_host.delete(0, tk.END)
-        self.entry_tl_libre_setting_host.insert(0, fJson.settingCache["libre_host"])
+        self.entry_tl_libre_setting_host.insert(0, fj.setting_cache["libre_host"])
 
         self.entry_tl_libre_setting_port.delete(0, tk.END)
-        self.entry_tl_libre_setting_port.insert(0, fJson.settingCache["libre_port"])
+        self.entry_tl_libre_setting_port.insert(0, fj.setting_cache["libre_port"])
 
-        self.cbtnInvoker(fJson.settingCache["libre_https"], self.cbtn_tl_libre_setting_https)
+        self.cbtnInvoker(fj.setting_cache["libre_https"], self.cbtn_tl_libre_setting_https)
 
         # hk
-        self.sb_cw_hk_delay.set(fJson.settingCache["hk_cap_window_delay"])
-        self.lbl_cw_hk.configure(text=fJson.settingCache["hk_cap_window"])
+        self.sb_cw_hk_delay.set(fj.setting_cache["hk_cap_window_delay"])
+        self.lbl_cw_hk.configure(text=fj.setting_cache["hk_cap_window"])
 
-        self.sb_snipping_hk_delay.set(fJson.settingCache["hk_snip_cap_delay"])
-        self.lbl_snipping_hk.configure(text=fJson.settingCache["hk_snip_cap"])
+        self.sb_snipping_hk_delay.set(fj.setting_cache["hk_snip_cap_delay"])
+        self.lbl_snipping_hk.configure(text=fj.setting_cache["hk_snip_cap"])
 
         # textbox
         self.init_tb_settings()
 
         # mask window
         self.entry_maskwindow_color.delete(0, tk.END)
-        self.entry_maskwindow_color.insert(0, fJson.settingCache["mask_window_color"])
+        self.entry_maskwindow_color.insert(0, fj.setting_cache["mask_window_color"])
 
         # other
-        self.cbtnInvoker(fJson.settingCache["checkUpdateOnStart"], self.cbtn_update)
-        self.cbtnInvoker(fJson.settingCache["run_on_startup"], self.cbtn_run_on_startup)
-        self.cbtnInvoker(fJson.settingCache["keep_log"], self.cbtn_keep_log)
-        self.cb_log_level.set(fJson.settingCache["log_level"])
+        self.cbtnInvoker(fj.setting_cache["checkUpdateOnStart"], self.cbtn_update)
+        self.cbtnInvoker(fj.setting_cache["run_on_startup"], self.cbtn_run_on_startup)
+        self.cbtnInvoker(fj.setting_cache["keep_log"], self.cbtn_keep_log)
+        self.cb_log_level.set(fj.setting_cache["log_level"])
 
         logger.info("Settings loaded to setting UI")
 
@@ -1077,46 +1273,58 @@ class SettingWindow:
 
     def init_tb_settings(self):
         self.tb_delete()
-        self.cb_mw_q_font.set(fJson.settingCache["tb_mw_q_font"])
-        self.sb_mw_q_font_size.set(fJson.settingCache["tb_mw_q_font_size"])
-        self.cbtnInvoker(fJson.settingCache["tb_mw_q_font_bold"], self.cbtn_mw_q_font_bold)
+        self.cb_mw_q_font.set(fj.setting_cache["tb_mw_q_font"])
+        self.sb_mw_q_font_size.set(fj.setting_cache["tb_mw_q_font_size"])
+        self.cbtnInvoker(fj.setting_cache["tb_mw_q_font_bold"], self.cbtn_mw_q_font_bold)
 
-        self.cb_mw_res_font.set(fJson.settingCache["tb_mw_res_font"])
-        self.sb_mw_res_font_size.set(fJson.settingCache["tb_mw_res_font_size"])
-        self.cbtnInvoker(fJson.settingCache["tb_mw_res_font_bold"], self.cbtn_mw_res_font_bold)
+        self.cb_mw_res_font.set(fj.setting_cache["tb_mw_res_font"])
+        self.sb_mw_res_font_size.set(fj.setting_cache["tb_mw_res_font_size"])
+        self.cbtnInvoker(fj.setting_cache["tb_mw_res_font_bold"], self.cbtn_mw_res_font_bold)
 
-        self.cb_ex_q_font.set(fJson.settingCache["tb_ex_q_font"])
-        self.sb_ex_q_font_size.set(fJson.settingCache["tb_ex_q_font_size"])
-        self.cbtnInvoker(fJson.settingCache["tb_ex_q_font_bold"], self.cbtn_ex_q_font_bold)
-        self.entry_ex_q_font_color.insert(0, fJson.settingCache["tb_ex_q_font_color"])
-        self.entry_ex_q_bg_color.insert(0, fJson.settingCache["tb_ex_q_bg_color"])
+        self.cb_ex_q_font.set(fj.setting_cache["tb_ex_q_font"])
+        self.sb_ex_q_font_size.set(fj.setting_cache["tb_ex_q_font_size"])
+        self.cbtnInvoker(fj.setting_cache["tb_ex_q_font_bold"], self.cbtn_ex_q_font_bold)
+        self.entry_ex_q_font_color.insert(0, fj.setting_cache["tb_ex_q_font_color"])
+        self.entry_ex_q_bg_color.insert(0, fj.setting_cache["tb_ex_q_bg_color"])
 
-        self.cb_ex_res_font.set(fJson.settingCache["tb_ex_res_font"])
-        self.sb_ex_res_font_size.set(fJson.settingCache["tb_ex_res_font_size"])
-        self.cbtnInvoker(fJson.settingCache["tb_ex_res_font_bold"], self.cbtn_ex_res_font_bold)
-        self.entry_ex_res_font_color.insert(0, fJson.settingCache["tb_ex_res_font_color"])
-        self.entry_ex_res_bg_color.insert(0, fJson.settingCache["tb_ex_res_bg_color"])
+        self.cb_ex_res_font.set(fj.setting_cache["tb_ex_res_font"])
+        self.sb_ex_res_font_size.set(fj.setting_cache["tb_ex_res_font_size"])
+        self.cbtnInvoker(fj.setting_cache["tb_ex_res_font_bold"], self.cbtn_ex_res_font_bold)
+        self.entry_ex_res_font_color.insert(0, fj.setting_cache["tb_ex_res_font_color"])
+        self.entry_ex_res_bg_color.insert(0, fj.setting_cache["tb_ex_res_bg_color"])
 
     def preview_changes_tb(self):
         if self.onStart:
             return
 
         self.tb_preview_1.configure(
-            font=(self.cb_mw_q_font.get(), int(self.sb_mw_q_font_size.get()), "bold" if self.cbtn_mw_q_font_bold.instate(["selected"]) else "normal"),
+            font=(
+                self.cb_mw_q_font.get(), int(self.sb_mw_q_font_size.get()),
+                "bold" if self.cbtn_mw_q_font_bold.instate(["selected"]) else "normal"
+            ),
         )
 
         self.tb_preview_2.configure(
-            font=(self.cb_mw_res_font.get(), int(self.sb_mw_res_font_size.get()), "bold" if self.cbtn_mw_res_font_bold.instate(["selected"]) else "normal"),
+            font=(
+                self.cb_mw_res_font.get(), int(self.sb_mw_res_font_size.get()),
+                "bold" if self.cbtn_mw_res_font_bold.instate(["selected"]) else "normal"
+            ),
         )
 
         self.tb_preview_3.configure(
-            font=(self.cb_ex_q_font.get(), int(self.sb_ex_q_font_size.get()), "bold" if self.cbtn_ex_q_font_bold.instate(["selected"]) else "normal"),
+            font=(
+                self.cb_ex_q_font.get(), int(self.sb_ex_q_font_size.get()),
+                "bold" if self.cbtn_ex_q_font_bold.instate(["selected"]) else "normal"
+            ),
             foreground=self.entry_ex_q_font_color.get(),
             background=self.entry_ex_q_bg_color.get(),
         )
 
         self.tb_preview_4.configure(
-            font=(self.cb_ex_res_font.get(), int(self.sb_ex_res_font_size.get()), "bold" if self.cbtn_ex_res_font_bold.instate(["selected"]) else "normal"),
+            font=(
+                self.cb_ex_res_font.get(), int(self.sb_ex_res_font_size.get()),
+                "bold" if self.cbtn_ex_res_font_bold.instate(["selected"]) else "normal"
+            ),
             foreground=self.entry_ex_res_font_color.get(),
             background=self.entry_ex_res_bg_color.get(),
         )
@@ -1153,13 +1361,18 @@ class SettingWindow:
             # ------------------ #
             # capture window offsets
             "offSetXYType": self.cb_cw_xy_offset_type.get(),
-            "offSetX": int(self.sb_cw_offset_x.get()) if self.cbtn_cw_auto_offset_x.instate(["selected"]) == False else "auto",
-            "offSetY": int(self.sb_cw_offset_y.get()) if self.cbtn_cw_auto_offset_y.instate(["selected"]) == False else "auto",
-            "offSetW": int(self.sb_cw_offset_w.get()) if self.cbtn_cw_auto_offset_w.instate(["selected"]) == False else "auto",
-            "offSetH": int(self.sb_cw_offset_h.get()) if self.cbtn_cw_auto_offset_h.instate(["selected"]) == False else "auto",
+            "offSetX":
+            int(self.sb_cw_offset_x.get()) if self.cbtn_cw_auto_offset_x.instate(["selected"]) == False else "auto",
+            "offSetY":
+            int(self.sb_cw_offset_y.get()) if self.cbtn_cw_auto_offset_y.instate(["selected"]) == False else "auto",
+            "offSetW":
+            int(self.sb_cw_offset_w.get()) if self.cbtn_cw_auto_offset_w.instate(["selected"]) == False else "auto",
+            "offSetH":
+            int(self.sb_cw_offset_h.get()) if self.cbtn_cw_auto_offset_h.instate(["selected"]) == False else "auto",
             # ------------------ #
             # snipping window geometry
-            "snippingWindowGeometry": "auto" if self.cbtn_auto_snippet.instate(["selected"]) else f"{self.sb_snippet_total_w.get()}x{self.sb_snippet_total_h.get()}+{self.sb_snippet_offset_x.get()}+{self.sb_snippet_offset_y.get()}",  # type: ignore
+            "snippingWindowGeometry": "auto" if self.cbtn_auto_snippet.instate(["selected"]) else
+            f"{self.sb_snippet_total_w.get()}x{self.sb_snippet_total_h.get()}+{self.sb_snippet_offset_x.get()}+{self.sb_snippet_offset_y.get()}",  # type: ignore
             # ------------------ #
             # Capture
             "tesseract_loc": tesseractPathInput,
@@ -1223,14 +1436,14 @@ class SettingWindow:
         # ------------------ #
         # Bind hotkey
         if self.lbl_cw_hk.cget("text") != "":
-            keyboard.add_hotkey(self.lbl_cw_hk["text"], gClass.hk_cap_window_callback)
+            keyboard.add_hotkey(self.lbl_cw_hk["text"], gcl.hk_cap_window_callback)
 
         if self.lbl_snipping_hk.cget("text") != "":
-            keyboard.add_hotkey(self.lbl_snipping_hk["text"], gClass.hk_snip_mode_callback)
+            keyboard.add_hotkey(self.lbl_snipping_hk["text"], gcl.hk_snip_mode_callback)
 
         # ------------------ #
         # update log level
-        if fJson.settingCache["log_level"] != self.cb_log_level.get():
+        if fj.setting_cache["log_level"] != self.cb_log_level.get():
             logger.setLevel(self.cb_log_level.get())
 
         # ------------------ #
@@ -1242,7 +1455,7 @@ class SettingWindow:
 
         # ------------------ #
         # set theme
-        if fJson.settingCache["theme"] != self.cb_theme.get():
+        if fj.setting_cache["theme"] != self.cb_theme.get():
             status = set_ui_style(self.entry_theme.get() if self.cb_theme.get() == "custom" else self.cb_theme.get())
             if not status:
                 self.cb_theme.current(0)
@@ -1254,7 +1467,7 @@ class SettingWindow:
         errorAmount = 0
 
         for key, val in setting_collections.items():
-            check = fJson.savePartialSetting(key, val)
+            check = fj.save_setting_partial(key, val)
             if not check[0]:
                 errorAmount += 1
 
@@ -1270,31 +1483,43 @@ class SettingWindow:
         Mbox("Success", f"Saved settings with {statusMsg}", 0, self.root)
 
     def updateExternal(self):
-        assert gClass.mw is not None
-        gClass.mw.tb_query.configure(
-            font=(self.cb_mw_q_font.get(), int(self.sb_mw_q_font_size.get()), "bold" if self.cbtn_mw_q_font_bold.instate(["selected"]) else "normal"),
+        assert gcl.mw is not None
+        gcl.mw.tb_query.configure(
+            font=(
+                self.cb_mw_q_font.get(), int(self.sb_mw_q_font_size.get()),
+                "bold" if self.cbtn_mw_q_font_bold.instate(["selected"]) else "normal"
+            ),
         )
 
-        gClass.mw.tb_result.configure(
-            font=(self.cb_mw_res_font.get(), int(self.sb_mw_res_font_size.get()), "bold" if self.cbtn_mw_res_font_bold.instate(["selected"]) else "normal"),
+        gcl.mw.tb_result.configure(
+            font=(
+                self.cb_mw_res_font.get(), int(self.sb_mw_res_font_size.get()),
+                "bold" if self.cbtn_mw_res_font_bold.instate(["selected"]) else "normal"
+            ),
         )
 
-        assert gClass.ex_qw is not None
-        gClass.ex_qw.labelText.configure(
-            font=(self.cb_ex_q_font.get(), int(self.sb_ex_q_font_size.get()), "bold" if self.cbtn_ex_q_font_bold.instate(["selected"]) else "normal"),
+        assert gcl.ex_qw is not None
+        gcl.ex_qw.labelText.configure(
+            font=(
+                self.cb_ex_q_font.get(), int(self.sb_ex_q_font_size.get()),
+                "bold" if self.cbtn_ex_q_font_bold.instate(["selected"]) else "normal"
+            ),
             foreground=self.entry_ex_q_font_color.get(),
             background=self.entry_ex_q_bg_color.get(),
         )
 
-        assert gClass.ex_resw is not None
-        gClass.ex_resw.labelText.configure(
-            font=(self.cb_ex_res_font.get(), int(self.sb_ex_res_font_size.get()), "bold" if self.cbtn_ex_res_font_bold.instate(["selected"]) else "normal"),
+        assert gcl.ex_resw is not None
+        gcl.ex_resw.labelText.configure(
+            font=(
+                self.cb_ex_res_font.get(), int(self.sb_ex_res_font_size.get()),
+                "bold" if self.cbtn_ex_res_font_bold.instate(["selected"]) else "normal"
+            ),
             foreground=self.entry_ex_res_font_color.get(),
             background=self.entry_ex_res_bg_color.get(),
         )
 
-        gClass.update_ex_cw_setting()
-        gClass.update_mask_setting()
+        gcl.update_ex_cw_setting()
+        gcl.update_mask_setting()
 
     # --------------------------------------------------
     # Offset capturing settings
@@ -1304,8 +1529,18 @@ class SettingWindow:
         Args:
             offSetType (Literal["x", "y", "w", "h"]): The type of offset
         """
-        settingVal = {"x": fJson.settingCache["offSetX"], "y": fJson.settingCache["offSetY"], "w": fJson.settingCache["offSetW"], "h": fJson.settingCache["offSetH"]}
-        cbtns = {"x": self.cbtn_cw_auto_offset_x, "y": self.cbtn_cw_auto_offset_y, "w": self.cbtn_cw_auto_offset_w, "h": self.cbtn_cw_auto_offset_h}
+        settingVal = {
+            "x": fj.setting_cache["offSetX"],
+            "y": fj.setting_cache["offSetY"],
+            "w": fj.setting_cache["offSetW"],
+            "h": fj.setting_cache["offSetH"]
+        }
+        cbtns = {
+            "x": self.cbtn_cw_auto_offset_x,
+            "y": self.cbtn_cw_auto_offset_y,
+            "w": self.cbtn_cw_auto_offset_w,
+            "h": self.cbtn_cw_auto_offset_h
+        }
         spinners = {"x": self.sb_cw_offset_x, "y": self.sb_cw_offset_y, "w": self.sb_cw_offset_w, "h": self.sb_cw_offset_h}
         cbtnval = cbtns[offSetType].instate(["selected"])
 
@@ -1323,7 +1558,9 @@ class SettingWindow:
         """
         Search for tesseract by opening a file dialog
         """
-        res = filedialog.askopenfilename(initialdir="/", title="Select file", filetypes=(("tesseract.exe", "*.exe"), ("all files", "*.*")))
+        res = filedialog.askopenfilename(
+            initialdir="/", title="Select file", filetypes=(("tesseract.exe", "*.exe"), ("all files", "*.*"))
+        )
         if res != "":
             self.entry_OCR_tesseract_path.delete(0, tk.END)
             self.entry_OCR_tesseract_path.insert(0, res)
@@ -1401,7 +1638,7 @@ class SettingWindow:
             self.cbtn_cw_auto_offset_y.configure(state=tk.NORMAL)
 
             # if x auto
-            if fJson.settingCache["offSetX"] == "auto":
+            if fj.setting_cache["offSetX"] == "auto":
                 self.cbtnInvoker(True, self.cbtn_cw_auto_offset_x)
                 self.sb_cw_offset_x.configure(state=tk.DISABLED)
             else:
@@ -1409,7 +1646,7 @@ class SettingWindow:
                 self.sb_cw_offset_x.configure(state=tk.NORMAL)
 
             # if y auto
-            if fJson.settingCache["offSetY"] == "auto":
+            if fj.setting_cache["offSetY"] == "auto":
                 self.cbtnInvoker(True, self.cbtn_cw_auto_offset_y)
                 self.sb_cw_offset_y.configure(state=tk.DISABLED)
             else:
@@ -1421,12 +1658,12 @@ class SettingWindow:
             self.sb_cw_offset_y.set(get_offset("y"))
 
     def check_wh_offset(self):
-        if fJson.settingCache["offSetW"] == "auto":
+        if fj.setting_cache["offSetW"] == "auto":
             self.cbtnInvoker(True, self.cbtn_cw_auto_offset_w)
         else:
             self.cbtnInvoker(False, self.cbtn_cw_auto_offset_w)
 
-        if fJson.settingCache["offSetH"] == "auto":
+        if fj.setting_cache["offSetH"] == "auto":
             self.cbtnInvoker(True, self.cbtn_cw_auto_offset_h)
         else:
             self.cbtnInvoker(False, self.cbtn_cw_auto_offset_h)

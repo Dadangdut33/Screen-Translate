@@ -1,5 +1,7 @@
 import tkinter as tk
+
 from screen_translate.components.abstract.Detached import AbstractDetachedWindow
+
 
 # Classes
 class QueryWindow(AbstractDetachedWindow):

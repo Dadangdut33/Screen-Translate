@@ -1,42 +1,29 @@
-import os
 import ast
+import os
 import shlex
 from datetime import datetime
+from functools import partial
 from typing import List
 
+import cv2
 import numpy as np
 import pyautogui
 import pyperclip
 import pytesseract
-import cv2
-
-from screen_translate.Logging import logger
-from screen_translate.components.custom.MBox import Mbox
-from screen_translate.Globals import fJson, dir_captured
-from .Helper import startFile
-from .LangCode import tesseract_lang
-
 # Settings to capture all screens
 from PIL import ImageGrab
-from functools import partial
+
+from screen_translate._globals import dir_captured, fj
+from screen_translate._logging import logger
+from screen_translate.components.custom.MBox import Mbox
+
+from ..helper import create_dir_if_gone, start_file
+from ..translate.language import TESSERACT_KEY_VAL
 
 ImageGrab.grab = partial(ImageGrab.grab, all_screens=True)
 
 
-def createPicDirIfGone():
-    """
-    Create the directory if it does not exist
-    """
-    # Will create the dir if not exists
-    if not os.path.exists(dir_captured):
-        try:
-            os.makedirs(dir_captured)
-        except Exception as e:
-            logger.exception(e)
-            Mbox("Error: ", str(e), 2)
-
-
-def ocrFromCoords(coords: List[int]):
+def ocr_from_coords(coords: List[int]):
     """Capture Image and return text from it
 
     Args:
@@ -47,8 +34,8 @@ def ocrFromCoords(coords: List[int]):
     """
     # Language Code
     try:
-        sourceLang = fJson.settingCache["sourceLang"]
-        langCode = tesseract_lang[sourceLang]
+        sourceLang = fj.setting_cache["sourceLang"]
+        langCode = TESSERACT_KEY_VAL[sourceLang]
     except KeyError as e:
         logger.exception("Error: Key Error\n" + str(e))
         Mbox("Key Error, On Assigning Language Code.\n" + str(e), "Error: Key Error", 2)
@@ -61,17 +48,17 @@ def ocrFromCoords(coords: List[int]):
         captured = pyautogui.screenshot(region=(coords[0], coords[1], coords[2], coords[3]))  # type: ignore
 
         # Set variables
-        pytesseract.pytesseract.tesseract_cmd = fJson.settingCache["tesseract_loc"]
-        config = fJson.settingCache["tesseract_config"] if fJson.settingCache["tesseract_config"] else ""
-        if "--psm" not in config and fJson.settingCache["tesseract_psm5_vertical"] and "vertical" in sourceLang.lower():
-            config += " --psm 5" # vertical on vertical text
-        enhance_withCv2 = fJson.settingCache["enhance_with_cv2_Contour"]
-        grayscale = fJson.settingCache["enhance_with_grayscale"]
-        debugmode = fJson.settingCache["enhance_debugmode"]
-        background = fJson.settingCache["enhance_background"]
-        replaceNewLine = fJson.settingCache["replaceNewLine"]
-        replacer = ast.literal_eval(shlex.quote(fJson.settingCache["replaceNewLineWith"]))  # set new text
-        saveImg = fJson.settingCache["keep_image"]
+        pytesseract.pytesseract.tesseract_cmd = fj.setting_cache["tesseract_loc"]
+        config = fj.setting_cache["tesseract_config"] if fj.setting_cache["tesseract_config"] else ""
+        if "--psm" not in config and fj.setting_cache["tesseract_psm5_vertical"] and "vertical" in sourceLang.lower():
+            config += " --psm 5"  # vertical on vertical text
+        enhance_withCv2 = fj.setting_cache["enhance_with_cv2_Contour"]
+        grayscale = fj.setting_cache["enhance_with_grayscale"]
+        debugmode = fj.setting_cache["enhance_debugmode"]
+        background = fj.setting_cache["enhance_background"]
+        replaceNewLine = fj.setting_cache["replaceNewLine"]
+        replacer = ast.literal_eval(shlex.quote(fj.setting_cache["replaceNewLineWith"]))  # set new text
+        saveImg = fj.setting_cache["keep_image"]
         saveName = os.path.join(dir_captured, "ScreenTranslate_" + datetime.now().strftime("%Y-%m-%d_%H%M%S") + ".png")
 
         # Enhance with cv2 if selected
@@ -130,7 +117,7 @@ def ocrFromCoords(coords: List[int]):
                     cv2.imshow("Rectangle drawn on image", rect)
 
                 # Cropping the text block for giving input to OCR
-                cropped = imgFinal[y : y + h, x : x + w]
+                cropped = imgFinal[y:y + h, x:x + w]
 
                 # Apply OCR on the cropped image
                 text = pytesseract.image_to_string(cropped, langCode, config=config)
@@ -163,11 +150,11 @@ def ocrFromCoords(coords: List[int]):
         logger.info("OCR success!")
         logger.info(f"Result length {len(result)}")
 
-        if fJson.settingCache["auto_copy_captured"]:
+        if fj.setting_cache["auto_copy_captured"]:
             pyperclip.copy(result)
             logger.info("Copied captured text to clipboard!")
 
-        if not fJson.settingCache["supress_no_text_alert"] and len(result) == 0:
+        if not fj.setting_cache["supress_no_text_alert"] and len(result) == 0:
             Mbox("No text detected", "No text detected in the image. Please try again.", 1)
 
         if debugmode:

@@ -3,19 +3,18 @@ import threading
 import tkinter as tk
 from tkinter import ttk
 
-
-from ..custom.Tooltip import CreateToolTip
-from screen_translate.components.custom.MBox import Mbox
-
+from screen_translate._globals import fj, gcl
+from screen_translate._logging import logger
 from screen_translate._path import path_logo_icon
-from screen_translate.Globals import gClass, fJson
-from screen_translate.Logging import logger
+from screen_translate.components.custom.MBox import Mbox
 from screen_translate.utils.Beep import beep
 from screen_translate.utils.Helper import get_opac_value
 from screen_translate.utils.Monitor import get_offset
-from screen_translate.utils.Capture import ocrFromCoords
-from screen_translate.utils.Translate import translate
-from screen_translate.utils.LangCode import engine_select_source_dict, engine_select_target_dict, engineList
+from screen_translate.utils.ocr.Capture import ocrFromCoords
+from screen_translate.utils.translate.language import engine_select_source_dict, engine_select_target_dict, engines
+from screen_translate.utils.translate.Translate import translate
+
+from ..custom.Tooltip import CreateToolTip
 
 
 # Classes
@@ -31,7 +30,7 @@ class CaptureWindow:
         self.root.attributes("-alpha", 0.8)
         self.root.wm_attributes("-topmost", True)
         self.currentOpacity = 0.8
-        gClass.cw = self  # type: ignore
+        gcl.cw = self  # type: ignore
 
         # ------------------ #
         self.always_on_top = tk.IntVar()
@@ -62,58 +61,108 @@ class CaptureWindow:
         self.lbl_opacity.pack(padx=5, pady=5, side=tk.LEFT)
 
         # opacity slider
-        self.slider_opacity = ttk.Scale(self.f_1, from_=0.0, to=1.0, value=0.8, orient=tk.HORIZONTAL, command=self.change_opacity)
+        self.slider_opacity = ttk.Scale(
+            self.f_1, from_=0.0, to=1.0, value=0.8, orient=tk.HORIZONTAL, command=self.change_opacity
+        )
         self.slider_opacity.pack(padx=5, pady=5, side=tk.LEFT)
 
         # Button
-        assert gClass.mw is not None
+        assert gcl.mw is not None
         self.captureBtn = ttk.Button(self.f_1, text="Capture & Translate", command=self.start_capping)
         self.captureBtn.pack(padx=5, pady=5, side=tk.LEFT)
 
         # menu
         self.menuDropdown = tk.Menu(self.root, tearoff=0)
-        self.menuDropdown.add_checkbutton(label="Hide Title bar", command=lambda: self.toggle_hidden_top(False), onvalue=1, offvalue=0, variable=self.hidden_top, accelerator="Alt + T")
+        self.menuDropdown.add_checkbutton(
+            label="Hide Title bar",
+            command=lambda: self.toggle_hidden_top(False),
+            onvalue=1,
+            offvalue=0,
+            variable=self.hidden_top,
+            accelerator="Alt + T"
+        )
         if platform.system() == "Windows":
-            self.menuDropdown.add_checkbutton(label="Click Through/Transparent", command=lambda: self.toggle_click_through(False), onvalue=1, offvalue=0, variable=self.clickThrough, accelerator="Alt + S")
-        self.menuDropdown.add_checkbutton(label="Always On Top", command=lambda: self.toggle_always_on_top(False), onvalue=1, offvalue=0, variable=self.always_on_top, accelerator="Alt + O")
+            self.menuDropdown.add_checkbutton(
+                label="Click Through/Transparent",
+                command=lambda: self.toggle_click_through(False),
+                onvalue=1,
+                offvalue=0,
+                variable=self.clickThrough,
+                accelerator="Alt + S"
+            )
+        self.menuDropdown.add_checkbutton(
+            label="Always On Top",
+            command=lambda: self.toggle_always_on_top(False),
+            onvalue=1,
+            offvalue=0,
+            variable=self.always_on_top,
+            accelerator="Alt + O"
+        )
 
         self.menuDropdown.add_separator()
         # ------------------------------------------------------------------------
-        self.menuDropdown.add_command(label="Increase Opacity by 0.1", command=lambda: self.increase_opacity(), accelerator="Alt + Mouse Wheel Up")
-        self.menuDropdown.add_command(label="Decrease Opacity by 0.1", command=lambda: self.decrease_opacity(), accelerator="Alt + Mouse Wheel Down")
+        self.menuDropdown.add_command(
+            label="Increase Opacity by 0.1", command=lambda: self.increase_opacity(), accelerator="Alt + Mouse Wheel Up"
+        )
+        self.menuDropdown.add_command(
+            label="Decrease Opacity by 0.1", command=lambda: self.decrease_opacity(), accelerator="Alt + Mouse Wheel Down"
+        )
 
         self.menuDropdown.add_separator()
         # ------------------------------------------------------------------------
-        self.menuDropdown.add_checkbutton(label="Detect contour using CV2", command=self.cv2_update, onvalue=1, offvalue=0, variable=self.cv2Contour)
-        self.menuDropdown.add_checkbutton(label="Grayscale", command=self.grayscale_update, onvalue=1, offvalue=0, variable=self.grayscale)
+        self.menuDropdown.add_checkbutton(
+            label="Detect contour using CV2", command=self.cv2_update, onvalue=1, offvalue=0, variable=self.cv2Contour
+        )
+        self.menuDropdown.add_checkbutton(
+            label="Grayscale", command=self.grayscale_update, onvalue=1, offvalue=0, variable=self.grayscale
+        )
 
         self.bgTypeMenu = tk.Menu(self.menuDropdown, tearoff=0)
         self.menuDropdown.add_cascade(label="Background Type", menu=self.bgTypeMenu)
-        self.bgTypeMenu.add_radiobutton(label="Auto-Detect", command=self.bgType_update, value="Auto-Detect", variable=self.bgType)  # type: ignore
-        self.bgTypeMenu.add_radiobutton(label="Light", command=self.bgType_update, value="Light", variable=self.bgType)  # type: ignore
-        self.bgTypeMenu.add_radiobutton(label="Dark", command=self.bgType_update, value="Dark", variable=self.bgType)  # type: ignore
-        self.menuDropdown.add_checkbutton(label="Debug Mode", command=self.debugMode_update, onvalue=1, offvalue=0, variable=self.debugMode)  # type: ignore
+        self.bgTypeMenu.add_radiobutton(
+            label="Auto-Detect", command=self.bgType_update, value="Auto-Detect", variable=self.bgType
+        )  # type: ignore
+        self.bgTypeMenu.add_radiobutton(
+            label="Light", command=self.bgType_update, value="Light", variable=self.bgType
+        )  # type: ignore
+        self.bgTypeMenu.add_radiobutton(
+            label="Dark", command=self.bgType_update, value="Dark", variable=self.bgType
+        )  # type: ignore
+        self.menuDropdown.add_checkbutton(
+            label="Debug Mode", command=self.debugMode_update, onvalue=1, offvalue=0, variable=self.debugMode
+        )  # type: ignore
 
         self.menuDropdown.add_separator()
         # ------------------------------------------------------------------------
         self.submenu_engine = tk.Menu(self.menuDropdown, tearoff=0)
         self.menuDropdown.add_cascade(label="TL Engine", menu=self.submenu_engine)
-        for engine in engineList:
+        for engine in engines:
             self.submenu_engine.add_radiobutton(label=engine, command=self.engine_update, value=engine, variable=self.engine)
 
         self.submenu_sourceLang = tk.Menu(self.menuDropdown, tearoff=0)
         self.menuDropdown.add_cascade(label="From", menu=self.submenu_sourceLang)
-        for item in engine_select_source_dict[fJson.settingCache["engine"]]:
-            self.submenu_sourceLang.add_radiobutton(label=item, command=self.source_update, value=item, variable=self.sourceLang)
+        for item in engine_select_source_dict[fj.setting_cache["engine"]]:
+            self.submenu_sourceLang.add_radiobutton(
+                label=item, command=self.source_update, value=item, variable=self.sourceLang
+            )
 
         self.submenu_targetLang = tk.Menu(self.menuDropdown, tearoff=0)
         self.menuDropdown.add_cascade(label="To", menu=self.submenu_targetLang)
-        for item in engine_select_target_dict[fJson.settingCache["engine"]]:
-            self.submenu_targetLang.add_radiobutton(label=item, command=self.target_update, value=item, variable=self.targetLang)
+        for item in engine_select_target_dict[fj.setting_cache["engine"]]:
+            self.submenu_targetLang.add_radiobutton(
+                label=item, command=self.target_update, value=item, variable=self.targetLang
+            )
 
         self.menuDropdown.add_separator()
         # ------------------------------------------------------------------------
-        self.menuDropdown.add_checkbutton(label="Hide Tooltip", command=lambda: self.disable_tooltip(False), onvalue=1, offvalue=0, variable=self.tooltip_disabled, accelerator="Alt + X")
+        self.menuDropdown.add_checkbutton(
+            label="Hide Tooltip",
+            command=lambda: self.disable_tooltip(False),
+            onvalue=1,
+            offvalue=0,
+            variable=self.tooltip_disabled,
+            accelerator="Alt + X"
+        )
         self.menuDropdown.add_separator()
         self.menuDropdown.add_command(label="Keyboard Shortcut Keys", command=lambda: self.show_shortcut_keys())
 
@@ -145,17 +194,17 @@ class CaptureWindow:
             pass
 
     def onInit(self):
-        self.cv2Contour.set(fJson.settingCache["enhance_with_cv2_Contour"])
-        self.grayscale.set(fJson.settingCache["enhance_with_grayscale"])
-        self.bgType.set(fJson.settingCache["enhance_background"])
-        self.debugMode.set(fJson.settingCache["enhance_debugmode"])
-        self.engine.set(fJson.settingCache["engine"])
-        self.sourceLang.set(fJson.settingCache["sourceLang"])
-        self.targetLang.set(fJson.settingCache["targetLang"])
+        self.cv2Contour.set(fj.setting_cache["enhance_with_cv2_Contour"])
+        self.grayscale.set(fj.setting_cache["enhance_with_grayscale"])
+        self.bgType.set(fj.setting_cache["enhance_background"])
+        self.debugMode.set(fj.setting_cache["enhance_debugmode"])
+        self.engine.set(fj.setting_cache["engine"])
+        self.sourceLang.set(fj.setting_cache["sourceLang"])
+        self.targetLang.set(fj.setting_cache["targetLang"])
 
     # Show/Hide
     def show(self):
-        gClass.cw_hidden = False
+        gcl.cw_hidden = False
         self.onInit()
         self.root.after(100, self.root.deiconify)
         self.slider_opacity.set(0.8)
@@ -164,7 +213,7 @@ class CaptureWindow:
             self.root.wm_attributes("-transparentcolor", "")
 
     def on_closing(self):
-        gClass.cw_hidden = True
+        gcl.cw_hidden = True
         self.root.wm_withdraw()
 
     def StartMove(self, event):
@@ -274,11 +323,11 @@ class CaptureWindow:
         self.root.attributes("-alpha", self.currentOpacity)
         self.fTooltip.opacity = self.currentOpacity
         self.lbl_opacity.configure(text=f"Opacity: {round(self.currentOpacity, 3)}")
-        gClass.slider_mw_change(self.currentOpacity, update_slider=True)
+        gcl.slider_mw_change(self.currentOpacity, update_slider=True)
 
     # engine update
     def engine_update(self):
-        fJson.savePartialSetting("engine", self.engine.get())
+        fj.save_setting_partial("engine", self.engine.get())
         # update
         prev_source = self.sourceLang.get()
         prev_target = self.targetLang.get()
@@ -291,10 +340,14 @@ class CaptureWindow:
 
         # add new items
         for item in source_list:
-            self.submenu_sourceLang.add_radiobutton(label=item, command=self.source_update, value=item, variable=self.sourceLang)
+            self.submenu_sourceLang.add_radiobutton(
+                label=item, command=self.source_update, value=item, variable=self.sourceLang
+            )
 
         for item in target_list:
-            self.submenu_targetLang.add_radiobutton(label=item, command=self.target_update, value=item, variable=self.targetLang)
+            self.submenu_targetLang.add_radiobutton(
+                label=item, command=self.target_update, value=item, variable=self.targetLang
+            )
 
         if prev_source not in source_list:
             self.sourceLang.set(source_list[0])
@@ -307,71 +360,71 @@ class CaptureWindow:
         else:
             self.menuDropdown.entryconfig("To", state="normal")
 
-        gClass.update_mw_setting()
+        gcl.update_mw_setting()
 
     def source_update(self):
         """
         Method to update the source language.
         """
         logger.info("test")
-        fJson.savePartialSetting("sourceLang", self.sourceLang.get())
-        gClass.update_mw_setting()
+        fj.save_setting_partial("sourceLang", self.sourceLang.get())
+        gcl.update_mw_setting()
 
     def target_update(self):
         """
         Method to update the target language.
         """
-        fJson.savePartialSetting("targetLang", self.targetLang.get())
-        gClass.update_mw_setting()
+        fj.save_setting_partial("targetLang", self.targetLang.get())
+        gcl.update_mw_setting()
 
     def cv2_update(self):
         """
         Method to update the cv2 setting.
         """
-        fJson.savePartialSetting("enhance_with_cv2_Contour", True if self.cv2Contour.get() == 1 else False)
-        gClass.update_sw_setting()
+        fj.save_setting_partial("enhance_with_cv2_Contour", True if self.cv2Contour.get() == 1 else False)
+        gcl.update_sw_setting()
 
     def grayscale_update(self):
         """
         Method to update the grayscale setting.
         """
-        fJson.savePartialSetting("enhance_with_grayscale", True if self.grayscale.get() == 1 else False)
-        gClass.update_sw_setting()
+        fj.save_setting_partial("enhance_with_grayscale", True if self.grayscale.get() == 1 else False)
+        gcl.update_sw_setting()
 
     def bgType_update(self):
         """
         Method to update the background type setting.
         """
-        fJson.savePartialSetting("enhance_background", self.bgType.get())
-        gClass.update_sw_setting()
+        fj.save_setting_partial("enhance_background", self.bgType.get())
+        gcl.update_sw_setting()
 
     def debugMode_update(self):
         """
         Method to update the debug setting.
         """
-        fJson.savePartialSetting("enhance_debugmode", True if self.debugMode.get() == 1 else False)
-        gClass.update_sw_setting()
+        fj.save_setting_partial("enhance_debugmode", True if self.debugMode.get() == 1 else False)
+        gcl.update_sw_setting()
 
     # ----------------- capture -----------------
     def start_capping(self):
-        gClass.lb_start()
+        gcl.lb_start()
         opacBefore = self.currentOpacity
         self.root.attributes("-alpha", 0)
 
         # ----------------- hide other window -----------------
-        if fJson.settingCache["hide_mw_on_cap"]:
-            assert gClass.mw is not None
-            gClass.mw.root.attributes("-alpha", 0)
+        if fj.setting_cache["hide_mw_on_cap"]:
+            assert gcl.mw is not None
+            gcl.mw.root.attributes("-alpha", 0)
 
-        assert gClass.ex_qw is not None
-        prev_ex_qw_opac = gClass.ex_qw.currentOpacity
-        if fJson.settingCache["hide_ex_qw_on_cap"]:
-            gClass.ex_qw.root.attributes("-alpha", 0)
+        assert gcl.ex_qw is not None
+        prev_ex_qw_opac = gcl.ex_qw.currentOpacity
+        if fj.setting_cache["hide_ex_qw_on_cap"]:
+            gcl.ex_qw.root.attributes("-alpha", 0)
 
-        assert gClass.ex_resw is not None
-        prev_ex_resw_opac = gClass.ex_resw.currentOpacity
-        if fJson.settingCache["hide_ex_resw_on_cap"]:
-            gClass.ex_resw.root.attributes("-alpha", 0)
+        assert gcl.ex_resw is not None
+        prev_ex_resw_opac = gcl.ex_resw.currentOpacity
+        if fj.setting_cache["hide_ex_resw_on_cap"]:
+            gcl.ex_resw.root.attributes("-alpha", 0)
 
         # Get xywh of the screen
         x, y, w, h = self.root.winfo_x(), self.root.winfo_y(), self.root.winfo_width(), self.root.winfo_height()
@@ -382,24 +435,32 @@ class CaptureWindow:
         h += get_offset("h")
 
         success, res = ocrFromCoords([x, y, w, h])
-        gClass.lb_stop()
+        gcl.lb_stop()
 
         if success:
-            gClass.clear_mw_q()
-            gClass.clear_ex_q()
-            gClass.insert_mw_q(res)
-            gClass.insert_ex_q(res)
+            gcl.clear_mw_q()
+            gcl.clear_ex_q()
+            gcl.insert_mw_q(res)
+            gcl.insert_ex_q(res)
             # translate if translate
-            if fJson.settingCache["engine"] != "None":
+            if fj.setting_cache["engine"] != "None":
                 try:
-                    tlThread = threading.Thread(target=translate, args=(res, fJson.settingCache["sourceLang"], fJson.settingCache["targetLang"], fJson.settingCache["engine"]))
+                    tlThread = threading.Thread(
+                        target=translate,
+                        args=(
+                            res, fj.setting_cache["sourceLang"], fj.setting_cache["targetLang"], fj.setting_cache["engine"]
+                        )
+                    )
                     tlThread.start()
                 except Exception as e:
                     logger.exception(e)
                     Mbox("Error", "Error while translating: " + str(e), 2)
         else:
             if "is not installed or it's not in your PATH" in res:
-                Mbox("Error: Tesseract Could not be Found", "Invalid path location for tesseract.exe, please change it in the setting!", 2)
+                Mbox(
+                    "Error: Tesseract Could not be Found",
+                    "Invalid path location for tesseract.exe, please change it in the setting!", 2
+                )
             elif "Failed loading language" in res:
                 Mbox(
                     "Error: Failed Loading Language",
@@ -409,16 +470,16 @@ class CaptureWindow:
             else:
                 Mbox("Error", res, 2)
 
-        if fJson.settingCache["hide_mw_on_cap"]:
-            assert gClass.mw is not None
-            gClass.mw.root.attributes("-alpha", 1)
+        if fj.setting_cache["hide_mw_on_cap"]:
+            assert gcl.mw is not None
+            gcl.mw.root.attributes("-alpha", 1)
 
-        if fJson.settingCache["hide_ex_qw_on_cap"]:
-            assert gClass.ex_qw is not None
-            gClass.ex_qw.root.attributes("-alpha", prev_ex_qw_opac)
+        if fj.setting_cache["hide_ex_qw_on_cap"]:
+            assert gcl.ex_qw is not None
+            gcl.ex_qw.root.attributes("-alpha", prev_ex_qw_opac)
 
-        if fJson.settingCache["hide_ex_resw_on_cap"]:
-            assert gClass.ex_resw is not None
-            gClass.ex_resw.root.attributes("-alpha", prev_ex_resw_opac)
+        if fj.setting_cache["hide_ex_resw_on_cap"]:
+            assert gcl.ex_resw is not None
+            gcl.ex_resw.root.attributes("-alpha", prev_ex_resw_opac)
 
         self.root.attributes("-alpha", opacBefore)

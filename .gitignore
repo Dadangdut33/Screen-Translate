@@ -5,14 +5,15 @@ dist/
 captured/
 user/
 log/
-test/
+ignore/
 
 # virtual environment
+.env/
+.venv/
+.venvtest/
+env/
 venv/
+venvtest/
 
-# user
-.vscode/
-
-# created when running build_pyinstaller
-LICENSE.txt 
-*.spec
+# test
+temp.png

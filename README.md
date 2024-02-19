@@ -13,6 +13,8 @@
     <a href="https://github.com/Dadangdut33/Screen-Translate/network/members"><img alt="GitHub forks" src="https://img.shields.io/github/forks/Dadangdut33/Screen-Translate?style=social"></a>
 </p>
 
+# This branch is for Qt rewrite of the original project. The original is made in tkinter and can be found in the master branch. This branch is still in development and not yet ready for use. 
+
 STL a.k.a Screen Translate is an OCR translator tool made by utilizing Tesseract and opencv-python. The code is then compiled to .exe by using pyinstaller.
 Inspired by software such as Visual Novel Reader (VNR), [Visual Novel OCR](https://github.com/leminhyen2/Visual-Novel-OCR), and [QTranslate](https://quest-app.appspot.com/). Also available to download at [sourceforge](https://sourceforge.net/projects/screen-translate/).
 
@@ -22,12 +24,12 @@ Inspired by software such as Visual Novel Reader (VNR), [Visual Novel OCR](https
 
 <h1>Jump to</h1>
 
+- [This branch is for Qt rewrite of the original project. The original is made in tkinter and can be found in the master branch. This branch is still in development and not yet ready for use.](#this-branch-is-for-qt-rewrite-of-the-original-project-the-original-is-made-in-tkinter-and-can-be-found-in-the-master-branch-this-branch-is-still-in-development-and-not-yet-ready-for-use)
 - [Features](#features)
 - [User Requirements](#user-requirements)
 - [Downloads](#downloads)
 - [Installation and Setup](#installation-and-setup)
 - [How To Uninstall](#how-to-uninstall)
-- [Development](#--development--)
   - [Setup](#setup)
   - [Building](#building)
   - [Packaging](#packaging)

@@ -1,21 +1,20 @@
 import threading
 import tkinter as tk
 
-from screen_translate.components.custom.MBox import Mbox
-from screen_translate._path import path_logo_icon
-from screen_translate.Globals import gClass, fJson
-from screen_translate.Logging import logger
-from screen_translate.utils.Translate import translate
-from screen_translate.utils.Capture import ocrFromCoords
-from screen_translate.utils.Monitor import getScreenTotalGeometry
-from screen_translate.utils.LangCode import engine_select_source_dict, engine_select_target_dict, engineList
-
 from PIL import Image, ImageTk
+
+from screen_translate._globals import fj, gcl
+from screen_translate._logging import logger
+from screen_translate._path import path_logo_icon
+from screen_translate.components.custom.MBox import Mbox
+from screen_translate.utils.Monitor import getScreenTotalGeometry
+from screen_translate.utils.ocr.Capture import ocrFromCoords
+from screen_translate.utils.translate.language import engine_select_source_dict, engine_select_target_dict, engines
+from screen_translate.utils.translate.Translate import translate
 
 
 class SnipWindow:
     """Snip Window"""
-
     def __init__(self, master: tk.Tk):
         self.root = tk.Toplevel(master)
         self.root.title("Snipper")
@@ -25,7 +24,7 @@ class SnipWindow:
         self.root.wm_withdraw()
         self.imgobj = None
         self.img = None
-        gClass.csw = self  # type: ignore
+        gcl.csw = self  # type: ignore
 
         # ------------------ Variables ------------------
         self.rect = None
@@ -59,31 +58,47 @@ class SnipWindow:
         # ------------------ Menu ------------------
         self.menuDropdown = tk.Menu(self.root, tearoff=0)
 
-        self.menuDropdown.add_checkbutton(label="Detect contour using CV2", command=self.cv2_update, onvalue=1, offvalue=0, variable=self.cv2Contour)
-        self.menuDropdown.add_checkbutton(label="Grayscale", command=self.grayscale_update, onvalue=1, offvalue=0, variable=self.grayscale)
+        self.menuDropdown.add_checkbutton(
+            label="Detect contour using CV2", command=self.cv2_update, onvalue=1, offvalue=0, variable=self.cv2Contour
+        )
+        self.menuDropdown.add_checkbutton(
+            label="Grayscale", command=self.grayscale_update, onvalue=1, offvalue=0, variable=self.grayscale
+        )
 
         self.bgTypeMenu = tk.Menu(self.menuDropdown, tearoff=0)
         self.menuDropdown.add_cascade(label="Background Type", menu=self.bgTypeMenu)
-        self.bgTypeMenu.add_radiobutton(label="Auto-Detect", command=self.bgType_update, value="Auto-Detect", variable=self.bgType)  # type: ignore
-        self.bgTypeMenu.add_radiobutton(label="Light", command=self.bgType_update, value="Light", variable=self.bgType)  # type: ignore
-        self.bgTypeMenu.add_radiobutton(label="Dark", command=self.bgType_update, value="Dark", variable=self.bgType)  # type: ignore
-        self.menuDropdown.add_checkbutton(label="Debug Mode", command=self.debugMode_update, onvalue=1, offvalue=0, variable=self.debugMode)  # type: ignore
+        self.bgTypeMenu.add_radiobutton(
+            label="Auto-Detect", command=self.bgType_update, value="Auto-Detect", variable=self.bgType
+        )  # type: ignore
+        self.bgTypeMenu.add_radiobutton(
+            label="Light", command=self.bgType_update, value="Light", variable=self.bgType
+        )  # type: ignore
+        self.bgTypeMenu.add_radiobutton(
+            label="Dark", command=self.bgType_update, value="Dark", variable=self.bgType
+        )  # type: ignore
+        self.menuDropdown.add_checkbutton(
+            label="Debug Mode", command=self.debugMode_update, onvalue=1, offvalue=0, variable=self.debugMode
+        )  # type: ignore
 
         self.menuDropdown.add_separator()
         self.submenu_engine = tk.Menu(self.menuDropdown, tearoff=0)
         self.menuDropdown.add_cascade(label="TL Engine", menu=self.submenu_engine)
-        for engine in engineList:
+        for engine in engines:
             self.submenu_engine.add_radiobutton(label=engine, command=self.engine_update, value=engine, variable=self.engine)
 
         self.submenu_sourceLang = tk.Menu(self.menuDropdown, tearoff=0)
         self.menuDropdown.add_cascade(label="From", menu=self.submenu_sourceLang)
-        for item in engine_select_source_dict[fJson.settingCache["engine"]]:
-            self.submenu_sourceLang.add_radiobutton(label=item, command=self.source_update, value=item, variable=self.sourceLang)
+        for item in engine_select_source_dict[fj.setting_cache["engine"]]:
+            self.submenu_sourceLang.add_radiobutton(
+                label=item, command=self.source_update, value=item, variable=self.sourceLang
+            )
 
         self.submenu_targetLang = tk.Menu(self.menuDropdown, tearoff=0)
         self.menuDropdown.add_cascade(label="To", menu=self.submenu_targetLang)
-        for item in engine_select_target_dict[fJson.settingCache["engine"]]:
-            self.submenu_targetLang.add_radiobutton(label=item, command=self.target_update, value=item, variable=self.targetLang)
+        for item in engine_select_target_dict[fj.setting_cache["engine"]]:
+            self.submenu_targetLang.add_radiobutton(
+                label=item, command=self.target_update, value=item, variable=self.targetLang
+            )
 
         self.menuDropdown.add_separator()
         self.menuDropdown.add_command(label="Exit / Cancel snipping", command=self.exitScreenshotMode)
@@ -101,13 +116,13 @@ class SnipWindow:
 
     def onInit(self):
         """Init variable on snipping / every time entering snipping mode"""
-        self.bgType.set(fJson.settingCache["enhance_background"])
-        self.cv2Contour.set(fJson.settingCache["enhance_with_cv2_Contour"])
-        self.grayscale.set(fJson.settingCache["enhance_with_grayscale"])
-        self.debugMode.set(fJson.settingCache["enhance_debugmode"])
-        self.engine.set(fJson.settingCache["engine"])
-        self.sourceLang.set(fJson.settingCache["sourceLang"])
-        self.targetLang.set(fJson.settingCache["targetLang"])
+        self.bgType.set(fj.setting_cache["enhance_background"])
+        self.cv2Contour.set(fj.setting_cache["enhance_with_cv2_Contour"])
+        self.grayscale.set(fj.setting_cache["enhance_with_grayscale"])
+        self.debugMode.set(fj.setting_cache["enhance_debugmode"])
+        self.engine.set(fj.setting_cache["engine"])
+        self.sourceLang.set(fj.setting_cache["sourceLang"])
+        self.targetLang.set(fj.setting_cache["targetLang"])
         self.root.geometry(getScreenTotalGeometry()[0])
         self.tlw_snipmask.geometry(getScreenTotalGeometry()[0])
 
@@ -174,31 +189,39 @@ class SnipWindow:
     def takeBoundedScreenShot(self, x1, y1, x2, y2):
         coords = [x1, y1, x2, y2]
 
-        ocrThread = threading.Thread(target=self.startOCR, args=(coords,), daemon=True)
+        ocrThread = threading.Thread(target=self.startOCR, args=(coords, ), daemon=True)
         ocrThread.start()
 
     def startOCR(self, coords):
-        gClass.lb_start()
+        gcl.lb_start()
         success, res = ocrFromCoords(coords)
-        gClass.lb_stop()
+        gcl.lb_stop()
 
         if success:
-            gClass.clear_mw_q()
-            gClass.clear_ex_q()
-            gClass.insert_mw_q(res)
-            gClass.insert_ex_q(res)
+            gcl.clear_mw_q()
+            gcl.clear_ex_q()
+            gcl.insert_mw_q(res)
+            gcl.insert_ex_q(res)
 
             # translate if translate
-            if fJson.settingCache["engine"] != "None":
+            if fj.setting_cache["engine"] != "None":
                 try:
-                    tlThread = threading.Thread(target=translate, args=(res, fJson.settingCache["sourceLang"], fJson.settingCache["targetLang"], fJson.settingCache["engine"]))
+                    tlThread = threading.Thread(
+                        target=translate,
+                        args=(
+                            res, fj.setting_cache["sourceLang"], fj.setting_cache["targetLang"], fj.setting_cache["engine"]
+                        )
+                    )
                     tlThread.start()
                 except Exception as e:
                     logger.exception(e)
                     Mbox("Error", "Error while translating: " + str(e), 2)
         else:
             if "is not installed or it's not in your PATH" in res:
-                Mbox("Error: Tesseract Could not be Found", "Invalid path location for tesseract.exe, please change it in the setting!", 2)
+                Mbox(
+                    "Error: Tesseract Could not be Found",
+                    "Invalid path location for tesseract.exe, please change it in the setting!", 2
+                )
             elif "Failed loading language" in res:
                 Mbox(
                     "Error: Failed Loading Language",
@@ -257,7 +280,7 @@ class SnipWindow:
 
     # engine update
     def engine_update(self):
-        fJson.savePartialSetting("engine", self.engine.get())
+        fj.save_setting_partial("engine", self.engine.get())
         # update
         prev_source = self.sourceLang.get()
         prev_target = self.targetLang.get()
@@ -270,10 +293,14 @@ class SnipWindow:
 
         # add new items
         for item in source_list:
-            self.submenu_sourceLang.add_radiobutton(label=item, command=self.source_update, value=item, variable=self.sourceLang)
+            self.submenu_sourceLang.add_radiobutton(
+                label=item, command=self.source_update, value=item, variable=self.sourceLang
+            )
 
         for item in target_list:
-            self.submenu_targetLang.add_radiobutton(label=item, command=self.target_update, value=item, variable=self.targetLang)
+            self.submenu_targetLang.add_radiobutton(
+                label=item, command=self.target_update, value=item, variable=self.targetLang
+            )
 
         if prev_source not in source_list:
             self.sourceLang.set(source_list[0])
@@ -286,52 +313,52 @@ class SnipWindow:
         else:
             self.menuDropdown.entryconfig("To", state="normal")
 
-        gClass.update_mw_setting()
+        gcl.update_mw_setting()
 
     def source_update(self):
         """
         Method to update the source language.
         """
-        fJson.savePartialSetting("sourceLang", self.sourceLang.get())
-        gClass.update_mw_setting()
-        gClass.update_ex_cw_setting()
+        fj.save_setting_partial("sourceLang", self.sourceLang.get())
+        gcl.update_mw_setting()
+        gcl.update_ex_cw_setting()
 
     def target_update(self):
         """
         Method to update the target language.
         """
-        fJson.savePartialSetting("targetLang", self.targetLang.get())
-        gClass.update_mw_setting()
-        gClass.update_ex_cw_setting()
+        fj.save_setting_partial("targetLang", self.targetLang.get())
+        gcl.update_mw_setting()
+        gcl.update_ex_cw_setting()
 
     def cv2_update(self):
         """
         Method to update the cv2 setting.
         """
-        fJson.savePartialSetting("enhance_with_cv2_Contour", True if self.cv2Contour.get() == 1 else False)
-        gClass.update_sw_setting()
-        gClass.update_ex_cw_setting()
+        fj.save_setting_partial("enhance_with_cv2_Contour", True if self.cv2Contour.get() == 1 else False)
+        gcl.update_sw_setting()
+        gcl.update_ex_cw_setting()
 
     def grayscale_update(self):
         """
         Method to update the grayscale setting.
         """
-        fJson.savePartialSetting("enhance_with_grayscale", True if self.grayscale.get() == 1 else False)
-        gClass.update_sw_setting()
-        gClass.update_ex_cw_setting()
+        fj.save_setting_partial("enhance_with_grayscale", True if self.grayscale.get() == 1 else False)
+        gcl.update_sw_setting()
+        gcl.update_ex_cw_setting()
 
     def bgType_update(self):
         """
         Method to update the background type setting.
         """
-        fJson.savePartialSetting("enhance_background", self.bgType.get())
-        gClass.update_sw_setting()
-        gClass.update_ex_cw_setting()
+        fj.save_setting_partial("enhance_background", self.bgType.get())
+        gcl.update_sw_setting()
+        gcl.update_ex_cw_setting()
 
     def debugMode_update(self):
         """
         Method to update the debug setting.
         """
-        fJson.savePartialSetting("enhance_debugmode", True if self.debugMode.get() == 1 else False)
-        gClass.update_sw_setting()
-        gClass.update_ex_cw_setting()
+        fj.save_setting_partial("enhance_debugmode", True if self.debugMode.get() == 1 else False)
+        gcl.update_sw_setting()
+        gcl.update_ex_cw_setting()

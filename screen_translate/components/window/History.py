@@ -1,12 +1,14 @@
 import tkinter as tk
 from tkinter import ttk
-import pyperclip
 
+import pyperclip
 from tksheet import Sheet
-from screen_translate.components.custom.MBox import Mbox
+
+from screen_translate._globals import fj, gcl
+from screen_translate._logging import logger
 from screen_translate._path import path_logo_icon
-from screen_translate.Globals import gClass, fJson
-from screen_translate.Logging import logger
+from screen_translate.components.custom.MBox import Mbox
+
 
 # ----------------------------------------------------------------------
 class HistoryWindow:
@@ -19,7 +21,7 @@ class HistoryWindow:
         self.root.geometry("700x350")
         self.root.wm_attributes("-topmost", False)  # Default False
         self.root.wm_withdraw()
-        gClass.hw = self  # type: ignore
+        gcl.hw = self  # type: ignore
 
         # Layout
         # frameOne
@@ -36,12 +38,12 @@ class HistoryWindow:
             self.f_1,
             page_up_down_select_row=True,
             startup_select=(0, 1, "rows"),
-            header_font="Arial 10 bold",
+            header_font=("Arial", 10, "bold"),
             headers=["Engine", "From - To", "Query", "Result"],
         )
         self.sheet_history.enable_bindings()
-        self.sheet_history.change_theme("light blue" if "light" in fJson.settingCache["theme"] else "dark blue")
-        self.sheet_history.edit_bindings(enable=False)
+        self.sheet_history.change_theme("light blue" if "light" in fj.setting_cache["theme"] else "dark blue")
+        self.sheet_history.enable_bindings()
         self.sheet_history.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
         # Other stuff
@@ -51,7 +53,9 @@ class HistoryWindow:
         self.btn_copy_to_clipboard = ttk.Button(self.f_bot, text="↳ Copy to Clipboard", command=self.copyToClipboard)
         self.btn_copy_to_clipboard.pack(side=tk.LEFT, fill=tk.X, padx=5, pady=5, expand=False)
 
-        self.btn_copy_to_translate_box = ttk.Button(self.f_bot, text="↳ Copy to Translate Menu", command=self.copyToTranslateMenu)
+        self.btn_copy_to_translate_box = ttk.Button(
+            self.f_bot, text="↳ Copy to Translate Menu", command=self.copyToTranslateMenu
+        )
         self.btn_copy_to_translate_box.pack(side=tk.LEFT, fill=tk.X, padx=5, pady=5, expand=False)
 
         self.btn_delete_selected = ttk.Button(self.f_bot, text="✕ Delete Selected", command=self.deleteSelected)
@@ -86,7 +90,7 @@ class HistoryWindow:
         """
         Refresh the history
         """
-        success, data = fJson.readHistory()
+        success, data = fj.read_history()
         if not success:
             self.sheet_history.set_sheet_data(data=[["Error when fetching history!"]], redraw=True)
             return
@@ -110,7 +114,7 @@ class HistoryWindow:
         Delete all history data
         """
         if Mbox("Confirmation", "Are you sure you want to delete all history?", 3, self.root):
-            status, statusText = fJson.deleteAllHistory()
+            status, statusText = fj.clear_history()
             if status == True:
                 logger.info("Success: " + statusText)
                 Mbox("Success", statusText, 0, self.root)
@@ -129,7 +133,7 @@ class HistoryWindow:
             if Mbox("Confirmation", "Are you sure you want to delete the selected history?", 3, self.root):
 
                 logger.debug("Deleting: " + str(selected))
-                status, statusText = fJson.deleteCertainHistory(selected)
+                status, statusText = fj.delete_x_history(selected)
                 if status == True:
                     logger.info(statusText)
                     Mbox("Info", statusText, 0, self.root)
@@ -145,7 +149,7 @@ class HistoryWindow:
         selected = list(self.sheet_history.get_selected_rows(get_cells=False, return_tuple=False, get_cells_as_rows=True))
 
         if len(selected) > 0:
-            selectedData = self.sheet_history.get_row_data(selected[0], return_copy=False)
+            selectedData = self.sheet_history.get_row_data(selected[0])
 
             pyperclip.copy(selectedData[2] + " -> " + selectedData[3])  # type: ignore
 
@@ -162,16 +166,16 @@ class HistoryWindow:
         selected = list(self.sheet_history.get_selected_rows(get_cells=False, return_tuple=False, get_cells_as_rows=True))
 
         if len(selected) > 0:
-            selectedData = self.sheet_history.get_row_data(selected[0], return_copy=False)
+            selectedData = self.sheet_history.get_row_data(selected[0])
 
-            gClass.clear_mw_q()
-            gClass.clear_mw_res()
-            gClass.clear_ex_q()
-            gClass.clear_ex_res()
-            gClass.insert_mw_q(selectedData[2])  # type: ignore
-            gClass.insert_mw_res(selectedData[3])  # type: ignore
-            gClass.insert_ex_q(selectedData[2])  # type: ignore
-            gClass.insert_ex_res(selectedData[3])  # type: ignore
+            gcl.clear_mw_q()
+            gcl.clear_mw_res()
+            gcl.clear_ex_q()
+            gcl.clear_ex_res()
+            gcl.insert_mw_q(selectedData[2])  # type: ignore
+            gcl.insert_mw_res(selectedData[3])  # type: ignore
+            gcl.insert_ex_q(selectedData[2])  # type: ignore
+            gcl.insert_ex_res(selectedData[3])  # type: ignore
 
             # update button
             self.btn_copy_to_translate_box.config(text="✓ Copied to Translate Menu!")

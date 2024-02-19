@@ -1,10 +1,10 @@
+import platform
 import tkinter as tk
 from tkinter import ttk
-import platform
 from typing import Literal
 
+from screen_translate._globals import fj, gcl
 from screen_translate._path import path_logo_icon
-from screen_translate.Globals import fJson, gClass
 from screen_translate.components.custom.MBox import Mbox
 from screen_translate.components.custom.Tooltip import CreateToolTip
 from screen_translate.utils.Beep import beep
@@ -36,21 +36,28 @@ class AbstractDetachedWindow:
         self.hidden_top = tk.IntVar()
         self.clickThrough = tk.IntVar()
         if winType == "q":
-            gClass.ex_qw = self  # type: ignore
+            gcl.ex_qw = self  # type: ignore
         elif winType == "res":
-            gClass.ex_resw = self  # type: ignore
+            gcl.ex_resw = self  # type: ignore
 
         # ------------------ #
         # Top frame
         self.f_1 = ttk.Frame(self.root)
         self.f_1.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
-        self.fTooltip = CreateToolTip(self.f_1, "Right click for interaction menu\n\nTips: You can drag the window by dragging from the label", wrapLength=400)
+        self.fTooltip = CreateToolTip(
+            self.f_1,
+            "Right click for interaction menu\n\nTips: You can drag the window by dragging from the label",
+            wrapLength=400
+        )
 
         self.labelText = tk.Label(
             self.f_1,
-            font=(fJson.settingCache[f"tb_ex_{winType}_font"], fJson.settingCache[f"tb_ex_{winType}_font_size"], "bold" if fJson.settingCache[f"tb_ex_{winType}_font_bold"] else "normal"),
-            fg=fJson.settingCache[f"tb_ex_{winType}_font_color"],
-            bg=fJson.settingCache[f"tb_ex_{winType}_bg_color"],
+            font=(
+                fj.setting_cache[f"tb_ex_{winType}_font"], fj.setting_cache[f"tb_ex_{winType}_font_size"],
+                "bold" if fj.setting_cache[f"tb_ex_{winType}_font_bold"] else "normal"
+            ),
+            fg=fj.setting_cache[f"tb_ex_{winType}_font_color"],
+            bg=fj.setting_cache[f"tb_ex_{winType}_bg_color"],
             wraplength=600,
             justify=tk.LEFT,
         )
@@ -59,15 +66,47 @@ class AbstractDetachedWindow:
         self.menuDropdown = tk.Menu(self.root, tearoff=0)
         self.menuDropdown.add_command(label="Copy", command=lambda: self.copy_tb_content(), accelerator="Alt + C")
         self.menuDropdown.add_separator()
-        self.menuDropdown.add_checkbutton(label="Hide Title bar", command=lambda: self.toggle_hidden_top(False), onvalue=1, offvalue=0, variable=self.hidden_top, accelerator="Alt + T")
+        self.menuDropdown.add_checkbutton(
+            label="Hide Title bar",
+            command=lambda: self.toggle_hidden_top(False),
+            onvalue=1,
+            offvalue=0,
+            variable=self.hidden_top,
+            accelerator="Alt + T"
+        )
         if platform.system() == "Windows":
-            self.menuDropdown.add_checkbutton(label="Click Through/Transparent", command=lambda: self.toggle_click_through(False), onvalue=1, offvalue=0, variable=self.clickThrough, accelerator="Alt + S")
-        self.menuDropdown.add_checkbutton(label="Always On Top", command=lambda: self.toggle_always_on_top(False), onvalue=1, offvalue=0, variable=self.always_on_top, accelerator="Alt + O")
+            self.menuDropdown.add_checkbutton(
+                label="Click Through/Transparent",
+                command=lambda: self.toggle_click_through(False),
+                onvalue=1,
+                offvalue=0,
+                variable=self.clickThrough,
+                accelerator="Alt + S"
+            )
+        self.menuDropdown.add_checkbutton(
+            label="Always On Top",
+            command=lambda: self.toggle_always_on_top(False),
+            onvalue=1,
+            offvalue=0,
+            variable=self.always_on_top,
+            accelerator="Alt + O"
+        )
         self.menuDropdown.add_separator()
-        self.menuDropdown.add_command(label="Increase Opacity by 0.1", command=lambda: self.increase_opacity(), accelerator="Alt + Mouse Wheel Up")
-        self.menuDropdown.add_command(label="Decrease Opacity by 0.1", command=lambda: self.decrease_opacity(), accelerator="Alt + Mouse Wheel Down")
+        self.menuDropdown.add_command(
+            label="Increase Opacity by 0.1", command=lambda: self.increase_opacity(), accelerator="Alt + Mouse Wheel Up"
+        )
+        self.menuDropdown.add_command(
+            label="Decrease Opacity by 0.1", command=lambda: self.decrease_opacity(), accelerator="Alt + Mouse Wheel Down"
+        )
         self.menuDropdown.add_separator()
-        self.menuDropdown.add_checkbutton(label="Hide Tooltip", command=lambda: self.disable_tooltip(False), onvalue=1, offvalue=0, variable=self.tooltip_disabled, accelerator="Alt + X")
+        self.menuDropdown.add_checkbutton(
+            label="Hide Tooltip",
+            command=lambda: self.disable_tooltip(False),
+            onvalue=1,
+            offvalue=0,
+            variable=self.tooltip_disabled,
+            accelerator="Alt + X"
+        )
         self.menuDropdown.add_separator()
         self.menuDropdown.add_command(label="Keyboard Shortcut Keys", command=lambda: self.show_shortcut_keys())
 

@@ -1,17 +1,19 @@
 import re
-from tkinter import ttk
 import tkinter as tk
-import requests
-
 from threading import Thread
+from tkinter import ttk
+
+import requests
 from PIL import Image, ImageTk
 
-from ..custom.Tooltip import CreateToolTip
+from screen_translate._globals import app_name, fj, gcl
+from screen_translate._logging import logger
+from screen_translate._path import path_logo_icon, path_logo_png
 from screen_translate._version import __version__
-from screen_translate.Logging import logger
-from screen_translate._path import path_logo_png, path_logo_icon
-from screen_translate.Globals import gClass, app_name, fJson
 from screen_translate.utils.Helper import OpenUrl, nativeNotify
+
+from ..custom.Tooltip import CreateToolTip
+
 
 # Classes
 class AboutWindow:
@@ -24,7 +26,7 @@ class AboutWindow:
         self.root.geometry("400x300")
         self.root.wm_withdraw()
         self.checking = False
-        gClass.aw = self  # type: ignore
+        gcl.aw = self  # type: ignore
 
         # Top frame
         self.f_top = ttk.Frame(self.root, style="Brighter.TFrame")
@@ -59,15 +61,20 @@ class AboutWindow:
             self.logoNotFoud.pack(side=tk.TOP, padx=5, pady=5)
             self.root.geometry("375x325")
 
-        self.lbl_title = ttk.Label(self.f_top, text="Screen Translate", font=("Helvetica", 12, "bold"), style="BrighterTFrameBg.TLabel")
+        self.lbl_title = ttk.Label(
+            self.f_top, text="Screen Translate", font=("Helvetica", 12, "bold"), style="BrighterTFrameBg.TLabel"
+        )
         self.lbl_title.pack(padx=5, pady=2, side=tk.TOP)
 
-        self.lbl_sub_title = ttk.Label(self.f_top, text="An open source OCR Translation tool.", style="BrighterTFrameBg.TLabel")
+        self.lbl_sub_title = ttk.Label(
+            self.f_top, text="An open source OCR Translation tool.", style="BrighterTFrameBg.TLabel"
+        )
         self.lbl_sub_title.pack(padx=5, pady=2, side=tk.TOP)
 
         self.lbl_content = ttk.Label(
             self.f_top,
-            text="This program is completely open source, you can improve it if you\nwant by sending a pull request, you can also submit an issue if you\nfound any bugs. If you are confused on how to use it you can\n"
+            text=
+            "This program is completely open source, you can improve it if you\nwant by sending a pull request, you can also submit an issue if you\nfound any bugs. If you are confused on how to use it you can\n"
             + "check the tutorial linked in the menu bar",
             style="BrighterTFrameBg.TLabel",
         )
@@ -81,7 +88,13 @@ class AboutWindow:
         self.checkUpdateLabelText = "(check for update)"
         self.checkUpdateLabelFunc = self.check_for_update
 
-        self.checkUpdateLabel = ttk.Label(self.f_bot_l_t, text=self.checkUpdateLabelText, foreground=self.checkUpdateLabelFg, font=("Segoe UI", 8), cursor="hand2")
+        self.checkUpdateLabel = ttk.Label(
+            self.f_bot_l_t,
+            text=self.checkUpdateLabelText,
+            foreground=self.checkUpdateLabelFg,
+            font=("Segoe UI", 8),
+            cursor="hand2"
+        )
         self.checkUpdateLabel.pack(padx=0, pady=2, ipadx=0, side=tk.LEFT)
         self.checkUpdateLabel.bind("<Button-1>", self.checkUpdateLabelFunc)
         self.tooltipCheckUpdate = CreateToolTip(self.checkUpdateLabel, "Click to check for update")
@@ -90,7 +103,9 @@ class AboutWindow:
         self.lbl_icon = ttk.Label(self.f_bot_l_b, text="Translate Icons in logo from", font=("Segoe UI", 8))
         self.lbl_icon.pack(padx=5, pady=5, side=tk.LEFT)
 
-        self.lbl_icon_link = ttk.Label(self.f_bot_l_b, text="Icons8.com 🡽", font=("Segoe UI", 8), foreground="blue", cursor="hand2")
+        self.lbl_icon_link = ttk.Label(
+            self.f_bot_l_b, text="Icons8.com 🡽", font=("Segoe UI", 8), foreground="blue", cursor="hand2"
+        )
         self.lbl_icon_link.pack(padx=0, pady=(0, 3), side=tk.LEFT)
         self.lbl_icon_link.bind("<Button-1>", self.open_icons8)
         self.icons_8_ToolTip = CreateToolTip(self.lbl_icon_link, "Open Icons8 in web browser")
@@ -111,7 +126,7 @@ class AboutWindow:
         self.onInit()
 
     def onInit(self):
-        if fJson.settingCache["checkUpdateOnStart"]:
+        if fj.setting_cache["checkUpdateOnStart"]:
             logger.info("Checking for update on start")
             self.checkingOnStart = True
             self.check_for_update()
@@ -158,7 +173,10 @@ class AboutWindow:
                     self.checkUpdateLabelFg = "blue"
                     self.checkUpdateLabelFunc = self.open_dl_link
                     self.tooltipCheckUpdate.text = "Click to go to the latest release page"
-                    nativeNotify("New version available", "Visit the repository to download the latest update", path_logo_png, app_name)
+                    nativeNotify(
+                        "New version available", "Visit the repository to download the latest update", path_logo_png,
+                        app_name
+                    )
                 else:
                     logger.info("No update available")
                     self.checkUpdateLabelText = "You are using the latest version"

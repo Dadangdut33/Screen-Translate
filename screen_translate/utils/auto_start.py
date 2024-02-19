@@ -1,6 +1,3 @@
-import platform
-import winreg
-
 """
 https://stackoverflow.com/a/69643005/13997872
 Create autostart:
@@ -19,6 +16,9 @@ Check autostart:
 
 if check_autostart_registry('App name'):
 """
+
+import platform
+import winreg
 
 
 def set_autostart_registry(app_name, key_data=None, autostart: bool = True) -> bool:
