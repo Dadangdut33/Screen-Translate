@@ -1,0 +1,63 @@
+[build-system]
+requires = ["setuptools>=70", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "screen-translate"
+version = "3.0.0"
+description = "A screen OCR and translation desktop application"
+readme = "readme.md"
+license = { text = "MIT" }
+requires-python = ">=3.12"
+dependencies = [
+    "PyQt6>=6.6",
+    "pytesseract>=0.3.10",
+    "Pillow>=10.0",
+    "deep_translator>=1.11",
+    "arabic-reshaper>=3.0",
+    "pyperclip>=1.8",
+    "keyboard>=0.13",
+    "platformdirs>=4.0",
+]
+
+[project.optional-dependencies]
+argos = ["argostranslate>=1.9"]
+deepl = ["deepl>=1.17"]
+dev = [
+    "ruff>=0.4",
+    "mypy>=1.10",
+    "pyinstaller>=6",
+    "pytest>=8",
+    "types-Pillow",
+    "types-pyperclip",
+]
+
+[project.scripts]
+screen-translate = "screen_translate.__main__:main"
+
+[project.urls]
+Homepage = "https://github.com/Dadangdut33/Screen-Translate"
+Repository = "https://github.com/Dadangdut33/Screen-Translate"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["screen_translate*"]
+
+[tool.setuptools.package-data]
+screen_translate = ["assets/*"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "C4", "RUF"]
+ignore = ["E501"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
