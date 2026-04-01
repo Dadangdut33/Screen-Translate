@@ -3,10 +3,17 @@
 from __future__ import annotations
 
 import logging
+import os
+import shutil
+import subprocess
+from datetime import datetime
+from pathlib import Path
 from typing import Any
 
 import pyperclip
-from PyQt6.QtCore import QObject, QRunnable, QThreadPool, pyqtSignal, pyqtSlot
+from PIL import Image
+from platformdirs import user_data_dir
+from PyQt6.QtCore import QObject, QRect, QThreadPool, QRunnable, pyqtSignal, pyqtSlot
 from PyQt6.QtWidgets import QMessageBox
 
 from screen_translate.config.settings import SettingsManager
@@ -15,10 +22,28 @@ from screen_translate.core.ocr.base import OCRError
 from screen_translate.core.ocr.tesseract import TesseractOCRBackend
 from screen_translate.core.translation.argos_backend import load_argos_backend
 from screen_translate.core.translation.base import TranslationBackend, TranslationError
-from screen_translate.core.translation.deep_translator_backend import load_deep_translator_backends
 from screen_translate.core.translation.deepl_official_backend import load_deepl_official_backend
+from screen_translate.core.translation.translators_backend import get_all_translators_backends
 
 logger = logging.getLogger(__name__)
+
+_TESSERACT_LANGUAGE_ALIASES: dict[str, str] = {
+    "ar": "ara",
+    "de": "deu",
+    "en": "eng",
+    "es": "spa",
+    "fr": "fra",
+    "hi": "hin",
+    "id": "ind",
+    "it": "ita",
+    "ja": "jpn",
+    "ko": "kor",
+    "pt": "por",
+    "ru": "rus",
+    "zh": "chi_sim",
+    "zh-CN": "chi_sim",
+    "zh-TW": "chi_tra",
+}
 
 
 # ---------------------------------------------------------------------------
@@ -153,6 +178,7 @@ class AppController(QObject):
         # Window references (populated by the UI layer)
         self.main_window: Any = None
         self.capture_window: Any = None
+        self.capture_region_overlays: list[Any] = []
         self.snip_overlays: list[Any] = []
         self.query_window: Any = None
         self.result_window: Any = None
@@ -164,10 +190,11 @@ class AppController(QObject):
 
         # OCR backend (lazy-init)
         self._ocr_backend: TesseractOCRBackend | None = None
+        self._capture_region_rect: QRect | None = self._load_capture_region_rect()
 
         # Translation backends
         self._backends: dict[str, TranslationBackend] = {}
-        self._active_backend_name: str = settings.get("engine", "Google Translate")
+        self._active_backend_name: str = settings.get("engine", "translators-google")
         self._load_backends()
 
     # ------------------------------------------------------------------
@@ -176,12 +203,8 @@ class AppController(QObject):
 
     def _load_backends(self) -> None:
         """Load all available translation backends (skips missing ones)."""
-        backends: list[TranslationBackend] = load_deep_translator_backends(
-            libre_host=self.settings.get("libre_host", "translate.argosopentech.com"),
-            libre_port=self.settings.get("libre_port", ""),
-            libre_https=self.settings.get("libre_https", True),
-            libre_api_key=self.settings.get("libre_api_key", ""),
-        )
+        backends: list[TranslationBackend] = get_all_translators_backends()
+
         argos = load_argos_backend()
         if argos:
             backends.append(argos)
@@ -233,16 +256,77 @@ class AppController(QObject):
             tes_path: str = self.settings.get("tesseract_loc", "")
             extra_cfg: str = self.settings.get("tesseract_config", "")
             grayscale: bool = self.settings.get("enhance_with_grayscale", True)
+            cv2_contour: bool = self.settings.get("enhance_with_cv2_contour", False)
+            save_cv2_contour_image: bool = self.settings.get("save_cv2_contour_image", False)
+            background: str = self.settings.get("enhance_background", "Auto-Detect")
             self._ocr_backend = TesseractOCRBackend(
                 tesseract_path=tes_path,
                 extra_config=extra_cfg,
                 grayscale=grayscale,
+                use_cv2_contour=cv2_contour,
+                save_cv2_contour_image=save_cv2_contour_image,
+                background_mode=background,
             )
         return self._ocr_backend
 
     def reset_ocr_backend(self) -> None:
         """Force re-creation of the OCR backend (e.g. after settings change)."""
         self._ocr_backend = None
+
+    def _load_capture_region_rect(self) -> QRect | None:
+        raw = str(self.settings.get("capture_region_geometry", "")).strip()
+        if not raw:
+            return None
+        try:
+            x_str, y_str, w_str, h_str = raw.split(",")
+            return QRect(int(x_str), int(y_str), max(1, int(w_str)), max(1, int(h_str)))
+        except ValueError:
+            logger.warning("Invalid capture_region_geometry setting: %r", raw)
+            return None
+
+    def get_capture_region(self) -> QRect | None:
+        """Return the stored capture region for virtual overlay mode."""
+        return QRect(self._capture_region_rect) if self._capture_region_rect is not None else None
+
+    def set_capture_region(self, rect: QRect) -> None:
+        """Persist the capture region selected by the virtual overlay."""
+        normalized = rect.normalized()
+        self._capture_region_rect = QRect(normalized)
+        self.settings.set(
+            "capture_region_geometry",
+            f"{normalized.x()},{normalized.y()},{normalized.width()},{normalized.height()}",
+        )
+
+    def start_capture_region_selection(self) -> bool:
+        """Launch the persistent capture-region selector across all screens."""
+        if not self.capture_region_overlays:
+            logger.warning("No capture region overlays available")
+            return False
+        for overlay in self.capture_region_overlays:
+            overlay.start_selection()
+        return True
+
+    def _resolve_ocr_language(self, selected_lang: str) -> str:
+        """Map the UI language selection to an installed Tesseract language code."""
+        try:
+            installed = self.get_ocr_backend().detect_languages()
+        except OCRError:
+            return selected_lang
+
+        if selected_lang in installed:
+            return selected_lang
+
+        mapped = _TESSERACT_LANGUAGE_ALIASES.get(selected_lang)
+        if mapped and mapped in installed:
+            return mapped
+
+        if selected_lang == "auto":
+            if "eng" in installed:
+                return "eng"
+            if installed:
+                return installed[0]
+
+        return selected_lang
 
     # ------------------------------------------------------------------
     # Async OCR
@@ -263,7 +347,7 @@ class AppController(QObject):
             QMessageBox.critical(None, "Tesseract Not Found", str(exc))
             return
 
-        source_lang: str = self.settings.get("sourceLang", "English")
+        source_lang: str = self._resolve_ocr_language(str(self.settings.get("sourceLang", "auto")))
         extra_config: str = self.settings.get("tesseract_config", "")
         psm5: bool = self.settings.get("tesseract_psm5_vertical", True)
 
@@ -333,8 +417,33 @@ class AppController(QObject):
             logger.warning("No translation backend active")
             return
 
-        source_lang: str = self.settings.get("sourceLang", "English")
-        target_lang: str = self.settings.get("targetLang", "Japanese")
+        source_lang: str = str(self.settings.get("sourceLang", "auto"))
+        target_lang: str = str(self.settings.get("targetLang", "en"))
+        supported_languages = backend.available_languages()
+
+        if not supported_languages:
+            QMessageBox.warning(
+                None,
+                "Languages Unavailable",
+                f"{self._active_backend_name} could not load its supported languages.",
+            )
+            return
+
+        if source_lang and source_lang not in supported_languages:
+            source_lang = "auto" if "auto" in supported_languages else supported_languages[0]
+            self.settings.set("sourceLang", source_lang)
+
+        target_candidates = [lang for lang in supported_languages if lang not in {"auto", "Auto"}]
+        if target_lang not in target_candidates:
+            if not target_candidates:
+                QMessageBox.warning(
+                    None,
+                    "No Target Language",
+                    f"{self._active_backend_name} did not provide any target languages.",
+                )
+                return
+            target_lang = target_candidates[0]
+            self.settings.set("targetLang", target_lang)
 
         worker = _TranslationWorker(backend, text, source_lang, target_lang)
         worker.signals.finished.connect(self._on_translation_done)
@@ -397,3 +506,58 @@ class AppController(QObject):
             QMessageBox.warning(None, "No Engine Selected", "Please select a translation engine first.")
             return
         self.run_translation(text)
+
+    def start_snip_capture(self) -> bool:
+        """Start snip capture, using external region tools when needed on Wayland."""
+        session = os.environ.get("XDG_SESSION_TYPE", "").lower()
+        desktop = os.environ.get("XDG_CURRENT_DESKTOP", "").lower()
+        if session == "wayland" and ("kde" in desktop or "plasma" in desktop):
+            return self._start_spectacle_snip_capture()
+
+        for overlay in self.snip_overlays:
+            overlay.start_snip()
+        return True
+
+    def _start_spectacle_snip_capture(self) -> bool:
+        """Use Spectacle's interactive region capture on KDE Plasma Wayland."""
+        if shutil.which("spectacle") is None:
+            QMessageBox.warning(None, "Spectacle Not Found", "Spectacle is required for snip capture on Plasma Wayland.")
+            return False
+
+        captured_dir = Path(user_data_dir("screen-translate", "Dadangdut33")) / "captured"
+        captured_dir.mkdir(parents=True, exist_ok=True)
+        output_path = captured_dir / f"snip_capture_{datetime.now().strftime('%Y%m%d_%H%M%S_%f')}.png"
+        keep_image = bool(self.settings.get("keep_image", True))
+        save_cropped_image = bool(self.settings.get("save_cropped_image", False))
+
+        try:
+            result = subprocess.run(
+                ["spectacle", "-b", "-n", "-r", "-o", str(output_path)],
+                check=True,
+                capture_output=True,
+            )
+            if result.stderr:
+                logger.debug("spectacle snip stderr: %s", result.stderr.decode(errors="replace").strip())
+
+            with Image.open(output_path) as image:
+                pil_image = image.convert("RGB")
+                if save_cropped_image:
+                    debug_path = captured_dir / f"cropped_snip_{datetime.now().strftime('%Y%m%d_%H%M%S_%f')}.png"
+                    pil_image.save(debug_path)
+                    logger.info("Saved cropped snip capture to %s", debug_path)
+                self.run_ocr(pil_image)
+
+            if not keep_image:
+                try:
+                    output_path.unlink()
+                except OSError:
+                    pass
+            return True
+        except subprocess.CalledProcessError as exc:
+            logger.error("spectacle snip capture failed with stderr: %s", exc.stderr.decode(errors="replace").strip())
+            QMessageBox.critical(None, "Snip Capture Failed", "Spectacle failed to capture the selected region.")
+            return False
+        except Exception as exc:
+            logger.exception("spectacle snip capture failed: %s", exc)
+            QMessageBox.critical(None, "Snip Capture Failed", str(exc))
+            return False

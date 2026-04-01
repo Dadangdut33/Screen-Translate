@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING
 
+import pycountry
 from PyQt6.QtCore import QSize, Qt, pyqtSlot
 from PyQt6.QtGui import QAction, QCloseEvent, QIcon, QKeySequence
 from PyQt6.QtWidgets import (
@@ -31,6 +32,25 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 _APP_NAME = "Screen Translate"
+_COMBOBOX_HEIGHT = 36
+_COMBOBOX_POPUP_MAX_HEIGHT = 320
+_LANGUAGE_NAME_OVERRIDES: dict[str, str] = {
+    "auto": "Auto Detect",
+    "zh-CN": "Chinese (Simplified)",
+    "zh-TW": "Chinese (Traditional)",
+    "iw": "Hebrew",
+    "jw": "Javanese",
+    "mni-Mtei": "Manipuri (Meitei)",
+    "pa-Arab": "Punjabi (Arabic)",
+    "pt-PT": "Portuguese (Portugal)",
+    "fr-CA": "French (Canada)",
+    "fa-AF": "Dari",
+    "ms-Arab": "Malay (Arabic)",
+    "iu-Latn": "Inuktitut (Latin)",
+    "sat-Latn": "Santali (Latin)",
+    "crh-Latn": "Crimean Tatar (Latin)",
+    "ber-Latn": "Berber (Latin)",
+}
 
 
 class MainWindow(QMainWindow):
@@ -98,14 +118,16 @@ class MainWindow(QMainWindow):
         bar.addWidget(self.btn_translate)
 
         self.btn_capture = QPushButton("Capture & Translate")
-        self.btn_capture.setToolTip("Capture the region inside the Capture Window and translate")
+        self.btn_capture.setToolTip(
+            "Capture the region inside the Capture Window and translate"
+        )
         bar.addWidget(self.btn_capture)
 
-        self.btn_snip = QPushButton("Snip & Translate")
-        self.btn_snip.setToolTip("Draw a selection on any monitor to capture and translate (Ctrl+Alt+T)")
+        self.btn_snip = QPushButton("Snip -> Translate")
+        self.btn_snip.setToolTip(
+            "Draw a selection on any monitor to capture and translate (Ctrl+Alt+T)"
+        )
         bar.addWidget(self.btn_snip)
-
-        bar.addSeparator()
 
         bar.addWidget(QLabel("Opacity:"))
         self.slider_opacity = QSlider(Qt.Orientation.Horizontal)
@@ -115,21 +137,24 @@ class MainWindow(QMainWindow):
         self.slider_opacity.setToolTip("Capture Window opacity")
         bar.addWidget(self.slider_opacity)
 
-        bar.addSeparator()
-
         bar.addWidget(QLabel("Engine:"))
         self.cb_engine = QComboBox()
         self.cb_engine.setMinimumWidth(160)
+        self.cb_engine.setMaximumHeight(_COMBOBOX_HEIGHT)
         bar.addWidget(self.cb_engine)
 
         bar.addWidget(QLabel("From:"))
         self.cb_source = QComboBox()
         self.cb_source.setMinimumWidth(140)
+        self.cb_source.setMaximumHeight(_COMBOBOX_HEIGHT)
+        # self.cb_source.view().setMaximumHeight(_COMBOBOX_POPUP_MAX_HEIGHT)
         bar.addWidget(self.cb_source)
 
         bar.addWidget(QLabel("To:"))
         self.cb_target = QComboBox()
         self.cb_target.setMinimumWidth(140)
+        self.cb_target.setMaximumHeight(_COMBOBOX_HEIGHT)
+        # self.cb_target.view().setMaximumHeight(_COMBOBOX_POPUP_MAX_HEIGHT)
         bar.addWidget(self.cb_target)
 
         self.btn_swap = QPushButton("⮁ Swap")
@@ -164,17 +189,31 @@ class MainWindow(QMainWindow):
 
         # View
         view_menu = mb.addMenu("&View")
-        view_menu.addAction("Settings", self._open_settings, QKeySequence("F2"))
-        view_menu.addAction("History", self._open_history, QKeySequence("F3"))
-        view_menu.addAction("Captured Images", self._open_captured_dir, QKeySequence("F4"))
+        self._add_menu_action(
+            view_menu, "Settings", self._open_settings, QKeySequence("F2")
+        )
+        self._add_menu_action(
+            view_menu, "History", self._open_history, QKeySequence("F3")
+        )
+        self._add_menu_action(
+            view_menu, "Captured Images", self._open_captured_dir, QKeySequence("F4")
+        )
         view_menu.addAction("Log", self._open_log)
 
         # Generate
         gen_menu = mb.addMenu("&Generate")
-        gen_menu.addAction("Capture Window", self._open_capture_window, QKeySequence("F5"))
-        gen_menu.addAction("Mask Window", self._open_mask_window, QKeySequence("Ctrl+Alt+F5"))
-        gen_menu.addAction("Query Window", self._open_query_window, QKeySequence("F6"))
-        gen_menu.addAction("Result Window", self._open_result_window, QKeySequence("F7"))
+        self._add_menu_action(
+            gen_menu, "Capture Window", self._open_capture_window, QKeySequence("F5")
+        )
+        self._add_menu_action(
+            gen_menu, "Mask Window", self._open_mask_window, QKeySequence("Ctrl+Alt+F5")
+        )
+        self._add_menu_action(
+            gen_menu, "Query Window", self._open_query_window, QKeySequence("F6")
+        )
+        self._add_menu_action(
+            gen_menu, "Result Window", self._open_result_window, QKeySequence("F7")
+        )
 
         # Get
         get_menu = mb.addMenu("&Get")
@@ -183,10 +222,28 @@ class MainWindow(QMainWindow):
 
         # Help
         help_menu = mb.addMenu("&Help")
-        help_menu.addAction("GitHub Repository", lambda: self._open_url("https://github.com/Dadangdut33/Screen-Translate"))
+        help_menu.addAction(
+            "GitHub Repository",
+            lambda: self._open_url("https://github.com/Dadangdut33/Screen-Translate"),
+        )
         help_menu.addAction("Open CHANGELOG", self._open_changelog)
         help_menu.addSeparator()
-        help_menu.addAction("About", self._open_about, QKeySequence("F1"))
+        self._add_menu_action(help_menu, "About", self._open_about, QKeySequence("F1"))
+
+    def _add_menu_action(
+        self,
+        menu: QMenu,
+        text: str,
+        slot: object,
+        shortcut: QKeySequence | None = None,
+    ) -> QAction:
+        """Create a QAction with an optional shortcut and add it to *menu*."""
+        action = QAction(text, self)
+        if shortcut is not None:
+            action.setShortcut(shortcut)
+        action.triggered.connect(slot)
+        menu.addAction(action)
+        return action
 
     def _build_tray(self) -> None:
         """Build the system tray icon."""
@@ -221,8 +278,8 @@ class MainWindow(QMainWindow):
         self.btn_clear.clicked.connect(self._clear_text)
         self.slider_opacity.valueChanged.connect(self._on_opacity_changed)
         self.cb_engine.currentTextChanged.connect(self._on_engine_changed)
-        self.cb_source.currentTextChanged.connect(self._on_source_changed)
-        self.cb_target.currentTextChanged.connect(self._on_target_changed)
+        self.cb_source.currentIndexChanged.connect(self._on_source_changed)
+        self.cb_target.currentIndexChanged.connect(self._on_target_changed)
 
         ctrl = self.controller
         ctrl.ocr_started.connect(self._on_busy)
@@ -239,8 +296,10 @@ class MainWindow(QMainWindow):
         self.cb_engine.blockSignals(True)
         for name in self.controller.available_backend_names():
             self.cb_engine.addItem(name)
-        saved_engine = s.get("engine", "Google Translate")
+        saved_engine = s.get("engine", "translators-google")
         idx = self.cb_engine.findText(saved_engine)
+        if idx < 0:
+            idx = 0
         self.cb_engine.setCurrentIndex(max(0, idx))
         self.cb_engine.blockSignals(False)
 
@@ -254,26 +313,87 @@ class MainWindow(QMainWindow):
 
         langs = backend.available_languages() if backend else []
         src_langs = langs
-        tgt_langs = [lang for lang in langs if lang != "Auto"]
+        tgt_langs = [lang for lang in langs if lang != "auto" and lang != "Auto"]
 
         self.cb_source.blockSignals(True)
         self.cb_target.blockSignals(True)
         self.cb_source.clear()
         self.cb_target.clear()
-        self.cb_source.addItems(src_langs)
-        self.cb_target.addItems(tgt_langs)
+        self._populate_language_combo(self.cb_source, src_langs)
+        self._populate_language_combo(self.cb_target, tgt_langs)
 
-        saved_src = s.get("sourceLang", "English")
-        saved_tgt = s.get("targetLang", "Japanese")
-        idx_src = self.cb_source.findText(saved_src)
-        idx_tgt = self.cb_target.findText(saved_tgt)
+        saved_src = s.get("sourceLang", "auto")
+        saved_tgt = s.get("targetLang", "en")
+
+        idx_src = self._find_language_index(self.cb_source, saved_src)
+        if idx_src < 0:
+            idx_src = self._find_language_index(self.cb_source, "auto")
+        if idx_src < 0 and self.cb_source.count() > 0:
+            idx_src = 0
+
+        idx_tgt = self._find_language_index(self.cb_target, saved_tgt)
+        if idx_tgt < 0:
+            idx_tgt = self._find_language_index(self.cb_target, "en")
+        if idx_tgt < 0 and self.cb_target.count() > 0:
+            idx_tgt = 0
+
         self.cb_source.setCurrentIndex(max(0, idx_src))
         self.cb_target.setCurrentIndex(max(0, idx_tgt))
 
         is_none = engine_name == "None"
-        self.cb_target.setEnabled(not is_none)
+        has_languages = bool(langs)
+        self.cb_source.setEnabled(not is_none and has_languages)
+        self.cb_target.setEnabled(not is_none and has_languages)
         self.cb_source.blockSignals(False)
         self.cb_target.blockSignals(False)
+
+        self._persist_selected_language(self.cb_source, "sourceLang")
+        self._persist_selected_language(self.cb_target, "targetLang")
+
+    def _populate_language_combo(self, combo: QComboBox, languages: list[str]) -> None:
+        """Populate a language combo with display labels while keeping the code as user data."""
+        for code in languages:
+            combo.addItem(self._language_label(code), code)
+
+    def _language_label(self, code: str) -> str:
+        """Return a human-friendly label for a backend language code."""
+        override = _LANGUAGE_NAME_OVERRIDES.get(code)
+        if override:
+            return override
+
+        normalized = code.replace("_", "-")
+        try:
+            if "-" in normalized:
+                language_part, script_or_region = normalized.split("-", 1)
+                language = pycountry.languages.get(
+                    alpha_2=language_part
+                ) or pycountry.languages.get(alpha_3=language_part)
+                if language is not None:
+                    region = pycountry.countries.get(alpha_2=script_or_region.upper())
+                    if region is not None:
+                        return f"{language.name} ({region.name})"
+            language = pycountry.languages.get(
+                alpha_2=normalized.lower()
+            ) or pycountry.languages.get(alpha_3=normalized.lower())
+            if language is not None:
+                return str(language.name)
+        except (KeyError, AttributeError):
+            pass
+
+        return code
+
+    def _find_language_index(self, combo: QComboBox, code: str) -> int:
+        """Find the combobox index for a language code stored as user data."""
+        for idx in range(combo.count()):
+            if combo.itemData(idx) == code:
+                return idx
+        return -1
+
+    def _persist_selected_language(self, combo: QComboBox, key: str) -> None:
+        """Persist the currently selected language code."""
+        code = combo.currentData()
+        if isinstance(code, str) and code:
+            self.controller.settings.set(key, code)
 
     # ------------------------------------------------------------------
     # Slots
@@ -304,8 +424,7 @@ class MainWindow(QMainWindow):
         if self.controller.result_window:
             self.controller.result_window.setVisible(False)
 
-        for overlay in self.controller.snip_overlays:
-            overlay.start_snip()
+        self.controller.start_snip_capture()
 
     @pyqtSlot(str)
     def _on_engine_changed(self, name: str) -> None:
@@ -313,25 +432,29 @@ class MainWindow(QMainWindow):
         self.controller.set_active_backend(name)
         self._refresh_lang_combos()
 
-    @pyqtSlot(str)
-    def _on_source_changed(self, lang: str) -> None:
+    @pyqtSlot(int)
+    def _on_source_changed(self, _: int) -> None:
         """Persist new source language."""
-        self.controller.settings.set("sourceLang", lang)
+        self._persist_selected_language(self.cb_source, "sourceLang")
 
-    @pyqtSlot(str)
-    def _on_target_changed(self, lang: str) -> None:
+    @pyqtSlot(int)
+    def _on_target_changed(self, _: int) -> None:
         """Persist new target language."""
-        self.controller.settings.set("targetLang", lang)
+        self._persist_selected_language(self.cb_target, "targetLang")
 
     @pyqtSlot()
     def _swap_languages(self) -> None:
         """Swap source/target languages and text."""
-        src = self.cb_source.currentText()
-        tgt = self.cb_target.currentText()
-        if self.cb_source.findText(tgt) >= 0:
-            self.cb_source.setCurrentText(tgt)
-        if self.cb_target.findText(src) >= 0:
-            self.cb_target.setCurrentText(src)
+        src = self.cb_source.currentData()
+        tgt = self.cb_target.currentData()
+        if isinstance(tgt, str):
+            tgt_idx = self._find_language_index(self.cb_source, tgt)
+            if tgt_idx >= 0:
+                self.cb_source.setCurrentIndex(tgt_idx)
+        if isinstance(src, str):
+            src_idx = self._find_language_index(self.cb_target, src)
+            if src_idx >= 0:
+                self.cb_target.setCurrentIndex(src_idx)
         q = self.tb_query.toPlainText()
         r = self.tb_result.toPlainText()
         self.tb_query.setPlainText(r)
@@ -352,7 +475,7 @@ class MainWindow(QMainWindow):
         """Update capture window opacity from slider."""
         opacity = val / 100.0
         if self.controller.capture_window:
-            self.controller.capture_window.setWindowOpacity(opacity)
+            self.controller.capture_window.set_overlay_opacity(opacity)
 
     @pyqtSlot()
     def _on_busy(self) -> None:
@@ -440,6 +563,7 @@ class MainWindow(QMainWindow):
         import sys
 
         from platformdirs import user_data_dir
+
         d = os.path.join(user_data_dir("screen-translate", "Dadangdut33"), "captured")
         os.makedirs(d, exist_ok=True)
         if sys.platform == "win32":
@@ -456,11 +580,14 @@ class MainWindow(QMainWindow):
         self._open_url("https://libretranslate.com")
 
     def _open_changelog(self) -> None:
-        self._open_url("https://github.com/Dadangdut33/Screen-Translate/blob/main/CHANGELOG.md")
+        self._open_url(
+            "https://github.com/Dadangdut33/Screen-Translate/blob/main/CHANGELOG.md"
+        )
 
     def _open_url(self, url: str) -> None:
         from PyQt6.QtCore import QUrl
         from PyQt6.QtGui import QDesktopServices
+
         QDesktopServices.openUrl(QUrl(url))
 
     # ------------------------------------------------------------------
@@ -488,6 +615,7 @@ class MainWindow(QMainWindow):
     def _quit_app(self) -> None:
         """Exit the application cleanly."""
         from PyQt6.QtWidgets import QApplication
+
         self._tray.hide()
         QApplication.quit()
 

@@ -44,9 +44,15 @@ class SnipOverlay(QWidget):
         self._current: QPoint | None = None
         self._active = False
 
+        self.setWindowTitle(f"Snip Overlay (Screen {screen_index + 1})")
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
         self.setWindowOpacity(1.0)
         self.setCursor(Qt.CursorShape.CrossCursor)
+        self.setWindowFlags(
+            Qt.WindowType.FramelessWindowHint
+            | Qt.WindowType.WindowStaysOnTopHint
+            | Qt.WindowType.Tool
+        )
 
         # Apply geometry of target screen
         screens = QApplication.screens()
@@ -69,6 +75,7 @@ class SnipOverlay(QWidget):
         self._current = None
         self._active = True
 
+        self.setWindowTitle("Snip Overlay (Screen {})".format(self.screen_index + 1))
         self.setGeometry(screen.geometry())
         self.showFullScreen()
         self.raise_()
@@ -187,6 +194,7 @@ def _pixmap_to_pil(pixmap: QPixmap) -> object | None:
         bits = img.bits()
         if bits is None:
             return None
+        bits.setsize(img.sizeInBytes())
         pil = Image.frombytes(
             "RGB",
             (img.width(), img.height()),

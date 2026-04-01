@@ -10,19 +10,22 @@ readme = "readme.md"
 license = { text = "MIT" }
 requires-python = ">=3.12"
 dependencies = [
-    "PyQt6>=6.6",
+    "pyqt6>=6.6",
     "pytesseract>=0.3.10",
     "Pillow>=10.0",
-    "deep_translator>=1.11",
+    "translators>=5.8",
+    "argostranslate>=1.9",
+    "deepl>=1.17",
     "arabic-reshaper>=3.0",
     "pyperclip>=1.8",
     "keyboard>=0.13",
     "platformdirs>=4.0",
+    "pycountry>=26.2.16",
+    "qt-material>=2.14",
+    "opencv-python>=4.10",
 ]
 
 [project.optional-dependencies]
-argos = ["argostranslate>=1.9"]
-deepl = ["deepl>=1.17"]
 dev = [
     "ruff>=0.4",
     "mypy>=1.10",

@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING, Any
 from PyQt6.QtCore import pyqtSlot
 from PyQt6.QtGui import QColor
 from PyQt6.QtWidgets import (
+    QApplication,
     QCheckBox,
     QColorDialog,
     QComboBox,
@@ -26,10 +27,21 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
+from screen_translate.core.translation.translators_backend import configure_translators_region
+
 if TYPE_CHECKING:
     from screen_translate.ui.controller import AppController
 
 logger = logging.getLogger(__name__)
+
+_QT_MATERIAL_THEMES: list[str] = [
+    "dark_teal.xml",
+    "dark_blue.xml",
+    "dark_amber.xml",
+    "light_blue.xml",
+    "light_cyan_500.xml",
+    "light_amber.xml",
+]
 
 
 # ---------------------------------------------------------------------------
@@ -111,6 +123,52 @@ def _bind_combo(key: str, items: list[str], settings: Any) -> QComboBox:
     return cb
 
 
+def _bind_check_with_callback(
+    key: str,
+    label: str,
+    settings: Any,
+    callback: Any,
+) -> QCheckBox:
+    """Create a checkbox that persists immediately and also runs a callback."""
+    cb = QCheckBox(label)
+    cb.setChecked(bool(settings.get(key, False)))
+    cb.toggled.connect(lambda v: settings.set(key, v))
+    cb.toggled.connect(lambda _v: callback())
+    return cb
+
+
+def _bind_line_with_callback(
+    key: str,
+    settings: Any,
+    callback: Any,
+    placeholder: str = "",
+) -> QLineEdit:
+    """Create a line edit that persists immediately and also runs a callback."""
+    le = QLineEdit()
+    le.setText(str(settings.get(key, "")))
+    le.setPlaceholderText(placeholder)
+    le.textChanged.connect(lambda v: settings.set(key, v))
+    le.textChanged.connect(lambda _v: callback())
+    return le
+
+
+def _bind_combo_with_callback(
+    key: str,
+    items: list[str],
+    settings: Any,
+    callback: Any,
+) -> QComboBox:
+    """Create a combo box that persists immediately and also runs a callback."""
+    cb = QComboBox()
+    cb.addItems(items)
+    saved = settings.get(key, "")
+    idx = cb.findText(str(saved))
+    cb.setCurrentIndex(max(0, idx))
+    cb.currentTextChanged.connect(lambda v: settings.set(key, v))
+    cb.currentTextChanged.connect(lambda _v: callback())
+    return cb
+
+
 class SettingsDialog(QDialog):
     """Application settings editor.
 
@@ -158,6 +216,7 @@ class SettingsDialog(QDialog):
         fl = QFormLayout(w)
 
         fl.addRow(_bind_check("keep_image", "Save captured images to disk", self.s))
+        fl.addRow(_bind_check("save_cropped_image", "Also save the final cropped capture", self.s))
         fl.addRow(_bind_check("auto_copy_captured", "Auto-copy captured text to clipboard", self.s))
         fl.addRow(_bind_check("auto_copy_translated", "Auto-copy translated text to clipboard", self.s))
         fl.addRow(_bind_check("save_history", "Save translation history", self.s))
@@ -183,18 +242,59 @@ class SettingsDialog(QDialog):
 
         # Tesseract path
         row = QHBoxLayout()
-        self._tes_path = QLineEdit(str(self.s.get("tesseract_loc", "")))
-        self._tes_path.setPlaceholderText("Leave empty to use system PATH")
-        self._tes_path.textChanged.connect(lambda v: self.s.set("tesseract_loc", v))
+        self._tes_path = _bind_line_with_callback(
+            "tesseract_loc",
+            self.s,
+            self.controller.reset_ocr_backend,
+            "Leave empty to use system PATH",
+        )
         row.addWidget(self._tes_path)
         btn_browse = QPushButton("Browse…")
         btn_browse.clicked.connect(self._browse_tesseract)
         row.addWidget(btn_browse)
         fl.addRow("Tesseract path:", row)
 
-        fl.addRow("Extra config:", _bind_line("tesseract_config", self.s, "--psm 6"))
-        fl.addRow(_bind_check("tesseract_psm5_vertical", "Auto PSM 5 for vertical scripts", self.s))
-        fl.addRow(_bind_check("enhance_with_grayscale", "Grayscale + autocontrast preprocessing", self.s))
+        fl.addRow(
+            "Extra config:",
+            _bind_line_with_callback(
+                "tesseract_config",
+                self.s,
+                self.controller.reset_ocr_backend,
+                "--psm 6",
+            ),
+        )
+        fl.addRow(
+            _bind_check_with_callback(
+                "tesseract_psm5_vertical",
+                "Auto PSM 5 for vertical scripts",
+                self.s,
+                self.controller.reset_ocr_backend,
+            )
+        )
+        fl.addRow(
+            _bind_check_with_callback(
+                "enhance_with_grayscale",
+                "Grayscale + autocontrast preprocessing",
+                self.s,
+                self.controller.reset_ocr_backend,
+            )
+        )
+        fl.addRow(
+            _bind_check_with_callback(
+                "enhance_with_cv2_contour",
+                "Use OpenCV contour text detection",
+                self.s,
+                self.controller.reset_ocr_backend,
+            )
+        )
+        fl.addRow(
+            _bind_check_with_callback(
+                "save_cv2_contour_image",
+                "Save OpenCV contoured debug image",
+                self.s,
+                self.controller.reset_ocr_backend,
+            )
+        )
 
         # Offset corrections
         grp = QGroupBox("Capture Offset Correction")
@@ -206,7 +306,19 @@ class SettingsDialog(QDialog):
         fl.addRow(grp)
 
         # Background hint
-        fl.addRow("Background type:", _bind_combo("enhance_background", ["Auto-Detect", "Light", "Dark"], self.s))
+        fl.addRow(
+            "Background type:",
+            _bind_combo_with_callback(
+                "enhance_background",
+                ["Auto-Detect", "Light", "Dark"],
+                self.s,
+                self.controller.reset_ocr_backend,
+            ),
+        )
+        fl.addRow(
+            "Capture mode:",
+            _bind_combo("capture_mode", ["Floating Window", "Virtual Overlay"], self.s),
+        )
 
         return w
 
@@ -224,8 +336,10 @@ class SettingsDialog(QDialog):
         self._cb_backend = QComboBox()
         for name in self.controller.available_backend_names():
             self._cb_backend.addItem(name)
-        saved = self.s.get("engine", "Google Translate")
+        saved = self.s.get("engine", "translators-google")
         idx = self._cb_backend.findText(saved)
+        if idx < 0:
+            idx = 0
         self._cb_backend.setCurrentIndex(max(0, idx))
         self._cb_backend.currentTextChanged.connect(self._on_backend_changed)
         gfl.addRow("Backend:", self._cb_backend)
@@ -250,6 +364,14 @@ class SettingsDialog(QDialog):
         libre_fl.addRow("API Key:", _bind_line("libre_api_key", self.s, "optional"))
         vl.addWidget(grp_libre)
 
+        self._cb_translators_region = QComboBox()
+        self._cb_translators_region.addItems(["EN", "CN", "Auto"])
+        saved_region = str(self.s.get("translators_region", "EN"))
+        idx_region = self._cb_translators_region.findText(saved_region)
+        self._cb_translators_region.setCurrentIndex(max(0, idx_region))
+        self._cb_translators_region.currentTextChanged.connect(self._on_translators_region_changed)
+        gfl.addRow("translators region:", self._cb_translators_region)
+
         self._update_deepl_visibility(self._cb_backend.currentText())
         vl.addStretch()
         return w
@@ -266,6 +388,12 @@ class SettingsDialog(QDialog):
     def _update_deepl_visibility(self, name: str) -> None:
         """Show DeepL key field only when the official backend is selected."""
         self._grp_deepl.setVisible("deepl" in name.lower() and "official" in name.lower())
+
+    @pyqtSlot(str)
+    def _on_translators_region_changed(self, region: str) -> None:
+        """Persist and apply the translators region mode immediately."""
+        self.s.set("translators_region", region)
+        configure_translators_region(region)
 
     # ------------------------------------------------------------------
     # Tab: Hotkeys
@@ -295,6 +423,16 @@ class SettingsDialog(QDialog):
         w = QWidget()
         fl = QFormLayout(w)
 
+        self._cb_theme = QComboBox()
+        self._cb_theme.addItems(_QT_MATERIAL_THEMES)
+        saved_theme = str(self.s.get("theme", "dark_teal.xml"))
+        idx_theme = self._cb_theme.findText(saved_theme)
+        self._cb_theme.setCurrentIndex(max(0, idx_theme))
+        self._cb_theme.currentTextChanged.connect(self._on_theme_changed)
+        fl.addRow("Theme:", self._cb_theme)
+        fl.addRow(QLabel("qt-material themes apply immediately when the package is installed."))
+
+        fl.addRow(QLabel(""))
         fl.addRow(QLabel("Query Window (floating):"))
         fl.addRow("Font size:", _bind_spin("tb_ex_q_font_size", self.s, 6, 72))
         fl.addRow("Font color:", self._color_picker_row("tb_ex_q_font_color"))
@@ -310,6 +448,23 @@ class SettingsDialog(QDialog):
         fl.addRow(QLabel("Mask Window:"))
         fl.addRow("Background color:", self._color_picker_row("mask_window_bg_color"))
         return w
+
+    @pyqtSlot(str)
+    def _on_theme_changed(self, theme: str) -> None:
+        """Persist and apply a qt-material theme."""
+        self.s.set("theme", theme)
+        app = QApplication.instance()
+        if app is None:
+            return
+        try:
+            from qt_material import apply_stylesheet
+
+            app.setStyle("Fusion")
+            apply_stylesheet(app, theme=theme)
+        except ImportError:
+            logger.warning("qt-material is not installed - theme change saved for later")
+        except Exception as exc:
+            logger.warning("Could not apply theme %s: %s", theme, exc)
 
     def _color_picker_row(self, key: str) -> QPushButton:
         """Create a colour-picker button tied to *key*.

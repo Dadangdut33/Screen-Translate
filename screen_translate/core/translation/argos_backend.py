@@ -15,12 +15,6 @@ class ArgosTranslateBackend(TranslationBackend):
     Language packs must be downloaded separately.  If none are installed
     the backend will still load but ``available_languages()`` returns an
     empty list and ``translate()`` raises :class:`TranslationError`.
-
-    .. note::
-        This backend is only available when the *argos* optional dependency
-        group is installed::
-
-            pip install "screen-translate[argos]"
     """
 
     @property
@@ -29,19 +23,13 @@ class ArgosTranslateBackend(TranslationBackend):
         return "Argos Translate (offline)"
 
     def available_languages(self) -> list[str]:
-        """Return display names of installed language pairs.
-
-        Returns:
-            Sorted list of ``"Source → Target"`` pair strings, or an empty
-            list when no packs are installed.
-        """
+        """Return unique language codes of installed language packs."""
         try:
-            from argostranslate import package
+            from argostranslate import translate
 
-            langs: list[str] = []
-            for pkg in package.get_installed_packages():
-                langs.append(f"{pkg.from_name} → {pkg.to_name}")
-            return sorted(langs)
+            installed = translate.get_installed_languages()
+            codes = {lang.code for lang in installed}
+            return sorted(codes)
         except Exception as exc:
             logger.debug("argostranslate unavailable: %s", exc)
             return []
@@ -51,22 +39,15 @@ class ArgosTranslateBackend(TranslationBackend):
 
         Args:
             text: Text to translate.
-            source_lang: Source language name (e.g. ``"English"``).
-            target_lang: Target language name (e.g. ``"Japanese"``).
-
-        Returns:
-            Translated text.
-
-        Raises:
-            TranslationError: If translation fails or no matching pack is
-                installed.
+            source_lang: Source language code.
+            target_lang: Target language code.
         """
         try:
             from argostranslate import translate
 
             installed = translate.get_installed_languages()
-            src_obj = next((lang for lang in installed if lang.name == source_lang), None)
-            tgt_obj = next((lang for lang in installed if lang.name == target_lang), None)
+            src_obj = next((lang for lang in installed if lang.code == source_lang), None)
+            tgt_obj = next((lang for lang in installed if lang.code == target_lang), None)
 
             if src_obj is None or tgt_obj is None:
                 raise TranslationError(
@@ -86,28 +67,20 @@ class ArgosTranslateBackend(TranslationBackend):
             raise TranslationError(str(exc)) from exc
 
     @staticmethod
-    def install_language_pack(from_lang: str, to_lang: str) -> None:
-        """Download and install an Argos language pack.
-
-        Args:
-            from_lang: Source language name (e.g. ``"English"``).
-            to_lang: Target language name (e.g. ``"Japanese"``).
-
-        Raises:
-            TranslationError: If the pack cannot be found or installed.
-        """
+    def install_language_pack(from_lang_code: str, to_lang_code: str) -> None:
+        """Download and install an Argos language pack."""
         try:
             from argostranslate import package
 
             package.update_package_index()
             available = package.get_available_packages()
             pkg = next(
-                (p for p in available if p.from_name == from_lang and p.to_name == to_lang),
+                (p for p in available if p.from_code == from_lang_code and p.to_code == to_lang_code),
                 None,
             )
             if pkg is None:
                 raise TranslationError(
-                    f"No Argos pack found for {from_lang!r} → {to_lang!r}."
+                    f"No Argos pack found for {from_lang_code!r} → {to_lang_code!r}."
                 )
             package.install_from_path(pkg.download())
         except TranslationError:
@@ -117,14 +90,9 @@ class ArgosTranslateBackend(TranslationBackend):
 
 
 def load_argos_backend() -> ArgosTranslateBackend | None:
-    """Return an ArgosTranslateBackend if the package is installed.
-
-    Returns:
-        Backend instance, or *None* if argostranslate is not installed.
-    """
+    """Return an ArgosTranslateBackend if the package is installed."""
     try:
         import argostranslate  # noqa: F401
-
         return ArgosTranslateBackend()
     except ImportError:
         logger.debug("argostranslate not installed - offline backend unavailable")

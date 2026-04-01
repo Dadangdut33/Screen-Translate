@@ -3,15 +3,23 @@
 from __future__ import annotations
 
 import logging
+import os
+import signal
+import socket
 import sys
 
-from PyQt6.QtWidgets import QApplication
+from PyQt6.QtCore import QMetaObject, Qt, QSocketNotifier
+from PyQt6.QtWidgets import QApplication, QStyleFactory
 
 from screen_translate import __version__
 from screen_translate.config.settings import SettingsManager
+from screen_translate.core.translation.translators_backend import (
+    configure_translators_region,
+)
 from screen_translate.logging_setup import setup_logging
 from screen_translate.ui.about_dialog import AboutDialog
 from screen_translate.ui.capture_window import CaptureWindow
+from screen_translate.ui.capture_region_overlay import CaptureRegionOverlay
 from screen_translate.ui.controller import AppController
 from screen_translate.ui.detached_window import DetachedWindow
 from screen_translate.ui.history_window import HistoryWindow
@@ -22,6 +30,12 @@ from screen_translate.ui.settings_dialog import SettingsDialog
 from screen_translate.ui.snip_overlay import SnipOverlay
 
 logger = logging.getLogger(__name__)
+
+_DEFAULT_THEME = "dark_teal.xml"
+_LEGACY_THEME_MAP = {
+    "dark": "dark_teal.xml",
+    "light": "light_blue.xml",
+}
 
 
 def main() -> None:
@@ -37,14 +51,16 @@ def main() -> None:
     app.setOrganizationName("Dadangdut33")
     # Keep running when the last window is hidden (tray mode)
     app.setQuitOnLastWindowClosed(False)
-
     # --- Settings (restore before any window is shown) ---
     settings = SettingsManager()
+    configure_translators_region(str(settings.get("translators_region", "EN")))
 
     # --- Logging setup ---
     log_level: str = str(settings.get("log_level", "DEBUG"))
     keep_log: bool = bool(settings.get("keep_log", False))
     setup_logging(level=log_level, keep_log=keep_log)
+    _apply_theme(app, settings)
+
     logger.info("Screen Translate v%s starting", __version__)
 
     # --- Controller ---
@@ -53,9 +69,14 @@ def main() -> None:
     # --- Create all windows (none shown yet) ---
     main_win = MainWindow(controller)
     controller.main_window = main_win
+    _configure_unix_signal_handling(app, main_win)
 
     capture_win = CaptureWindow(controller)
     controller.capture_window = capture_win
+
+    for i, _ in enumerate(app.screens()):
+        region_overlay = CaptureRegionOverlay(controller, screen_index=i)
+        controller.capture_region_overlays.append(region_overlay)
 
     # Multi-monitor snip overlays
     for i, _ in enumerate(app.screens()):
@@ -93,6 +114,70 @@ def main() -> None:
         logger.info("Silent start (-s flag): running in tray only")
 
     sys.exit(app.exec())
+
+
+def _apply_theme(app: QApplication, settings: SettingsManager) -> None:
+    """Apply the configured qt-material theme, falling back gracefully."""
+    requested_theme = str(settings.get("theme", _DEFAULT_THEME))
+    theme = _LEGACY_THEME_MAP.get(requested_theme, requested_theme) or _DEFAULT_THEME
+
+    try:
+        from qt_material import apply_stylesheet
+
+        app.setStyle("Fusion")
+        apply_stylesheet(app, theme=theme)
+        if theme != requested_theme:
+            settings.set("theme", theme)
+        logger.info("Applied qt-material theme: %s", theme)
+    except ImportError:
+        app.setStyle("Fusion")
+        logger.warning("qt-material is not installed - using Fusion style")
+    except Exception as exc:
+        app.setStyle("Fusion")
+        logger.warning("Could not apply qt-material theme %s: %s", theme, exc)
+
+
+def _configure_unix_signal_handling(app: QApplication, main_win: MainWindow) -> None:
+    """Bridge POSIX signals into Qt and route them through the real app quit path."""
+    read_sock, write_sock = socket.socketpair()
+    read_sock.setblocking(False)
+    write_sock.setblocking(False)
+
+    previous_wakeup_fd = signal.set_wakeup_fd(write_sock.fileno())
+
+    def _handle_signal(sig: int, _frame: object) -> None:
+        logger.info("Received signal %s", sig)
+
+    signal.signal(signal.SIGINT, _handle_signal)
+    if hasattr(signal, "SIGTERM"):
+        signal.signal(signal.SIGTERM, _handle_signal)
+
+    notifier = QSocketNotifier(read_sock.fileno(), QSocketNotifier.Type.Read, app)
+
+    def _drain_signal_socket() -> None:
+        try:
+            while read_sock.recv(1024):
+                pass
+        except BlockingIOError:
+            pass
+        logger.info("Routing terminal signal through main window quit handler")
+        QMetaObject.invokeMethod(
+            main_win,
+            "_quit_app",
+            Qt.ConnectionType.QueuedConnection,
+        )
+
+    def _cleanup_signal_bridge() -> None:
+        notifier.setEnabled(False)
+        signal.set_wakeup_fd(previous_wakeup_fd)
+        read_sock.close()
+        write_sock.close()
+
+    notifier.activated.connect(_drain_signal_socket)
+    app.aboutToQuit.connect(_cleanup_signal_bridge)
+    app.setProperty("_signal_notifier", notifier)
+    app.setProperty("_signal_read_socket_fd", read_sock.fileno())
+    app.setProperty("_signal_write_socket_fd", write_sock.fileno())
 
 
 def _register_hotkeys(controller: AppController, settings: SettingsManager) -> None:
@@ -155,4 +240,7 @@ def _trigger_capture(controller: AppController) -> None:
 
 
 if __name__ == "__main__":
+    # ----------------------------------------------------------------
+    logger.info("--- Welcome to Screen Translate ---")
+
     main()

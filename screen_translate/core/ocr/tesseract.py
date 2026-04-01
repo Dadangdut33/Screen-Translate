@@ -5,118 +5,19 @@ from __future__ import annotations
 import logging
 import platform
 import shutil
+from datetime import datetime
 from functools import lru_cache
+from pathlib import Path
 
+import numpy as np
 from PIL import Image, ImageFilter, ImageOps
+from platformdirs import user_data_dir
 
 from .base import OCRBackend, OCRError
 
 logger = logging.getLogger(__name__)
 
-# Language display name → tesseract code (kept from original LangCode.py)
-TESSERACT_LANG_MAP: dict[str, str] = {
-    "Auto": "auto",
-    "Afrikaans": "afr",
-    "Amharic": "amh",
-    "Arabic": "ara",
-    "Assemese": "asm",
-    "Azerbaijani": "aze_cyrl",
-    "Belarusian": "bel",
-    "Bengali": "ben",
-    "Tibetan": "bod",
-    "Bosnian": "bos",
-    "Bulgarian": "bul",
-    "Catalan": "cat",
-    "Cebuano": "ceb",
-    "Czech": "ces",
-    "Chinese Simplified": "chi_sim",
-    "Chinese Simplified (Vertical)": "chi_sim_vert",
-    "Chinese Traditional": "chi_tra",
-    "Chinese Traditional (Vertical)": "chi_tra_vert",
-    "Welsh": "cym",
-    "Danish": "dan",
-    "German": "deu",
-    "Greek": "ell",
-    "English": "eng",
-    "Esperanto": "epo",
-    "Estonian": "est",
-    "Basque": "eus",
-    "Faroese": "fao",
-    "Persian": "fas",
-    "Filipino": "fil",
-    "Finnish": "fin",
-    "French": "fra",
-    "Western Frisian": "fry",
-    "Scottish Gaelic": "gla",
-    "Irish": "gle",
-    "Galician": "glg",
-    "Gujarati": "guj",
-    "Haitian": "hat",
-    "Hebrew": "heb",
-    "Hindi": "hin",
-    "Croatian": "hrv",
-    "Hungarian": "hun",
-    "Armenian": "hye",
-    "Indonesian": "ind",
-    "Icelandic": "isl",
-    "Italian": "ita",
-    "Javanese": "jav",
-    "Japanese": "jpn",
-    "Japanese (Vertical)": "jpn_vert",
-    "Kannada": "kan",
-    "Georgian": "kat",
-    "Kazakh": "kaz",
-    "Khmer": "khm",
-    "Kirghiz": "kir",
-    "Korean": "kor",
-    "Lao": "lao",
-    "Latin": "lat",
-    "Latvian": "lav",
-    "Lithuanian": "lit",
-    "Luxembourgish": "ltz",
-    "Malayalam": "mal",
-    "Marathi": "mar",
-    "Macedonian": "mkd",
-    "Maltese": "mlt",
-    "Mongolian": "mon",
-    "Maori": "mri",
-    "Malay": "msa",
-    "Burmese": "mya",
-    "Nepali": "nep",
-    "Dutch": "nld",
-    "Norwegian": "nor",
-    "Punjabi": "pan",
-    "Polish": "pol",
-    "Portuguese": "por",
-    "Romanian": "ron",
-    "Russian": "rus",
-    "Sanskrit": "san",
-    "Sinhala": "sin",
-    "Slovak": "slk",
-    "Slovenian": "slv",
-    "Spanish": "spa",
-    "Albanian": "sqi",
-    "Serbian": "srp",
-    "Sundanese": "sun",
-    "Swahili": "swa",
-    "Swedish": "swe",
-    "Tamil": "tam",
-    "Tatar": "tat",
-    "Telugu": "tel",
-    "Tajik": "tgk",
-    "Tagalog": "tgl",
-    "Thai": "tha",
-    "Turkish": "tur",
-    "Ukrainian": "ukr",
-    "Urdu": "urd",
-    "Uzbek": "uzb",
-    "Vietnamese": "vie",
-    "Yiddish": "yid",
-    "Yoruba": "yor",
-}
-
-# Reverse map: tesseract code → display name
-_REVERSE_MAP: dict[str, str] = {v: k for k, v in TESSERACT_LANG_MAP.items() if v != "auto"}
+# Removed manual TESSERACT_LANG_MAP to use raw library codes
 
 
 def _platform_install_instructions() -> str:
@@ -192,6 +93,82 @@ def _preprocess(image: Image.Image, grayscale: bool = True) -> Image.Image:
     return img
 
 
+def _run_cv2_contour_ocr(
+    image: Image.Image,
+    pytesseract_module: object,
+    lang_code: str,
+    config: str,
+    grayscale: bool,
+    background_mode: str,
+    save_debug_image: bool,
+) -> str:
+    """Use OpenCV contour detection to OCR likely text blocks."""
+    try:
+        import cv2
+    except ImportError as exc:
+        raise OCRError("opencv-python is required for contour OCR mode.") from exc
+
+    rgb = image.convert("RGB")
+    open_cv_image = np.array(rgb)
+    open_cv_image = open_cv_image[:, :, ::-1].copy()
+    gray_img = cv2.cvtColor(open_cv_image, cv2.COLOR_BGR2GRAY)
+
+    if background_mode == "Auto-Detect":
+        is_light = float(np.mean(open_cv_image)) > 127
+    else:
+        is_light = background_mode == "Light"
+    thresh_type = cv2.THRESH_BINARY_INV if is_light else cv2.THRESH_BINARY
+
+    _, thresh = cv2.threshold(gray_img, 0, 255, cv2.THRESH_OTSU | thresh_type)
+    rect_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (18, 18))
+    dilation = cv2.dilate(thresh, rect_kernel, iterations=1)
+    contours, _ = cv2.findContours(dilation, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+    ocr_kwargs = {"config": config}
+    if lang_code:
+        ocr_kwargs["lang"] = lang_code
+
+    if not contours:
+        processed = _preprocess(image, grayscale=grayscale)
+        return str(pytesseract_module.image_to_string(processed, **ocr_kwargs)).strip()
+
+    logger.debug(
+        "OpenCV contour OCR: detected %d contour(s), background=%s, mean=%.2f",
+        len(contours),
+        "light" if is_light else "dark",
+        float(np.mean(open_cv_image)),
+    )
+
+    base_img = gray_img if grayscale else open_cv_image
+    annotated = cv2.cvtColor(gray_img, cv2.COLOR_GRAY2BGR)
+    chunks: list[str] = []
+    for cnt in contours[::-1]:
+        x, y, w, h = cv2.boundingRect(cnt)
+        cv2.rectangle(annotated, (x, y), (x + w, y + h), (0, 255, 0), 2)
+        cropped = base_img[y : y + h, x : x + w]
+        text = str(pytesseract_module.image_to_string(cropped, **ocr_kwargs)).strip()
+        if text:
+            chunks.append(text)
+
+    if save_debug_image:
+        _save_cv2_debug_image(annotated)
+
+    return "\n".join(chunks).strip()
+
+
+def _save_cv2_debug_image(image: np.ndarray) -> None:
+    """Save the contour-annotated debug image to the captured directory."""
+    try:
+        import cv2
+
+        captured_dir = Path(user_data_dir("screen-translate", "Dadangdut33")) / "captured"
+        captured_dir.mkdir(parents=True, exist_ok=True)
+        path = captured_dir / f"cv2_contour_{datetime.now().strftime('%Y%m%d_%H%M%S_%f')}.png"
+        cv2.imwrite(str(path), image)
+        logger.info("Saved OpenCV contour debug image to %s", path)
+    except Exception as exc:
+        logger.exception("Could not save OpenCV contour debug image: %s", exc)
+
+
 class TesseractOCRBackend(OCRBackend):
     """OCR backend wrapping pytesseract with Pillow-based preprocessing.
 
@@ -205,6 +182,9 @@ class TesseractOCRBackend(OCRBackend):
         tesseract_path: str = "",
         extra_config: str = "",
         grayscale: bool = True,
+        use_cv2_contour: bool = False,
+        save_cv2_contour_image: bool = False,
+        background_mode: str = "Auto-Detect",
     ) -> None:
         """Initialise the backend.
 
@@ -212,15 +192,28 @@ class TesseractOCRBackend(OCRBackend):
             tesseract_path: Path to the tesseract executable (empty = use PATH).
             extra_config: Extra pytesseract config flags (e.g. ``--psm 6``).
             grayscale: Whether to convert images to grayscale before OCR.
+            use_cv2_contour: Whether to use OpenCV contour-based text block OCR.
+            save_cv2_contour_image: Whether to save the contour-annotated debug image.
+            background_mode: Threshold background hint: Auto-Detect, Light, or Dark.
         """
         check_tesseract(tesseract_path)
         self._config = extra_config
         self._grayscale = grayscale
+        self._use_cv2_contour = use_cv2_contour
+        self._save_cv2_contour_image = save_cv2_contour_image
+        self._background_mode = background_mode
 
         import pytesseract  # re-import after path may have been set
 
         self._pytesseract = pytesseract
-        logger.debug("TesseractOCRBackend initialised (path=%r, config=%r)", tesseract_path, extra_config)
+        logger.debug(
+            "TesseractOCRBackend initialised (path=%r, config=%r, grayscale=%r, cv2_contour=%r, background=%r)",
+            tesseract_path,
+            extra_config,
+            grayscale,
+            use_cv2_contour,
+            background_mode,
+        )
 
     # ------------------------------------------------------------------
     @property
@@ -229,10 +222,10 @@ class TesseractOCRBackend(OCRBackend):
         return "Tesseract"
 
     def detect_languages(self) -> list[str]:
-        """Return display names of languages whose data is installed.
+        """Return raw language codes of installed data.
 
         Returns:
-            Sorted list of display names, e.g. ``["English", "Japanese", ...]``.
+            Sorted list of codes, e.g. ``["eng", "jpn", ...]``.
         """
         return _get_installed_languages(self._pytesseract)
 
@@ -249,8 +242,19 @@ class TesseractOCRBackend(OCRBackend):
             OCRError: If tesseract fails or is unavailable.
         """
         try:
-            processed = _preprocess(image, grayscale=self._grayscale)
-            result: str = self._pytesseract.image_to_string(processed, config=self._config)
+            if self._use_cv2_contour:
+                result = _run_cv2_contour_ocr(
+                    image,
+                    self._pytesseract,
+                    "",
+                    self._config,
+                    self._grayscale,
+                    self._background_mode,
+                    self._save_cv2_contour_image,
+                )
+            else:
+                processed = _preprocess(image, grayscale=self._grayscale)
+                result = str(self._pytesseract.image_to_string(processed, config=self._config))
             return result.strip()
         except Exception as exc:
             raise OCRError(str(exc)) from exc
@@ -258,7 +262,7 @@ class TesseractOCRBackend(OCRBackend):
     def extract_text_with_lang(
         self,
         image: Image.Image,
-        lang_display_name: str,
+        lang_code: str,
         extra_config: str = "",
         psm5_vertical: bool = True,
     ) -> str:
@@ -266,7 +270,7 @@ class TesseractOCRBackend(OCRBackend):
 
         Args:
             image: Pillow Image to process.
-            lang_display_name: Display name such as ``"Japanese (Vertical)"``.
+            lang_code: Language code.
             extra_config: Additional pytesseract config string.
             psm5_vertical: Auto-add ``--psm 5`` for vertical-script languages.
 
@@ -276,17 +280,24 @@ class TesseractOCRBackend(OCRBackend):
         Raises:
             OCRError: If the language is unknown or tesseract fails.
         """
-        lang_code = TESSERACT_LANG_MAP.get(lang_display_name)
-        if lang_code is None:
-            raise OCRError(f"Unknown language: {lang_display_name!r}")
-
         config = extra_config or self._config
-        if "--psm" not in config and psm5_vertical and "Vertical" in lang_display_name:
+        if "--psm" not in config and psm5_vertical and "_vert" in lang_code:
             config = (config + " --psm 5").strip()
 
         try:
-            processed = _preprocess(image, grayscale=self._grayscale)
-            result: str = self._pytesseract.image_to_string(processed, lang=lang_code, config=config)
+            if self._use_cv2_contour:
+                result = _run_cv2_contour_ocr(
+                    image,
+                    self._pytesseract,
+                    lang_code,
+                    config,
+                    self._grayscale,
+                    self._background_mode,
+                    self._save_cv2_contour_image,
+                )
+            else:
+                processed = _preprocess(image, grayscale=self._grayscale)
+                result = str(self._pytesseract.image_to_string(processed, lang=lang_code, config=config))
             return result.strip()
         except Exception as exc:
             raise OCRError(str(exc)) from exc
@@ -309,11 +320,6 @@ def _get_installed_languages(pytesseract_module: object) -> list[str]:  # type: 
     except Exception:
         codes = []
 
-    names: list[str] = []
-    for code in codes:
-        if code in _REVERSE_MAP:
-            names.append(_REVERSE_MAP[code])
-        elif code != "osd":  # skip 'osd' (orientation detection script)
-            names.append(code)  # fall back to raw code
+    names: list[str] = [code for code in codes if code != "osd"]
     names.sort()
     return names

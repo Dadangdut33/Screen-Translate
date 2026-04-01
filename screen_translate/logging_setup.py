@@ -34,7 +34,26 @@ def setup_logging(level: str = "DEBUG", keep_log: bool = False) -> None:
         except OSError as exc:
             logging.getLogger(__name__).warning("Cannot open log file: %s", exc)
 
-    logging.basicConfig(level=logging.getLevelName(level), format=fmt, handlers=handlers, force=True)
+    logging.basicConfig(
+        level=logging.getLevelName(level), format=fmt, handlers=handlers, force=True
+    )
+    _quiet_third_party_loggers()
+
+
+def _quiet_third_party_loggers() -> None:
+    """Reduce noisy dependency logs while keeping app logs at the chosen level."""
+    for logger_name in (
+        "urllib3",
+        "urllib3.connectionpool",
+        "httpx",
+        "httpcore",
+        "hpack",
+        "h2",
+        "h11",
+        "aioquic",
+        "quic",
+    ):
+        logging.getLogger(logger_name).setLevel(logging.WARNING)
 
 
 logger: logging.Logger = logging.getLogger("screen_translate")

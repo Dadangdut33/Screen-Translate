@@ -22,12 +22,13 @@ DEFAULTS: dict[str, Any] = {
     # App
     "checkUpdateOnStart": True,
     "keep_image": True,
+    "save_cropped_image": False,
     "auto_copy_captured": True,
     "auto_copy_translated": False,
     "save_history": True,
     "supress_no_text_alert": True,
     "run_on_startup": False,
-    "theme": "dark",
+    "theme": "dark_teal.xml",
     # Logging
     "keep_log": False,
     "log_level": "DEBUG",
@@ -39,15 +40,19 @@ DEFAULTS: dict[str, Any] = {
     "offSetW": 0,
     "offSetH": 0,
     # Runtime option
-    "engine": "Google Translate",
-    "sourceLang": "English",
-    "targetLang": "Japanese",
+    "engine": "translators-google",
+    "sourceLang": "auto",
+    "targetLang": "en",
+    "translators_region": "EN",
+    "capture_mode": "Floating Window",
     # OCR / Tesseract
     "tesseract_loc": "",
     "tesseract_config": "",
     "tesseract_psm5_vertical": True,
     "replaceNewLine": True,
     "replaceNewLineWith": " ",
+    "enhance_with_cv2_contour": False,
+    "save_cv2_contour_image": False,
     # Capture enhancement
     "enhance_background": "Auto-Detect",
     "enhance_with_grayscale": True,
@@ -84,6 +89,7 @@ DEFAULTS: dict[str, Any] = {
     "tb_ex_res_bg_color": "#000000",
     # Capture window geometry (stored as x,y,w,h string)
     "capture_window_geometry": "",
+    "capture_region_geometry": "",
     # Query/result window geometries
     "ex_qw_geometry": "",
     "ex_resw_geometry": "",
