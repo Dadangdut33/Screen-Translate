@@ -22,13 +22,7 @@ Requires-Dist: pycountry>=26.2.16
 Requires-Dist: qt-material>=2.14
 Requires-Dist: opencv-python>=4.10
 Requires-Dist: loguru>=0.7.3
-Provides-Extra: dev
-Requires-Dist: ruff>=0.4; extra == "dev"
-Requires-Dist: mypy>=1.10; extra == "dev"
-Requires-Dist: pyinstaller>=6; extra == "dev"
-Requires-Dist: pytest>=8; extra == "dev"
-Requires-Dist: types-Pillow; extra == "dev"
-Requires-Dist: types-pyperclip; extra == "dev"
+Requires-Dist: qtawesome>=1.4.1
 Dynamic: license-file
 
 <!-- markdownlint-disable MD029 MD041 MD036 MD056 MD033 -->

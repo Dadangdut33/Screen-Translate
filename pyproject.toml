@@ -24,16 +24,7 @@ dependencies = [
     "qt-material>=2.14",
     "opencv-python>=4.10",
     "loguru>=0.7.3",
-]
-
-[project.optional-dependencies]
-dev = [
-    "ruff>=0.4",
-    "mypy>=1.10",
-    "pyinstaller>=6",
-    "pytest>=8",
-    "types-Pillow",
-    "types-pyperclip",
+    "qtawesome>=1.4.1",
 ]
 
 [project.scripts]
@@ -65,3 +56,9 @@ ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.2",
+    "pyinstaller"
+]

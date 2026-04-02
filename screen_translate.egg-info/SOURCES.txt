@@ -4,7 +4,6 @@ readme.md
 screen_translate/__init__.py
 screen_translate/__main__.py
 screen_translate/_path.py
-screen_translate/_version.py
 screen_translate/logging_setup.py
 screen_translate.egg-info/PKG-INFO
 screen_translate.egg-info/SOURCES.txt
@@ -18,6 +17,7 @@ screen_translate/core/__init__.py
 screen_translate/core/history.py
 screen_translate/core/ocr/__init__.py
 screen_translate/core/ocr/base.py
+screen_translate/core/ocr/language_compat.py
 screen_translate/core/ocr/tesseract.py
 screen_translate/core/translation/__init__.py
 screen_translate/core/translation/argos_backend.py
@@ -39,6 +39,10 @@ screen_translate/ui/settings_dialog.py
 screen_translate/ui/snip_overlay.py
 screen_translate/ui/utils.py
 tests/test_ocr_backend.py
+tests/test_ocr_language_compat_argos.py
+tests/test_ocr_language_compat_deepl.py
+tests/test_ocr_language_compat_helpers.py
+tests/test_ocr_language_compat_translators.py
 tests/test_settings.py
 tests/test_translation.py
 tests/test_version.py

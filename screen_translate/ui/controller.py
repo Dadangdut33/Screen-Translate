@@ -15,6 +15,10 @@ from PyQt6.QtWidgets import QMessageBox
 
 from screen_translate.config.settings import SettingsManager
 from screen_translate.core.history import append_history
+from screen_translate.core.ocr.language_compat import (
+    is_tesseract_language_compatible,
+    resolve_tesseract_language_code,
+)
 from screen_translate.core.ocr.base import OCRError
 from screen_translate.core.ocr.tesseract import TesseractOCRBackend
 from screen_translate.core.translation.argos_backend import load_argos_backend
@@ -26,6 +30,7 @@ from screen_translate.core.translation.translators_backend import (
     get_all_translators_backends,
 )
 from screen_translate.ui.screen_capture import (
+    CaptureCancelledError,
     capture_filename,
     capture_interactive_region_image,
     preferred_interactive_snip_backend,
@@ -34,25 +39,6 @@ from screen_translate.ui.screen_capture import (
 )
 
 logger = logging.getLogger(__name__)
-
-_TESSERACT_LANGUAGE_ALIASES: dict[str, str] = {
-    "ar": "ara",
-    "de": "deu",
-    "en": "eng",
-    "es": "spa",
-    "fr": "fra",
-    "hi": "hin",
-    "id": "ind",
-    "it": "ita",
-    "ja": "jpn",
-    "ko": "kor",
-    "pt": "por",
-    "ru": "rus",
-    "zh": "chi_sim",
-    "zh-CN": "chi_sim",
-    "zh-TW": "chi_tra",
-}
-
 
 # ---------------------------------------------------------------------------
 # Worker signals (QObject wrapper so QRunnable can emit signals)
@@ -283,6 +269,90 @@ class AppController(QObject):
             )
         return self._ocr_backend
 
+    def available_ocr_backend_names(self) -> list[str]:
+        """Return the available OCR backend names."""
+        return ["Tesseract"]
+
+    def active_ocr_backend_name(self) -> str:
+        """Return the current OCR backend selection."""
+        return str(self.settings.get("ocr_backend", "Tesseract"))
+
+    def set_active_ocr_backend(self, name: str) -> None:
+        """Persist the current OCR backend selection."""
+        self.settings.set("ocr_backend", name)
+        self.reset_ocr_backend()
+
+    def installed_ocr_languages(self) -> list[str]:
+        """Return installed language codes for the active OCR backend."""
+        try:
+            return self.get_ocr_backend().detect_languages()
+        except OCRError:
+            return []
+
+    def ocr_language_overrides(self) -> dict[str, dict[str, str]]:
+        """Return the configured per-backend OCR language overrides."""
+        raw = self.settings.get("ocr_language_overrides", {})
+        if not isinstance(raw, dict):
+            return {}
+        normalized: dict[str, dict[str, str]] = {}
+        for backend_name, mapping in raw.items():
+            if not isinstance(backend_name, str) or not isinstance(mapping, dict):
+                continue
+            cleaned = {
+                str(lang_code): str(ocr_code)
+                for lang_code, ocr_code in mapping.items()
+                if str(lang_code).strip() and str(ocr_code).strip()
+            }
+            normalized[backend_name] = cleaned
+        return normalized
+
+    def backend_ocr_overrides(self, backend_name: str) -> dict[str, str]:
+        """Return OCR language overrides for a specific translation backend."""
+        return dict(self.ocr_language_overrides().get(backend_name, {}))
+
+    def set_backend_ocr_override(
+        self,
+        backend_name: str,
+        language_code: str,
+        tesseract_code: str,
+    ) -> None:
+        """Persist a Tesseract override for a backend/language pair."""
+        overrides = self.ocr_language_overrides()
+        backend_overrides = dict(overrides.get(backend_name, {}))
+        normalized_lang = language_code.strip()
+        normalized_tesseract = tesseract_code.strip()
+        if normalized_tesseract:
+            backend_overrides[normalized_lang] = normalized_tesseract
+        else:
+            backend_overrides.pop(normalized_lang, None)
+
+        if backend_overrides:
+            overrides[backend_name] = backend_overrides
+        else:
+            overrides.pop(backend_name, None)
+        self.settings.set("ocr_language_overrides", overrides)
+
+    def incompatible_languages_for_backend(
+        self,
+        backend_name: str,
+    ) -> list[tuple[str, str | None]]:
+        """Return backend language codes with their resolved Tesseract code or None."""
+        backend = self._backends.get(backend_name)
+        if backend is None:
+            return []
+        installed = self.installed_ocr_languages()
+        overrides = self.backend_ocr_overrides(backend_name)
+        result: list[tuple[str, str | None]] = []
+        for lang_code in backend.available_languages():
+            resolved = resolve_tesseract_language_code(
+                lang_code,
+                installed,
+                overrides=overrides,
+            )
+            if resolved is None:
+                result.append((lang_code, None))
+        return result
+
     def reset_ocr_backend(self) -> None:
         """Force re-creation of the OCR backend (e.g. after settings change)."""
         self._ocr_backend = None
@@ -326,25 +396,30 @@ class AppController(QObject):
 
     def _resolve_ocr_language(self, selected_lang: str) -> str:
         """Map the UI language selection to an installed Tesseract language code."""
-        try:
-            installed = self.get_ocr_backend().detect_languages()
-        except OCRError:
-            return selected_lang
+        installed = self.installed_ocr_languages()
+        resolved = resolve_tesseract_language_code(
+            selected_lang,
+            installed,
+            overrides=self.backend_ocr_overrides(self.active_backend_name()),
+        )
+        return resolved or selected_lang
 
-        if selected_lang in installed:
-            return selected_lang
-
-        mapped = _TESSERACT_LANGUAGE_ALIASES.get(selected_lang)
-        if mapped and mapped in installed:
-            return mapped
-
-        if selected_lang == "auto":
-            if "eng" in installed:
-                return "eng"
-            if installed:
-                return installed[0]
-
-        return selected_lang
+    def is_selected_source_ocr_compatible(
+        self,
+        selected_lang: str | None = None,
+        backend_name: str | None = None,
+    ) -> bool:
+        """Return True if the current source language can be OCRed by the active backend."""
+        ocr_backend_name = self.active_ocr_backend_name()
+        lang = selected_lang or str(self.settings.get("sourceLang", "auto"))
+        translation_backend = backend_name or self.active_backend_name()
+        if ocr_backend_name == "Tesseract":
+            return is_tesseract_language_compatible(
+                lang,
+                self.installed_ocr_languages(),
+                overrides=self.backend_ocr_overrides(translation_backend),
+            )
+        return True
 
     # ------------------------------------------------------------------
     # Async OCR
@@ -552,7 +627,7 @@ class AppController(QObject):
 
     def _start_native_snip_capture(self, backend: str) -> bool:
         """Use a desktop-native interactive region picker and screenshot backend."""
-        output_dir = captured_dir
+        output_dir = captured_dir()
         output_dir.mkdir(parents=True, exist_ok=True)
         keep_image = bool(self.settings.get("keep_image", True))
         should_save_cropped_image = bool(self.settings.get("save_cropped_image", False))
@@ -579,6 +654,20 @@ class AppController(QObject):
                 logger.info("Saved snip capture to %s", normalized_path)
             self.run_ocr(pil_image)
             return True
+        except CaptureCancelledError:
+            logger.info("%s snip capture canceled by user", backend)
+            return False
+        except FileNotFoundError as exc:
+            if bool(self.settings.get("suppress_missing_capture_file_errors", True)):
+                logger.info(
+                    "%s snip capture ended without an output file: %s",
+                    backend,
+                    exc,
+                )
+                return False
+            logger.exception("%s snip capture file missing: %s", backend, exc)
+            QMessageBox.critical(None, "Snip Capture Failed", str(exc))
+            return False
         except Exception as exc:
             logger.exception("%s snip capture failed: %s", backend, exc)
             QMessageBox.critical(None, "Snip Capture Failed", str(exc))

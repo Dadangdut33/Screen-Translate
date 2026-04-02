@@ -19,6 +19,10 @@ from PyQt6.QtGui import QImage, QPixmap
 logger = logging.getLogger(__name__)
 
 
+class CaptureCancelledError(Exception):
+    """Raised when the user cancels an interactive capture flow."""
+
+
 def pixmap_to_pil(pixmap: QPixmap) -> object | None:
     """Convert a QPixmap to a Pillow Image."""
     try:
@@ -96,7 +100,11 @@ def capture_interactive_region_image(
     keep_full_image: bool,
     backend: str,
 ) -> object | None:
-    """Capture a user-selected screen region via desktop-native tools."""
+    """Capture a user-selected screen region via desktop-native tools.
+
+    Raises:
+        CaptureCancelledError: If the user cancels the interactive capture UI.
+    """
     if backend == "Spectacle":
         return _capture_interactive_with_spectacle(keep_full_image=keep_full_image)
     if backend == "GNOME Shell":
@@ -338,12 +346,14 @@ def _capture_interactive_with_gnome_shell(*, keep_full_image: bool) -> object | 
             or capture_rect.width() < 4
             or capture_rect.height() < 4
         ):
-            return None
+            raise CaptureCancelledError("GNOME Shell region selection was canceled.")
         return _capture_with_gnome_shell(
             capture_rect,
             keep_full_image=keep_full_image,
         )
     except subprocess.CalledProcessError as exc:
+        if _looks_like_user_cancel(exc.stderr):
+            raise CaptureCancelledError("GNOME Shell region selection was canceled.")
         logger.error(
             "GNOME Shell SelectArea failed with stderr: %s",
             exc.stderr.strip(),
@@ -393,11 +403,17 @@ def _capture_interactive_with_spectacle(*, keep_full_image: bool) -> object | No
                 except OSError:
                     pass
     except subprocess.CalledProcessError as exc:
+        if _looks_like_user_cancel(exc.stderr):
+            raise CaptureCancelledError("Spectacle region selection was canceled.")
         logger.error(
             "spectacle snip capture failed with stderr: %s",
             exc.stderr.decode(errors="replace").strip(),
         )
         return None
+    except FileNotFoundError:
+        raise CaptureCancelledError(
+            "Spectacle region selection ended without creating an output file."
+        ) from None
     except Exception as exc:
         logger.exception("spectacle snip capture failed: %s", exc)
         return None
@@ -420,6 +436,24 @@ def _parse_gnome_screenshot_result(output: str) -> tuple[bool, str]:
     success = bool(success_match and success_match.group(1).lower() == "true")
     filename_used = filename_match.group(1) if filename_match else ""
     return success, filename_used
+
+
+def _looks_like_user_cancel(stderr: str | bytes | None) -> bool:
+    """This is only guessing, like maybe they give out this message when its cancelled bruh."""
+    if stderr is None:
+        return False
+    text = stderr.decode(errors="replace") if isinstance(stderr, bytes) else stderr
+    lowered = text.strip().lower()
+    return any(
+        token in lowered
+        for token in (
+            "cancel",
+            "canceled",
+            "cancelled",
+            "selection was canceled",
+            "selection was cancelled",
+        )
+    )
 
 
 def _capture_with_external_tool(

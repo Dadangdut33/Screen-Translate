@@ -51,6 +51,7 @@ _LANGUAGE_NAME_OVERRIDES: dict[str, str] = {
     "crh-Latn": "Crimean Tatar (Latin)",
     "ber-Latn": "Berber (Latin)",
 }
+_OCR_INCOMPATIBLE_SUFFIX = " [incompatible with Tesseract OCR]"
 
 
 class MainWindow(QMainWindow):
@@ -304,6 +305,7 @@ class MainWindow(QMainWindow):
         self.cb_engine.blockSignals(False)
 
         self._refresh_lang_combos()
+        self.refresh_ocr_compatibility_state()
 
     def _refresh_lang_combos(self) -> None:
         """Update source/target language combos for the active backend."""
@@ -319,7 +321,12 @@ class MainWindow(QMainWindow):
         self.cb_target.blockSignals(True)
         self.cb_source.clear()
         self.cb_target.clear()
-        self._populate_language_combo(self.cb_source, src_langs)
+        self._populate_language_combo(
+            self.cb_source,
+            src_langs,
+            mark_ocr_compat=True,
+            prefix_code=True,
+        )
         self._populate_language_combo(self.cb_target, tgt_langs)
 
         saved_src = s.get("sourceLang", "auto")
@@ -349,14 +356,44 @@ class MainWindow(QMainWindow):
 
         self._persist_selected_language(self.cb_source, "sourceLang")
         self._persist_selected_language(self.cb_target, "targetLang")
+        self.refresh_ocr_compatibility_state()
 
-    def _populate_language_combo(self, combo: QComboBox, languages: list[str]) -> None:
+    def _populate_language_combo(
+        self,
+        combo: QComboBox,
+        languages: list[str],
+        *,
+        mark_ocr_compat: bool = False,
+        prefix_code: bool = False,
+    ) -> None:
         """Populate a language combo with display labels while keeping the code as user data."""
         for code in languages:
-            combo.addItem(self._language_label(code), code)
+            combo.addItem(
+                self._language_label(
+                    code,
+                    mark_ocr_compat=mark_ocr_compat,
+                    prefix_code=prefix_code,
+                ),
+                code,
+            )
 
-    def _language_label(self, code: str) -> str:
+    def _language_label(
+        self,
+        code: str,
+        *,
+        mark_ocr_compat: bool = False,
+        prefix_code: bool = False,
+    ) -> str:
         """Return a human-friendly label for a backend language code."""
+        label = self._base_language_label(code)
+        if prefix_code:
+            label = f"[{code.upper()}] {label}"
+        if mark_ocr_compat and not self.controller.is_selected_source_ocr_compatible(code):
+            return f"{label}{_OCR_INCOMPATIBLE_SUFFIX}"
+        return label
+
+    def _base_language_label(self, code: str) -> str:
+        """Return the human-friendly label for a language code without compatibility suffixes."""
         override = _LANGUAGE_NAME_OVERRIDES.get(code)
         if override:
             return override
@@ -381,6 +418,29 @@ class MainWindow(QMainWindow):
             pass
 
         return code
+
+    def refresh_ocr_compatibility_state(self) -> None:
+        """Refresh OCR action availability based on source-language compatibility."""
+        ocr_backend = self.controller.active_ocr_backend_name()
+        selected_source = self.cb_source.currentData()
+        is_compatible = self.controller.is_selected_source_ocr_compatible(
+            selected_source if isinstance(selected_source, str) else None
+        )
+        capture_enabled = ocr_backend != "Tesseract" or is_compatible
+        disabled_reason = (
+            "Selected source language is incompatible with Tesseract OCR."
+            if not capture_enabled
+            else ""
+        )
+
+        self.btn_capture.setEnabled(capture_enabled)
+        self.btn_snip.setEnabled(capture_enabled)
+        self.btn_capture.setToolTip(
+            disabled_reason or "Capture the region inside the Capture Window and translate"
+        )
+        self.btn_snip.setToolTip(
+            disabled_reason or "Draw a selection on any monitor to capture and translate (Ctrl+Alt+T)"
+        )
 
     def _find_language_index(self, combo: QComboBox, code: str) -> int:
         """Find the combobox index for a language code stored as user data."""
@@ -410,12 +470,16 @@ class MainWindow(QMainWindow):
     @pyqtSlot()
     def _on_capture_clicked(self) -> None:
         """Trigger capture-window OCR."""
+        if not self.btn_capture.isEnabled():
+            return
         if self.controller.capture_window:
             self.controller.capture_window.trigger_capture()
 
     @pyqtSlot()
     def _trigger_snip(self) -> None:
         """Launch snip-and-translate mode across all monitors."""
+        if not self.btn_snip.isEnabled():
+            return
         s = self.controller.settings
         if s.get("hide_mw_on_cap", False):
             self.hide()
@@ -436,6 +500,7 @@ class MainWindow(QMainWindow):
     def _on_source_changed(self, _: int) -> None:
         """Persist new source language."""
         self._persist_selected_language(self.cb_source, "sourceLang")
+        self.refresh_ocr_compatibility_state()
 
     @pyqtSlot(int)
     def _on_target_changed(self, _: int) -> None:

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 from typing import Any
 
@@ -46,6 +47,9 @@ DEFAULTS: dict[str, Any] = {
     "translators_region": "EN",
     "capture_mode": "Floating Window",
     "capture_backend": "Auto",
+    "suppress_missing_capture_file_errors": True,
+    "ocr_backend": "Tesseract",
+    "ocr_language_overrides": "{}",
     # OCR / Tesseract
     "tesseract_loc": "",
     "tesseract_config": "",
@@ -144,6 +148,17 @@ class SettingsManager:
                 return float(raw)  # type: ignore[arg-type]
             except (TypeError, ValueError):
                 return fallback
+        if isinstance(fallback, dict):
+            if isinstance(raw, str):
+                try:
+                    parsed = json.loads(raw)
+                    if isinstance(parsed, dict):
+                        return parsed
+                except json.JSONDecodeError:
+                    return fallback
+            if isinstance(raw, dict):
+                return raw
+            return fallback
         return raw
 
     def set(self, key: str, value: Any) -> None:
@@ -153,7 +168,10 @@ class SettingsManager:
             key: Settings key name.
             value: New value to persist.
         """
-        self._qs.setValue(key, value)
+        if isinstance(value, dict):
+            self._qs.setValue(key, json.dumps(value, sort_keys=True))
+        else:
+            self._qs.setValue(key, value)
         self._qs.sync()
 
     def restore_defaults(self) -> None:
