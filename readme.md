@@ -1,3 +1,5 @@
+<!-- markdownlint-disable MD029 MD041 MD036 MD056 MD033 -->
+
 <p align="center">
     <img src="https://raw.github.com/Dadangdut33/Screen-Translate/main/assets/logo.png" width="250px" alt="Screen Translate Logo">
 </p>
@@ -6,157 +8,201 @@
 <p align="center">
     <a href="https://github.com/Dadangdut33/Screen-Translate/issues"><img alt="GitHub issues" src="https://img.shields.io/github/issues/Dadangdut33/Screen-Translate"></a>
     <a href="https://github.com/Dadangdut33/Screen-Translate/pulls"><img alt="GitHub pull requests" src="https://img.shields.io/github/issues-pr/Dadangdut33/Screen-Translate"></a>
-    <a href="https://github.com/Dadangdut33/Screen-Translate/releases/latest"><img alt="github downloads"  src="https://img.shields.io/github/downloads/Dadangdut33/Screen-Translate/total?label=downloads (github)"></a><a href="https://sourceforge.net/projects/screen-translate/files/latest/download"><img alt="sourceforge downloads" src="https://img.shields.io/sourceforge/dt/screen-translate.svg?label=downloads (sourceforge)"></a> <br>
     <a href="https://github.com/Dadangdut33/Screen-Translate/releases/latest"><img alt="GitHub release (latest SemVer)" src="https://img.shields.io/github/v/release/Dadangdut33/Screen-Translate"></a>
-    <a href="https://github.com/Dadangdut33/Screen-Translate/commits/main"><img alt="GitHub commits since latest release (by date)" src="https://img.shields.io/github/commits-since/Dadangdut33/Screen-Translate/latest"></a><Br>
-    <a href="https://github.com/Dadangdut33/Screen-Translate/stargazers"><img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/Dadangdut33/Screen-Translate?style=social"></a>
-    <a href="https://github.com/Dadangdut33/Screen-Translate/network/members"><img alt="GitHub forks" src="https://img.shields.io/github/forks/Dadangdut33/Screen-Translate?style=social"></a>
+    <a href="https://github.com/Dadangdut33/Screen-Translate/actions/workflows/build.yml"><img alt="Build Status" src="https://github.com/Dadangdut33/Screen-Translate/actions/workflows/build.yml/badge.svg"></a>
 </p>
 
-STL a.k.a Screen Translate is an OCR translator tool made by utilizing Tesseract and opencv-python. The code is then compiled to .exe by using pyinstaller.
-Inspired by software such as Visual Novel Reader (VNR), [Visual Novel OCR](https://github.com/leminhyen2/Visual-Novel-OCR), and [QTranslate](https://quest-app.appspot.com/). Also available to download at [sourceforge](https://sourceforge.net/projects/screen-translate/).
-
-<p align="center">
-<a href="https://sourceforge.net/projects/screen-translate/"><img width="125px"alt="GitHub forks" src="https://sourceforge.net/cdn/syndication/badge_img/3437888/oss-rising-star-white?achievement=oss-rising-star"></a>
-</p>
+Screen Translate is an OCR translator tool utilizing Tesseract and a variety of translation engines. It has been newly rewritten in modern **PyQt6** for a blazing fast, asynchronous, and scalable Desktop experience.
 
 <h1>Jump to</h1>
 
 - [Features](#features)
-- [User Requirements](#user-requirements)
-- [Downloads](#downloads)
-- [Installation and Setup](#installation-and-setup)
-- [How To Uninstall](#how-to-uninstall)
-- [Development](#--development--)
-  - [Setup](#setup)
-  - [Building](#building)
-  - [Packaging](#packaging)
-  - [Contributing](#contributing)
+- [Requirements](#requirements)
+- [Installation](#installation)
+  - [Capture Backends](#capture-backends)
+  - [Network Notes](#network-notes)
+  - [Tiling / Scrolling Compositors](#tiling--scrolling-compositors)
+- [Development](#development)
 - [Attribution](#attribution)
-- [Other](#other)
 
 ---
-
-<br>
-
-<p align="center">
-    <img src="user_manual/preview.png" alt="Screen Translate Preview">
-</p>
 
 # Features
 
-- Translation (Google translate, LibreTranslate, Mymemorytranslator, Deepl, Pons)
-- OCR Detection (Using tesseract OCR)
-- Snip and translate
-  <details open>
-  <summary>Example</summary>
-    <img src="user_manual/6_1_snipping_right_click.png" width="700" alt="Screen Translate Looks">
-    <img src="user_manual/6_2_snipping.png" width="700" alt="Screen Translate Looks">
-  </details>
-- Capture and translate
-  <details open>
-  <summary>Example</summary>
-    <img src="user_manual/5_4_usage_example.png" width="700" alt="Screen Translate Looks">
-    <img src="user_manual/5_2_capture_window.png" width="700" alt="Screen Translate Looks">
-    <img src="user_manual/5_3_capture_window.png" width="700" alt="Screen Translate Looks">
-  </details>
+- **Multi-Engine Translation**: 39 available translation engines with the help of [Translators](https://github.com/UlionTse/translators) library, Support for Argos Translate (Offline Neural), DeepL (Official API).
+- **OCR Detection**: Tesseract OCR with built-in Pillow image preprocessing (Grayscale + Autocontrast).
+- **Multi-Monitor**: Multi monitor should now be supported.
+- **Continuous Capture**: Frameless overlay window designed to read continuously updating text zones.
+- **Detached Result Windows**: Floating, frameless, opacity-adjustable query and result windows.
+- **Linux support**: Wayland support with multiple capture backends (Qt, Spectacle, GNOME Shell, grim).
 
-# User Requirements
+# Requirements
 
-- **[tesseract](https://github.com/UB-Mannheim/tesseract/wiki)**, needed for the ocr. **Install it with all the language pack**. (Tested version is v5.0.0-alpha2021081, higher version should also work)
-- **[LibreTranslate](https://github.com/LibreTranslate/LibreTranslate)** for offline translation **(Optional)**.
-- Internet connection for translation if not using LibreTranslate.
+- **Python 3.12+** (if running from source)
+- **[Tesseract OCR](https://github.com/UB-Mannheim/tesseract/wiki)** installed and available on your system `PATH`.
+  - Windows:
+    - Basic install: `winget install UB-Mannheim.TesseractOCR`
+    - Install all language packs from the UB Mannheim installer options.
+  - macOS:
+    - `brew install tesseract tesseract-lang`
+  - Linux:
+    - Arch Linux: `sudo pacman -S tesseract tesseract-data`
+    - Debian / Ubuntu: `sudo apt install tesseract-ocr tesseract-ocr-all`
+    - Fedora: `sudo dnf install tesseract tesseract-langpack-*`
 
-# Downloads
+If you install only a subset of language packs, OCR will only work for the languages that are actually available in your local Tesseract data directory.
 
-- [The application (ScreenTranslate/STL)](https://github.com/Dadangdut33/Screen-Translate/releases/latest)
-- [Tesseract](https://github.com/UB-Mannheim/tesseract/wiki) (v5.0.0-alpha2021081 or higher)
-- [LibreTranslate](https://github.com/LibreTranslate/LibreTranslate) **(Optional)**
+# Installation
 
-# Installation and Setup
+TBA...
 
-1. Download the latest [release](https://github.com/Dadangdut33/Screen-Translate/releases/latest) of this program
-2. Install [tesseract](https://github.com/UB-Mannheim/tesseract/wiki), **make sure to select install all language pack when prompted**. Optionally you can found the language pack tessdata in [teserract repository](https://github.com/tesseract-ocr) such as [this](https://github.com/tesseract-ocr/tessdata_best)
-3. Open the app and adjust setting to your liking
-4. **(Recommended)** Set monitor scaling to 100% so that image is captured accurately (If scaling is not set to 100% you will need to set offset in setting)
-5. **(Optional)** Set offset if on multiple monitors.
-6. Try capturing image and see if it works or not, if it doesn't, go check the image captured in img_captured folder to see wether it capture the stuff that you want or not. If not, try to change the offset.
-7. Now that you have set everything, the app should be ready. Feel free to submit new issue on the github repository if you encounter any bugs.
-
-# How To Uninstall
-
-If you use the installer version, you can run the uninstaller inside the app folder or uninstall it from control panel. For the portable (rar) version, you can just delete them.
-
----
-
-<h1 align="center">- Development -</h1>
-
-## Setup
-
-> **Note** \
-> It is recommended to create a virtual environment, but it is not required.
-
-1. Clone the repo or download the source code of the latest release
-2. Create your virtual environment by running `python -m venv venv`
-3. Activate your virtual environment
-4. Install all the dependencies needed by running `pip install -r requirements.txt`
-5. Get to root directory and Run the script by typing `python Main.py`
-
-## Building
-
-> **Warning** \
-> As of now cx_Freeze setup is not working properly for DeepL scraper so use the pyinstaller script instead if you want to compile the app by yourself.
-
-Before building, we gotta make sure that the dependencies and playwright driver is installed. For **playwright** (used for deepl scraper), we need to install the browser driver first, which is explained in the [playwright documentation](https://playwright.dev/python/docs/library#pyinstaller). **It is stated there that if we want to bundle our code we need to run the following code first**:
+via `pipx`.
 
 ```bash
-# bash
-PLAYWRIGHT_BROWSERS_PATH=0 playwright install chromium
-
-# powershell
-$env:PLAYWRIGHT_BROWSERS_PATH="0"
-playwright install chromium
-
-# batch
-set PLAYWRIGHT_BROWSERS_PATH=0
-playwright install chromium
+pipx install .
+screen-translate
 ```
 
-After dependencies are installed, we can start building the app. There are 2 options that i have provided for building, using pyinstaller or cx_freeze. The command used are:
-
-**For pyinstaller:**
+For silent startup (system tray only), run with `-s`:
 
 ```bash
-# On Source Code Directory
-python build_pyinstaller.py
-# you will be prompted to build with console or not
+screen-translate -s
 ```
 
-This will create a folder called `dist` in the source code directory. Inside the folder there will be a folder called `ScreenTranslate <version>` which contains the executable file.
+## Capture Backends
 
-**For cx_freeze:**
+Screen Translate can use different screenshot backends depending on the operating system and desktop session.
 
-```bash
-# On Source Code Directory
-python build_cx.py build
-# you will be prompted to build with console or not
+- Windows:
+  - Qt screen capture is the normal path.
+  - No special backend selection is usually needed.
+- macOS:
+  - Qt screen capture is the normal path.
+  - You may need to grant Screen Recording permission to your terminal or app bundle in System Settings.
+- Linux:
+  - X11: Qt screen capture usually works directly.
+  - Wayland:
+    - KDE Plasma: `Auto` prefers `Spectacle`
+    - GNOME: `Auto` prefers `GNOME Shell`
+    - wlroots compositors such as Sway / Hyprland / niri: `Auto` falls back to `grim`
+
+Linux users can override the capture backend in `Settings -> Capture`:
+
+- `Auto`
+- `Spectacle`
+- `GNOME Shell`
+- `grim`
+
+The `Capture mode for capture window` setting is Linux-focused and mainly exists to work around Wayland window-position restrictions. On Windows and macOS, the standard Qt capture path should usually be enough.
+
+## Network Notes
+
+> [!NOTE]
+> This app does not collect or send any telemetry data. However, some features require network access to third-party services.
+
+Translation engines are provided by the third-party `translators` package. When using those web-backed engines:
+
+- If you set the region selection to auto (by default the app set it to EN region), the library may try to detect a default region by contacting endpoints such as `geolocation.onetrust.com`, `httpbin.org`, or `ip.taobao.com`.
+- Actual translation requests may also use the remote provider directly, such as `translate.google.com`.
+- HTTP/3 / QUIC transport can emit low-level probe or keepalive logs like `PING (probe)`. These are transport logs, not separate app-defined telemetry.
+- This project now defaults `translators_default_region=EN` before importing `translators` and suppresses noisy low-level dependency logs in normal app output so you might not see them (the PING logs).
+
+## Tiling / Scrolling Compositors
+
+Some tiling, scrolling, or other Wayland compositors may need special configuration because they treat windows differently.
+
+The app has provided workaround for this. You can do these:
+
+- `Capture mode for capture window -> Virtual Overlay` for persistent capture regions
+- Set a compositor-specific rules for each overlay to a specific monitor/output. Example rules in `niri`:
+
+```kdl
+window-rule {
+    // Match the screen index
+    match title=r#"(?i)overlay \(screen 1\)"#
+
+    // match it with your output name
+    open-on-output "ASUSTek COMPUTER INC ASUS VG249 0x0002DD87"
+
+    // make it float
+    open-fullscreen false
+    open-floating true
+
+    // add offset if there is something like bar
+    default-floating-position x=0 y=-24 relative-to="top"
+
+    // match this with your output width and height
+    default-column-width { fixed 1920; }
+    default-window-height { fixed 1080; }
+
+    // remove blur
+    background-effect {
+        blur false
+        xray false
+    }
+}
+
+// if you have multiple monitor, add it again
+window-rule {
+    // Match the screen index, again
+    match title=r#"(?i)overlay \(screen 2\)"#
+
+    // match it with your output name
+    open-on-output "Microstep MSI G27C4X Unknown"
+
+    // make it float
+    open-fullscreen false
+    open-floating true
+
+    // add offset if there is something like bar
+    default-floating-position x=0 y=-24 relative-to="top"
+
+    // match this with your output width and height
+    default-column-width { fixed 1920; }
+    default-window-height { fixed 1080; }
+
+    // remove blur
+    background-effect {
+        blur false
+        xray false
+    }
+}
 ```
 
-This will create a folder called `build` in the source code directory. Inside the folder there will be a folder called `exe.<platform>-<version>` which contains the executable file.
+The app, by default generate the window with the format like this: 
 
-## Packaging
+- For capture region / capture window overlay: `Capture Region Overlay (Screen {screen_index + 1})`
+- For snip overlay: `Snip Overlay (Screen {screen_index + 1})`
 
-I use innosetup to package the app. You can download it [here](https://jrsoftware.org/isdl.php). After installing it, you can setup the path and AppId in `ScreenTranslate.iss` file and run the .iss script.
+Adjust the following values for your own system:
 
-## Contributing
+- overlay title: match `overlay (screen x)`, etc.
+- output names
+- offsets for bars / panels
+- output width and height
 
-If you encounter any bugs with the program, please report them by opening an issue on the github repository. You can also request a feature by opening an issue or posting in discussion.
+# Development
+
+> [!NOTE]
+> It is recommended to use `uv` for faster and better dependency management.
+
+1. Clone the repository.
+2. Initialize the virtual environment and install in editable mode with development dependencies:
+
+   ```bash
+   python3 -m venv venv
+   source venv/bin/activate
+   uv sync
+   ```
+
+3. Run the application:
+
+   ```bash
+   uv run python -m screen_translate
+   ```
 
 # Attribution
 
-- Translate Icon in the logo is taken from [Icons8](https://icons8.com/)
-- [Sunvalley TTK Theme](https://github.com/rdbende/Sun-Valley-ttk-theme/) (used for app theme although i modified it a bit)
-
-# Other
-
-Check out my other similar project called [Speech Translate](https://github.com/Dadangdut33/Speech-Translate/) a real time speech transcription and translation app made possible using whisper model from openAI.
+- **Translate Icon** used in the logo is from [Icons8](https://icons8.com/).
+- Formerly utilized Sunvalley TTK Theme (in the legacy `tkinter` architecture).
+- Checkout [Speech Translate](https://github.com/Dadangdut33/Speech-Translate/) for real-time speech transcription and translation.

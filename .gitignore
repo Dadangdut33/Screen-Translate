@@ -9,6 +9,7 @@ test/
 
 # virtual environment
 venv/
+.venv/
 
 # user
 .vscode/

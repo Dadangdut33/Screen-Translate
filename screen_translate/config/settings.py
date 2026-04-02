@@ -16,8 +16,6 @@ SETTINGS_PATH: str = str(
 )
 
 # ---------------------------------------------------------------------------
-# Default values (mirrors the old Json.py default_setting)
-# ---------------------------------------------------------------------------
 DEFAULTS: dict[str, Any] = {
     # App
     "checkUpdateOnStart": True,
@@ -30,8 +28,10 @@ DEFAULTS: dict[str, Any] = {
     "run_on_startup": False,
     "theme": "dark_teal.xml",
     # Logging
-    "keep_log": False,
+    "keep_log": True,
     "log_level": "DEBUG",
+    "suppress_third_party_loggers": True,
+    "max_log_rotation_days": 5,
     "auto_scroll_log": True,
     "auto_refresh_log": True,
     # Capture window offsets
@@ -45,6 +45,7 @@ DEFAULTS: dict[str, Any] = {
     "targetLang": "en",
     "translators_region": "EN",
     "capture_mode": "Floating Window",
+    "capture_backend": "Auto",
     # OCR / Tesseract
     "tesseract_loc": "",
     "tesseract_config": "",
@@ -60,6 +61,8 @@ DEFAULTS: dict[str, Any] = {
     "hide_mw_on_cap": False,
     "hide_ex_qw_on_cap": True,
     "hide_ex_resw_on_cap": True,
+    "show_query_window_after_capture": True,
+    "show_result_window_after_capture": True,
     # Mask window
     "mask_window_bg_color": "#555555",
     # LibreTranslate

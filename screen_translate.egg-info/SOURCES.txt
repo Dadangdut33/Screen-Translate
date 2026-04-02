@@ -1,7 +1,6 @@
 LICENSE
 pyproject.toml
 readme.md
-screen_translate/Logging.py
 screen_translate/__init__.py
 screen_translate/__main__.py
 screen_translate/_path.py
@@ -23,10 +22,11 @@ screen_translate/core/ocr/tesseract.py
 screen_translate/core/translation/__init__.py
 screen_translate/core/translation/argos_backend.py
 screen_translate/core/translation/base.py
-screen_translate/core/translation/deep_translator_backend.py
 screen_translate/core/translation/deepl_official_backend.py
+screen_translate/core/translation/translators_backend.py
 screen_translate/ui/__init__.py
 screen_translate/ui/about_dialog.py
+screen_translate/ui/capture_region_overlay.py
 screen_translate/ui/capture_window.py
 screen_translate/ui/controller.py
 screen_translate/ui/detached_window.py
@@ -34,6 +34,7 @@ screen_translate/ui/history_window.py
 screen_translate/ui/log_window.py
 screen_translate/ui/main_window.py
 screen_translate/ui/mask_window.py
+screen_translate/ui/screen_capture.py
 screen_translate/ui/settings_dialog.py
 screen_translate/ui/snip_overlay.py
 screen_translate/ui/utils.py

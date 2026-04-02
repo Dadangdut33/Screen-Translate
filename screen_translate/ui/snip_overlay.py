@@ -9,6 +9,8 @@ from PyQt6.QtCore import QPoint, QRect, Qt
 from PyQt6.QtGui import QColor, QKeyEvent, QMouseEvent, QPainter, QPen, QPixmap
 from PyQt6.QtWidgets import QApplication, QWidget
 
+from screen_translate.ui.screen_capture import capture_rect_image, pixmap_to_pil, save_cropped_image
+
 if TYPE_CHECKING:
     from screen_translate.ui.controller import AppController
 
@@ -161,48 +163,37 @@ class SnipOverlay(QWidget):
             self._cancel_all()
             return
 
+        global_top_left = self.mapToGlobal(sel.topLeft())
+        capture_rect = QRect(
+            global_top_left.x(),
+            global_top_left.y(),
+            sel.width(),
+            sel.height(),
+        )
+
         self._cancel_all()
+        QApplication.processEvents()
 
-        if not self._screen_pixmap:
-            return
-
-        cropped = self._screen_pixmap.copy(sel)
-        pil_image = _pixmap_to_pil(cropped)
+        screen = QApplication.screenAt(capture_rect.center()) or QApplication.primaryScreen()
+        pil_image = None
+        if self._screen_pixmap is not None and not self._screen_pixmap.isNull():
+            cropped = self._screen_pixmap.copy(sel)
+            pil_image = pixmap_to_pil(cropped)
+        if pil_image is None:
+            pil_image = capture_rect_image(
+                capture_rect,
+                screen,
+                keep_full_image=bool(self.controller.settings.get("keep_image", True)),
+                backend=str(self.controller.settings.get("capture_backend", "Auto")),
+            )
         if pil_image:
+            if bool(self.controller.settings.get("save_cropped_image", False)):
+                save_cropped_image(pil_image, prefix="cropped_snip")
             self.controller.run_ocr(pil_image)
+        else:
+            logger.error("Snip capture failed for rect %s", capture_rect.getRect())
 
     def _cancel_all(self) -> None:
         """Hide all overlays managed by the controller."""
         for overlay in self.controller.snip_overlays:
             overlay.cancel()
-
-
-def _pixmap_to_pil(pixmap: QPixmap) -> object | None:
-    """Convert a QPixmap to a Pillow Image.
-
-    Args:
-        pixmap: Source QPixmap.
-
-    Returns:
-        PIL.Image.Image or None on failure.
-    """
-    try:
-        from PIL import Image
-
-        img = pixmap.toImage()
-        img = img.convertToFormat(img.Format.Format_RGB32)
-        bits = img.bits()
-        if bits is None:
-            return None
-        bits.setsize(img.sizeInBytes())
-        pil = Image.frombytes(
-            "RGB",
-            (img.width(), img.height()),
-            bytes(bits),
-            "raw",
-            "BGRX",
-        )
-        return pil
-    except Exception as exc:
-        logger.exception("pixmap_to_pil failed: %s", exc)
-        return None

@@ -5,13 +5,10 @@ from __future__ import annotations
 import logging
 import os
 import shutil
-import subprocess
-from datetime import datetime
 from pathlib import Path
 from typing import Any
 
 import pyperclip
-from PIL import Image
 from platformdirs import user_data_dir
 from PyQt6.QtCore import QObject, QRect, QThreadPool, QRunnable, pyqtSignal, pyqtSlot
 from PyQt6.QtWidgets import QMessageBox
@@ -22,8 +19,19 @@ from screen_translate.core.ocr.base import OCRError
 from screen_translate.core.ocr.tesseract import TesseractOCRBackend
 from screen_translate.core.translation.argos_backend import load_argos_backend
 from screen_translate.core.translation.base import TranslationBackend, TranslationError
-from screen_translate.core.translation.deepl_official_backend import load_deepl_official_backend
-from screen_translate.core.translation.translators_backend import get_all_translators_backends
+from screen_translate.core.translation.deepl_official_backend import (
+    load_deepl_official_backend,
+)
+from screen_translate.core.translation.translators_backend import (
+    get_all_translators_backends,
+)
+from screen_translate.ui.screen_capture import (
+    capture_filename,
+    capture_interactive_region_image,
+    preferred_interactive_snip_backend,
+    save_cropped_image,
+    captured_dir,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -132,7 +140,9 @@ class _TranslationWorker(QRunnable):
     def run(self) -> None:
         """Execute translation and emit result or error signal."""
         try:
-            result = self.backend.translate(self.text, self.source_lang, self.target_lang)
+            result = self.backend.translate(
+                self.text, self.source_lang, self.target_lang
+            )
             self.signals.finished.emit(result)
         except (TranslationError, Exception) as exc:
             self.signals.error.emit(str(exc))
@@ -152,19 +162,21 @@ class AppController(QObject):
 
     # OCR pipeline
     ocr_started: pyqtSignal = pyqtSignal()
-    ocr_completed: pyqtSignal = pyqtSignal(str)   # recognised text
-    ocr_failed: pyqtSignal = pyqtSignal(str)       # error message
+    ocr_completed: pyqtSignal = pyqtSignal(str)  # recognised text
+    ocr_failed: pyqtSignal = pyqtSignal(str)  # error message
 
     # Translation pipeline
     translation_started: pyqtSignal = pyqtSignal()
     translation_completed: pyqtSignal = pyqtSignal(str)  # translated text
-    translation_failed: pyqtSignal = pyqtSignal(str)     # error message
+    translation_failed: pyqtSignal = pyqtSignal(str)  # error message
 
     # Generic status
     status_busy: pyqtSignal = pyqtSignal()
     status_idle: pyqtSignal = pyqtSignal()
 
-    def __init__(self, settings: SettingsManager, parent: QObject | None = None) -> None:
+    def __init__(
+        self, settings: SettingsManager, parent: QObject | None = None
+    ) -> None:
         """Create the controller.
 
         Args:
@@ -257,7 +269,9 @@ class AppController(QObject):
             extra_cfg: str = self.settings.get("tesseract_config", "")
             grayscale: bool = self.settings.get("enhance_with_grayscale", True)
             cv2_contour: bool = self.settings.get("enhance_with_cv2_contour", False)
-            save_cv2_contour_image: bool = self.settings.get("save_cv2_contour_image", False)
+            save_cv2_contour_image: bool = self.settings.get(
+                "save_cv2_contour_image", False
+            )
             background: str = self.settings.get("enhance_background", "Auto-Detect")
             self._ocr_backend = TesseractOCRBackend(
                 tesseract_path=tes_path,
@@ -286,7 +300,11 @@ class AppController(QObject):
 
     def get_capture_region(self) -> QRect | None:
         """Return the stored capture region for virtual overlay mode."""
-        return QRect(self._capture_region_rect) if self._capture_region_rect is not None else None
+        return (
+            QRect(self._capture_region_rect)
+            if self._capture_region_rect is not None
+            else None
+        )
 
     def set_capture_region(self, rect: QRect) -> None:
         """Persist the capture region selected by the virtual overlay."""
@@ -347,7 +365,9 @@ class AppController(QObject):
             QMessageBox.critical(None, "Tesseract Not Found", str(exc))
             return
 
-        source_lang: str = self._resolve_ocr_language(str(self.settings.get("sourceLang", "auto")))
+        source_lang: str = self._resolve_ocr_language(
+            str(self.settings.get("sourceLang", "auto"))
+        )
         extra_config: str = self.settings.get("tesseract_config", "")
         psm5: bool = self.settings.get("tesseract_psm5_vertical", True)
 
@@ -377,7 +397,9 @@ class AppController(QObject):
 
         alert: bool = not self.settings.get("supress_no_text_alert", True)
         if alert and not text.strip():
-            QMessageBox.information(None, "No Text Detected", "No text was found in the selected region.")
+            QMessageBox.information(
+                None, "No Text Detected", "No text was found in the selected region."
+            )
 
         self.ocr_completed.emit(text)
         self.status_idle.emit()
@@ -397,8 +419,13 @@ class AppController(QObject):
         self.ocr_failed.emit(error)
         self.status_idle.emit()
         if "not installed" in error or "not in your PATH" in error:
-            from screen_translate.core.ocr.tesseract import _platform_install_instructions
-            QMessageBox.critical(None, "Tesseract Not Found", _platform_install_instructions())
+            from screen_translate.core.ocr.tesseract import (
+                _platform_install_instructions,
+            )
+
+            QMessageBox.critical(
+                None, "Tesseract Not Found", _platform_install_instructions()
+            )
         else:
             QMessageBox.critical(None, "OCR Error", error)
 
@@ -430,10 +457,14 @@ class AppController(QObject):
             return
 
         if source_lang and source_lang not in supported_languages:
-            source_lang = "auto" if "auto" in supported_languages else supported_languages[0]
+            source_lang = (
+                "auto" if "auto" in supported_languages else supported_languages[0]
+            )
             self.settings.set("sourceLang", source_lang)
 
-        target_candidates = [lang for lang in supported_languages if lang not in {"auto", "Auto"}]
+        target_candidates = [
+            lang for lang in supported_languages if lang not in {"auto", "Auto"}
+        ]
         if target_lang not in target_candidates:
             if not target_candidates:
                 QMessageBox.warning(
@@ -469,7 +500,7 @@ class AppController(QObject):
                 {
                     "from": self.settings.get("sourceLang", ""),
                     "to": self.settings.get("targetLang", ""),
-                    "query": "",   # set in _on_ocr_done context
+                    "query": "",  # set in _on_ocr_done context
                     "result": result,
                     "engine": self._active_backend_name,
                 }
@@ -503,61 +534,52 @@ class AppController(QObject):
         if not text.strip():
             return
         if self._active_backend_name == "None":
-            QMessageBox.warning(None, "No Engine Selected", "Please select a translation engine first.")
+            QMessageBox.warning(
+                None, "No Engine Selected", "Please select a translation engine first."
+            )
             return
         self.run_translation(text)
 
     def start_snip_capture(self) -> bool:
         """Start snip capture, using external region tools when needed on Wayland."""
-        session = os.environ.get("XDG_SESSION_TYPE", "").lower()
-        desktop = os.environ.get("XDG_CURRENT_DESKTOP", "").lower()
-        if session == "wayland" and ("kde" in desktop or "plasma" in desktop):
-            return self._start_spectacle_snip_capture()
+        native_backend = preferred_interactive_snip_backend()
+        if native_backend is not None:
+            return self._start_native_snip_capture(native_backend)
 
         for overlay in self.snip_overlays:
             overlay.start_snip()
         return True
 
-    def _start_spectacle_snip_capture(self) -> bool:
-        """Use Spectacle's interactive region capture on KDE Plasma Wayland."""
-        if shutil.which("spectacle") is None:
-            QMessageBox.warning(None, "Spectacle Not Found", "Spectacle is required for snip capture on Plasma Wayland.")
-            return False
-
-        captured_dir = Path(user_data_dir("screen-translate", "Dadangdut33")) / "captured"
-        captured_dir.mkdir(parents=True, exist_ok=True)
-        output_path = captured_dir / f"snip_capture_{datetime.now().strftime('%Y%m%d_%H%M%S_%f')}.png"
+    def _start_native_snip_capture(self, backend: str) -> bool:
+        """Use a desktop-native interactive region picker and screenshot backend."""
+        output_dir = captured_dir
+        output_dir.mkdir(parents=True, exist_ok=True)
         keep_image = bool(self.settings.get("keep_image", True))
-        save_cropped_image = bool(self.settings.get("save_cropped_image", False))
+        should_save_cropped_image = bool(self.settings.get("save_cropped_image", False))
 
         try:
-            result = subprocess.run(
-                ["spectacle", "-b", "-n", "-r", "-o", str(output_path)],
-                check=True,
-                capture_output=True,
+            pil_image = capture_interactive_region_image(
+                keep_full_image=keep_image,
+                backend=backend,
             )
-            if result.stderr:
-                logger.debug("spectacle snip stderr: %s", result.stderr.decode(errors="replace").strip())
+            if pil_image is None:
+                QMessageBox.critical(
+                    None,
+                    "Snip Capture Failed",
+                    f"{backend} failed to capture the selected region.",
+                )
+                return False
 
-            with Image.open(output_path) as image:
-                pil_image = image.convert("RGB")
-                if save_cropped_image:
-                    debug_path = captured_dir / f"cropped_snip_{datetime.now().strftime('%Y%m%d_%H%M%S_%f')}.png"
-                    pil_image.save(debug_path)
-                    logger.info("Saved cropped snip capture to %s", debug_path)
-                self.run_ocr(pil_image)
+            if should_save_cropped_image:
+                save_cropped_image(pil_image, prefix="cropped_snip")
 
-            if not keep_image:
-                try:
-                    output_path.unlink()
-                except OSError:
-                    pass
+            if keep_image:
+                normalized_path = output_dir / capture_filename(prefix="snip_capture")
+                pil_image.save(normalized_path)
+                logger.info("Saved snip capture to %s", normalized_path)
+            self.run_ocr(pil_image)
             return True
-        except subprocess.CalledProcessError as exc:
-            logger.error("spectacle snip capture failed with stderr: %s", exc.stderr.decode(errors="replace").strip())
-            QMessageBox.critical(None, "Snip Capture Failed", "Spectacle failed to capture the selected region.")
-            return False
         except Exception as exc:
-            logger.exception("spectacle snip capture failed: %s", exc)
+            logger.exception("%s snip capture failed: %s", backend, exc)
             QMessageBox.critical(None, "Snip Capture Failed", str(exc))
             return False

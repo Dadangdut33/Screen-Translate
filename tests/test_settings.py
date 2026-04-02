@@ -7,9 +7,11 @@ import tempfile
 
 import pytest
 
+from screen_translate.config.settings import SettingsManager
+
 
 @pytest.fixture()
-def tmp_settings(monkeypatch: pytest.MonkeyPatch) -> "SettingsManager":
+def tmp_settings(monkeypatch: pytest.MonkeyPatch) -> SettingsManager:
     """Return a SettingsManager pointing at a temporary INI file."""
     from screen_translate.config import settings as _settings_mod
 
@@ -25,7 +27,7 @@ def tmp_settings(monkeypatch: pytest.MonkeyPatch) -> "SettingsManager":
     os.unlink(tmp_path)
 
 
-def test_get_default(tmp_settings: "SettingsManager") -> None:
+def test_get_default(tmp_settings: SettingsManager) -> None:
     """A fresh store returns the DEFAULTS value for known keys."""
     from screen_translate.config.settings import DEFAULTS
 
@@ -38,13 +40,13 @@ def test_get_default(tmp_settings: "SettingsManager") -> None:
             assert isinstance(result, int), f"{key}: expected int, got {type(result)}"
 
 
-def test_set_and_get(tmp_settings: "SettingsManager") -> None:
+def test_set_and_get(tmp_settings: SettingsManager) -> None:
     """Values written with set() are retrievable with get()."""
     tmp_settings.set("sourceLang", "French")
     assert tmp_settings.get("sourceLang") == "French"
 
 
-def test_bool_coercion(tmp_settings: "SettingsManager") -> None:
+def test_bool_coercion(tmp_settings: SettingsManager) -> None:
     """Boolean values survive a round-trip through QSettings string storage."""
     tmp_settings.set("keep_image", True)
     assert tmp_settings.get("keep_image") is True
@@ -53,7 +55,7 @@ def test_bool_coercion(tmp_settings: "SettingsManager") -> None:
     assert tmp_settings.get("keep_image") is False
 
 
-def test_restore_defaults(tmp_settings: "SettingsManager") -> None:
+def test_restore_defaults(tmp_settings: SettingsManager) -> None:
     """restore_defaults() resets all keys to their default values."""
     tmp_settings.set("sourceLang", "Klingon")
     tmp_settings.restore_defaults()

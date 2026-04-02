@@ -497,9 +497,9 @@ class MainWindow(QMainWindow):
         s = self.controller.settings
         if s.get("hide_mw_on_cap", False):
             self.show_and_raise()
-        if self.controller.query_window and s.get("hide_ex_qw_on_cap", True):
+        if self.controller.query_window and s.get("show_query_window_after_capture", True):
             self.controller.query_window.setVisible(True)
-        if self.controller.result_window and s.get("hide_ex_resw_on_cap", True):
+        if self.controller.result_window and s.get("show_result_window_after_capture", True):
             self.controller.result_window.setVisible(True)
 
     @pyqtSlot(str)

@@ -2,25 +2,16 @@
 
 from __future__ import annotations
 
-import io
 import logging
-import os
-import shutil
-import subprocess
-from datetime import datetime
-from pathlib import Path
 from typing import TYPE_CHECKING
 
-from platformdirs import user_data_dir
 from PyQt6.QtCore import QPoint, QRect, Qt, pyqtSlot
 from PyQt6.QtGui import (
     QAction,
     QColor,
     QContextMenuEvent,
-    QImage,
     QMouseEvent,
     QPainter,
-    QPixmap,
 )
 from PyQt6.QtWidgets import (
     QApplication,
@@ -33,6 +24,7 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
+from screen_translate.ui.screen_capture import capture_rect_image, save_cropped_image
 from screen_translate.ui.utils import load_icon
 
 if TYPE_CHECKING:
@@ -138,7 +130,9 @@ class CaptureWindow(QWidget):
             "Decrease Opacity (-10%)", lambda: self._adjust_opacity(-0.1)
         )
         self._ctx_menu.addSeparator()
-        self._ctx_menu.addAction("Set Capture Region", self._open_virtual_region_selector)
+        self._ctx_menu.addAction(
+            "Set Capture Region", self._open_virtual_region_selector
+        )
         self._ctx_menu.addSeparator()
         self._ctx_menu.addAction("Close", self.hide)
 
@@ -187,7 +181,9 @@ class CaptureWindow(QWidget):
         sw: int = int(self.controller.settings.get("offSetW", 0))
         sh: int = int(self.controller.settings.get("offSetH", 0))
 
-        capture_mode = str(self.controller.settings.get("capture_mode", "Floating Window"))
+        capture_mode = str(
+            self.controller.settings.get("capture_mode", "Floating Window")
+        )
         if capture_mode == "Virtual Overlay":
             stored_rect = self.controller.get_capture_region()
             if stored_rect is None:
@@ -209,16 +205,24 @@ class CaptureWindow(QWidget):
                 max(1, geo.width() + sw),
                 max(1, geo.height() + sh),
             )
-        screen = QApplication.screenAt(capture_rect.center()) or QApplication.primaryScreen()
+        screen = (
+            QApplication.screenAt(capture_rect.center()) or QApplication.primaryScreen()
+        )
         save_full_image = bool(self.controller.settings.get("keep_image", True))
-        save_cropped_image = bool(self.controller.settings.get("save_cropped_image", False))
+        should_save_cropped_image = bool(
+            self.controller.settings.get("save_cropped_image", False)
+        )
         logger.debug(
             "Capture trigger: mode=%s window_geo=%s mapToGlobal=%s frame_top_left=%s stored_region=%s offsets=(%d,%d,%d,%d) capture_rect=%s screen=%s",
             capture_mode,
             geo.getRect(),
             (global_top_left.x(), global_top_left.y()),
             (frame_top_left.x(), frame_top_left.y()),
-            self.controller.get_capture_region().getRect() if self.controller.get_capture_region() is not None else None,
+            (
+                self.controller.get_capture_region().getRect()
+                if self.controller.get_capture_region() is not None
+                else None
+            ),
             sx,
             sy,
             sw,
@@ -233,36 +237,22 @@ class CaptureWindow(QWidget):
                 screen.virtualGeometry().getRect(),
             )
         if screen:
-            pixmap: QPixmap = screen.grabWindow(
-                0,
-                capture_rect.x(),
-                capture_rect.y(),
-                capture_rect.width(),
-                capture_rect.height(),
+            pil_img = capture_rect_image(
+                capture_rect,
+                screen,
+                keep_full_image=save_full_image,
+                backend=str(self.controller.settings.get("capture_backend", "Auto")),
             )
-            if pixmap.isNull():
-                pil_img = _capture_with_external_tool(
-                    capture_rect,
-                    screen,
-                    keep_full_image=save_full_image,
-                )
-                if pil_img is not None:
-                    if save_cropped_image:
-                        _save_cropped_image(pil_img)
-                    self.controller.run_ocr(pil_img)
-                else:
-                    logger.error(
-                        "Screen capture returned a null pixmap. This can happen on Linux/Wayland when "
-                        "the compositor blocks direct screen grabs."
-                    )
+            if pil_img is not None:
+                if should_save_cropped_image:
+                    save_cropped_image(pil_img)
+                self.controller.run_ocr(pil_img)
             else:
-                pil_img = _pixmap_to_pil(pixmap)
-                if pil_img is not None:
-                    if save_cropped_image:
-                        _save_cropped_image(pil_img)
-                    self.controller.run_ocr(pil_img)
-                else:
-                    logger.error("Could not convert captured pixmap to PIL image")
+                logger.error(
+                    "Screen capture failed for rect %s. This can happen on Linux/Wayland when "
+                    "the compositor blocks direct screen grabs and no fallback backend succeeds.",
+                    capture_rect.getRect(),
+                )
 
         if was_visible:
             self.show()
@@ -291,7 +281,9 @@ class CaptureWindow(QWidget):
 
     def _sync_mode_ui(self) -> None:
         """Update helper controls based on the current capture mode."""
-        capture_mode = str(self.controller.settings.get("capture_mode", "Floating Window"))
+        capture_mode = str(
+            self.controller.settings.get("capture_mode", "Floating Window")
+        )
         is_virtual = capture_mode == "Virtual Overlay"
         self._btn_set_region.setVisible(is_virtual)
         self._lbl_mode.setText("Virtual Overlay" if is_virtual else "Floating Window")
@@ -312,161 +304,3 @@ class CaptureWindow(QWidget):
         self.show()
         self.raise_()
         self.activateWindow()
-
-
-def _pixmap_to_pil(pixmap: QPixmap) -> object | None:
-    """Convert a QPixmap to a Pillow Image."""
-    try:
-        from PIL import Image
-
-        img = pixmap.toImage().convertToFormat(QImage.Format.Format_RGB32)
-        bits = img.bits()
-        if bits is None:
-            return None
-        bits.setsize(img.sizeInBytes())
-        return Image.frombytes(
-            "RGB",
-            (img.width(), img.height()),
-            bytes(bits),
-            "raw",
-            "BGRX",
-        )
-    except Exception as exc:
-        logger.exception("capture pixmap_to_pil failed: %s", exc)
-        return None
-
-
-def _capture_with_grim(x: int, y: int, width: int, height: int) -> object | None:
-    """Use grim as a Wayland-friendly capture fallback for a screen region."""
-    if shutil.which("grim") is None:
-        return None
-
-    try:
-        from PIL import Image
-
-        geometry = f"{x},{y} {max(1, width)}x{max(1, height)}"
-        result = subprocess.run(
-            ["grim", "-g", geometry, "-"],
-            check=True,
-            capture_output=True,
-        )
-        if not result.stdout:
-            return None
-        image = Image.open(io.BytesIO(result.stdout))
-        return image.convert("RGB")
-    except subprocess.CalledProcessError as exc:
-        logger.error("grim region capture failed with stderr: %s", exc.stderr.decode(errors="replace").strip())
-        return None
-    except Exception as exc:
-        logger.exception("grim region capture failed: %s", exc)
-        return None
-
-
-def _capture_with_spectacle(
-    capture_rect: QRect,
-    screen: object,
-    *,
-    keep_full_image: bool,
-) -> object | None:
-    """Use Spectacle background mode and crop the requested region locally."""
-    if shutil.which("spectacle") is None:
-        return None
-
-    try:
-        from PIL import Image
-
-        captured_dir = _captured_dir()
-        captured_dir.mkdir(parents=True, exist_ok=True)
-        tmp_path = captured_dir / _capture_filename(prefix="full_capture")
-
-        try:
-            result = subprocess.run(
-                ["spectacle", "-b", "-n", "-f", "-o", str(tmp_path)],
-                check=True,
-                capture_output=True,
-            )
-            if result.stderr:
-                logger.debug("spectacle stderr: %s", result.stderr.decode(errors="replace").strip())
-
-            with Image.open(tmp_path) as image:
-                virtual_geometry = screen.virtualGeometry() if screen is not None else capture_rect
-                crop_left = max(0, capture_rect.x() - virtual_geometry.x())
-                crop_top = max(0, capture_rect.y() - virtual_geometry.y())
-                crop_right = max(crop_left + 1, crop_left + capture_rect.width())
-                crop_bottom = max(crop_top + 1, crop_top + capture_rect.height())
-                crop_box = (
-                    crop_left,
-                    crop_top,
-                    min(image.width, crop_right),
-                    min(image.height, crop_bottom),
-                )
-                logger.debug(
-                    "Spectacle crop: file=%s image_size=%s virtual_geometry=%s capture_rect=%s crop_box=%s keep_full=%s",
-                    tmp_path,
-                    image.size,
-                    virtual_geometry.getRect() if hasattr(virtual_geometry, "getRect") else virtual_geometry,
-                    capture_rect.getRect(),
-                    crop_box,
-                    keep_full_image,
-                )
-                return image.convert("RGB").crop(crop_box)
-        finally:
-            if not keep_full_image:
-                try:
-                    tmp_path.unlink()
-                except OSError:
-                    pass
-    except subprocess.CalledProcessError as exc:
-        logger.error("spectacle full capture failed with stderr: %s", exc.stderr.decode(errors="replace").strip())
-        return None
-    except Exception as exc:
-        logger.exception("spectacle full capture failed: %s", exc)
-        return None
-
-
-def _capture_with_external_tool(
-    capture_rect: QRect,
-    screen: object,
-    *,
-    keep_full_image: bool,
-) -> object | None:
-    """Try platform-specific external capture tools when Qt screen grab is blocked."""
-    desktop = os.environ.get("XDG_CURRENT_DESKTOP", "").lower()
-    session = os.environ.get("DESKTOP_SESSION", "").lower()
-
-    if "kde" in desktop or "plasma" in desktop or "plasma" in session:
-        image = _capture_with_spectacle(
-            capture_rect,
-            screen,
-            keep_full_image=keep_full_image,
-        )
-        if image is not None:
-            return image
-
-    return _capture_with_grim(
-        capture_rect.x(),
-        capture_rect.y(),
-        capture_rect.width(),
-        capture_rect.height(),
-    )
-
-
-def _captured_dir() -> Path:
-    """Return the application's captured-images directory."""
-    return Path(user_data_dir("screen-translate", "Dadangdut33")) / "captured"
-
-
-def _capture_filename(prefix: str = "capture") -> str:
-    """Generate a timestamped filename for external capture tools."""
-    return f"{prefix}_{datetime.now().strftime('%Y%m%d_%H%M%S_%f')}.png"
-
-
-def _save_cropped_image(image: object) -> None:
-    """Persist the final cropped capture image for debugging."""
-    try:
-        output_path = _captured_dir() / _capture_filename(prefix="cropped_capture")
-        output_path.parent.mkdir(parents=True, exist_ok=True)
-        image.save(output_path)
-        logger.info("Saved cropped capture to %s", output_path)
-    except Exception as exc:
-        logger.exception("Could not save cropped capture: %s", exc)

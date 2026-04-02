@@ -4,8 +4,6 @@ from __future__ import annotations
 
 import re
 
-import pytest
-
 
 def test_version_is_string() -> None:
     """__version__ must be a non-empty string."""

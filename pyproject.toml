@@ -23,6 +23,7 @@ dependencies = [
     "pycountry>=26.2.16",
     "qt-material>=2.14",
     "opencv-python>=4.10",
+    "loguru>=0.7.3",
 ]
 
 [project.optional-dependencies]

@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-import logging
 from typing import TYPE_CHECKING
 
-from PyQt6.QtCore import pyqtSlot
+from loguru import logger
+from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot
 from PyQt6.QtWidgets import (
     QCheckBox,
     QComboBox,
@@ -18,27 +18,30 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
+from screen_translate.logging_setup import set_log_level
+
 if TYPE_CHECKING:
     from screen_translate.ui.controller import AppController
-
-logger = logging.getLogger(__name__)
 
 _LOG_LEVELS = ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
 
 
-class _QtLogHandler(logging.Handler):
-    """Logging handler that appends records to a QPlainTextEdit."""
+class _LogEmitter(QObject):
+    """Qt bridge for log lines coming from loguru sinks."""
 
-    def __init__(self, widget: QPlainTextEdit) -> None:
-        super().__init__()
-        self._widget = widget
+    line_ready = pyqtSignal(str)
 
-    def emit(self, record: logging.LogRecord) -> None:
-        try:
-            msg = self.format(record)
-            self._widget.appendPlainText(msg)
-        except Exception:
-            self.handleError(record)
+
+class _QtLogSink:
+    """Loguru sink that forwards formatted lines into the UI thread."""
+
+    def __init__(self, emitter: _LogEmitter) -> None:
+        self._emitter = emitter
+
+    def write(self, message: str) -> None:
+        text = message.rstrip()
+        if text:
+            self._emitter.line_ready.emit(text)
 
 
 class LogWindow(QMainWindow):
@@ -54,7 +57,8 @@ class LogWindow(QMainWindow):
         self.controller = controller
         self.setWindowTitle("Log Viewer")
         self.resize(800, 450)
-        self._handler: _QtLogHandler | None = None
+        self._sink_id: int | None = None
+        self._emitter = _LogEmitter()
         self._build_ui()
         self._install_handler()
 
@@ -69,8 +73,7 @@ class LogWindow(QMainWindow):
         hl.addWidget(QLabel("Log Level:"))
         self._cb_level = QComboBox()
         self._cb_level.addItems(_LOG_LEVELS)
-        current_level = logging.getLogger().level
-        level_name = logging.getLevelName(current_level)
+        level_name = str(self.controller.settings.get("log_level", "DEBUG")).upper()
         idx = self._cb_level.findText(level_name)
         self._cb_level.setCurrentIndex(max(0, idx))
         self._cb_level.currentTextChanged.connect(self._on_level_changed)
@@ -100,17 +103,29 @@ class LogWindow(QMainWindow):
         self._btn_clear.clicked.connect(self._log_view.clear)
 
     def _install_handler(self) -> None:
-        """Attach the Qt logging handler to the root logger."""
-        fmt = logging.Formatter("%(asctime)s [%(levelname)s] %(name)s: %(message)s", datefmt="%H:%M:%S")
-        self._handler = _QtLogHandler(self._log_view)
-        self._handler.setFormatter(fmt)
-        logging.getLogger().addHandler(self._handler)
+        """Attach a loguru sink that appends lines into the view."""
+        self._emitter.line_ready.connect(self._append_log_line)
+        self._sink_id = logger.add(
+            _QtLogSink(self._emitter),
+            format="{time:HH:mm:ss} [{level}] {extra[logger_name]}: {message}",
+            level="DEBUG",
+            enqueue=True,
+            backtrace=False,
+            diagnose=False,
+        )
+
+    @pyqtSlot(str)
+    def _append_log_line(self, line: str) -> None:
+        """Append a log line and keep the view scrolled when requested."""
+        self._log_view.appendPlainText(line)
+        if self._chk_scroll.isChecked():
+            scrollbar = self._log_view.verticalScrollBar()
+            scrollbar.setValue(scrollbar.maximum())
 
     @pyqtSlot(str)
     def _on_level_changed(self, level_name: str) -> None:
-        """Update the root logger level."""
-        level = logging.getLevelName(level_name)
-        logging.getLogger().setLevel(level)
+        """Update the effective application log level."""
+        set_log_level(level_name)
         self.controller.settings.set("log_level", level_name)
 
     def show_and_raise(self) -> None:
@@ -125,5 +140,5 @@ class LogWindow(QMainWindow):
 
     def __del__(self) -> None:
         """Remove handler on garbage collection."""
-        if self._handler:
-            logging.getLogger().removeHandler(self._handler)
+        if self._sink_id is not None:
+            logger.remove(self._sink_id)

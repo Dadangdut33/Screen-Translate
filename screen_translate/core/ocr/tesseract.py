@@ -17,8 +17,6 @@ from .base import OCRBackend, OCRError
 
 logger = logging.getLogger(__name__)
 
-# Removed manual TESSERACT_LANG_MAP to use raw library codes
-
 
 def _platform_install_instructions() -> str:
     """Return platform-appropriate Tesseract install instructions."""
@@ -160,9 +158,14 @@ def _save_cv2_debug_image(image: np.ndarray) -> None:
     try:
         import cv2
 
-        captured_dir = Path(user_data_dir("screen-translate", "Dadangdut33")) / "captured"
+        captured_dir = (
+            Path(user_data_dir("screen-translate", "Dadangdut33")) / "captured"
+        )
         captured_dir.mkdir(parents=True, exist_ok=True)
-        path = captured_dir / f"cv2_contour_{datetime.now().strftime('%Y%m%d_%H%M%S_%f')}.png"
+        path = (
+            captured_dir
+            / f"cv2_contour_{datetime.now().strftime('%Y%m%d_%H%M%S_%f')}.png"
+        )
         cv2.imwrite(str(path), image)
         logger.info("Saved OpenCV contour debug image to %s", path)
     except Exception as exc:
@@ -254,7 +257,9 @@ class TesseractOCRBackend(OCRBackend):
                 )
             else:
                 processed = _preprocess(image, grayscale=self._grayscale)
-                result = str(self._pytesseract.image_to_string(processed, config=self._config))
+                result = str(
+                    self._pytesseract.image_to_string(processed, config=self._config)
+                )
             return result.strip()
         except Exception as exc:
             raise OCRError(str(exc)) from exc
@@ -297,7 +302,11 @@ class TesseractOCRBackend(OCRBackend):
                 )
             else:
                 processed = _preprocess(image, grayscale=self._grayscale)
-                result = str(self._pytesseract.image_to_string(processed, lang=lang_code, config=config))
+                result = str(
+                    self._pytesseract.image_to_string(
+                        processed, lang=lang_code, config=config
+                    )
+                )
             return result.strip()
         except Exception as exc:
             raise OCRError(str(exc)) from exc

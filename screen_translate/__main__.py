@@ -58,7 +58,16 @@ def main() -> None:
     # --- Logging setup ---
     log_level: str = str(settings.get("log_level", "DEBUG"))
     keep_log: bool = bool(settings.get("keep_log", False))
-    setup_logging(level=log_level, keep_log=keep_log)
+    suppress_third_party_loggers: bool = bool(
+        settings.get("suppress_third_party_loggers", True)
+    )
+    max_log_rotation_days: int = int(settings.get("max_log_rotation_days", 5))
+    setup_logging(
+        level=log_level,
+        keep_log=keep_log,
+        suppress_third_party=suppress_third_party_loggers,
+        max_log_rotation=max_log_rotation_days,
+    )
     _apply_theme(app, settings)
 
     logger.info("Screen Translate v%s starting", __version__)
