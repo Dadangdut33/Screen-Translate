@@ -49,7 +49,7 @@ DEFAULTS: dict[str, Any] = {
     "capture_backend": "Auto",
     "suppress_missing_capture_file_errors": True,
     "ocr_backend": "Tesseract",
-    "ocr_language_overrides": "{}",
+    "ocr_language_overrides": {},
     # OCR / Tesseract
     "tesseract_loc": "",
     "tesseract_config": "",
@@ -178,8 +178,7 @@ class SettingsManager:
         """Wipe all stored settings and rewrite defaults."""
         self._qs.clear()
         for key, val in DEFAULTS.items():
-            self._qs.setValue(key, val)
-        self._qs.sync()
+            self.set(key, val)
 
     def all_keys(self) -> list[str]:
         """Return all keys currently stored.

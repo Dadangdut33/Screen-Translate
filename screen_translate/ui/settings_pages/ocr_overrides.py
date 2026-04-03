@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Any
 
 import pycountry
-from PyQt6.QtCore import Qt, pyqtSlot
+from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QCheckBox, QComboBox, QHeaderView, QLabel, QLineEdit, QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget
 
 from screen_translate.core.ocr.language_compat import resolve_tesseract_language_code
@@ -57,7 +57,6 @@ def language_name(code: str) -> str:
     return code
 
 
-@pyqtSlot(str)
 def refresh_ocr_override_table(dialog: Any, backend_name: str) -> None:
     """Refresh the override table for the selected translation backend."""
     if not hasattr(dialog, "_tbl_ocr_overrides"):
@@ -105,17 +104,20 @@ def refresh_ocr_override_table(dialog: Any, backend_name: str) -> None:
         dialog._tbl_ocr_overrides.setItem(row_index, 2, resolved_item)
 
         combo = QComboBox()
+        combo.blockSignals(True)
         combo.addItem("(none)", "")
         for tesseract_code in installed:
             combo.addItem(tesseract_code, tesseract_code)
         current_index = combo.findData(current_override)
         combo.setCurrentIndex(max(0, current_index))
+        combo.blockSignals(False)
         combo.currentIndexChanged.connect(
-            lambda _idx, b=backend_name, lang=language_code, c=combo: set_ocr_override(
+            lambda _idx, row=row_index, b=backend_name, lang=language_code, c=combo: set_ocr_override(
                 dialog,
                 b,
                 lang,
                 str(c.currentData() or ""),
+                row_index=row,
             )
         )
         dialog._tbl_ocr_overrides.setCellWidget(row_index, 3, combo)
@@ -123,7 +125,6 @@ def refresh_ocr_override_table(dialog: Any, backend_name: str) -> None:
     apply_ocr_override_filter(dialog)
 
 
-@pyqtSlot(str)
 def apply_ocr_override_filter(dialog: Any, text: str = "") -> None:
     """Filter OCR override rows by search text."""
     if not hasattr(dialog, "_tbl_ocr_overrides"):
@@ -164,6 +165,7 @@ def set_ocr_override(
     backend_name: str,
     language_code: str,
     tesseract_code: str,
+    row_index: int | None = None,
 ) -> None:
     """Persist an OCR override and refresh dependent UI."""
     dialog.controller.set_backend_ocr_override(
@@ -173,6 +175,28 @@ def set_ocr_override(
     )
     if dialog.controller.main_window:
         dialog.controller.main_window._refresh_lang_combos()
+
+    installed = dialog.controller.installed_ocr_languages()
+    resolved = resolve_tesseract_language_code(
+        language_code,
+        installed,
+        overrides=dialog.controller.backend_ocr_overrides(backend_name),
+    )
+    resolved_display = resolved or "[Incompatible]"
+
+    if row_index is not None and 0 <= row_index < dialog._tbl_ocr_overrides.rowCount():
+        resolved_item = dialog._tbl_ocr_overrides.item(row_index, 2)
+        if resolved_item is not None:
+            resolved_item.setText(resolved_display)
+        combo = dialog._tbl_ocr_overrides.cellWidget(row_index, 3)
+        if isinstance(combo, QComboBox):
+            combo.blockSignals(True)
+            current_index = combo.findData(tesseract_code)
+            combo.setCurrentIndex(max(0, current_index))
+            combo.blockSignals(False)
+        apply_ocr_override_filter(dialog)
+        return
+
     refresh_ocr_override_table(dialog, backend_name)
 
 
