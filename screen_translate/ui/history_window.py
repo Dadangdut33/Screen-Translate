@@ -11,15 +11,13 @@ from PyQt6.QtWidgets import (
     QHBoxLayout,
     QHeaderView,
     QLabel,
-    QLineEdit,
     QMainWindow,
     QMessageBox,
-    QPushButton,
-    QTableWidget,
     QTableWidgetItem,
     QVBoxLayout,
     QWidget,
 )
+from qfluentwidgets import LineEdit, PushButton, TableWidget
 
 from screen_translate.core.history import (
     HistoryEntry,
@@ -27,6 +25,7 @@ from screen_translate.core.history import (
     delete_history_by_ids,
     load_history,
 )
+from screen_translate.ui.style_sheet import StyleSheet
 
 if TYPE_CHECKING:
     from screen_translate.ui.controller import AppController
@@ -54,6 +53,7 @@ class HistoryWindow(QMainWindow):
         self.controller = controller
         self.setWindowTitle("Translation History")
         self.resize(900, 500)
+        StyleSheet.AUXILIARY_WINDOW.apply(self)
         self._build_ui()
         self._load()
 
@@ -67,27 +67,29 @@ class HistoryWindow(QMainWindow):
         # Search bar
         hl = QHBoxLayout()
         hl.addWidget(QLabel("Search:"))
-        self._search = QLineEdit()
+        self._search = LineEdit()
         self._search.setPlaceholderText("Type to filter…")
         self._search.textChanged.connect(self._filter)
         hl.addWidget(self._search)
 
-        self._btn_refresh = QPushButton("Refresh")
+        self._btn_refresh = PushButton("Refresh")
         self._btn_refresh.clicked.connect(self._load)
         hl.addWidget(self._btn_refresh)
 
-        self._btn_delete = QPushButton("Delete Selected")
+        self._btn_delete = PushButton("Delete Selected")
         self._btn_delete.clicked.connect(self._delete_selected)
         hl.addWidget(self._btn_delete)
 
-        self._btn_clear = QPushButton("Clear All")
+        self._btn_clear = PushButton("Clear All")
         self._btn_clear.clicked.connect(self._clear_all)
         hl.addWidget(self._btn_clear)
 
         vl.addLayout(hl)
 
         # Table
-        self._table = QTableWidget(0, 6)
+        self._table = TableWidget()
+        self._table.setRowCount(0)
+        self._table.setColumnCount(6)
         self._table.setHorizontalHeaderLabels(["ID", "From", "To", "Engine", "Query", "Result"])
         self._table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
         self._table.horizontalHeader().setStretchLastSection(True)

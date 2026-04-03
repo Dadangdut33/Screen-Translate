@@ -22,6 +22,7 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
+from qfluentwidgets import BodyLabel, ProgressBar, PushButton
 import qtawesome as qta
 from screen_translate.ui.settings_pages import (
     build_appearance_page,
@@ -32,6 +33,7 @@ from screen_translate.ui.settings_pages import (
     build_ocr_page,
     build_translation_page,
 )
+from screen_translate.ui.style_sheet import StyleSheet
 
 if TYPE_CHECKING:
     from screen_translate.ui.controller import AppController
@@ -76,6 +78,7 @@ class SettingsDialog(QDialog):
 
         self.setWindowTitle("Settings")
         self.setMinimumSize(900, 700)
+        StyleSheet.SETTINGS_DIALOG.apply(self)
         self._build_ui()
 
     # ------------------------------------------------------------------
@@ -108,7 +111,7 @@ class SettingsDialog(QDialog):
         ]
 
         for index, (label, page) in enumerate(pages):
-            btn = QPushButton(label)
+            btn = PushButton(label)
             btn.setCheckable(True)
             btn.setProperty("navItem", True)
             btn.setProperty("navLabel", label)
@@ -159,12 +162,12 @@ class SettingsDialog(QDialog):
         card_layout.setContentsMargins(20, 18, 20, 18)
         card_layout.setSpacing(10)
 
-        title = QLabel("Applying theme...", card)
+        title = BodyLabel("Applying theme...", card)
         title.setAlignment(Qt.AlignmentFlag.AlignCenter)
         title.setObjectName("themeLoadingTitle")
         card_layout.addWidget(title)
 
-        progress = QProgressBar(card)
+        progress = ProgressBar(card)
         progress.setRange(0, 0)
         progress.setTextVisible(False)
         progress.setFixedWidth(240)

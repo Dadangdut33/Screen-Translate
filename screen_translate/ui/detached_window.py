@@ -15,12 +15,13 @@ from PyQt6.QtGui import (
 )
 from PyQt6.QtWidgets import (
     QApplication,
-    QLabel,
     QMenu,
     QSizePolicy,
     QVBoxLayout,
     QWidget,
 )
+from qfluentwidgets import BodyLabel
+from screen_translate.ui.style_sheet import StyleSheet
 
 if TYPE_CHECKING:
     from screen_translate.ui.controller import AppController
@@ -62,6 +63,7 @@ class DetachedWindow(QWidget):
         self._drag_pos: QPoint | None = None
         self._opacity = 1.0
         self._text = ""
+        StyleSheet.FLOATING_WINDOW.apply(self)
 
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, False)
         self.resize(600, 120)
@@ -74,7 +76,7 @@ class DetachedWindow(QWidget):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(6, 6, 6, 6)
 
-        self._label = QLabel()
+        self._label = BodyLabel()
         self._label.setWordWrap(True)
         self._label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
         self._label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)

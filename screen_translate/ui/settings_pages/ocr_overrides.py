@@ -6,7 +6,8 @@ from typing import Any
 
 import pycountry
 from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QCheckBox, QComboBox, QHeaderView, QLabel, QLineEdit, QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget
+from PyQt6.QtWidgets import QHeaderView, QTableWidgetItem, QVBoxLayout, QWidget
+from qfluentwidgets import BodyLabel, CheckBox, ComboBox, LineEdit, TableWidget
 
 from screen_translate.core.ocr.language_compat import resolve_tesseract_language_code
 
@@ -103,7 +104,7 @@ def refresh_ocr_override_table(dialog: Any, backend_name: str) -> None:
         dialog._tbl_ocr_overrides.setItem(row_index, 1, name_item)
         dialog._tbl_ocr_overrides.setItem(row_index, 2, resolved_item)
 
-        combo = QComboBox()
+        combo = ComboBox()
         combo.blockSignals(True)
         combo.addItem("(none)", "")
         for tesseract_code in installed:
@@ -143,7 +144,7 @@ def apply_ocr_override_filter(dialog: Any, text: str = "") -> None:
             if item is not None:
                 values.append(item.text())
         combo = dialog._tbl_ocr_overrides.cellWidget(row_index, 3)
-        if isinstance(combo, QComboBox):
+        if isinstance(combo, ComboBox):
             values.append(combo.currentText())
             current_data = combo.currentData()
             if isinstance(current_data, str):
@@ -189,7 +190,7 @@ def set_ocr_override(
         if resolved_item is not None:
             resolved_item.setText(resolved_display)
         combo = dialog._tbl_ocr_overrides.cellWidget(row_index, 3)
-        if isinstance(combo, QComboBox):
+        if isinstance(combo, ComboBox):
             combo.blockSignals(True)
             current_index = combo.findData(tesseract_code)
             combo.setCurrentIndex(max(0, current_index))
@@ -208,7 +209,7 @@ def build_ocr_overrides_page(dialog: Any) -> QWidget:
     grp_tl_backend, fl_tl_backend = dialog._group_form(
         "Per-Backend OCR Language Overrides"
     )
-    dialog._cb_override_backend = QComboBox()
+    dialog._cb_override_backend = ComboBox()
     backend_names = [
         name for name in dialog.controller.available_backend_names() if name != "None"
     ]
@@ -221,7 +222,7 @@ def build_ocr_overrides_page(dialog: Any) -> QWidget:
     )
     fl_tl_backend.addRow("Translation backend:", dialog._cb_override_backend)
     fl_tl_backend.addRow(
-        QLabel(
+        BodyLabel(
             "All backend language codes are shown here. In this menu, "
             "you can set custom overrides to resolve them to compatible Tesseract codes. "
             "This is useful when a backend's language code doesn't match the standard."
@@ -230,7 +231,7 @@ def build_ocr_overrides_page(dialog: Any) -> QWidget:
     vl.addWidget(grp_tl_backend)
 
     grp_data_filter, fl_data_filter = dialog._group_form("Filtering and Display Options")
-    dialog._le_ocr_override_search = QLineEdit()
+    dialog._le_ocr_override_search = LineEdit()
     dialog._le_ocr_override_search.setPlaceholderText(
         "Search by language code, name, resolved code, or override…"
     )
@@ -239,7 +240,7 @@ def build_ocr_overrides_page(dialog: Any) -> QWidget:
     )
 
     fl_data_filter.addRow("Search:", dialog._le_ocr_override_search)
-    dialog._chk_show_incompatible = QCheckBox("Show incompatible languages")
+    dialog._chk_show_incompatible = CheckBox("Show incompatible languages")
     dialog._chk_show_incompatible.setChecked(True)
     dialog._chk_show_incompatible.toggled.connect(
         lambda _checked: apply_ocr_override_filter(dialog)
@@ -247,7 +248,9 @@ def build_ocr_overrides_page(dialog: Any) -> QWidget:
     fl_data_filter.addRow(dialog._chk_show_incompatible)
     vl.addWidget(grp_data_filter)
 
-    dialog._tbl_ocr_overrides = QTableWidget(0, 4)
+    dialog._tbl_ocr_overrides = TableWidget()
+    dialog._tbl_ocr_overrides.setRowCount(0)
+    dialog._tbl_ocr_overrides.setColumnCount(4)
     dialog._tbl_ocr_overrides.setHorizontalHeaderLabels(
         ["Code", "Name", "Resolved", "Tesseract Key Override"]
     )

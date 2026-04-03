@@ -27,7 +27,7 @@ DEFAULTS: dict[str, Any] = {
     "save_history": True,
     "supress_no_text_alert": True,
     "run_on_startup": False,
-    "theme": "dark_teal.xml",
+    "theme": "Dark",
     # Logging
     "keep_log": True,
     "log_level": "DEBUG",

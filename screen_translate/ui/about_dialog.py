@@ -4,8 +4,10 @@ from __future__ import annotations
 
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QDialog, QDialogButtonBox, QLabel, QVBoxLayout, QWidget
+from qfluentwidgets import BodyLabel
 
 from screen_translate import __version__
+from screen_translate.ui.style_sheet import StyleSheet
 
 
 class AboutDialog(QDialog):
@@ -20,6 +22,7 @@ class AboutDialog(QDialog):
         super().__init__(parent)
         self.setWindowTitle("About Screen Translate")
         self.setFixedSize(400, 300)
+        StyleSheet.AUXILIARY_WINDOW.apply(self)
         self._build_ui()
 
     def _build_ui(self) -> None:
@@ -30,7 +33,7 @@ class AboutDialog(QDialog):
         title.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(title)
 
-        desc = QLabel(
+        desc = BodyLabel(
             "A desktop screen OCR and translation tool.\n"
             "Capture any region on screen and translate it instantly\n"
             "using multiple translation engines."

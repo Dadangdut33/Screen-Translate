@@ -7,18 +7,17 @@ from typing import TYPE_CHECKING
 from loguru import logger
 from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot
 from PyQt6.QtWidgets import (
-    QCheckBox,
-    QComboBox,
     QHBoxLayout,
     QLabel,
     QMainWindow,
     QPlainTextEdit,
-    QPushButton,
     QVBoxLayout,
     QWidget,
 )
+from qfluentwidgets import CheckBox, ComboBox, PushButton
 
 from screen_translate.logging_setup import set_log_level
+from screen_translate.ui.style_sheet import StyleSheet
 
 if TYPE_CHECKING:
     from screen_translate.ui.controller import AppController
@@ -57,6 +56,7 @@ class LogWindow(QMainWindow):
         self.controller = controller
         self.setWindowTitle("Log Viewer")
         self.resize(800, 450)
+        StyleSheet.AUXILIARY_WINDOW.apply(self)
         self._sink_id: int | None = None
         self._emitter = _LogEmitter()
         self._build_ui()
@@ -71,7 +71,7 @@ class LogWindow(QMainWindow):
 
         hl = QHBoxLayout()
         hl.addWidget(QLabel("Log Level:"))
-        self._cb_level = QComboBox()
+        self._cb_level = ComboBox()
         self._cb_level.addItems(_LOG_LEVELS)
         level_name = str(self.controller.settings.get("log_level", "DEBUG")).upper()
         idx = self._cb_level.findText(level_name)
@@ -79,11 +79,11 @@ class LogWindow(QMainWindow):
         self._cb_level.currentTextChanged.connect(self._on_level_changed)
         hl.addWidget(self._cb_level)
 
-        self._chk_scroll = QCheckBox("Auto-scroll")
+        self._chk_scroll = CheckBox("Auto-scroll")
         self._chk_scroll.setChecked(True)
         hl.addWidget(self._chk_scroll)
 
-        self._btn_clear = QPushButton("Clear")
+        self._btn_clear = PushButton("Clear")
         self._btn_clear.clicked.connect(self._log_view.clear if hasattr(self, "_log_view") else lambda: None)
         hl.addWidget(self._btn_clear)
         hl.addStretch()

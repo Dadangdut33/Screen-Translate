@@ -9,7 +9,8 @@ import socket
 import sys
 
 from PyQt6.QtCore import QMetaObject, Qt, QSocketNotifier
-from PyQt6.QtWidgets import QApplication, QStyleFactory
+from PyQt6.QtWidgets import QApplication
+from qfluentwidgets import Theme, setTheme
 
 from screen_translate import __version__
 from screen_translate.config.settings import SettingsManager
@@ -31,11 +32,7 @@ from screen_translate.ui.snip_overlay import SnipOverlay
 
 logger = logging.getLogger(__name__)
 
-_DEFAULT_THEME = "dark_teal.xml"
-_LEGACY_THEME_MAP = {
-    "dark": "dark_teal.xml",
-    "light": "light_blue.xml",
-}
+_DEFAULT_THEME = "Dark"
 
 
 def main() -> None:
@@ -126,24 +123,19 @@ def main() -> None:
 
 
 def _apply_theme(app: QApplication, settings: SettingsManager) -> None:
-    """Apply the configured qt-material theme, falling back gracefully."""
-    requested_theme = str(settings.get("theme", _DEFAULT_THEME))
-    theme = _LEGACY_THEME_MAP.get(requested_theme, requested_theme) or _DEFAULT_THEME
-
+    """Apply the configured Fluent light/dark theme."""
+    theme_name = str(settings.get("theme", _DEFAULT_THEME)).title()
+    if theme_name not in {"Dark", "Light"}:
+        theme_name = _DEFAULT_THEME
+        settings.set("theme", theme_name)
+    theme = Theme.DARK if theme_name == "Dark" else Theme.LIGHT
     try:
-        from qt_material import apply_stylesheet
-
         app.setStyle("Fusion")
-        apply_stylesheet(app, theme=theme)
-        if theme != requested_theme:
-            settings.set("theme", theme)
-        logger.info("Applied qt-material theme: %s", theme)
-    except ImportError:
-        app.setStyle("Fusion")
-        logger.warning("qt-material is not installed - using Fusion style")
+        setTheme(theme, save=False, lazy=True)
+        logger.info("Applied QFluentWidgets theme: %s", theme_name)
     except Exception as exc:
         app.setStyle("Fusion")
-        logger.warning("Could not apply qt-material theme %s: %s", theme, exc)
+        logger.warning("Could not apply QFluentWidgets theme %s: %s", theme_name, exc)
 
 
 def _configure_unix_signal_handling(app: QApplication, main_win: MainWindow) -> None:
@@ -249,6 +241,8 @@ def _trigger_capture(controller: AppController) -> None:
 
 
 if __name__ == "__main__":
+    os.environ.pop("QT_STYLE_OVERRIDE", None)
+    os.environ.pop("QT_QPA_PLATFORMTHEME", None)  # disables KDE/GNOME theme injection
     # ----------------------------------------------------------------
     logger.info("--- Welcome to Screen Translate ---")
 

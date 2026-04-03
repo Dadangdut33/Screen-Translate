@@ -6,7 +6,8 @@ from typing import Any
 
 from PyQt6.QtCore import pyqtSlot
 from PyQt6.QtWidgets import QFileDialog
-from PyQt6.QtWidgets import QComboBox, QGroupBox, QHBoxLayout, QPushButton, QVBoxLayout, QWidget, QFormLayout
+from PyQt6.QtWidgets import QFormLayout, QGroupBox, QHBoxLayout, QVBoxLayout, QWidget
+from qfluentwidgets import ComboBox, PushButton
 
 from .common import (
     bind_check_with_callback,
@@ -41,7 +42,7 @@ def build_ocr_page(dialog: Any) -> QWidget:
     vl = QVBoxLayout(w)
 
     grp_engine, fl_engine = dialog._group_form("Tesseract")
-    dialog._cb_ocr_backend = QComboBox()
+    dialog._cb_ocr_backend = ComboBox()
     dialog._cb_ocr_backend.addItems(dialog.controller.available_ocr_backend_names())
     saved_ocr_backend = str(dialog.s.get("ocr_backend", "Tesseract"))
     idx_ocr_backend = dialog._cb_ocr_backend.findText(saved_ocr_backend)
@@ -59,7 +60,7 @@ def build_ocr_page(dialog: Any) -> QWidget:
         "Leave empty to use system PATH",
     )
     row.addWidget(dialog._tes_path)
-    btn_browse = QPushButton("Browse…")
+    btn_browse = PushButton("Browse…")
     btn_browse.clicked.connect(lambda: browse_tesseract(dialog))
     row.addWidget(btn_browse)
     fl_engine.addRow("Tesseract path:", row)

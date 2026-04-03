@@ -4,50 +4,40 @@ from __future__ import annotations
 
 from typing import Any
 
-from PyQt6.QtCore import pyqtSlot
 from PyQt6.QtGui import QColor
 from PyQt6.QtWidgets import (
     QApplication,
     QColorDialog,
-    QComboBox,
-    QLabel,
-    QPushButton,
     QVBoxLayout,
     QWidget,
 )
-
-from qt_material import list_themes
+from qfluentwidgets import BodyLabel, ComboBox, PushButton, Theme, setTheme
 
 from .common import bind_spin
 
+_THEME_OPTIONS: list[str] = ["Dark", "Light"]
 
-@pyqtSlot(str)
+
 def on_theme_changed(dialog: Any, theme: str) -> None:
-    """Persist and apply a qt-material theme."""
+    """Persist and apply a Fluent dark/light theme."""
     dialog.s.set("theme", theme)
     app = QApplication.instance()
     if app is None:
         return
     dialog._show_theme_overlay()
     try:
-        from qt_material import apply_stylesheet
-
         app.setStyle("Fusion")
-        apply_stylesheet(app, theme=theme)
+        setTheme(Theme.DARK if theme == "Dark" else Theme.LIGHT, save=False)
         dialog._schedule_nav_style_refresh(50)
-    except ImportError:
-        dialog._logger.warning(
-            "qt-material is not installed - theme change saved for later"
-        )
     except Exception as exc:
         dialog._logger.warning("Could not apply theme %s: %s", theme, exc)
     finally:
         dialog._hide_theme_overlay()
 
 
-def color_picker_row(dialog: Any, key: str) -> QPushButton:
+def color_picker_row(dialog: Any, key: str) -> PushButton:
     """Create a colour-picker button tied to a settings key."""
-    btn = QPushButton()
+    btn = PushButton()
     btn.setFixedWidth(60)
 
     def apply_button_color(color: QColor) -> None:
@@ -79,18 +69,16 @@ def build_appearance_page(dialog: Any) -> QWidget:
     vl = QVBoxLayout(w)
 
     grp_theme, fl_theme = dialog._group_form("Theme")
-    dialog._cb_theme = QComboBox()
-    dialog._cb_theme.addItems(list_themes())
-    saved_theme = str(dialog.s.get("theme", "dark_teal.xml"))
+    dialog._cb_theme = ComboBox()
+    dialog._cb_theme.addItems(_THEME_OPTIONS)
+    saved_theme = str(dialog.s.get("theme", "Dark"))
     idx_theme = dialog._cb_theme.findText(saved_theme)
     dialog._cb_theme.setCurrentIndex(max(0, idx_theme))
     dialog._cb_theme.currentTextChanged.connect(
         lambda theme: on_theme_changed(dialog, theme)
     )
     fl_theme.addRow("Theme:", dialog._cb_theme)
-    fl_theme.addRow(
-        QLabel("qt-material themes apply immediately when the package is installed.")
-    )
+    fl_theme.addRow(BodyLabel("Choose between Fluent Dark and Light mode."))
     vl.addWidget(grp_theme)
 
     grp_query, fl_query = dialog._group_form("Query Window")

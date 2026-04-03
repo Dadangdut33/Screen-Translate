@@ -1,0 +1,28 @@
+MainWindow {
+    background-color: rgb(32, 32, 32);
+}
+
+MainWindow QToolBar {
+    background-color: transparent;
+    border: none;
+    spacing: 6px;
+    padding: 8px 10px 4px 10px;
+}
+
+MainWindow QTextEdit {
+    background-color: rgba(39, 39, 39, 0.92);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 10px;
+    color: rgb(244, 244, 244);
+    font: 14px --FontFamilies;
+    padding: 10px;
+}
+
+MainWindow QMenuBar {
+    background-color: transparent;
+    color: rgb(244, 244, 244);
+}
+
+MainWindow QStatusBar {
+    background: transparent;
+}

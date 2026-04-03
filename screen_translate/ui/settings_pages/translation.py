@@ -5,7 +5,8 @@ from __future__ import annotations
 from typing import Any
 
 from PyQt6.QtCore import pyqtSlot
-from PyQt6.QtWidgets import QComboBox, QGroupBox, QFormLayout, QLabel, QLineEdit, QVBoxLayout, QWidget
+from PyQt6.QtWidgets import QFormLayout, QGroupBox, QVBoxLayout, QWidget
+from qfluentwidgets import ComboBox, LineEdit
 
 from .common import bind_check, bind_line
 from screen_translate.core.translation.translators_backend import (
@@ -43,7 +44,7 @@ def build_translation_page(dialog: Any) -> QWidget:
 
     grp = QGroupBox("Active Backend")
     gfl = QFormLayout(grp)
-    dialog._cb_backend = QComboBox()
+    dialog._cb_backend = ComboBox()
     for name in dialog.controller.available_backend_names():
         dialog._cb_backend.addItem(name)
     saved = dialog.s.get("engine", "translators-google")
@@ -59,8 +60,9 @@ def build_translation_page(dialog: Any) -> QWidget:
 
     dialog._grp_deepl = QGroupBox("DeepL Official API Key")
     deepl_fl = QFormLayout(dialog._grp_deepl)
-    dialog._deepl_key = QLineEdit(str(dialog.s.get("deepl_api_key", "")))
-    dialog._deepl_key.setEchoMode(QLineEdit.EchoMode.Password)
+    dialog._deepl_key = LineEdit()
+    dialog._deepl_key.setText(str(dialog.s.get("deepl_api_key", "")))
+    dialog._deepl_key.setEchoMode(LineEdit.EchoMode.Password)
     dialog._deepl_key.setPlaceholderText("Enter DEEPL_API_KEY…")
     dialog._deepl_key.textChanged.connect(lambda v: dialog.s.set("deepl_api_key", v))
     deepl_fl.addRow("API Key:", dialog._deepl_key)
@@ -76,7 +78,7 @@ def build_translation_page(dialog: Any) -> QWidget:
     libre_fl.addRow("API Key:", bind_line("libre_api_key", dialog.s, "optional"))
     vl.addWidget(grp_libre)
 
-    dialog._cb_translators_region = QComboBox()
+    dialog._cb_translators_region = ComboBox()
     dialog._cb_translators_region.addItems(["EN", "CN", "Auto"])
     saved_region = str(dialog.s.get("translators_region", "EN"))
     idx_region = dialog._cb_translators_region.findText(saved_region)

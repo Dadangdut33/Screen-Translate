@@ -5,7 +5,7 @@ dist/
 captured/
 user/
 log/
-test/
+ignore/
 
 # virtual environment
 venv/

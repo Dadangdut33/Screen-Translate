@@ -18,13 +18,14 @@ from PyQt6.QtWidgets import (
     QHBoxLayout,
     QLabel,
     QMenu,
-    QPushButton,
     QSizeGrip,
     QVBoxLayout,
     QWidget,
 )
+from qfluentwidgets import PrimaryPushButton, PushButton
 
 from screen_translate.ui.screen_capture import capture_rect_image, save_cropped_image
+from screen_translate.ui.style_sheet import StyleSheet
 from screen_translate.ui.utils import load_icon
 
 if TYPE_CHECKING:
@@ -57,6 +58,7 @@ class CaptureWindow(QWidget):
         self._drag_pos: QPoint | None = None
         self._is_hidden_titlebar = False
         self._overlay_opacity = 0.8
+        StyleSheet.FLOATING_WINDOW.apply(self)
 
         icon = load_icon()
         if not icon.isNull():
@@ -87,11 +89,11 @@ class CaptureWindow(QWidget):
         self._drag_label.setCursor(Qt.CursorShape.OpenHandCursor)
         top_row.addWidget(self._drag_label)
 
-        self._btn_capture = QPushButton("Capture & Translate")
+        self._btn_capture = PrimaryPushButton("Capture & Translate")
         self._btn_capture.clicked.connect(self.trigger_capture)
         top_row.addWidget(self._btn_capture)
 
-        self._btn_set_region = QPushButton("Set Region")
+        self._btn_set_region = PushButton("Set Region")
         self._btn_set_region.clicked.connect(self._open_virtual_region_selector)
         top_row.addWidget(self._btn_set_region)
 

@@ -9,12 +9,9 @@ import pycountry
 from PyQt6.QtCore import QSize, Qt, pyqtSlot
 from PyQt6.QtGui import QAction, QCloseEvent, QIcon, QKeySequence
 from PyQt6.QtWidgets import (
-    QComboBox,
     QLabel,
     QMainWindow,
     QMenu,
-    QProgressBar,
-    QPushButton,
     QSlider,
     QSplitter,
     QStatusBar,
@@ -22,8 +19,10 @@ from PyQt6.QtWidgets import (
     QTextEdit,
     QToolBar,
 )
+from qfluentwidgets import ComboBox, PrimaryPushButton, ProgressBar, PushButton
 
 from screen_translate import __version__
+from screen_translate.ui.style_sheet import StyleSheet
 from screen_translate.ui.utils import load_icon
 
 if TYPE_CHECKING:
@@ -74,6 +73,7 @@ class MainWindow(QMainWindow):
         self.setWindowTitle(f"{_APP_NAME} v{__version__}")
         self.setMinimumSize(QSize(700, 280))
         self.resize(950, 340)
+        StyleSheet.MAIN_WINDOW.apply(self)
 
         icon = load_icon()
         if not icon.isNull():
@@ -114,17 +114,17 @@ class MainWindow(QMainWindow):
         bar.setIconSize(QSize(16, 16))
         self.addToolBar(Qt.ToolBarArea.TopToolBarArea, bar)
 
-        self.btn_translate = QPushButton("Translate")
+        self.btn_translate = PrimaryPushButton("Translate")
         self.btn_translate.setToolTip("Translate typed text (no OCR)")
         bar.addWidget(self.btn_translate)
 
-        self.btn_capture = QPushButton("Capture & Translate")
+        self.btn_capture = PrimaryPushButton("Capture & Translate")
         self.btn_capture.setToolTip(
             "Capture the region inside the Capture Window and translate"
         )
         bar.addWidget(self.btn_capture)
 
-        self.btn_snip = QPushButton("Snip -> Translate")
+        self.btn_snip = PrimaryPushButton("Snip -> Translate")
         self.btn_snip.setToolTip(
             "Draw a selection on any monitor to capture and translate (Ctrl+Alt+T)"
         )
@@ -139,35 +139,35 @@ class MainWindow(QMainWindow):
         bar.addWidget(self.slider_opacity)
 
         bar.addWidget(QLabel("Engine:"))
-        self.cb_engine = QComboBox()
+        self.cb_engine = ComboBox()
         self.cb_engine.setMinimumWidth(160)
         self.cb_engine.setMaximumHeight(_COMBOBOX_HEIGHT)
         bar.addWidget(self.cb_engine)
 
         bar.addWidget(QLabel("From:"))
-        self.cb_source = QComboBox()
+        self.cb_source = ComboBox()
         self.cb_source.setMinimumWidth(140)
         self.cb_source.setMaximumHeight(_COMBOBOX_HEIGHT)
         # self.cb_source.view().setMaximumHeight(_COMBOBOX_POPUP_MAX_HEIGHT)
         bar.addWidget(self.cb_source)
 
         bar.addWidget(QLabel("To:"))
-        self.cb_target = QComboBox()
+        self.cb_target = ComboBox()
         self.cb_target.setMinimumWidth(140)
         self.cb_target.setMaximumHeight(_COMBOBOX_HEIGHT)
         # self.cb_target.view().setMaximumHeight(_COMBOBOX_POPUP_MAX_HEIGHT)
         bar.addWidget(self.cb_target)
 
-        self.btn_swap = QPushButton("⮁ Swap")
+        self.btn_swap = PushButton("⮁ Swap")
         self.btn_swap.setToolTip("Swap source and target languages and text")
         bar.addWidget(self.btn_swap)
 
-        self.btn_clear = QPushButton("✕ Clear")
+        self.btn_clear = PushButton("✕ Clear")
         self.btn_clear.setToolTip("Clear both text areas")
         bar.addWidget(self.btn_clear)
 
         # --- Status bar ---
-        self.progress = QProgressBar()
+        self.progress = ProgressBar()
         self.progress.setRange(0, 0)  # indeterminate
         self.progress.setVisible(False)
         self.progress.setMaximumWidth(120)
@@ -360,7 +360,7 @@ class MainWindow(QMainWindow):
 
     def _populate_language_combo(
         self,
-        combo: QComboBox,
+        combo: ComboBox,
         languages: list[str],
         *,
         mark_ocr_compat: bool = False,
@@ -388,7 +388,9 @@ class MainWindow(QMainWindow):
         label = self._base_language_label(code)
         if prefix_code:
             label = f"[{code.upper()}] {label}"
-        if mark_ocr_compat and not self.controller.is_selected_source_ocr_compatible(code):
+        if mark_ocr_compat and not self.controller.is_selected_source_ocr_compatible(
+            code
+        ):
             return f"{label}{_OCR_INCOMPATIBLE_SUFFIX}"
         return label
 
@@ -436,20 +438,22 @@ class MainWindow(QMainWindow):
         self.btn_capture.setEnabled(capture_enabled)
         self.btn_snip.setEnabled(capture_enabled)
         self.btn_capture.setToolTip(
-            disabled_reason or "Capture the region inside the Capture Window and translate"
+            disabled_reason
+            or "Capture the region inside the Capture Window and translate"
         )
         self.btn_snip.setToolTip(
-            disabled_reason or "Draw a selection on any monitor to capture and translate (Ctrl+Alt+T)"
+            disabled_reason
+            or "Draw a selection on any monitor to capture and translate (Ctrl+Alt+T)"
         )
 
-    def _find_language_index(self, combo: QComboBox, code: str) -> int:
+    def _find_language_index(self, combo: ComboBox, code: str) -> int:
         """Find the combobox index for a language code stored as user data."""
         for idx in range(combo.count()):
             if combo.itemData(idx) == code:
                 return idx
         return -1
 
-    def _persist_selected_language(self, combo: QComboBox, key: str) -> None:
+    def _persist_selected_language(self, combo: ComboBox, key: str) -> None:
         """Persist the currently selected language code."""
         code = combo.currentData()
         if isinstance(code, str) and code:
@@ -562,9 +566,13 @@ class MainWindow(QMainWindow):
         s = self.controller.settings
         if s.get("hide_mw_on_cap", False):
             self.show_and_raise()
-        if self.controller.query_window and s.get("show_query_window_after_capture", True):
+        if self.controller.query_window and s.get(
+            "show_query_window_after_capture", True
+        ):
             self.controller.query_window.setVisible(True)
-        if self.controller.result_window and s.get("show_result_window_after_capture", True):
+        if self.controller.result_window and s.get(
+            "show_result_window_after_capture", True
+        ):
             self.controller.result_window.setVisible(True)
 
     @pyqtSlot(str)

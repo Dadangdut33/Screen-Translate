@@ -1,0 +1,18 @@
+SettingsDialog {
+    background-color: rgb(32, 32, 32);
+}
+
+SettingsDialog QGroupBox {
+    background-color: rgba(39, 39, 39, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    margin-top: 12px;
+    padding-top: 8px;
+    font: 600 13px --FontFamilies;
+}
+
+SettingsDialog QGroupBox::title {
+    subcontrol-origin: margin;
+    left: 12px;
+    padding: 0 6px;
+}

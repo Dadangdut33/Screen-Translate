@@ -7,7 +7,9 @@ from typing import TYPE_CHECKING
 
 from PyQt6.QtCore import QPoint, Qt
 from PyQt6.QtGui import QColor, QContextMenuEvent, QMouseEvent, QPalette
-from PyQt6.QtWidgets import QColorDialog, QLabel, QMenu, QVBoxLayout, QWidget
+from PyQt6.QtWidgets import QColorDialog, QMenu, QVBoxLayout, QWidget
+from qfluentwidgets import BodyLabel
+from screen_translate.ui.style_sheet import StyleSheet
 
 if TYPE_CHECKING:
     from screen_translate.ui.controller import AppController
@@ -36,6 +38,7 @@ class MaskWindow(QWidget):
         )
         self.controller = controller
         self._drag_pos: QPoint | None = None
+        StyleSheet.FLOATING_WINDOW.apply(self)
 
         self.setWindowTitle("Mask Window")
         self.resize(400, 300)
@@ -47,7 +50,7 @@ class MaskWindow(QWidget):
     def _build_ui(self) -> None:
         layout = QVBoxLayout(self)
         layout.setContentsMargins(4, 4, 4, 4)
-        self._hint = QLabel("Right-click for options")
+        self._hint = BodyLabel("Right-click for options")
         self._hint.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self._hint.setStyleSheet("color: rgba(200,200,200,80); font-size: 10px;")
         layout.addWidget(self._hint)
