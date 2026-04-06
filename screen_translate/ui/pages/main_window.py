@@ -34,8 +34,8 @@ from qfluentwidgets import (
 )
 
 from screen_translate import __version__
-from screen_translate.ui.style_sheet import StyleSheet
-from screen_translate.ui.utils import load_icon
+from screen_translate.ui.theme.style_sheet import StyleSheet
+from screen_translate.ui.theme.utils import load_icon
 
 if TYPE_CHECKING:
     from screen_translate.ui.controller import AppController
@@ -88,7 +88,7 @@ class MainWindow(QMainWindow):
 
         self.setWindowTitle(f"{_APP_NAME} v{__version__}")
         self.setMinimumSize(QSize(700, 280))
-        self.resize(950, 340)
+        self.resize(950, 500)
         StyleSheet.MAIN_WINDOW.apply(self)
 
         icon = load_icon()
@@ -338,8 +338,8 @@ class MainWindow(QMainWindow):
 
     def register_internal_pages(
         self,
-        history_window: QMainWindow,
-        log_window: QMainWindow,
+        history_window: QWidget,
+        log_window: QWidget,
         about_dialog: QWidget,
         settings_dialog: QWidget,
     ) -> None:

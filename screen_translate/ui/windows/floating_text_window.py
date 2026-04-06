@@ -21,7 +21,7 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 from qfluentwidgets import BodyLabel
-from screen_translate.ui.style_sheet import StyleSheet
+from screen_translate.ui.theme.style_sheet import StyleSheet
 
 if TYPE_CHECKING:
     from screen_translate.ui.controller import AppController
@@ -169,3 +169,6 @@ class DetachedWindow(QWidget):
 
     def _drag_release(self, event: QMouseEvent) -> None:
         self._drag_pos = None
+
+
+FloatingTextWindow = DetachedWindow

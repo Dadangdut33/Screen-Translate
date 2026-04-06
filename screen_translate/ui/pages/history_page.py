@@ -11,7 +11,6 @@ from PyQt6.QtWidgets import (
     QHBoxLayout,
     QHeaderView,
     QLabel,
-    QMainWindow,
     QMessageBox,
     QTableWidgetItem,
     QVBoxLayout,
@@ -25,7 +24,7 @@ from screen_translate.core.history import (
     delete_history_by_ids,
     load_history,
 )
-from screen_translate.ui.style_sheet import StyleSheet
+from screen_translate.ui.theme.style_sheet import StyleSheet
 
 if TYPE_CHECKING:
     from screen_translate.ui.controller import AppController
@@ -40,19 +39,18 @@ _COL_QUERY = 4
 _COL_RESULT = 5
 
 
-class HistoryWindow(QMainWindow):
-    """Displays the translation history in a searchable table."""
+class HistoryPage(QWidget):
+    """Embedded translation history page."""
 
     def __init__(self, controller: AppController) -> None:
-        """Create the history window.
+        """Create the history page.
 
         Args:
             controller: Application controller.
         """
         super().__init__()
         self.controller = controller
-        self.setWindowTitle("Translation History")
-        self.resize(900, 500)
+        self.setObjectName("HistoryPage")
         StyleSheet.AUXILIARY_WINDOW.apply(self)
         self._build_ui()
         self._load()
@@ -60,9 +58,7 @@ class HistoryWindow(QMainWindow):
     # ------------------------------------------------------------------
 
     def _build_ui(self) -> None:
-        central = QWidget()
-        self.setCentralWidget(central)
-        vl = QVBoxLayout(central)
+        vl = QVBoxLayout(self)
 
         # Search bar
         hl = QHBoxLayout()
@@ -163,9 +159,4 @@ class HistoryWindow(QMainWindow):
             clear_history()
             self._load()
 
-    def show_and_raise(self) -> None:
-        """Show and bring to front."""
-        self._load()
-        self.show()
-        self.raise_()
-        self.activateWindow()
+HistoryWindow = HistoryPage

@@ -1,8 +1,8 @@
-SettingsDialog {
+QWidget#SettingsPage {
     background-color: rgb(32, 32, 32);
 }
 
-SettingsDialog QGroupBox {
+QWidget#SettingsPage QGroupBox {
     background-color: rgba(39, 39, 39, 0.9);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 10px;
@@ -11,7 +11,7 @@ SettingsDialog QGroupBox {
     font: 600 13px --FontFamilies;
 }
 
-SettingsDialog QGroupBox::title {
+QWidget#SettingsPage QGroupBox::title {
     subcontrol-origin: margin;
     left: 12px;
     padding: 0 6px;

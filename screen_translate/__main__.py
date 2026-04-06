@@ -18,17 +18,16 @@ from screen_translate.core.translation.translators_backend import (
     configure_translators_region,
 )
 from screen_translate.logging_setup import setup_logging
-from screen_translate.ui.about_dialog import AboutDialog
-from screen_translate.ui.capture_window import CaptureWindow
-from screen_translate.ui.capture_region_overlay import CaptureRegionOverlay
+from screen_translate.ui.overlays import CaptureRegionOverlay, SnipOverlay
+from screen_translate.ui.pages import (
+    AboutPage,
+    HistoryPage,
+    LogPage,
+    MainWindow,
+    SettingsPage,
+)
 from screen_translate.ui.controller import AppController
-from screen_translate.ui.detached_window import DetachedWindow
-from screen_translate.ui.history_window import HistoryWindow
-from screen_translate.ui.log_window import LogWindow
-from screen_translate.ui.main_window import MainWindow
-from screen_translate.ui.mask_window import MaskWindow
-from screen_translate.ui.settings_dialog import SettingsDialog
-from screen_translate.ui.snip_overlay import SnipOverlay
+from screen_translate.ui.windows import CaptureWindow, FloatingTextWindow, MaskWindow
 
 logger = logging.getLogger(__name__)
 
@@ -48,6 +47,7 @@ def main() -> None:
     app.setOrganizationName("Dadangdut33")
     # Keep running when the last window is hidden (tray mode)
     app.setQuitOnLastWindowClosed(False)
+    # set size for main window
     # --- Settings (restore before any window is shown) ---
     settings = SettingsManager()
     configure_translators_region(str(settings.get("translators_region", "EN")))
@@ -89,24 +89,24 @@ def main() -> None:
         overlay = SnipOverlay(controller, screen_index=i)
         controller.snip_overlays.append(overlay)
 
-    query_win = DetachedWindow(controller, role="q")
-    result_win = DetachedWindow(controller, role="res")
+    query_win = FloatingTextWindow(controller, role="q")
+    result_win = FloatingTextWindow(controller, role="res")
     controller.query_window = query_win
     controller.result_window = result_win
 
     mask_win = MaskWindow(controller)
     controller.mask_window = mask_win
 
-    history_win = HistoryWindow(controller)
+    history_win = HistoryPage(controller)
     controller.history_window = history_win
 
-    log_win = LogWindow(controller)
+    log_win = LogPage(controller)
     controller.log_window = log_win
 
-    settings_dlg = SettingsDialog(controller, parent=main_win)
+    settings_dlg = SettingsPage(controller)
     controller.settings_dialog = settings_dlg
 
-    about_dlg = AboutDialog(parent=main_win)
+    about_dlg = AboutPage()
     controller.about_dialog = about_dlg
 
     main_win.register_internal_pages(history_win, log_win, about_dlg, settings_dlg)

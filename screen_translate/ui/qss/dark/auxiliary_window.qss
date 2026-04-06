@@ -1,9 +1,9 @@
-HistoryWindow, LogWindow, AboutDialog {
+QWidget#HistoryPage, QWidget#LogPage, QWidget#AboutPage {
     background-color: rgb(32, 32, 32);
 }
 
-HistoryWindow QPlainTextEdit,
-LogWindow QPlainTextEdit {
+QWidget#HistoryPage QPlainTextEdit,
+QWidget#LogPage QPlainTextEdit {
     background-color: rgba(39, 39, 39, 0.92);
     border-radius: 8px;
     border: 1px solid rgba(255, 255, 255, 0.08);

@@ -25,8 +25,8 @@ from PyQt6.QtWidgets import (
 from qfluentwidgets import PrimaryPushButton, PushButton
 
 from screen_translate.ui.screen_capture import capture_rect_image, save_cropped_image
-from screen_translate.ui.style_sheet import StyleSheet
-from screen_translate.ui.utils import load_icon
+from screen_translate.ui.theme.style_sheet import StyleSheet
+from screen_translate.ui.theme.utils import load_icon
 
 if TYPE_CHECKING:
     from screen_translate.ui.controller import AppController

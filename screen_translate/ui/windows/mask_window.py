@@ -9,7 +9,7 @@ from PyQt6.QtCore import QPoint, Qt
 from PyQt6.QtGui import QColor, QContextMenuEvent, QMouseEvent, QPalette
 from PyQt6.QtWidgets import QColorDialog, QMenu, QVBoxLayout, QWidget
 from qfluentwidgets import BodyLabel
-from screen_translate.ui.style_sheet import StyleSheet
+from screen_translate.ui.theme.style_sheet import StyleSheet
 
 if TYPE_CHECKING:
     from screen_translate.ui.controller import AppController

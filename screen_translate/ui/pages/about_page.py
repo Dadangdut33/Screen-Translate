@@ -9,18 +9,18 @@ from PyQt6.QtWidgets import QFrame, QHBoxLayout, QLabel, QVBoxLayout, QWidget
 from qfluentwidgets import BodyLabel, PushButton, TitleLabel
 
 from screen_translate import __version__
-from screen_translate.ui.style_sheet import StyleSheet
-from screen_translate.ui.utils import load_icon
+from screen_translate.ui.theme.style_sheet import StyleSheet
+from screen_translate.ui.theme.utils import load_icon
 
 
-class AboutDialog(QWidget):
-    """About page showing version, license, and links."""
+class AboutPage(QWidget):
+    """Embedded About page showing version, license, and links."""
 
     def __init__(self, parent: QWidget | None = None) -> None:
-        """Create the About dialog.
+        """Create the About page.
 
         Args:
-            parent: Optional Qt parent.
+            parent: Optional Qt parent for the embedded widget.
         """
         super().__init__(parent)
         self.setWindowTitle("About")
@@ -30,7 +30,7 @@ class AboutDialog(QWidget):
 
     def _build_ui(self) -> None:
         outer = QVBoxLayout(self)
-        outer.setContentsMargins(32, 32, 32, 32)
+        outer.setContentsMargins(8, 8, 8, 8)
         outer.setSpacing(0)
 
         outer.addStretch(1)
@@ -42,7 +42,7 @@ class AboutDialog(QWidget):
         card.setObjectName("AboutCard")
         card.setMinimumWidth(520)
         card_layout = QVBoxLayout(card)
-        card_layout.setContentsMargins(32, 32, 32, 32)
+        card_layout.setContentsMargins(8, 8, 8, 8)
         card_layout.setSpacing(14)
 
         icon_label = QLabel(card)
@@ -89,3 +89,6 @@ class AboutDialog(QWidget):
         card_row.addStretch(1)
         outer.addLayout(card_row)
         outer.addStretch(1)
+
+
+AboutDialog = AboutPage

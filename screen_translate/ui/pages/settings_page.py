@@ -9,7 +9,6 @@ from PyQt6.QtCore import QEvent, QSize, Qt, QTimer
 from PyQt6.QtGui import QColor, QIcon, QPalette
 from PyQt6.QtWidgets import (
     QApplication,
-    QDialog,
     QFormLayout,
     QGroupBox,
     QHBoxLayout,
@@ -20,7 +19,7 @@ from PyQt6.QtWidgets import (
 )
 from qfluentwidgets import BodyLabel, ListWidget, ProgressBar
 import qtawesome as qta
-from screen_translate.ui.settings_pages import (
+from screen_translate.ui.pages.settings import (
     build_appearance_page,
     build_capture_page,
     build_general_page,
@@ -29,7 +28,7 @@ from screen_translate.ui.settings_pages import (
     build_ocr_page,
     build_translation_page,
 )
-from screen_translate.ui.style_sheet import StyleSheet
+from screen_translate.ui.theme.style_sheet import StyleSheet
 
 if TYPE_CHECKING:
     from screen_translate.ui.controller import AppController
@@ -46,20 +45,17 @@ _SETTINGS_NAV_ICONS: dict[str, str] = {
 }
 
 
-class SettingsDialog(QDialog):
-    """Application settings editor.
-
-    All changes are persisted immediately. Widgets are organised in a tabbed layout.
-    """
+class SettingsPage(QWidget):
+    """Embedded settings page that persists changes immediately."""
 
     def __init__(
         self, controller: AppController, parent: QWidget | None = None
     ) -> None:
-        """Create the settings dialog.
+        """Create the settings page.
 
         Args:
             controller: Application controller.
-            parent: Optional Qt parent.
+            parent: Optional Qt parent for the embedded widget.
         """
         super().__init__(parent)
         self.controller = controller
@@ -74,7 +70,7 @@ class SettingsDialog(QDialog):
         self._nav_refresh_timer.timeout.connect(self._refresh_nav_style)
 
         self.setWindowTitle("Settings")
-        self.setMinimumSize(900, 700)
+        self.setObjectName("SettingsPage")
         StyleSheet.SETTINGS_DIALOG.apply(self)
         self._build_ui()
 
@@ -87,7 +83,6 @@ class SettingsDialog(QDialog):
         content_row.setContentsMargins(0, 0, 0, 0)
         content_row.setSpacing(4)
 
-        self.setObjectName("SettingsDialog")
         self._nav_panel = QWidget()
         self._nav_panel.setFixedWidth(220)
         nav_layout = QVBoxLayout(self._nav_panel)
@@ -335,3 +330,6 @@ class SettingsDialog(QDialog):
         self.show()
         self.raise_()
         self.activateWindow()
+
+
+SettingsDialog = SettingsPage

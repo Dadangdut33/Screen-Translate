@@ -9,7 +9,6 @@ from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot
 from PyQt6.QtWidgets import (
     QHBoxLayout,
     QLabel,
-    QMainWindow,
     QPlainTextEdit,
     QVBoxLayout,
     QWidget,
@@ -17,7 +16,7 @@ from PyQt6.QtWidgets import (
 from qfluentwidgets import CheckBox, ComboBox, PushButton
 
 from screen_translate.logging_setup import set_log_level
-from screen_translate.ui.style_sheet import StyleSheet
+from screen_translate.ui.theme.style_sheet import StyleSheet
 
 if TYPE_CHECKING:
     from screen_translate.ui.controller import AppController
@@ -43,19 +42,18 @@ class _QtLogSink:
             self._emitter.line_ready.emit(text)
 
 
-class LogWindow(QMainWindow):
-    """Live scrolling log viewer backed by Python's logging system."""
+class LogPage(QWidget):
+    """Embedded live log viewer backed by loguru."""
 
     def __init__(self, controller: AppController) -> None:
-        """Create the log window.
+        """Create the log page.
 
         Args:
             controller: Application controller.
         """
         super().__init__()
         self.controller = controller
-        self.setWindowTitle("Log Viewer")
-        self.resize(800, 450)
+        self.setObjectName("LogPage")
         StyleSheet.AUXILIARY_WINDOW.apply(self)
         self._sink_id: int | None = None
         self._emitter = _LogEmitter()
@@ -65,9 +63,7 @@ class LogWindow(QMainWindow):
     # ------------------------------------------------------------------
 
     def _build_ui(self) -> None:
-        central = QWidget()
-        self.setCentralWidget(central)
-        vl = QVBoxLayout(central)
+        vl = QVBoxLayout(self)
 
         hl = QHBoxLayout()
         hl.addWidget(QLabel("Log Level:"))
@@ -84,7 +80,9 @@ class LogWindow(QMainWindow):
         hl.addWidget(self._chk_scroll)
 
         self._btn_clear = PushButton("Clear")
-        self._btn_clear.clicked.connect(self._log_view.clear if hasattr(self, "_log_view") else lambda: None)
+        self._btn_clear.clicked.connect(
+            self._log_view.clear if hasattr(self, "_log_view") else lambda: None
+        )
         hl.addWidget(self._btn_clear)
         hl.addStretch()
         vl.addLayout(hl)
@@ -128,17 +126,10 @@ class LogWindow(QMainWindow):
         set_log_level(level_name)
         self.controller.settings.set("log_level", level_name)
 
-    def show_and_raise(self) -> None:
-        """Show and bring to front."""
-        self.show()
-        self.raise_()
-        self.activateWindow()
-
-    def closeEvent(self, event: object) -> None:  # type: ignore[override]
-        """Detach the logging handler when hidden."""
-        self.hide()
-
     def __del__(self) -> None:
         """Remove handler on garbage collection."""
         if self._sink_id is not None:
             logger.remove(self._sink_id)
+
+
+LogWindow = LogPage
