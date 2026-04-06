@@ -3,15 +3,19 @@
 from __future__ import annotations
 
 import logging
-import os
-import shutil
-from pathlib import Path
-from typing import Any
+from dataclasses import dataclass
+from typing import TYPE_CHECKING, Any
 
 import pyperclip
-from platformdirs import user_data_dir
-from PyQt6.QtCore import QObject, QRect, QThreadPool, QRunnable, pyqtSignal, pyqtSlot
-from PyQt6.QtWidgets import QMessageBox
+from PyQt6.QtCore import (
+    QObject,
+    QRect,
+    QThreadPool,
+    QRunnable,
+    pyqtSignal,
+    pyqtSlot,
+)
+from PyQt6.QtWidgets import QApplication, QMessageBox
 
 from screen_translate.config.settings import SettingsManager
 from screen_translate.core.history import append_history
@@ -38,7 +42,40 @@ from screen_translate.ui.screen_capture import (
     captured_dir,
 )
 
+if TYPE_CHECKING:
+    from screen_translate.ui.overlays.capture_region_overlay import (
+        CaptureRegionOverlay,
+    )
+    from screen_translate.ui.overlays.snip_overlay import SnipOverlay
+    from screen_translate.ui.pages.about_page import AboutPage
+    from screen_translate.ui.pages.history_page import HistoryPage
+    from screen_translate.ui.pages.log_page import LogPage
+    from screen_translate.ui.pages.main_window import MainWindow
+    from screen_translate.ui.pages.settings_page import SettingsPage
+    from screen_translate.ui.windows.capture_window import CaptureWindow
+    from screen_translate.ui.windows.floating_text_window import FloatingTextWindow
+    from screen_translate.ui.windows.mask_window import MaskWindow
+
 logger = logging.getLogger(__name__)
+
+
+@dataclass(slots=True)
+class _TranslationRequest:
+    """Validated translation request."""
+
+    backend: TranslationBackend
+    text: str
+    source_lang: str
+    target_lang: str
+
+
+@dataclass(slots=True)
+class _SnipCaptureOptions:
+    """Settings that affect native snip capture behavior."""
+
+    keep_full_image: bool
+    save_cropped_image: bool
+
 
 # ---------------------------------------------------------------------------
 # Worker signals (QObject wrapper so QRunnable can emit signals)
@@ -174,21 +211,22 @@ class AppController(QObject):
         self._pool = QThreadPool.globalInstance()
 
         # Window references (populated by the UI layer)
-        self.main_window: Any = None
-        self.capture_window: Any = None
-        self.capture_region_overlays: list[Any] = []
-        self.snip_overlays: list[Any] = []
-        self.query_window: Any = None
-        self.result_window: Any = None
-        self.mask_window: Any = None
-        self.history_window: Any = None
-        self.log_window: Any = None
-        self.settings_dialog: Any = None
-        self.about_dialog: Any = None
+        self.main_window: MainWindow | None = None
+        self.capture_window: CaptureWindow | None = None
+        self.capture_region_overlays: list[CaptureRegionOverlay] = []
+        self.snip_overlays: list[SnipOverlay] = []
+        self.query_window: FloatingTextWindow | None = None
+        self.result_window: FloatingTextWindow | None = None
+        self.mask_window: MaskWindow | None = None
+        self.history_window: HistoryPage | None = None
+        self.log_window: LogPage | None = None
+        self.settings_page: SettingsPage | None = None
+        self.about_page: AboutPage | None = None
 
         # OCR backend (lazy-init)
         self._ocr_backend: TesseractOCRBackend | None = None
         self._capture_region_rect: QRect | None = self._load_capture_region_rect()
+        self._pending_history_query: str = ""
 
         # Translation backends
         self._backends: dict[str, TranslationBackend] = {}
@@ -201,6 +239,12 @@ class AppController(QObject):
 
     def _load_backends(self) -> None:
         """Load all available translation backends (skips missing ones)."""
+        backends = self._discover_translation_backends()
+        self._backends = {b.name: b for b in backends}
+        logger.info("Loaded translation backends: %s", list(self._backends))
+
+    def _discover_translation_backends(self) -> list[TranslationBackend]:
+        """Discover all configured translation backends."""
         backends: list[TranslationBackend] = get_all_translators_backends()
 
         argos = load_argos_backend()
@@ -212,8 +256,7 @@ class AppController(QObject):
         if deepl_official:
             backends.append(deepl_official)
 
-        self._backends = {b.name: b for b in backends}
-        logger.info("Loaded translation backends: %s", list(self._backends))
+        return backends
 
     def available_backend_names(self) -> list[str]:
         """Return the names of all loaded backends plus 'None' (OCR-only mode).
@@ -251,23 +294,19 @@ class AppController(QObject):
             OCRError: If Tesseract is not found on PATH.
         """
         if self._ocr_backend is None:
-            tes_path: str = self.settings.get("tesseract_loc", "")
-            extra_cfg: str = self.settings.get("tesseract_config", "")
-            grayscale: bool = self.settings.get("enhance_with_grayscale", True)
-            cv2_contour: bool = self.settings.get("enhance_with_cv2_contour", False)
-            save_cv2_contour_image: bool = self.settings.get(
-                "save_cv2_contour_image", False
-            )
-            background: str = self.settings.get("enhance_background", "Auto-Detect")
-            self._ocr_backend = TesseractOCRBackend(
-                tesseract_path=tes_path,
-                extra_config=extra_cfg,
-                grayscale=grayscale,
-                use_cv2_contour=cv2_contour,
-                save_cv2_contour_image=save_cv2_contour_image,
-                background_mode=background,
-            )
+            self._ocr_backend = self._build_ocr_backend()
         return self._ocr_backend
+
+    def _build_ocr_backend(self) -> TesseractOCRBackend:
+        """Create a Tesseract backend from current settings."""
+        return TesseractOCRBackend(
+            tesseract_path=self.settings.get("tesseract_loc", ""),
+            extra_config=self.settings.get("tesseract_config", ""),
+            grayscale=self.settings.get("enhance_with_grayscale", True),
+            use_cv2_contour=self.settings.get("enhance_with_cv2_contour", False),
+            save_cv2_contour_image=self.settings.get("save_cv2_contour_image", False),
+            background_mode=self.settings.get("enhance_background", "Auto-Detect"),
+        )
 
     def available_ocr_backend_names(self) -> list[str]:
         """Return the available OCR backend names."""
@@ -437,7 +476,7 @@ class AppController(QObject):
         try:
             backend = self.get_ocr_backend()
         except OCRError as exc:
-            QMessageBox.critical(None, "Tesseract Not Found", str(exc))
+            self._show_critical("Tesseract Not Found", str(exc))
             return
 
         source_lang: str = self._resolve_ocr_language(
@@ -472,8 +511,8 @@ class AppController(QObject):
 
         alert: bool = not self.settings.get("supress_no_text_alert", True)
         if alert and not text.strip():
-            QMessageBox.information(
-                None, "No Text Detected", "No text was found in the selected region."
+            self._show_info(
+                "No Text Detected", "No text was found in the selected region."
             )
 
         self.ocr_completed.emit(text)
@@ -481,6 +520,7 @@ class AppController(QObject):
 
         # Auto-translate if not in OCR-only mode
         if self._active_backend_name != "None" and text.strip():
+            self._pending_history_query = text
             self.run_translation(text)
 
     @pyqtSlot(str)
@@ -498,11 +538,9 @@ class AppController(QObject):
                 _platform_install_instructions,
             )
 
-            QMessageBox.critical(
-                None, "Tesseract Not Found", _platform_install_instructions()
-            )
+            self._show_critical("Tesseract Not Found", _platform_install_instructions())
         else:
-            QMessageBox.critical(None, "OCR Error", error)
+            self._show_critical("OCR Error", error)
 
     # ------------------------------------------------------------------
     # Async translation
@@ -514,22 +552,39 @@ class AppController(QObject):
         Args:
             text: Text to translate.
         """
+        request = self._build_translation_request(text)
+        if request is None:
+            return
+
+        worker = _TranslationWorker(
+            request.backend,
+            request.text,
+            request.source_lang,
+            request.target_lang,
+        )
+        worker.signals.finished.connect(self._on_translation_done)
+        worker.signals.error.connect(self._on_translation_error)
+        self.translation_started.emit()
+        self.status_busy.emit()
+        self._pool.start(worker)
+
+    def _build_translation_request(self, text: str) -> _TranslationRequest | None:
+        """Validate the current translation request against backend capabilities."""
         backend = self._backends.get(self._active_backend_name)
         if backend is None:
             logger.warning("No translation backend active")
-            return
+            return None
 
-        source_lang: str = str(self.settings.get("sourceLang", "auto"))
-        target_lang: str = str(self.settings.get("targetLang", "en"))
         supported_languages = backend.available_languages()
-
         if not supported_languages:
-            QMessageBox.warning(
-                None,
+            self._show_warning(
                 "Languages Unavailable",
                 f"{self._active_backend_name} could not load its supported languages.",
             )
-            return
+            return None
+
+        source_lang: str = str(self.settings.get("sourceLang", "auto"))
+        target_lang: str = str(self.settings.get("targetLang", "en"))
 
         if source_lang and source_lang not in supported_languages:
             source_lang = (
@@ -542,21 +597,20 @@ class AppController(QObject):
         ]
         if target_lang not in target_candidates:
             if not target_candidates:
-                QMessageBox.warning(
-                    None,
+                self._show_warning(
                     "No Target Language",
                     f"{self._active_backend_name} did not provide any target languages.",
                 )
-                return
+                return None
             target_lang = target_candidates[0]
             self.settings.set("targetLang", target_lang)
 
-        worker = _TranslationWorker(backend, text, source_lang, target_lang)
-        worker.signals.finished.connect(self._on_translation_done)
-        worker.signals.error.connect(self._on_translation_error)
-        self.translation_started.emit()
-        self.status_busy.emit()
-        self._pool.start(worker)
+        return _TranslationRequest(
+            backend=backend,
+            text=text,
+            source_lang=source_lang,
+            target_lang=target_lang,
+        )
 
     @pyqtSlot(str)
     def _on_translation_done(self, result: str) -> None:
@@ -575,11 +629,12 @@ class AppController(QObject):
                 {
                     "from": self.settings.get("sourceLang", ""),
                     "to": self.settings.get("targetLang", ""),
-                    "query": "",  # set in _on_ocr_done context
+                    "query": self._pending_history_query,
                     "result": result,
                     "engine": self._active_backend_name,
                 }
             )
+        self._pending_history_query = ""
 
         self.translation_completed.emit(result)
         self.status_idle.emit()
@@ -594,7 +649,8 @@ class AppController(QObject):
         logger.error("Translation failed: %s", error)
         self.translation_failed.emit(error)
         self.status_idle.emit()
-        QMessageBox.critical(None, "Translation Error", error)
+        self._pending_history_query = ""
+        self._show_critical("Translation Error", error)
 
     # ------------------------------------------------------------------
     # Text-only translation (no OCR)
@@ -609,10 +665,11 @@ class AppController(QObject):
         if not text.strip():
             return
         if self._active_backend_name == "None":
-            QMessageBox.warning(
-                None, "No Engine Selected", "Please select a translation engine first."
+            self._show_warning(
+                "No Engine Selected", "Please select a translation engine first."
             )
             return
+        self._pending_history_query = text
         self.run_translation(text)
 
     def start_snip_capture(self) -> bool:
@@ -629,26 +686,24 @@ class AppController(QObject):
         """Use a desktop-native interactive region picker and screenshot backend."""
         output_dir = captured_dir()
         output_dir.mkdir(parents=True, exist_ok=True)
-        keep_image = bool(self.settings.get("keep_image", True))
-        should_save_cropped_image = bool(self.settings.get("save_cropped_image", False))
+        options = self._snip_capture_options()
 
         try:
             pil_image = capture_interactive_region_image(
-                keep_full_image=keep_image,
+                keep_full_image=options.keep_full_image,
                 backend=backend,
             )
             if pil_image is None:
-                QMessageBox.critical(
-                    None,
+                self._show_critical(
                     "Snip Capture Failed",
                     f"{backend} failed to capture the selected region.",
                 )
                 return False
 
-            if should_save_cropped_image:
+            if options.save_cropped_image:
                 save_cropped_image(pil_image, prefix="cropped_snip")
 
-            if keep_image:
+            if options.keep_full_image:
                 normalized_path = output_dir / capture_filename(prefix="snip_capture")
                 pil_image.save(normalized_path)
                 logger.info("Saved snip capture to %s", normalized_path)
@@ -666,9 +721,78 @@ class AppController(QObject):
                 )
                 return False
             logger.exception("%s snip capture file missing: %s", backend, exc)
-            QMessageBox.critical(None, "Snip Capture Failed", str(exc))
+            self._show_critical("Snip Capture Failed", str(exc))
             return False
         except Exception as exc:
             logger.exception("%s snip capture failed: %s", backend, exc)
-            QMessageBox.critical(None, "Snip Capture Failed", str(exc))
+            self._show_critical("Snip Capture Failed", str(exc))
             return False
+
+    def _snip_capture_options(self) -> _SnipCaptureOptions:
+        """Return the current settings for native snip capture."""
+        return _SnipCaptureOptions(
+            keep_full_image=bool(self.settings.get("keep_image", True)),
+            save_cropped_image=bool(self.settings.get("save_cropped_image", False)),
+        )
+
+    def show_test_dialog(self) -> None:
+        """Show a test dialog for verifying controller-owned message boxes."""
+        self._show_info(
+            "Controller Dialog Test",
+            "This is a test dialog opened from the controller using a styled QMessageBox.",
+        )
+
+    def _show_info(self, title: str, message: str) -> None:
+        """Show an informational message box."""
+        self._exec_message_box(QMessageBox.Icon.Information, title, message)
+
+    def _show_warning(self, title: str, message: str) -> None:
+        """Show a warning message box."""
+        self._exec_message_box(QMessageBox.Icon.Warning, title, message)
+
+    def _show_critical(self, title: str, message: str) -> None:
+        """Show an error message box."""
+        self._exec_message_box(QMessageBox.Icon.Critical, title, message)
+
+    def _exec_message_box(
+        self,
+        icon: QMessageBox.Icon,
+        title: str,
+        message: str,
+    ) -> None:
+        """Show a palette-aware QMessageBox for controller-level alerts."""
+        palette = QApplication.palette()
+        window_color = palette.window().color()
+        text_color = palette.windowText().color()
+        button_color = palette.button().color()
+        button_text_color = palette.buttonText().color()
+        border_color = palette.mid().color()
+        highlight_color = palette.highlight().color()
+
+        box = QMessageBox(self.main_window)
+        box.setIcon(icon)
+        box.setWindowTitle(title)
+        box.setText(message)
+        box.setStandardButtons(QMessageBox.StandardButton.Ok)
+        box.setDefaultButton(QMessageBox.StandardButton.Ok)
+        box.setStyleSheet(
+            f"""
+            QMessageBox {{
+                background-color: {window_color.name()};
+            }}
+            QMessageBox QLabel {{
+                color: {text_color.name()};
+            }}
+            QMessageBox QPushButton {{
+                background-color: {button_color.name()};
+                color: {button_text_color.name()};
+                border: 1px solid {border_color.name()};
+                border-radius: 6px;
+                padding: 6px 14px;
+            }}
+            QMessageBox QPushButton:hover {{
+                border-color: {highlight_color.name()};
+            }}
+            """
+        )
+        box.exec()

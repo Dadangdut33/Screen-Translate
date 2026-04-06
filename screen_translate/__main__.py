@@ -103,13 +103,13 @@ def main() -> None:
     log_win = LogPage(controller)
     controller.log_window = log_win
 
-    settings_dlg = SettingsPage(controller)
-    controller.settings_dialog = settings_dlg
+    settings_page = SettingsPage(controller)
+    controller.settings_page = settings_page
 
-    about_dlg = AboutPage()
-    controller.about_dialog = about_dlg
+    about_page = AboutPage()
+    controller.about_page = about_page
 
-    main_win.register_internal_pages(history_win, log_win, about_dlg, settings_dlg)
+    main_win.register_internal_pages(history_win, log_win, about_page, settings_page)
 
     # --- Register global hotkeys (if keyboard package is available) ---
     _register_hotkeys(controller, settings)

@@ -1,10 +1,23 @@
 QWidget#HistoryPage, QWidget#LogPage, QWidget#AboutPage {
     background-color: rgb(249, 249, 249);
+    color: rgb(32, 32, 32);
 }
 
 QWidget#HistoryPage QPlainTextEdit,
 QWidget#LogPage QPlainTextEdit {
     background-color: rgba(255, 255, 255, 0.88);
+    color: rgb(32, 32, 32);
+    selection-color: rgb(255, 255, 255);
+    selection-background-color: rgba(0, 120, 212, 0.88);
     border-radius: 8px;
     border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+QWidget#HistoryPage QLabel,
+QWidget#LogPage QLabel,
+QWidget#AboutPage QLabel,
+QWidget#HistoryPage BodyLabel,
+QWidget#LogPage BodyLabel,
+QWidget#AboutPage BodyLabel {
+    color: rgb(32, 32, 32);
 }

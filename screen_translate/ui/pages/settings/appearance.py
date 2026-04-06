@@ -2,8 +2,11 @@
 
 from __future__ import annotations
 
+import logging
+import sys
 from typing import Any
 
+from PyQt6.QtCore import QMetaObject, QProcess, Qt
 from PyQt6.QtGui import QColor
 from PyQt6.QtWidgets import (
     QApplication,
@@ -11,28 +14,77 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
-from qfluentwidgets import BodyLabel, ComboBox, PushButton, Theme, setTheme
+from qfluentwidgets import (
+    BodyLabel,
+    ComboBox,
+    InfoBar,
+    InfoBarIcon,
+    InfoBarPosition,
+    PushButton,
+    Theme,
+    qconfig,
+)
 
 from .common import bind_spin
 
 _THEME_OPTIONS: list[str] = ["Dark", "Light"]
+logger = logging.getLogger(__name__)
+
+
+def _is_theme_current(theme: str) -> bool:
+    """Return whether the selected theme already matches the live app theme."""
+    target_theme = Theme.DARK if theme == "Dark" else Theme.LIGHT
+    return qconfig.theme == target_theme
+
+
+def _update_theme_restart_notice(dialog: Any, theme: str) -> None:
+    """Show or hide the restart notice for theme changes."""
+    notice = getattr(dialog, "_theme_restart_notice", None)
+    if notice is None:
+        return
+    needs_restart = not _is_theme_current(theme)
+    notice.setVisible(needs_restart)
+
+
+def _restart_application(dialog: Any) -> None:
+    """Restart the current application process."""
+    app = QApplication.instance()
+    program = sys.executable
+    arguments = sys.argv[:]
+
+    if getattr(sys, "frozen", False):
+        arguments = sys.argv[1:]
+    else:
+        arguments = ["-m", "screen_translate", *sys.argv[1:]]
+
+    started = QProcess.startDetached(program, arguments)
+    if started:
+        main_window = getattr(getattr(dialog, "controller", None), "main_window", None)
+        if main_window is not None and hasattr(main_window, "_quit_app"):
+            QMetaObject.invokeMethod(
+                main_window,
+                "_quit_app",
+                Qt.ConnectionType.QueuedConnection,
+            )
+        elif app is not None:
+            app.quit()
+        return
+
+    logger.warning(
+        "Could not restart application automatically with program=%s args=%s",
+        program,
+        arguments,
+    )
 
 
 def on_theme_changed(dialog: Any, theme: str) -> None:
-    """Persist and apply a Fluent dark/light theme."""
+    """Persist the selected theme.
+
+    Live theme switching is intentionally disabled because it can crash the
+    current Qt/QFluentWidgets widget tree on some systems.
+    """
     dialog.s.set("theme", theme)
-    app = QApplication.instance()
-    if app is None:
-        return
-    dialog._show_theme_overlay()
-    try:
-        app.setStyle("Fusion")
-        setTheme(Theme.DARK if theme == "Dark" else Theme.LIGHT, save=False)
-        dialog._schedule_nav_style_refresh(50)
-    except Exception as exc:
-        dialog._logger.warning("Could not apply theme %s: %s", theme, exc)
-    finally:
-        dialog._hide_theme_overlay()
+    _update_theme_restart_notice(dialog, theme)
 
 
 def color_picker_row(dialog: Any, key: str) -> PushButton:
@@ -79,6 +131,19 @@ def build_appearance_page(dialog: Any) -> QWidget:
     )
     fl_theme.addRow("Theme:", dialog._cb_theme)
     fl_theme.addRow(BodyLabel("Choose between Fluent Dark and Light mode."))
+    dialog._theme_restart_notice = InfoBar(
+        InfoBarIcon.WARNING,
+        "Restart Required",
+        "Restart the app to apply the selected theme.",
+        duration=-1,
+        position=InfoBarPosition.NONE,
+        parent=w,
+    )
+    restart_button = PushButton("Restart Now", dialog._theme_restart_notice)
+    restart_button.clicked.connect(lambda: _restart_application(dialog))
+    dialog._theme_restart_notice.addWidget(restart_button)
+    fl_theme.addRow(dialog._theme_restart_notice)
+    _update_theme_restart_notice(dialog, dialog._cb_theme.currentText())
     vl.addWidget(grp_theme)
 
     grp_query, fl_query = dialog._group_form("Query Window")

@@ -1,5 +1,6 @@
 QWidget#SettingsPage {
     background-color: rgb(249, 249, 249);
+    color: rgb(32, 32, 32);
 }
 
 QWidget#SettingsPage QGroupBox {
@@ -15,4 +16,12 @@ QWidget#SettingsPage QGroupBox::title {
     subcontrol-origin: margin;
     left: 12px;
     padding: 0 6px;
+    color: rgb(48, 48, 48);
+}
+
+QWidget#SettingsPage QLabel,
+QWidget#SettingsPage BodyLabel,
+QWidget#SettingsPage QCheckBox,
+QWidget#SettingsPage QRadioButton {
+    color: rgb(32, 32, 32);
 }

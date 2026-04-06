@@ -11,12 +11,11 @@ from PyQt6.QtWidgets import (
     QHBoxLayout,
     QHeaderView,
     QLabel,
-    QMessageBox,
     QTableWidgetItem,
     QVBoxLayout,
     QWidget,
 )
-from qfluentwidgets import LineEdit, PushButton, TableWidget
+from qfluentwidgets import LineEdit, MessageBox, PushButton, TableWidget
 
 from screen_translate.core.history import (
     HistoryEntry,
@@ -74,10 +73,12 @@ class HistoryPage(QWidget):
 
         self._btn_delete = PushButton("Delete Selected")
         self._btn_delete.clicked.connect(self._delete_selected)
+        self._btn_delete.setEnabled(False)
         hl.addWidget(self._btn_delete)
 
         self._btn_clear = PushButton("Clear All")
         self._btn_clear.clicked.connect(self._clear_all)
+        self._btn_clear.setEnabled(False)
         hl.addWidget(self._btn_clear)
 
         vl.addLayout(hl)
@@ -86,12 +87,17 @@ class HistoryPage(QWidget):
         self._table = TableWidget()
         self._table.setRowCount(0)
         self._table.setColumnCount(6)
-        self._table.setHorizontalHeaderLabels(["ID", "From", "To", "Engine", "Query", "Result"])
-        self._table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
+        self._table.setHorizontalHeaderLabels(
+            ["ID", "From", "To", "Engine", "Query", "Result"]
+        )
+        self._table.horizontalHeader().setSectionResizeMode(
+            QHeaderView.ResizeMode.ResizeToContents
+        )
         self._table.horizontalHeader().setStretchLastSection(True)
         self._table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self._table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         self._table.setAlternatingRowColors(True)
+        self._table.itemSelectionChanged.connect(self._update_action_state)
         vl.addWidget(self._table)
 
     # ------------------------------------------------------------------
@@ -100,23 +106,49 @@ class HistoryPage(QWidget):
         """Reload history from disk and repopulate the table."""
         entries = load_history()
         self._populate(entries)
+        self._update_action_state()
 
     def _populate(self, entries: list[HistoryEntry]) -> None:
         self._table.setRowCount(0)
         for entry in entries:
             row = self._table.rowCount()
             self._table.insertRow(row)
-            for col, val in enumerate([
-                str(entry.id),
-                entry.from_lang,
-                entry.to_lang,
-                entry.engine,
-                entry.query,
-                entry.result,
-            ]):
+            for col, val in enumerate(
+                [
+                    str(entry.id),
+                    entry.from_lang,
+                    entry.to_lang,
+                    entry.engine,
+                    entry.query,
+                    entry.result,
+                ]
+            ):
                 item = QTableWidgetItem(val)
                 item.setData(Qt.ItemDataRole.UserRole, entry.id)
                 self._table.setItem(row, col, item)
+        self._update_action_state()
+
+    def _has_history_rows(self) -> bool:
+        """Return True when the table currently contains history entries."""
+        return self._table.rowCount() > 0
+
+    def _selected_history_ids(self) -> set[int]:
+        """Return ids for the currently selected table rows."""
+        selected_rows = {idx.row() for idx in self._table.selectedIndexes()}
+        ids: set[int] = set()
+        for row in selected_rows:
+            item = self._table.item(row, _COL_ID)
+            if item:
+                ids.add(int(item.text()))
+        return ids
+
+    @pyqtSlot()
+    def _update_action_state(self) -> None:
+        """Enable destructive actions only when they are valid."""
+        has_history = self._has_history_rows()
+        has_selection = bool(self._selected_history_ids())
+        self._btn_clear.setEnabled(has_history)
+        self._btn_delete.setEnabled(has_history and has_selection)
 
     @pyqtSlot(str)
     def _filter(self, text: str) -> None:
@@ -135,13 +167,17 @@ class HistoryPage(QWidget):
     @pyqtSlot()
     def _delete_selected(self) -> None:
         """Delete selected rows from history."""
-        selected_rows = {idx.row() for idx in self._table.selectedIndexes()}
-        ids: set[int] = set()
-        for row in selected_rows:
-            item = self._table.item(row, _COL_ID)
-            if item:
-                ids.add(int(item.text()))
+        ids = self._selected_history_ids()
         if not ids:
+            return
+        box = MessageBox(
+            "Delete Selected History",
+            f"Delete {len(ids)} selected history entr{'y' if len(ids) == 1 else 'ies'}?",
+            self.window(),
+        )
+        box.yesButton.setText("Delete")
+        box.cancelButton.setText("Cancel")
+        if not box.exec():
             return
         delete_history_by_ids(ids)
         self._load()
@@ -149,14 +185,16 @@ class HistoryPage(QWidget):
     @pyqtSlot()
     def _clear_all(self) -> None:
         """Clear all history after confirmation."""
-        reply = QMessageBox.question(
-            self,
+        box = MessageBox(
             "Clear History",
             "Delete all translation history?",
-            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            self.window(),
         )
-        if reply == QMessageBox.StandardButton.Yes:
+        box.yesButton.setText("Delete")
+        box.cancelButton.setText("Cancel")
+        if box.exec():
             clear_history()
             self._load()
+
 
 HistoryWindow = HistoryPage

@@ -106,20 +106,16 @@ def refresh_ocr_override_table(dialog: Any, backend_name: str) -> None:
 
         combo = ComboBox()
         combo.blockSignals(True)
-        combo.addItem("(none)", "")
+        combo.addItem("(none)", userData="")
         for tesseract_code in installed:
-            combo.addItem(tesseract_code, tesseract_code)
+            combo.addItem(tesseract_code, userData=tesseract_code)
+        combo.setProperty("backendName", backend_name)
+        combo.setProperty("languageCode", language_code)
         current_index = combo.findData(current_override)
         combo.setCurrentIndex(max(0, current_index))
         combo.blockSignals(False)
         combo.currentIndexChanged.connect(
-            lambda _idx, row=row_index, b=backend_name, lang=language_code, c=combo: set_ocr_override(
-                dialog,
-                b,
-                lang,
-                str(c.currentData() or ""),
-                row_index=row,
-            )
+            lambda _idx, c=combo: _on_ocr_override_combo_changed(dialog, c)
         )
         dialog._tbl_ocr_overrides.setCellWidget(row_index, 3, combo)
     dialog._tbl_ocr_overrides.setSortingEnabled(sorting_was_enabled)
@@ -199,6 +195,31 @@ def set_ocr_override(
         return
 
     refresh_ocr_override_table(dialog, backend_name)
+
+
+def _find_override_combo_row(dialog: Any, combo: ComboBox) -> int | None:
+    """Return the row index for a combo embedded in the override table."""
+    for row_index in range(dialog._tbl_ocr_overrides.rowCount()):
+        if dialog._tbl_ocr_overrides.cellWidget(row_index, 3) is combo:
+            return row_index
+    return None
+
+
+def _on_ocr_override_combo_changed(dialog: Any, combo: ComboBox) -> None:
+    """Handle override combo changes using combo properties instead of lambda-captured rows."""
+    backend_name = combo.property("backendName")
+    language_code = combo.property("languageCode")
+    if not isinstance(backend_name, str) or not isinstance(language_code, str):
+        return
+
+    row_index = _find_override_combo_row(dialog, combo)
+    set_ocr_override(
+        dialog,
+        backend_name,
+        language_code,
+        str(combo.currentData() or ""),
+        row_index=row_index,
+    )
 
 
 def build_ocr_overrides_page(dialog: Any) -> QWidget:

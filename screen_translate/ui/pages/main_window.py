@@ -87,8 +87,8 @@ class MainWindow(QMainWindow):
         self._settings_page_index: int | None = None
 
         self.setWindowTitle(f"{_APP_NAME} v{__version__}")
-        self.setMinimumSize(QSize(700, 280))
-        self.resize(950, 500)
+        self.setMinimumSize(QSize(700, 300))
+        self.resize(950, 600)
         StyleSheet.MAIN_WINDOW.apply(self)
 
         icon = load_icon()
@@ -270,6 +270,10 @@ class MainWindow(QMainWindow):
         captured_btn.clicked.connect(self._open_captured_dir)
         layout.addWidget(captured_btn)
 
+        test_dialog_btn = PushButton("Test Controller Dialog")
+        test_dialog_btn.clicked.connect(self.controller.show_test_dialog)
+        layout.addWidget(test_dialog_btn)
+
         layout.addStretch(1)
         return page
 
@@ -320,14 +324,6 @@ class MainWindow(QMainWindow):
             )
 
         self.navigationInterface.addItem(
-            routeKey="about",
-            icon=FIF.INFO,
-            text="About",
-            onClick=self._open_about,
-            selectable=True,
-            position=NavigationItemPosition.BOTTOM,
-        )
-        self.navigationInterface.addItem(
             routeKey="settings",
             icon=FIF.SETTING,
             text="Settings",
@@ -335,19 +331,27 @@ class MainWindow(QMainWindow):
             selectable=True,
             position=NavigationItemPosition.BOTTOM,
         )
+        self.navigationInterface.addItem(
+            routeKey="about",
+            icon=FIF.INFO,
+            text="About",
+            onClick=self._open_about,
+            selectable=True,
+            position=NavigationItemPosition.BOTTOM,
+        )
 
     def register_internal_pages(
         self,
-        history_window: QWidget,
-        log_window: QWidget,
-        about_dialog: QWidget,
-        settings_dialog: QWidget,
+        history_page: QWidget,
+        log_page: QWidget,
+        about_page: QWidget,
+        settings_page: QWidget,
     ) -> None:
         """Embed auxiliary windows into the main stacked area."""
-        self._history_page_index = self._embed_page_widget(history_window)
-        self._log_page_index = self._embed_page_widget(log_window)
-        self._about_page_index = self._embed_page_widget(about_dialog)
-        self._settings_page_index = self._embed_page_widget(settings_dialog)
+        self._history_page_index = self._embed_page_widget(history_page)
+        self._log_page_index = self._embed_page_widget(log_page)
+        self._about_page_index = self._embed_page_widget(about_page)
+        self._settings_page_index = self._embed_page_widget(settings_page)
 
     def _embed_page_widget(self, widget: QWidget) -> int:
         """Turn an auxiliary top-level widget into a stacked page."""
@@ -561,7 +565,7 @@ class MainWindow(QMainWindow):
                     mark_ocr_compat=mark_ocr_compat,
                     prefix_code=prefix_code,
                 ),
-                code,
+                userData=code,
             )
 
     def _language_label(
@@ -786,7 +790,7 @@ class MainWindow(QMainWindow):
     # ------------------------------------------------------------------
 
     def _open_settings(self) -> None:
-        if self.controller.settings_dialog and self._settings_page_index is not None:
+        if self.controller.settings_page and self._settings_page_index is not None:
             self._show_stack_page(self._settings_page_index, "settings")
 
     def _open_history(self) -> None:
@@ -799,7 +803,7 @@ class MainWindow(QMainWindow):
             self._show_stack_page(self._log_page_index, "log")
 
     def _open_about(self) -> None:
-        if self.controller.about_dialog and self._about_page_index is not None:
+        if self.controller.about_page and self._about_page_index is not None:
             self._show_stack_page(self._about_page_index, "about")
 
     def _open_capture_window(self) -> None:

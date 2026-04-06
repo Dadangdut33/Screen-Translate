@@ -152,8 +152,8 @@ class DetachedWindow(QWidget):
         self.setWindowOpacity(self._opacity)
 
     def _open_settings(self) -> None:
-        if self.controller.settings_dialog:
-            self.controller.settings_dialog.show_and_raise()
+        if self.controller.settings_page:
+            self.controller.settings_page.show_and_raise()
 
     # ------------------------------------------------------------------
     # Drag support

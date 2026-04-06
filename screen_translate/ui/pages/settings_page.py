@@ -68,6 +68,7 @@ class SettingsPage(QWidget):
         self._nav_refresh_timer = QTimer(self)
         self._nav_refresh_timer.setSingleShot(True)
         self._nav_refresh_timer.timeout.connect(self._refresh_nav_style)
+        self._pending_theme_name: str | None = None
 
         self.setWindowTitle("Settings")
         self.setObjectName("SettingsPage")
@@ -227,8 +228,13 @@ class SettingsPage(QWidget):
         base_color = palette.color(QPalette.ColorRole.Base)
         panel_color = QColor(base_color if base_color.isValid() else window_color)
         border_color = palette.color(QPalette.ColorRole.Mid)
-        text_color = palette.color(QPalette.ColorRole.WindowText)
+        text_color = palette.color(QPalette.ColorRole.Text)
+        if not text_color.isValid():
+            text_color = palette.color(QPalette.ColorRole.WindowText)
         active_bg = palette.color(QPalette.ColorRole.Highlight)
+        active_text = palette.color(QPalette.ColorRole.HighlightedText)
+        if not active_text.isValid():
+            active_text = QColor("#ffffff" if active_bg.lightnessF() < 0.58 else "#111111")
 
         def _is_dark(color: QColor) -> bool:
             return color.lightnessF() < 0.5
@@ -239,11 +245,20 @@ class SettingsPage(QWidget):
         else:
             panel_color = panel_color.darker(103)
             border_color = border_color.darker(110)
+            active_bg = active_bg.darker(112)
+            active_text = QColor("#111111")
 
         for row in range(self._nav_list.count()):
             item = self._nav_list.item(row)
             if item is not None:
                 item.setIcon(self._nav_icon(item.text()))
+
+        nav_palette = self._nav_list.palette()
+        nav_palette.setColor(QPalette.ColorRole.Text, text_color)
+        nav_palette.setColor(QPalette.ColorRole.WindowText, text_color)
+        nav_palette.setColor(QPalette.ColorRole.Highlight, active_bg)
+        nav_palette.setColor(QPalette.ColorRole.HighlightedText, active_text)
+        self._nav_list.setPalette(nav_palette)
 
         self._sync_theme_overlay_style()
         self._nav_panel.setStyleSheet(
@@ -266,9 +281,15 @@ class SettingsPage(QWidget):
                 padding: 10px 12px;
                 margin: 0 0 4px 0;
                 color: {text_color.name(QColor.NameFormat.HexArgb)};
+                background-color: transparent;
             }}
             QListWidget#SettingsNavList::item:selected {{
                 background-color: {active_bg.name(QColor.NameFormat.HexArgb)};
+                color: {active_text.name(QColor.NameFormat.HexArgb)};
+                font-weight: 700;
+            }}
+            QListWidget#SettingsNavList::item:hover {{
+                color: {text_color.name(QColor.NameFormat.HexArgb)};
             }}
             """
         )
