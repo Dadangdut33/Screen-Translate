@@ -26,3 +26,18 @@ MainWindow QMenuBar {
 MainWindow QStatusBar {
     background: transparent;
 }
+
+#AboutPage {
+    background-color: transparent;
+}
+
+#AboutCard {
+    background-color: rgba(255, 255, 255, 0.92);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 18px;
+}
+
+#AboutVersion {
+    color: rgba(0, 0, 0, 0.62);
+    font: 15px --FontFamilies;
+}

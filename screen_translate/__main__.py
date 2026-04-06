@@ -109,6 +109,8 @@ def main() -> None:
     about_dlg = AboutDialog(parent=main_win)
     controller.about_dialog = about_dlg
 
+    main_win.register_internal_pages(history_win, log_win, about_dlg, settings_dlg)
+
     # --- Register global hotkeys (if keyboard package is available) ---
     _register_hotkeys(controller, settings)
 

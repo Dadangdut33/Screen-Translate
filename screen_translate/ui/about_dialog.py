@@ -1,17 +1,20 @@
-"""About application dialog."""
+"""About application page."""
 
 from __future__ import annotations
 
 from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QDialog, QDialogButtonBox, QLabel, QVBoxLayout, QWidget
-from qfluentwidgets import BodyLabel
+from PyQt6.QtCore import QUrl
+from PyQt6.QtGui import QDesktopServices
+from PyQt6.QtWidgets import QFrame, QHBoxLayout, QLabel, QVBoxLayout, QWidget
+from qfluentwidgets import BodyLabel, PushButton, TitleLabel
 
 from screen_translate import __version__
 from screen_translate.ui.style_sheet import StyleSheet
+from screen_translate.ui.utils import load_icon
 
 
-class AboutDialog(QDialog):
-    """Simple About dialog showing version, license, and links."""
+class AboutDialog(QWidget):
+    """About page showing version, license, and links."""
 
     def __init__(self, parent: QWidget | None = None) -> None:
         """Create the About dialog.
@@ -20,39 +23,69 @@ class AboutDialog(QDialog):
             parent: Optional Qt parent.
         """
         super().__init__(parent)
-        self.setWindowTitle("About Screen Translate")
-        self.setFixedSize(400, 300)
+        self.setWindowTitle("About")
+        self.setObjectName("AboutPage")
         StyleSheet.AUXILIARY_WINDOW.apply(self)
         self._build_ui()
 
     def _build_ui(self) -> None:
-        layout = QVBoxLayout(self)
-        layout.setSpacing(10)
+        outer = QVBoxLayout(self)
+        outer.setContentsMargins(32, 32, 32, 32)
+        outer.setSpacing(0)
 
-        title = QLabel(f"<h2>Screen Translate</h2><h3>v{__version__}</h3>")
+        outer.addStretch(1)
+
+        card_row = QHBoxLayout()
+        card_row.addStretch(1)
+
+        card = QFrame(self)
+        card.setObjectName("AboutCard")
+        card.setMinimumWidth(520)
+        card_layout = QVBoxLayout(card)
+        card_layout.setContentsMargins(32, 32, 32, 32)
+        card_layout.setSpacing(14)
+
+        icon_label = QLabel(card)
+        icon = load_icon()
+        if not icon.isNull():
+            pixmap = icon.pixmap(72, 72)
+            if not pixmap.isNull():
+                icon_label.setPixmap(pixmap)
+        icon_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        card_layout.addWidget(icon_label)
+
+        title = TitleLabel("Screen Translate", card)
         title.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        layout.addWidget(title)
+        card_layout.addWidget(title)
+
+        version = BodyLabel(f"Version {__version__}", card)
+        version.setObjectName("AboutVersion")
+        version.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        card_layout.addWidget(version)
 
         desc = BodyLabel(
             "A desktop screen OCR and translation tool.\n"
             "Capture any region on screen and translate it instantly\n"
-            "using multiple translation engines."
+            "using multiple translation engines.",
+            card,
         )
         desc.setAlignment(Qt.AlignmentFlag.AlignCenter)
         desc.setWordWrap(True)
-        layout.addWidget(desc)
+        card_layout.addWidget(desc)
 
-        license_lbl = QLabel("License: MIT")
-        license_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        layout.addWidget(license_lbl)
+        meta = BodyLabel("License: MIT", card)
+        meta.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        card_layout.addWidget(meta)
 
-        github = QLabel('<a href="https://github.com/Dadangdut33/Screen-Translate">GitHub Repository</a>')
-        github.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        github.setOpenExternalLinks(True)
-        layout.addWidget(github)
+        github_btn = PushButton("Open GitHub Repository", card)
+        github_btn.clicked.connect(
+            lambda: QDesktopServices.openUrl(
+                QUrl("https://github.com/Dadangdut33/Screen-Translate")
+            )
+        )
+        card_layout.addWidget(github_btn, alignment=Qt.AlignmentFlag.AlignCenter)
 
-        layout.addStretch()
-
-        btn = QDialogButtonBox(QDialogButtonBox.StandardButton.Close)
-        btn.rejected.connect(self.accept)
-        layout.addWidget(btn)
+        card_row.addWidget(card)
+        card_row.addStretch(1)
+        outer.addLayout(card_row)
+        outer.addStretch(1)

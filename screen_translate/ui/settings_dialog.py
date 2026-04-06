@@ -1,28 +1,24 @@
-"""Settings dialog - every widget writes immediately via QSettings."""
+"""Settings page - every widget writes immediately via QSettings."""
 
 from __future__ import annotations
 
 import logging
 from typing import TYPE_CHECKING, Any
 
-from PyQt6.QtCore import QEvent, QSize, Qt, QTimer, pyqtSlot
+from PyQt6.QtCore import QEvent, QSize, Qt, QTimer
 from PyQt6.QtGui import QColor, QIcon, QPalette
 from PyQt6.QtWidgets import (
     QApplication,
-    QButtonGroup,
     QDialog,
-    QDialogButtonBox,
     QFormLayout,
     QGroupBox,
     QHBoxLayout,
-    QLabel,
-    QPushButton,
-    QProgressBar,
+    QListWidgetItem,
     QStackedWidget,
     QVBoxLayout,
     QWidget,
 )
-from qfluentwidgets import BodyLabel, ProgressBar, PushButton
+from qfluentwidgets import BodyLabel, ListWidget, ProgressBar
 import qtawesome as qta
 from screen_translate.ui.settings_pages import (
     build_appearance_page,
@@ -70,8 +66,9 @@ class SettingsDialog(QDialog):
         self.s = controller.settings
         self._logger = logger
         self._nav_panel: QWidget | None = None
+        self._nav_list: ListWidget | None = None
         self._theme_overlay: QWidget | None = None
-        self._nav_icon_cache: dict[tuple[str, str, str, str], QIcon] = {}
+        self._nav_icon_cache: dict[tuple[str, str], QIcon] = {}
         self._nav_refresh_timer = QTimer(self)
         self._nav_refresh_timer.setSingleShot(True)
         self._nav_refresh_timer.timeout.connect(self._refresh_nav_style)
@@ -90,15 +87,19 @@ class SettingsDialog(QDialog):
         content_row.setContentsMargins(0, 0, 0, 0)
         content_row.setSpacing(4)
 
+        self.setObjectName("SettingsDialog")
         self._nav_panel = QWidget()
         self._nav_panel.setFixedWidth(220)
         nav_layout = QVBoxLayout(self._nav_panel)
         nav_layout.setContentsMargins(10, 10, 10, 10)
-        nav_layout.setSpacing(4)
+        nav_layout.setSpacing(8)
 
         self._pages = QStackedWidget()
-        self._nav_buttons = QButtonGroup(self)
-        self._nav_buttons.setExclusive(True)
+        self._nav_list = ListWidget(self._nav_panel)
+        self._nav_list.setIconSize(QSize(18, 18))
+        self._nav_list.setSpacing(4)
+        self._nav_list.setObjectName("SettingsNavList")
+        nav_layout.addWidget(self._nav_list, 1)
 
         pages = [
             ("General", build_general_page(self)),
@@ -111,39 +112,19 @@ class SettingsDialog(QDialog):
         ]
 
         for index, (label, page) in enumerate(pages):
-            btn = PushButton(label)
-            btn.setCheckable(True)
-            btn.setProperty("navItem", True)
-            btn.setProperty("navLabel", label)
-            btn.installEventFilter(self)
-            btn.toggled.connect(
-                lambda _checked, button=btn: self._update_nav_button_icon(button)
-            )
-            btn.setIconSize(QSize(18, 18))
-            btn.clicked.connect(
-                lambda _checked, i=index: self._pages.setCurrentIndex(i)
-            )
-            # decrease padding
-            btn.setStyleSheet("padding-top: 2px; padding-bottom: 2px;")
-
-            self._nav_buttons.addButton(btn, index)
-            nav_layout.addWidget(btn)
+            item = QListWidgetItem(self._nav_icon(label), label)
+            item.setSizeHint(QSize(0, 40))
+            self._nav_list.addItem(item)
             self._pages.addWidget(page)
 
-        nav_layout.addStretch(1)
-        first_button = self._nav_buttons.button(0)
-        if first_button is not None:
-            first_button.setChecked(True)
+        self._nav_list.currentRowChanged.connect(self._pages.setCurrentIndex)
+        self._nav_list.setCurrentRow(0)
         self._pages.setCurrentIndex(0)
         self._schedule_nav_style_refresh()
 
         content_row.addWidget(self._nav_panel)
         content_row.addWidget(self._pages, 1)
         layout.addLayout(content_row)
-
-        btn_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Close)
-        btn_box.rejected.connect(self.hide)
-        layout.addWidget(btn_box)
         self._build_theme_overlay()
 
     def _build_theme_overlay(self) -> None:
@@ -237,58 +218,13 @@ class SettingsDialog(QDialog):
         if event.type() in (QEvent.Type.PaletteChange, QEvent.Type.StyleChange):
             self._schedule_nav_style_refresh(25)
 
-    def eventFilter(self, obj: Any, event: QEvent) -> bool:
-        """Keep sidebar icons in sync with hover and checked state."""
-        if isinstance(obj, QPushButton) and obj.property("navItem") is True:
-            if event.type() in (
-                QEvent.Type.Enter,
-                QEvent.Type.Leave,
-                QEvent.Type.HoverEnter,
-                QEvent.Type.HoverLeave,
-            ):
-                self._update_nav_button_icon(obj)
-        return super().eventFilter(obj, event)
-
     def _schedule_nav_style_refresh(self, delay_ms: int = 0) -> None:
         """Coalesce repeated sidebar restyles during palette/theme changes."""
         self._nav_refresh_timer.start(max(0, delay_ms))
 
-    def _nav_state_colors(self) -> tuple[QColor, QColor, QColor]:
-        """Return text, active, and hover colors for nav items."""
-        palette = self.palette()
-        text_color = palette.color(QPalette.ColorRole.WindowText)
-        active_bg = palette.color(QPalette.ColorRole.Highlight)
-        if active_bg.alpha() == 255:
-            active_bg.setAlpha(245)
-        active_text = QColor("#ffffff" if active_bg.lightnessF() < 0.58 else "#111111")
-        if palette.color(QPalette.ColorRole.Window).lightnessF() < 0.5:
-            hover_text = QColor(active_text)
-        else:
-            hover_bg = active_bg.lighter(112)
-            hover_text = QColor(
-                "#ffffff" if hover_bg.lightnessF() < 0.58 else "#111111"
-            )
-        return text_color, active_text, hover_text
-
-    def _update_nav_button_icon(self, button: QPushButton) -> None:
-        """Apply the correct icon color for one nav button."""
-        label = button.property("navLabel")
-        if not isinstance(label, str):
-            return
-        text_color, active_text, hover_text = self._nav_state_colors()
-        if button.isChecked():
-            icon_color = active_text
-        elif button.underMouse():
-            icon_color = hover_text
-        else:
-            icon_color = text_color
-        icon = self._nav_icon(label, icon_color)
-        if not icon.isNull():
-            button.setIcon(icon)
-
     def _refresh_nav_style(self) -> None:
         """Apply sidebar colors derived from the current palette."""
-        if self._nav_panel is None:
+        if self._nav_panel is None or self._nav_list is None:
             return
 
         palette = self.palette()
@@ -309,19 +245,10 @@ class SettingsDialog(QDialog):
             panel_color = panel_color.darker(103)
             border_color = border_color.darker(110)
 
-        if active_bg.alpha() == 255:
-            active_bg.setAlpha(245)
-        active_text = QColor("#ffffff" if active_bg.lightnessF() < 0.58 else "#111111")
-        if _is_dark(window_color):
-            hover_bg = QColor(active_bg)
-            hover_text = QColor(active_text)
-        else:
-            hover_bg = active_bg.lighter(112)
-            hover_text = QColor(
-                "#ffffff" if hover_bg.lightnessF() < 0.58 else "#111111"
-            )
-        for button in self._nav_buttons.buttons():
-            self._update_nav_button_icon(button)
+        for row in range(self._nav_list.count()):
+            item = self._nav_list.item(row)
+            if item is not None:
+                item.setIcon(self._nav_icon(item.text()))
 
         self._sync_theme_overlay_style()
         self._nav_panel.setStyleSheet(
@@ -331,23 +258,22 @@ class SettingsDialog(QDialog):
                 border: 1px solid {border_color.name(QColor.NameFormat.HexArgb)};
                 border-radius: 6px;
             }}
-            QPushButton[navItem="true"] {{
-                border: 0;
-                border-radius: 6px;
-                padding: 12px 14px;
-                text-align: left;
-                font-weight: 600;
+            QListWidget#SettingsNavList {{
                 background-color: transparent;
+                border: 0;
+                outline: 0;
+                padding: 0;
                 color: {text_color.name(QColor.NameFormat.HexArgb)};
             }}
-            QPushButton[navItem="true"]:hover {{
-                background-color: {hover_bg.name(QColor.NameFormat.HexArgb)};
-                color: {hover_text.name(QColor.NameFormat.HexArgb)};
+            QListWidget#SettingsNavList::item {{
+                border: 0;
+                border-radius: 6px;
+                padding: 10px 12px;
+                margin: 0 0 4px 0;
+                color: {text_color.name(QColor.NameFormat.HexArgb)};
             }}
-            QPushButton[navItem="true"]:checked {{
-                font-weight: 700;
+            QListWidget#SettingsNavList::item:selected {{
                 background-color: {active_bg.name(QColor.NameFormat.HexArgb)};
-                color: {active_text.name(QColor.NameFormat.HexArgb)};
             }}
             """
         )
@@ -371,7 +297,6 @@ class SettingsDialog(QDialog):
     def _nav_icon(
         self,
         label: str,
-        color: QColor,
     ) -> QIcon:
         """Return a sidebar icon for the given settings section label."""
         if qta is None:
@@ -380,12 +305,8 @@ class SettingsDialog(QDialog):
         if not icon_name:
             return QIcon()
         try:
-            color_key = (
-                label,
-                color.name(QColor.NameFormat.HexArgb),
-                "",
-                "",
-            )
+            color = self.palette().color(QPalette.ColorRole.WindowText)
+            color_key = (label, color.name(QColor.NameFormat.HexArgb))
             cached_icon = self._nav_icon_cache.get(color_key)
             if cached_icon is not None:
                 return cached_icon
@@ -405,6 +326,12 @@ class SettingsDialog(QDialog):
 
     def show_and_raise(self) -> None:
         """Show and bring to front."""
+        host = self.window()
+        if host is not None and host is not self and hasattr(host, "_open_settings"):
+            if hasattr(host, "show_and_raise"):
+                host.show_and_raise()
+            host._open_settings()
+            return
         self.show()
         self.raise_()
         self.activateWindow()

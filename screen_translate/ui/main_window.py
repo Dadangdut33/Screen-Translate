@@ -9,17 +9,29 @@ import pycountry
 from PyQt6.QtCore import QSize, Qt, pyqtSlot
 from PyQt6.QtGui import QAction, QCloseEvent, QIcon, QKeySequence
 from PyQt6.QtWidgets import (
+    QHBoxLayout,
     QLabel,
     QMainWindow,
     QMenu,
     QSlider,
     QSplitter,
+    QStackedWidget,
     QStatusBar,
     QSystemTrayIcon,
     QTextEdit,
-    QToolBar,
+    QVBoxLayout,
+    QWidget,
 )
-from qfluentwidgets import ComboBox, PrimaryPushButton, ProgressBar, PushButton
+from qfluentwidgets import (
+    BodyLabel,
+    ComboBox,
+    FluentIcon as FIF,
+    NavigationInterface,
+    NavigationItemPosition,
+    PrimaryPushButton,
+    ProgressBar,
+    PushButton,
+)
 
 from screen_translate import __version__
 from screen_translate.ui.style_sheet import StyleSheet
@@ -69,6 +81,10 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.controller = controller
         self._notified_hidden = False
+        self._history_page_index: int | None = None
+        self._log_page_index: int | None = None
+        self._about_page_index: int | None = None
+        self._settings_page_index: int | None = None
 
         self.setWindowTitle(f"{_APP_NAME} v{__version__}")
         self.setMinimumSize(QSize(700, 280))
@@ -90,8 +106,103 @@ class MainWindow(QMainWindow):
     # ------------------------------------------------------------------
 
     def _build_ui(self) -> None:
-        """Create toolbar and central split editor."""
-        # --- Central widget: splitter with query + result ---
+        """Create the Fluent navigation shell and page content."""
+        shell = QWidget(self)
+        shell_layout = QHBoxLayout(shell)
+        shell_layout.setContentsMargins(0, 0, 0, 0)
+        shell_layout.setSpacing(0)
+
+        self.navigationInterface = NavigationInterface(self, showMenuButton=True)
+        self.navigationInterface.setObjectName("MainNavigation")
+        shell_layout.addWidget(self.navigationInterface)
+
+        self.stackWidget = QStackedWidget(self)
+        shell_layout.addWidget(self.stackWidget, 1)
+        self.setCentralWidget(shell)
+
+        workspace = self._build_workspace_page()
+        tools = self._build_tools_page()
+        self.stackWidget.addWidget(workspace)
+        self.stackWidget.addWidget(tools)
+
+        self._add_navigation_items()
+        self.stackWidget.setCurrentWidget(workspace)
+        self.navigationInterface.setCurrentItem("translate")
+
+        # --- Status bar ---
+        self.progress = ProgressBar()
+        self.progress.setRange(0, 0)  # indeterminate
+        self.progress.setVisible(False)
+        self.progress.setMaximumWidth(120)
+        status_bar = QStatusBar()
+        status_bar.addPermanentWidget(self.progress)
+        self.setStatusBar(status_bar)
+
+    def _build_workspace_page(self) -> QWidget:
+        """Build the main translation workspace page."""
+        page = QWidget(self)
+        page.setObjectName("WorkspacePage")
+        layout = QVBoxLayout(page)
+        layout.setContentsMargins(14, 14, 14, 14)
+        layout.setSpacing(10)
+
+        controls = QWidget(page)
+        controls_layout = QHBoxLayout(controls)
+        controls_layout.setContentsMargins(0, 0, 0, 0)
+        controls_layout.setSpacing(8)
+
+        self.btn_translate = PrimaryPushButton("Translate")
+        self.btn_translate.setToolTip("Translate typed text (no OCR)")
+        controls_layout.addWidget(self.btn_translate)
+
+        self.btn_capture = PrimaryPushButton("Capture & Translate")
+        self.btn_capture.setToolTip(
+            "Capture the region inside the Capture Window and translate"
+        )
+        controls_layout.addWidget(self.btn_capture)
+
+        self.btn_snip = PrimaryPushButton("Snip -> Translate")
+        self.btn_snip.setToolTip(
+            "Draw a selection on any monitor to capture and translate (Ctrl+Alt+T)"
+        )
+        controls_layout.addWidget(self.btn_snip)
+
+        controls_layout.addWidget(QLabel("Opacity:"))
+        self.slider_opacity = QSlider(Qt.Orientation.Horizontal)
+        self.slider_opacity.setRange(10, 100)
+        self.slider_opacity.setValue(80)
+        self.slider_opacity.setFixedWidth(100)
+        self.slider_opacity.setToolTip("Capture Window opacity")
+        controls_layout.addWidget(self.slider_opacity)
+
+        controls_layout.addWidget(QLabel("Engine:"))
+        self.cb_engine = ComboBox()
+        self.cb_engine.setMinimumWidth(160)
+        self.cb_engine.setMaximumHeight(_COMBOBOX_HEIGHT)
+        controls_layout.addWidget(self.cb_engine)
+
+        controls_layout.addWidget(QLabel("From:"))
+        self.cb_source = ComboBox()
+        self.cb_source.setMinimumWidth(140)
+        self.cb_source.setMaximumHeight(_COMBOBOX_HEIGHT)
+        controls_layout.addWidget(self.cb_source)
+
+        controls_layout.addWidget(QLabel("To:"))
+        self.cb_target = ComboBox()
+        self.cb_target.setMinimumWidth(140)
+        self.cb_target.setMaximumHeight(_COMBOBOX_HEIGHT)
+        controls_layout.addWidget(self.cb_target)
+
+        self.btn_swap = PushButton("⮁ Swap")
+        self.btn_swap.setToolTip("Swap source and target languages and text")
+        controls_layout.addWidget(self.btn_swap)
+
+        self.btn_clear = PushButton("✕ Clear")
+        self.btn_clear.setToolTip("Clear both text areas")
+        controls_layout.addWidget(self.btn_clear)
+        controls_layout.addStretch(1)
+        layout.addWidget(controls)
+
         splitter = QSplitter(Qt.Orientation.Vertical)
 
         self.tb_query = QTextEdit()
@@ -106,74 +217,150 @@ class MainWindow(QMainWindow):
         splitter.addWidget(self.tb_result)
         splitter.setStretchFactor(0, 1)
         splitter.setStretchFactor(1, 1)
-        self.setCentralWidget(splitter)
+        layout.addWidget(splitter, 1)
+        return page
 
-        # --- Toolbar ---
-        bar = QToolBar("Main Toolbar")
-        bar.setMovable(False)
-        bar.setIconSize(QSize(16, 16))
-        self.addToolBar(Qt.ToolBarArea.TopToolBarArea, bar)
+    def _build_tools_page(self) -> QWidget:
+        """Build the utility page for extra windows and tools."""
+        page = QWidget(self)
+        page.setObjectName("ToolsPage")
+        layout = QVBoxLayout(page)
+        layout.setContentsMargins(24, 24, 24, 24)
+        layout.setSpacing(12)
 
-        self.btn_translate = PrimaryPushButton("Translate")
-        self.btn_translate.setToolTip("Translate typed text (no OCR)")
-        bar.addWidget(self.btn_translate)
+        title = BodyLabel("Windows and Tools")
+        layout.addWidget(title)
 
-        self.btn_capture = PrimaryPushButton("Capture & Translate")
-        self.btn_capture.setToolTip(
-            "Capture the region inside the Capture Window and translate"
+        for open_text, open_slot, close_text, close_slot in [
+            (
+                "Open Capture Window",
+                self._open_capture_window,
+                "Close Capture Window",
+                self._close_capture_window,
+            ),
+            (
+                "Open Query Window",
+                self._open_query_window,
+                "Close Query Window",
+                self._close_query_window,
+            ),
+            (
+                "Open Result Window",
+                self._open_result_window,
+                "Close Result Window",
+                self._close_result_window,
+            ),
+            (
+                "Open Mask Window",
+                self._open_mask_window,
+                "Close Mask Window",
+                self._close_mask_window,
+            ),
+        ]:
+            row = QHBoxLayout()
+            open_btn = PushButton(open_text)
+            open_btn.clicked.connect(open_slot)
+            close_btn = PushButton(close_text)
+            close_btn.clicked.connect(close_slot)
+            row.addWidget(open_btn)
+            row.addWidget(close_btn)
+            layout.addLayout(row)
+
+        captured_btn = PushButton("Open Captured Images")
+        captured_btn.clicked.connect(self._open_captured_dir)
+        layout.addWidget(captured_btn)
+
+        layout.addStretch(1)
+        return page
+
+    def _add_navigation_items(self) -> None:
+        """Populate the left Fluent navigation bar."""
+        self.navigationInterface.addItem(
+            routeKey="translate",
+            icon=FIF.EDIT,
+            text="Translate",
+            onClick=lambda: self._show_stack_page(0, "translate"),
+            position=NavigationItemPosition.TOP,
         )
-        bar.addWidget(self.btn_capture)
-
-        self.btn_snip = PrimaryPushButton("Snip -> Translate")
-        self.btn_snip.setToolTip(
-            "Draw a selection on any monitor to capture and translate (Ctrl+Alt+T)"
+        self.navigationInterface.addItem(
+            routeKey="history",
+            icon=FIF.HISTORY,
+            text="History",
+            onClick=self._open_history,
+            position=NavigationItemPosition.TOP,
         )
-        bar.addWidget(self.btn_snip)
+        self.navigationInterface.addItem(
+            routeKey="log",
+            icon=FIF.SEARCH,
+            text="Log",
+            onClick=self._open_log,
+            position=NavigationItemPosition.TOP,
+        )
+        self.navigationInterface.addItem(
+            routeKey="tools",
+            icon=FIF.APPLICATION,
+            text="Tools",
+            onClick=lambda: self._show_stack_page(1, "tools"),
+            position=NavigationItemPosition.TOP,
+        )
 
-        bar.addWidget(QLabel("Opacity:"))
-        self.slider_opacity = QSlider(Qt.Orientation.Horizontal)
-        self.slider_opacity.setRange(10, 100)
-        self.slider_opacity.setValue(80)
-        self.slider_opacity.setFixedWidth(100)
-        self.slider_opacity.setToolTip("Capture Window opacity")
-        bar.addWidget(self.slider_opacity)
+        self.navigationInterface.addSeparator()
 
-        bar.addWidget(QLabel("Engine:"))
-        self.cb_engine = ComboBox()
-        self.cb_engine.setMinimumWidth(160)
-        self.cb_engine.setMaximumHeight(_COMBOBOX_HEIGHT)
-        bar.addWidget(self.cb_engine)
+        for route_key, icon, text, slot in [
+            ("capture_window", FIF.CAMERA, "Capture Window", self._open_capture_window),
+            ("snip", FIF.CUT, "Snip & Translate", self._trigger_snip),
+        ]:
+            self.navigationInterface.addItem(
+                routeKey=route_key,
+                icon=icon,
+                text=text,
+                onClick=slot,
+                selectable=False,
+                position=NavigationItemPosition.SCROLL,
+            )
 
-        bar.addWidget(QLabel("From:"))
-        self.cb_source = ComboBox()
-        self.cb_source.setMinimumWidth(140)
-        self.cb_source.setMaximumHeight(_COMBOBOX_HEIGHT)
-        # self.cb_source.view().setMaximumHeight(_COMBOBOX_POPUP_MAX_HEIGHT)
-        bar.addWidget(self.cb_source)
+        self.navigationInterface.addItem(
+            routeKey="about",
+            icon=FIF.INFO,
+            text="About",
+            onClick=self._open_about,
+            selectable=True,
+            position=NavigationItemPosition.BOTTOM,
+        )
+        self.navigationInterface.addItem(
+            routeKey="settings",
+            icon=FIF.SETTING,
+            text="Settings",
+            onClick=self._open_settings,
+            selectable=True,
+            position=NavigationItemPosition.BOTTOM,
+        )
 
-        bar.addWidget(QLabel("To:"))
-        self.cb_target = ComboBox()
-        self.cb_target.setMinimumWidth(140)
-        self.cb_target.setMaximumHeight(_COMBOBOX_HEIGHT)
-        # self.cb_target.view().setMaximumHeight(_COMBOBOX_POPUP_MAX_HEIGHT)
-        bar.addWidget(self.cb_target)
+    def register_internal_pages(
+        self,
+        history_window: QMainWindow,
+        log_window: QMainWindow,
+        about_dialog: QWidget,
+        settings_dialog: QWidget,
+    ) -> None:
+        """Embed auxiliary windows into the main stacked area."""
+        self._history_page_index = self._embed_page_widget(history_window)
+        self._log_page_index = self._embed_page_widget(log_window)
+        self._about_page_index = self._embed_page_widget(about_dialog)
+        self._settings_page_index = self._embed_page_widget(settings_dialog)
 
-        self.btn_swap = PushButton("⮁ Swap")
-        self.btn_swap.setToolTip("Swap source and target languages and text")
-        bar.addWidget(self.btn_swap)
+    def _embed_page_widget(self, widget: QWidget) -> int:
+        """Turn an auxiliary top-level widget into a stacked page."""
+        widget.setParent(self.stackWidget)
+        widget.setWindowFlags(Qt.WindowType.Widget)
+        widget.hide()
+        self.stackWidget.addWidget(widget)
+        return self.stackWidget.indexOf(widget)
 
-        self.btn_clear = PushButton("✕ Clear")
-        self.btn_clear.setToolTip("Clear both text areas")
-        bar.addWidget(self.btn_clear)
-
-        # --- Status bar ---
-        self.progress = ProgressBar()
-        self.progress.setRange(0, 0)  # indeterminate
-        self.progress.setVisible(False)
-        self.progress.setMaximumWidth(120)
-        status_bar = QStatusBar()
-        status_bar.addPermanentWidget(self.progress)
-        self.setStatusBar(status_bar)
+    def _show_stack_page(self, index: int, route_key: str) -> None:
+        """Show a stacked page and sync the Fluent navigation indicator."""
+        self.stackWidget.setCurrentIndex(index)
+        self.navigationInterface.setCurrentItem(route_key)
 
     def _build_menubar(self) -> None:
         """Build the application menu bar."""
@@ -599,36 +786,53 @@ class MainWindow(QMainWindow):
     # ------------------------------------------------------------------
 
     def _open_settings(self) -> None:
-        if self.controller.settings_dialog:
-            self.controller.settings_dialog.show_and_raise()
+        if self.controller.settings_dialog and self._settings_page_index is not None:
+            self._show_stack_page(self._settings_page_index, "settings")
 
     def _open_history(self) -> None:
-        if self.controller.history_window:
-            self.controller.history_window.show_and_raise()
+        if self.controller.history_window and self._history_page_index is not None:
+            self.controller.history_window._load()
+            self._show_stack_page(self._history_page_index, "history")
 
     def _open_log(self) -> None:
-        if self.controller.log_window:
-            self.controller.log_window.show_and_raise()
+        if self.controller.log_window and self._log_page_index is not None:
+            self._show_stack_page(self._log_page_index, "log")
 
     def _open_about(self) -> None:
-        if self.controller.about_dialog:
-            self.controller.about_dialog.exec()
+        if self.controller.about_dialog and self._about_page_index is not None:
+            self._show_stack_page(self._about_page_index, "about")
 
     def _open_capture_window(self) -> None:
         if self.controller.capture_window:
             self.controller.capture_window.show_and_raise()
 
+    def _close_capture_window(self) -> None:
+        if self.controller.capture_window:
+            self.controller.capture_window.hide()
+
     def _open_mask_window(self) -> None:
         if self.controller.mask_window:
             self.controller.mask_window.show_and_raise()
+
+    def _close_mask_window(self) -> None:
+        if self.controller.mask_window:
+            self.controller.mask_window.hide()
 
     def _open_query_window(self) -> None:
         if self.controller.query_window:
             self.controller.query_window.show_and_raise()
 
+    def _close_query_window(self) -> None:
+        if self.controller.query_window:
+            self.controller.query_window.hide()
+
     def _open_result_window(self) -> None:
         if self.controller.result_window:
             self.controller.result_window.show_and_raise()
+
+    def _close_result_window(self) -> None:
+        if self.controller.result_window:
+            self.controller.result_window.hide()
 
     def _open_captured_dir(self) -> None:
         import os
