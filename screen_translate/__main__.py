@@ -8,9 +8,10 @@ import signal
 import socket
 import sys
 
-from PyQt6.QtCore import QMetaObject, Qt, QSocketNotifier
-from PyQt6.QtWidgets import QApplication
-from qfluentwidgets import Theme, setTheme
+from PyQt6.QtCore import QMetaObject, QThreadPool, QTimer, Qt, QSocketNotifier, QUrl
+from PyQt6.QtGui import QDesktopServices
+from PyQt6.QtWidgets import QApplication, QMessageBox
+from qfluentwidgets import Dialog, Theme, setTheme
 
 from screen_translate import __version__
 from screen_translate.config.settings import SettingsManager
@@ -27,6 +28,13 @@ from screen_translate.ui.pages import (
     SettingsPage,
 )
 from screen_translate.ui.controller import AppController
+from screen_translate.ui.update_check import (
+    UpdateCheckWorker,
+    detect_install_method,
+    is_newer_version,
+    releases_url,
+    update_instructions,
+)
 from screen_translate.ui.windows import CaptureWindow, FloatingTextWindow, MaskWindow
 
 logger = logging.getLogger(__name__)
@@ -121,6 +129,12 @@ def main() -> None:
     else:
         logger.info("Silent start (-s flag): running in tray only")
 
+    if bool(settings.get("checkUpdateOnStart", True)):
+        QTimer.singleShot(
+            1200,
+            lambda: _check_for_updates_on_startup(app, main_win),
+        )
+
     sys.exit(app.exec())
 
 
@@ -138,6 +152,62 @@ def _apply_theme(app: QApplication, settings: SettingsManager) -> None:
     except Exception as exc:
         app.setStyle("Fusion")
         logger.warning("Could not apply QFluentWidgets theme %s: %s", theme_name, exc)
+
+
+def _check_for_updates_on_startup(app: QApplication, main_win: MainWindow) -> None:
+    """Check for updates shortly after startup and surface the result."""
+    worker = UpdateCheckWorker()
+
+    def _cleanup() -> None:
+        app.setProperty("_startup_update_worker", None)
+
+    def _on_finished(latest_version: str, release_url: str, release_title: str) -> None:
+        _cleanup()
+        if not is_newer_version(latest_version, __version__):
+            logger.debug("Startup update check: app is up to date")
+            return
+
+        logger.info(
+            "Startup update check found update: current=%s latest=%s",
+            __version__,
+            latest_version,
+        )
+        tray = getattr(main_win, "_tray", None)
+        if tray is not None:
+            tray.showMessage(
+                "Update Available",
+                f"Screen Translate {latest_version} is available.",
+                tray.MessageIcon.Information,
+                8000,
+            )
+
+        message = (
+            f"A newer version is available: {latest_version}"
+            + (f" ({release_title})" if release_title else "")
+            + "\n\nDetected install method:\n"
+            + detect_install_method()
+            + "\n\nHow to update:\n"
+            + update_instructions()
+            + f"\n\nRelease page:\n{release_url or releases_url()}"
+        )
+        dialog = Dialog(
+            "Update Available",
+            message,
+            main_win,
+        )
+        dialog.yesButton.setText("Open Release Page")
+        dialog.cancelButton.setText("Later")
+        if dialog.exec():
+            QDesktopServices.openUrl(QUrl(release_url or releases_url()))
+
+    def _on_error(error: str) -> None:
+        _cleanup()
+        logger.debug("Startup update check failed: %s", error)
+
+    worker.signals.finished.connect(_on_finished)
+    worker.signals.error.connect(_on_error)
+    app.setProperty("_startup_update_worker", worker)
+    QThreadPool.globalInstance().start(worker)
 
 
 def _configure_unix_signal_handling(app: QApplication, main_win: MainWindow) -> None:

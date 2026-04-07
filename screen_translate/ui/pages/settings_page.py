@@ -8,7 +8,6 @@ from typing import TYPE_CHECKING, Any
 from PyQt6.QtCore import QEvent, QSize, Qt, QTimer
 from PyQt6.QtGui import QColor, QIcon, QPalette
 from PyQt6.QtWidgets import (
-    QApplication,
     QFormLayout,
     QGroupBox,
     QHBoxLayout,
@@ -17,7 +16,7 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
-from qfluentwidgets import BodyLabel, ListWidget, ProgressBar
+from qfluentwidgets import ListWidget
 import qtawesome as qta
 from screen_translate.ui.pages.settings import (
     build_appearance_page,
@@ -60,15 +59,12 @@ class SettingsPage(QWidget):
         super().__init__(parent)
         self.controller = controller
         self.s = controller.settings
-        self._logger = logger
         self._nav_panel: QWidget | None = None
         self._nav_list: ListWidget | None = None
-        self._theme_overlay: QWidget | None = None
         self._nav_icon_cache: dict[tuple[str, str], QIcon] = {}
         self._nav_refresh_timer = QTimer(self)
         self._nav_refresh_timer.setSingleShot(True)
         self._nav_refresh_timer.timeout.connect(self._refresh_nav_style)
-        self._pending_theme_name: str | None = None
 
         self.setWindowTitle("Settings")
         self.setObjectName("SettingsPage")
@@ -79,21 +75,23 @@ class SettingsPage(QWidget):
 
     def _build_ui(self) -> None:
         layout = QVBoxLayout(self)
+        layout.setContentsMargins(8, 8, 8, 8)  # outer gap
 
-        content_row = QHBoxLayout()
+        content_row = QHBoxLayout()  # content
         content_row.setContentsMargins(0, 0, 0, 0)
-        content_row.setSpacing(4)
+        content_row.setSpacing(12)
 
         self._nav_panel = QWidget()
         self._nav_panel.setFixedWidth(220)
         nav_layout = QVBoxLayout(self._nav_panel)
-        nav_layout.setContentsMargins(10, 10, 10, 10)
-        nav_layout.setSpacing(8)
+        nav_layout.setContentsMargins(6, 8, 6, 8)
+        nav_layout.setSpacing(4)
 
         self._pages = QStackedWidget()
+        self._pages.setContentsMargins(0, 0, 0, 0)
         self._nav_list = ListWidget(self._nav_panel)
         self._nav_list.setIconSize(QSize(18, 18))
-        self._nav_list.setSpacing(4)
+        self._nav_list.setSpacing(2)
         self._nav_list.setObjectName("SettingsNavList")
         nav_layout.addWidget(self._nav_list, 1)
 
@@ -108,6 +106,10 @@ class SettingsPage(QWidget):
         ]
 
         for index, (label, page) in enumerate(pages):
+            page_layout = page.layout()
+            if page_layout is not None:
+                page_layout.setContentsMargins(0, 0, 0, 0)
+                page_layout.setSpacing(12)
             item = QListWidgetItem(self._nav_icon(label), label)
             item.setSizeHint(QSize(0, 40))
             self._nav_list.addItem(item)
@@ -121,92 +123,6 @@ class SettingsPage(QWidget):
         content_row.addWidget(self._nav_panel)
         content_row.addWidget(self._pages, 1)
         layout.addLayout(content_row)
-        self._build_theme_overlay()
-
-    def _build_theme_overlay(self) -> None:
-        """Create a lightweight overlay shown while the app theme is updating."""
-        overlay = QWidget(self)
-        overlay.setObjectName("themeLoadingOverlay")
-        overlay.hide()
-
-        outer = QVBoxLayout(overlay)
-        outer.setContentsMargins(0, 0, 0, 0)
-        outer.addStretch(1)
-
-        card = QWidget(overlay)
-        card.setObjectName("themeLoadingCard")
-        card_layout = QVBoxLayout(card)
-        card_layout.setContentsMargins(20, 18, 20, 18)
-        card_layout.setSpacing(10)
-
-        title = BodyLabel("Applying theme...", card)
-        title.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        title.setObjectName("themeLoadingTitle")
-        card_layout.addWidget(title)
-
-        progress = ProgressBar(card)
-        progress.setRange(0, 0)
-        progress.setTextVisible(False)
-        progress.setFixedWidth(240)
-        card_layout.addWidget(progress, 0, Qt.AlignmentFlag.AlignCenter)
-
-        outer.addWidget(card, 0, Qt.AlignmentFlag.AlignCenter)
-        outer.addStretch(1)
-
-        self._theme_overlay = overlay
-        self._sync_theme_overlay_style()
-        overlay.setGeometry(self.rect())
-
-    def _sync_theme_overlay_style(self) -> None:
-        """Update the loading overlay colors from the current palette."""
-        if self._theme_overlay is None:
-            return
-        palette = self.palette()
-        window = palette.color(QPalette.ColorRole.Window)
-        base = palette.color(QPalette.ColorRole.Base)
-        text = palette.color(QPalette.ColorRole.WindowText)
-        border = palette.color(QPalette.ColorRole.Mid)
-
-        scrim = QColor(window)
-        scrim.setAlpha(150)
-        card_bg = QColor(base if base.isValid() else window)
-        if window.lightnessF() < 0.5:
-            card_bg = card_bg.lighter(112)
-        else:
-            card_bg = card_bg.darker(104)
-
-        self._theme_overlay.setStyleSheet(
-            f"""
-            QWidget#themeLoadingOverlay {{
-                background-color: {scrim.name(QColor.NameFormat.HexArgb)};
-            }}
-            QWidget#themeLoadingCard {{
-                background-color: {card_bg.name(QColor.NameFormat.HexArgb)};
-                border: 1px solid {border.name(QColor.NameFormat.HexArgb)};
-                border-radius: 10px;
-            }}
-            QLabel#themeLoadingTitle {{
-                color: {text.name(QColor.NameFormat.HexArgb)};
-                font-size: 14px;
-                font-weight: 600;
-            }}
-            """
-        )
-
-    def _show_theme_overlay(self) -> None:
-        """Display the temporary theme-loading overlay."""
-        if self._theme_overlay is None:
-            return
-        self._sync_theme_overlay_style()
-        self._theme_overlay.setGeometry(self.rect())
-        self._theme_overlay.raise_()
-        self._theme_overlay.show()
-        QApplication.processEvents()
-
-    def _hide_theme_overlay(self) -> None:
-        """Hide the temporary theme-loading overlay."""
-        if self._theme_overlay is not None:
-            self._theme_overlay.hide()
 
     def changeEvent(self, event: QEvent) -> None:
         """Refresh palette-aware styling when the active theme changes."""
@@ -234,7 +150,9 @@ class SettingsPage(QWidget):
         active_bg = palette.color(QPalette.ColorRole.Highlight)
         active_text = palette.color(QPalette.ColorRole.HighlightedText)
         if not active_text.isValid():
-            active_text = QColor("#ffffff" if active_bg.lightnessF() < 0.58 else "#111111")
+            active_text = QColor(
+                "#ffffff" if active_bg.lightnessF() < 0.58 else "#111111"
+            )
 
         def _is_dark(color: QColor) -> bool:
             return color.lightnessF() < 0.5
@@ -259,8 +177,6 @@ class SettingsPage(QWidget):
         nav_palette.setColor(QPalette.ColorRole.Highlight, active_bg)
         nav_palette.setColor(QPalette.ColorRole.HighlightedText, active_text)
         self._nav_list.setPalette(nav_palette)
-
-        self._sync_theme_overlay_style()
         self._nav_panel.setStyleSheet(
             f"""
             QWidget {{
@@ -278,8 +194,8 @@ class SettingsPage(QWidget):
             QListWidget#SettingsNavList::item {{
                 border: 0;
                 border-radius: 6px;
-                padding: 10px 12px;
-                margin: 0 0 4px 0;
+                padding: 8px 10px;
+                margin: 0 0 2px 0;
                 color: {text_color.name(QColor.NameFormat.HexArgb)};
                 background-color: transparent;
             }}
@@ -293,12 +209,6 @@ class SettingsPage(QWidget):
             }}
             """
         )
-
-    def resizeEvent(self, event: Any) -> None:
-        """Keep the theme-loading overlay sized to the dialog."""
-        super().resizeEvent(event)
-        if self._theme_overlay is not None:
-            self._theme_overlay.setGeometry(self.rect())
 
     # ------------------------------------------------------------------
     # Helpers

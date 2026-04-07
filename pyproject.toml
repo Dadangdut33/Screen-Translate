@@ -12,10 +12,10 @@ requires-python = ">=3.12"
 dependencies = [
     "pyqt6>=6.6",
     "pytesseract>=0.3.10",
-    "Pillow>=10.0",
+    "Pillow>=12.2.0",
     "translators>=5.8",
     "argostranslate>=1.9",
-    "deepl>=1.17",
+    "deepl>=1.29.0",
     "arabic-reshaper>=3.0",
     "pyperclip>=1.8",
     "keyboard>=0.13",
@@ -25,6 +25,7 @@ dependencies = [
     "opencv-python>=4.10",
     "loguru>=0.7.3",
     "qtawesome>=1.4.1",
+    "semver>=3.0.4",
 ]
 
 [project.scripts]
@@ -60,5 +61,5 @@ testpaths = ["tests"]
 [dependency-groups]
 dev = [
     "pytest>=9.0.2",
-    "pyinstaller"
+    "pyinstaller",
 ]

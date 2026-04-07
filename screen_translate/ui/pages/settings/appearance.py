@@ -15,7 +15,6 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 from qfluentwidgets import (
-    BodyLabel,
     ComboBox,
     InfoBar,
     InfoBarIcon,
@@ -130,7 +129,6 @@ def build_appearance_page(dialog: Any) -> QWidget:
         lambda theme: on_theme_changed(dialog, theme)
     )
     fl_theme.addRow("Theme:", dialog._cb_theme)
-    fl_theme.addRow(BodyLabel("Choose between Fluent Dark and Light mode."))
     dialog._theme_restart_notice = InfoBar(
         InfoBarIcon.WARNING,
         "Restart Required",
@@ -138,6 +136,7 @@ def build_appearance_page(dialog: Any) -> QWidget:
         duration=-1,
         position=InfoBarPosition.NONE,
         parent=w,
+        isClosable=False,
     )
     restart_button = PushButton("Restart Now", dialog._theme_restart_notice)
     restart_button.clicked.connect(lambda: _restart_application(dialog))

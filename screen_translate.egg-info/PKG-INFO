@@ -10,19 +10,20 @@ Description-Content-Type: text/markdown
 License-File: LICENSE
 Requires-Dist: pyqt6>=6.6
 Requires-Dist: pytesseract>=0.3.10
-Requires-Dist: Pillow>=10.0
+Requires-Dist: Pillow>=12.2.0
 Requires-Dist: translators>=5.8
 Requires-Dist: argostranslate>=1.9
-Requires-Dist: deepl>=1.17
+Requires-Dist: deepl>=1.29.0
 Requires-Dist: arabic-reshaper>=3.0
 Requires-Dist: pyperclip>=1.8
 Requires-Dist: keyboard>=0.13
 Requires-Dist: platformdirs>=4.0
 Requires-Dist: pycountry>=26.2.16
-Requires-Dist: qt-material>=2.14
+Requires-Dist: pyqt6-fluent-widgets>=1.11.1
 Requires-Dist: opencv-python>=4.10
 Requires-Dist: loguru>=0.7.3
 Requires-Dist: qtawesome>=1.4.1
+Requires-Dist: semver>=3.0.4
 Dynamic: license-file
 
 <!-- markdownlint-disable MD029 MD041 MD036 MD056 MD033 -->

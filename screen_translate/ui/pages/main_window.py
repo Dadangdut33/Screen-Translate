@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 
 import pycountry
 from PyQt6.QtCore import QSize, Qt, pyqtSlot
-from PyQt6.QtGui import QAction, QCloseEvent, QIcon, QKeySequence
+from PyQt6.QtGui import QCloseEvent, QIcon
 from PyQt6.QtWidgets import (
     QHBoxLayout,
     QLabel,
@@ -96,7 +96,6 @@ class MainWindow(QMainWindow):
             self.setWindowIcon(icon)
 
         self._build_ui()
-        self._build_menubar()
         self._build_tray()
         self._connect_signals()
         self._restore_state()
@@ -365,77 +364,6 @@ class MainWindow(QMainWindow):
         """Show a stacked page and sync the Fluent navigation indicator."""
         self.stackWidget.setCurrentIndex(index)
         self.navigationInterface.setCurrentItem(route_key)
-
-    def _build_menubar(self) -> None:
-        """Build the application menu bar."""
-        mb = self.menuBar()
-
-        # File
-        file_menu = mb.addMenu("&File")
-        self._act_always_top = QAction("Always on Top", self, checkable=True)
-        self._act_always_top.triggered.connect(self._toggle_always_on_top)
-        file_menu.addAction(self._act_always_top)
-        file_menu.addSeparator()
-        file_menu.addAction("Hide to Tray", self._hide_to_tray)
-        file_menu.addAction("Exit Application", self._quit_app)
-
-        # View
-        view_menu = mb.addMenu("&View")
-        self._add_menu_action(
-            view_menu, "Settings", self._open_settings, QKeySequence("F2")
-        )
-        self._add_menu_action(
-            view_menu, "History", self._open_history, QKeySequence("F3")
-        )
-        self._add_menu_action(
-            view_menu, "Captured Images", self._open_captured_dir, QKeySequence("F4")
-        )
-        view_menu.addAction("Log", self._open_log)
-
-        # Generate
-        gen_menu = mb.addMenu("&Generate")
-        self._add_menu_action(
-            gen_menu, "Capture Window", self._open_capture_window, QKeySequence("F5")
-        )
-        self._add_menu_action(
-            gen_menu, "Mask Window", self._open_mask_window, QKeySequence("Ctrl+Alt+F5")
-        )
-        self._add_menu_action(
-            gen_menu, "Query Window", self._open_query_window, QKeySequence("F6")
-        )
-        self._add_menu_action(
-            gen_menu, "Result Window", self._open_result_window, QKeySequence("F7")
-        )
-
-        # Get
-        get_menu = mb.addMenu("&Get")
-        get_menu.addAction("Tesseract OCR", self._open_tesseract_link)
-        get_menu.addAction("LibreTranslate", self._open_libre_link)
-
-        # Help
-        help_menu = mb.addMenu("&Help")
-        help_menu.addAction(
-            "GitHub Repository",
-            lambda: self._open_url("https://github.com/Dadangdut33/Screen-Translate"),
-        )
-        help_menu.addAction("Open CHANGELOG", self._open_changelog)
-        help_menu.addSeparator()
-        self._add_menu_action(help_menu, "About", self._open_about, QKeySequence("F1"))
-
-    def _add_menu_action(
-        self,
-        menu: QMenu,
-        text: str,
-        slot: object,
-        shortcut: QKeySequence | None = None,
-    ) -> QAction:
-        """Create a QAction with an optional shortcut and add it to *menu*."""
-        action = QAction(text, self)
-        if shortcut is not None:
-            action.setShortcut(shortcut)
-        action.triggered.connect(slot)
-        menu.addAction(action)
-        return action
 
     def _build_tray(self) -> None:
         """Build the system tray icon."""
@@ -772,18 +700,6 @@ class MainWindow(QMainWindow):
         self.tb_result.setPlainText(text)
         if self.controller.result_window:
             self.controller.result_window.set_text(text)
-
-    @pyqtSlot()
-    def _toggle_always_on_top(self) -> None:
-        """Toggle always-on-top window flag."""
-        checked = self._act_always_top.isChecked()
-        flags = self.windowFlags()
-        if checked:
-            flags |= Qt.WindowType.WindowStaysOnTopHint
-        else:
-            flags &= ~Qt.WindowType.WindowStaysOnTopHint
-        self.setWindowFlags(flags)
-        self.show()
 
     # ------------------------------------------------------------------
     # Navigation helpers

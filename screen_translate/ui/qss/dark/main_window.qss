@@ -18,11 +18,6 @@ MainWindow QTextEdit {
     padding: 10px;
 }
 
-MainWindow QMenuBar {
-    background-color: transparent;
-    color: rgb(244, 244, 244);
-}
-
 MainWindow QStatusBar {
     background: transparent;
 }
@@ -31,13 +26,21 @@ MainWindow QStatusBar {
     background-color: transparent;
 }
 
-#AboutCard {
+#AboutHeroCard, #AboutInfoCard {
     background-color: rgba(255, 255, 255, 0.04);
     border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 18px;
+    border-radius: 10px;
 }
 
 #AboutVersion {
     color: rgba(255, 255, 255, 0.72);
     font: 15px --FontFamilies;
+}
+
+#AboutSectionTitle {
+    font: 600 18px --FontFamilies;
+}
+
+#AboutUpdateStatus {
+    color: rgba(255, 255, 255, 0.72);
 }
