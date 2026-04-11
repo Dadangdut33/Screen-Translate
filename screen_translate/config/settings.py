@@ -69,6 +69,7 @@ DEFAULTS: dict[str, Any] = {
     "show_result_window_after_capture": True,
     # Mask window
     "mask_window_bg_color": "#555555",
+    "capture_window_bg_color": "#000000",
     # LibreTranslate
     "libre_api_key": "",
     "libre_host": "translate.argosopentech.com",

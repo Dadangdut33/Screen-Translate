@@ -1,5 +1,44 @@
 MainWindow {
     background-color: rgb(249, 249, 249);
+    color: rgb(28, 28, 28);
+}
+
+MainWindow QAbstractScrollArea#ContentScrollArea,
+MainWindow QWidget#ContentScrollViewport,
+MainWindow QWidget#ContentScrollContainer {
+    background-color: transparent;
+    border: none;
+}
+
+MainWindow QWidget,
+MainWindow QLabel,
+MainWindow QCheckBox,
+MainWindow QRadioButton,
+MainWindow QGroupBox,
+MainWindow QLineEdit,
+MainWindow QPlainTextEdit,
+MainWindow QComboBox,
+MainWindow QSpinBox,
+MainWindow QAbstractItemView,
+MainWindow QHeaderView::section,
+MainWindow QPushButton,
+MainWindow QToolButton {
+    color: rgb(28, 28, 28);
+}
+
+MainWindow QWidget:disabled,
+MainWindow QLabel:disabled,
+MainWindow QCheckBox:disabled,
+MainWindow QRadioButton:disabled,
+MainWindow QGroupBox:disabled,
+MainWindow QLineEdit:disabled,
+MainWindow QPlainTextEdit:disabled,
+MainWindow QComboBox:disabled,
+MainWindow QSpinBox:disabled,
+MainWindow QAbstractItemView:disabled,
+MainWindow QPushButton:disabled,
+MainWindow QToolButton:disabled {
+    color: rgba(28, 28, 28, 0.42);
 }
 
 MainWindow QToolBar {
@@ -20,6 +59,7 @@ MainWindow QTextEdit {
 
 MainWindow QStatusBar {
     background: transparent;
+    color: rgb(28, 28, 28);
 }
 
 #AboutPage {
@@ -27,6 +67,12 @@ MainWindow QStatusBar {
 }
 
 #AboutHeroCard, #AboutInfoCard {
+    background-color: rgba(255, 255, 255, 0.92);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 10px;
+}
+
+#ToolWindowCard {
     background-color: rgba(255, 255, 255, 0.92);
     border: 1px solid rgba(0, 0, 0, 0.08);
     border-radius: 10px;

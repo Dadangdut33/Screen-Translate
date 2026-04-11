@@ -6,12 +6,13 @@ import logging
 from typing import TYPE_CHECKING, Any
 
 from PyQt6.QtCore import QEvent, QSize, Qt, QTimer
-from PyQt6.QtGui import QColor, QIcon, QPalette
+from PyQt6.QtGui import QBrush, QColor, QIcon, QPalette
 from PyQt6.QtWidgets import (
     QFormLayout,
     QGroupBox,
     QHBoxLayout,
     QListWidgetItem,
+    QSizePolicy,
     QStackedWidget,
     QVBoxLayout,
     QWidget,
@@ -27,6 +28,7 @@ from screen_translate.ui.pages.settings import (
     build_ocr_page,
     build_translation_page,
 )
+from screen_translate.ui.pages.settings.common import configure_form_layout
 from screen_translate.ui.theme.style_sheet import StyleSheet
 
 if TYPE_CHECKING:
@@ -75,7 +77,6 @@ class SettingsPage(QWidget):
 
     def _build_ui(self) -> None:
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(8, 8, 8, 8)  # outer gap
 
         content_row = QHBoxLayout()  # content
         content_row.setContentsMargins(0, 0, 0, 0)
@@ -87,8 +88,12 @@ class SettingsPage(QWidget):
         nav_layout.setContentsMargins(6, 8, 6, 8)
         nav_layout.setSpacing(4)
 
-        self._pages = QStackedWidget()
+        self._pages = _CurrentPageStackedWidget()
         self._pages.setContentsMargins(0, 0, 0, 0)
+        self._pages.setSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred
+        )
+        self._pages.setMinimumWidth(0)
         self._nav_list = ListWidget(self._nav_panel)
         self._nav_list.setIconSize(QSize(18, 18))
         self._nav_list.setSpacing(2)
@@ -105,17 +110,24 @@ class SettingsPage(QWidget):
             ("Appearance", build_appearance_page(self)),
         ]
 
-        for index, (label, page) in enumerate(pages):
+        for label, page in pages:
             page_layout = page.layout()
             if page_layout is not None:
                 page_layout.setContentsMargins(0, 0, 0, 0)
                 page_layout.setSpacing(12)
+            page.setMinimumWidth(0)
+            page.setSizePolicy(
+                QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred
+            )
             item = QListWidgetItem(self._nav_icon(label), label)
             item.setSizeHint(QSize(0, 40))
             self._nav_list.addItem(item)
             self._pages.addWidget(page)
 
         self._nav_list.currentRowChanged.connect(self._pages.setCurrentIndex)
+        self._nav_list.currentRowChanged.connect(
+            lambda _row: self._sync_nav_item_colors()
+        )
         self._nav_list.setCurrentRow(0)
         self._pages.setCurrentIndex(0)
         self._schedule_nav_style_refresh()
@@ -148,23 +160,24 @@ class SettingsPage(QWidget):
         if not text_color.isValid():
             text_color = palette.color(QPalette.ColorRole.WindowText)
         active_bg = palette.color(QPalette.ColorRole.Highlight)
-        active_text = palette.color(QPalette.ColorRole.HighlightedText)
-        if not active_text.isValid():
-            active_text = QColor(
-                "#ffffff" if active_bg.lightnessF() < 0.58 else "#111111"
-            )
 
         def _is_dark(color: QColor) -> bool:
             return color.lightnessF() < 0.5
 
-        if _is_dark(window_color):
+        def _contrast_text_for(color: QColor) -> QColor:
+            return QColor("#ffffff" if color.lightnessF() < 0.58 else "#111111")
+
+        is_dark_theme = _is_dark(window_color)
+        if is_dark_theme:
             panel_color = panel_color.lighter(118)
             border_color = border_color.lighter(135)
         else:
             panel_color = panel_color.darker(103)
             border_color = border_color.darker(110)
             active_bg = active_bg.darker(112)
-            active_text = QColor("#111111")
+        active_text = (
+            QColor("#ffffff") if is_dark_theme else _contrast_text_for(active_bg)
+        )
 
         for row in range(self._nav_list.count()):
             item = self._nav_list.item(row)
@@ -177,6 +190,7 @@ class SettingsPage(QWidget):
         nav_palette.setColor(QPalette.ColorRole.Highlight, active_bg)
         nav_palette.setColor(QPalette.ColorRole.HighlightedText, active_text)
         self._nav_list.setPalette(nav_palette)
+        self._sync_nav_item_colors(text_color=active_text, active_text=active_text)
         self._nav_panel.setStyleSheet(
             f"""
             QWidget {{
@@ -190,6 +204,7 @@ class SettingsPage(QWidget):
                 outline: 0;
                 padding: 0;
                 color: {text_color.name(QColor.NameFormat.HexArgb)};
+                selection-color: {active_text.name(QColor.NameFormat.HexArgb)};
             }}
             QListWidget#SettingsNavList::item {{
                 border: 0;
@@ -210,6 +225,39 @@ class SettingsPage(QWidget):
             """
         )
 
+    def _sync_nav_item_colors(
+        self,
+        *,
+        text_color: QColor | None = None,
+        active_text: QColor | None = None,
+    ) -> None:
+        """Force nav item foreground colors so selected text stays readable."""
+        if self._nav_list is None:
+            return
+        if text_color is None:
+            palette = self.palette()
+            text_color = palette.color(QPalette.ColorRole.Text)
+            if not text_color.isValid():
+                text_color = palette.color(QPalette.ColorRole.WindowText)
+        if active_text is None:
+            palette = self.palette()
+            active_bg = palette.color(QPalette.ColorRole.Highlight)
+            window_color = palette.color(QPalette.ColorRole.Window)
+            active_text = (
+                QColor("#ffffff")
+                if window_color.lightnessF() < 0.5
+                else QColor("#111111" if active_bg.lightnessF() >= 0.58 else "#ffffff")
+            )
+
+        current_row = self._nav_list.currentRow()
+        for row in range(self._nav_list.count()):
+            item = self._nav_list.item(row)
+            if item is None:
+                continue
+            item.setForeground(
+                QBrush(active_text if row == current_row else text_color)
+            )
+
     # ------------------------------------------------------------------
     # Helpers
     # ------------------------------------------------------------------
@@ -218,6 +266,7 @@ class SettingsPage(QWidget):
         """Create a titled group box with a ready-to-use form layout."""
         group = QGroupBox(title)
         form = QFormLayout(group)
+        configure_form_layout(form)
         return group, form
 
     def _nav_icon(
@@ -258,6 +307,22 @@ class SettingsPage(QWidget):
                 host.show_and_raise()
             host._open_settings()
             return
+
+
+class _CurrentPageStackedWidget(QStackedWidget):
+    """Stacked widget whose size hints follow the currently visible page."""
+
+    def sizeHint(self) -> QSize:
+        current = self.currentWidget()
+        if current is not None:
+            return current.sizeHint()
+        return super().sizeHint()
+
+    def minimumSizeHint(self) -> QSize:
+        current = self.currentWidget()
+        if current is not None:
+            return current.minimumSizeHint()
+        return super().minimumSizeHint()
         self.show()
         self.raise_()
         self.activateWindow()

@@ -5,6 +5,7 @@ from .history_page import HistoryPage
 from .log_page import LogPage
 from .main_window import MainWindow
 from .settings_page import SettingsPage
+from .tools_page import ToolsPage
 
 __all__ = [
     "AboutPage",
@@ -12,4 +13,5 @@ __all__ = [
     "LogPage",
     "MainWindow",
     "SettingsPage",
+    "ToolsPage",
 ]

@@ -58,6 +58,8 @@ class CaptureWindow(QWidget):
         self._drag_pos: QPoint | None = None
         self._is_hidden_titlebar = False
         self._overlay_opacity = 0.8
+        self._pinned = True
+        self._always_on_top = True
         StyleSheet.FLOATING_WINDOW.apply(self)
 
         icon = load_icon()
@@ -147,7 +149,11 @@ class CaptureWindow(QWidget):
         """Draw a semi-transparent tinted background."""
         painter = QPainter(self)
         alpha = max(20, min(220, int(160 * self._overlay_opacity)))
-        painter.fillRect(self.rect(), QColor(0, 0, 0, alpha))
+        color = QColor(
+            str(self.controller.settings.get("capture_window_bg_color", "#000000"))
+        )
+        color.setAlpha(alpha)
+        painter.fillRect(self.rect(), color)
 
     def _drag_press(self, event: QMouseEvent) -> None:
         if event.button() == Qt.MouseButton.LeftButton:
@@ -263,13 +269,7 @@ class CaptureWindow(QWidget):
 
     @pyqtSlot(bool)
     def _toggle_topmost(self, checked: bool) -> None:
-        flags = self.windowFlags()
-        if checked:
-            flags |= Qt.WindowType.WindowStaysOnTopHint
-        else:
-            flags &= ~Qt.WindowType.WindowStaysOnTopHint
-        self.setWindowFlags(flags)
-        self.show()
+        self.set_always_on_top(checked)
 
     def set_overlay_opacity(self, opacity: float) -> None:
         """Adjust the overlay tint strength without relying on window-manager opacity."""
@@ -280,6 +280,51 @@ class CaptureWindow(QWidget):
 
     def _adjust_opacity(self, delta: float) -> None:
         self.set_overlay_opacity(self._overlay_opacity + delta)
+
+    def overlay_opacity(self) -> float:
+        """Return the current overlay opacity."""
+        return self._overlay_opacity
+
+    def background_color(self) -> str:
+        """Return the configured capture tint color."""
+        return str(self.controller.settings.get("capture_window_bg_color", "#000000"))
+
+    def set_background_color(self, color: str) -> None:
+        """Persist and apply a new capture tint color."""
+        self.controller.settings.set("capture_window_bg_color", color)
+        self.update()
+
+    def is_pinned(self) -> bool:
+        """Return whether the window is using the Tool flag."""
+        return self._pinned
+
+    def set_pinned(self, pinned: bool) -> None:
+        """Toggle the Tool window flag."""
+        self._pinned = pinned
+        self._apply_window_flags()
+
+    def is_always_on_top(self) -> bool:
+        """Return whether the window stays on top."""
+        return self._always_on_top
+
+    def set_always_on_top(self, enabled: bool) -> None:
+        """Toggle the always-on-top flag."""
+        self._always_on_top = enabled
+        self._apply_window_flags()
+
+    def _apply_window_flags(self) -> None:
+        """Rebuild window flags from pinned/on-top state while preserving geometry."""
+        was_visible = self.isVisible()
+        geometry = self.geometry()
+        flags = Qt.WindowType.Tool if self._pinned else Qt.WindowType.Window
+        if self._pinned:
+            flags |= Qt.WindowType.FramelessWindowHint
+        if self._always_on_top:
+            flags |= Qt.WindowType.WindowStaysOnTopHint
+        self.setWindowFlags(flags)
+        self.setGeometry(geometry)
+        if was_visible:
+            self.show()
 
     def _sync_mode_ui(self) -> None:
         """Update helper controls based on the current capture mode."""

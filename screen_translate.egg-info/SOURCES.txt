@@ -40,6 +40,7 @@ screen_translate/ui/pages/history_page.py
 screen_translate/ui/pages/log_page.py
 screen_translate/ui/pages/main_window.py
 screen_translate/ui/pages/settings_page.py
+screen_translate/ui/pages/tools_page.py
 screen_translate/ui/pages/settings/__init__.py
 screen_translate/ui/pages/settings/appearance.py
 screen_translate/ui/pages/settings/capture.py

@@ -92,7 +92,6 @@ class AboutPage(QWidget):
 
     def _build_ui(self) -> None:
         outer = QVBoxLayout(self)
-        outer.setContentsMargins(20, 20, 20, 20)
         outer.setSpacing(16)
 
         hero = QFrame(self)

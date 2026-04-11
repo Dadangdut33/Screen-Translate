@@ -242,16 +242,18 @@ def build_ocr_overrides_page(dialog: Any) -> QWidget:
         lambda name: refresh_ocr_override_table(dialog, name)
     )
     fl_tl_backend.addRow("Translation backend:", dialog._cb_override_backend)
-    fl_tl_backend.addRow(
-        BodyLabel(
-            "All backend language codes are shown here. In this menu, "
-            "you can set custom overrides to resolve them to compatible Tesseract codes. "
-            "This is useful when a backend's language code doesn't match the standard."
-        )
+    label_desc = BodyLabel(
+        "All backend language codes are shown here. In this menu, "
+        "you can set custom overrides to resolve them to compatible Tesseract codes. "
+        "This is useful when a backend's language code doesn't match the standard."
     )
+    label_desc.setWordWrap(True)
+    fl_tl_backend.addRow(label_desc)
     vl.addWidget(grp_tl_backend)
 
-    grp_data_filter, fl_data_filter = dialog._group_form("Filtering and Display Options")
+    grp_data_filter, fl_data_filter = dialog._group_form(
+        "Filtering and Display Options"
+    )
     dialog._le_ocr_override_search = LineEdit()
     dialog._le_ocr_override_search.setPlaceholderText(
         "Search by language code, name, resolved code, or override…"

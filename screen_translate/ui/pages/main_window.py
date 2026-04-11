@@ -23,7 +23,6 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 from qfluentwidgets import (
-    BodyLabel,
     ComboBox,
     FluentIcon as FIF,
     NavigationInterface,
@@ -31,6 +30,7 @@ from qfluentwidgets import (
     PrimaryPushButton,
     ProgressBar,
     PushButton,
+    SmoothScrollArea,
 )
 
 from screen_translate import __version__
@@ -65,6 +65,28 @@ _LANGUAGE_NAME_OVERRIDES: dict[str, str] = {
 _OCR_INCOMPATIBLE_SUFFIX = " [incompatible with Tesseract OCR]"
 
 
+class _PageScrollArea(SmoothScrollArea):
+    """Simple scroll wrapper used for long stacked pages."""
+
+    def __init__(self, widget: QWidget, parent: QWidget | None = None) -> None:
+        super().__init__(parent)
+        widget.show()
+        container = QWidget(self)
+        container.setObjectName("ContentScrollContainer")
+        container_layout = QVBoxLayout(container)
+        container_layout.setContentsMargins(0, 0, 0, 0)
+        container_layout.setSpacing(0)
+        container_layout.addWidget(widget)
+
+        self.setWidgetResizable(True)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.enableTransparentBackground()
+        self.setFrameShape(self.Shape.NoFrame)
+        self.viewport().setObjectName("ContentScrollViewport")
+        self.setWidget(container)
+        self.setObjectName("ContentScrollArea")
+
+
 class MainWindow(QMainWindow):
     """Primary application shell.
 
@@ -81,6 +103,7 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.controller = controller
         self._notified_hidden = False
+        self._is_quitting = False
         self._history_page_index: int | None = None
         self._log_page_index: int | None = None
         self._about_page_index: int | None = None
@@ -119,8 +142,10 @@ class MainWindow(QMainWindow):
         shell_layout.addWidget(self.stackWidget, 1)
         self.setCentralWidget(shell)
 
-        workspace = self._build_workspace_page()
-        tools = self._build_tools_page()
+        from screen_translate.ui.pages.tools_page import ToolsPage
+
+        workspace = self._wrap_scroll_page(self._build_workspace_page())
+        tools = self._wrap_scroll_page(ToolsPage(self))
         self.stackWidget.addWidget(workspace)
         self.stackWidget.addWidget(tools)
 
@@ -219,63 +244,6 @@ class MainWindow(QMainWindow):
         layout.addWidget(splitter, 1)
         return page
 
-    def _build_tools_page(self) -> QWidget:
-        """Build the utility page for extra windows and tools."""
-        page = QWidget(self)
-        page.setObjectName("ToolsPage")
-        layout = QVBoxLayout(page)
-        layout.setContentsMargins(24, 24, 24, 24)
-        layout.setSpacing(12)
-
-        title = BodyLabel("Windows and Tools")
-        layout.addWidget(title)
-
-        for open_text, open_slot, close_text, close_slot in [
-            (
-                "Open Capture Window",
-                self._open_capture_window,
-                "Close Capture Window",
-                self._close_capture_window,
-            ),
-            (
-                "Open Query Window",
-                self._open_query_window,
-                "Close Query Window",
-                self._close_query_window,
-            ),
-            (
-                "Open Result Window",
-                self._open_result_window,
-                "Close Result Window",
-                self._close_result_window,
-            ),
-            (
-                "Open Mask Window",
-                self._open_mask_window,
-                "Close Mask Window",
-                self._close_mask_window,
-            ),
-        ]:
-            row = QHBoxLayout()
-            open_btn = PushButton(open_text)
-            open_btn.clicked.connect(open_slot)
-            close_btn = PushButton(close_text)
-            close_btn.clicked.connect(close_slot)
-            row.addWidget(open_btn)
-            row.addWidget(close_btn)
-            layout.addLayout(row)
-
-        captured_btn = PushButton("Open Captured Images")
-        captured_btn.clicked.connect(self._open_captured_dir)
-        layout.addWidget(captured_btn)
-
-        test_dialog_btn = PushButton("Test Controller Dialog")
-        test_dialog_btn.clicked.connect(self.controller.show_test_dialog)
-        layout.addWidget(test_dialog_btn)
-
-        layout.addStretch(1)
-        return page
-
     def _add_navigation_items(self) -> None:
         """Populate the left Fluent navigation bar."""
         self.navigationInterface.addItem(
@@ -354,11 +322,15 @@ class MainWindow(QMainWindow):
 
     def _embed_page_widget(self, widget: QWidget) -> int:
         """Turn an auxiliary top-level widget into a stacked page."""
-        widget.setParent(self.stackWidget)
+        widget.setParent(None)
         widget.setWindowFlags(Qt.WindowType.Widget)
-        widget.hide()
-        self.stackWidget.addWidget(widget)
-        return self.stackWidget.indexOf(widget)
+        scroll_page = self._wrap_scroll_page(widget)
+        self.stackWidget.addWidget(scroll_page)
+        return self.stackWidget.indexOf(scroll_page)
+
+    def _wrap_scroll_page(self, widget: QWidget) -> _PageScrollArea:
+        """Wrap a page widget in a Fluent scroll area."""
+        return _PageScrollArea(widget, self.stackWidget)
 
     def _show_stack_page(self, index: int, route_key: str) -> None:
         """Show a stacked page and sync the Fluent navigation indicator."""
@@ -813,8 +785,33 @@ class MainWindow(QMainWindow):
         """Exit the application cleanly."""
         from PyQt6.QtWidgets import QApplication
 
+        self._is_quitting = True
         self._tray.hide()
+        self._close_auxiliary_windows_for_quit()
+        self.close()
         QApplication.quit()
+
+    def _close_auxiliary_windows_for_quit(self) -> None:
+        """Close or hide all app-owned top-level helper windows before quitting."""
+        controller = self.controller
+
+        for overlay in controller.snip_overlays:
+            overlay.hide()
+            overlay.close()
+        for overlay in controller.capture_region_overlays:
+            overlay.hide()
+            overlay.close()
+
+        for window in (
+            controller.capture_window,
+            controller.query_window,
+            controller.result_window,
+            controller.mask_window,
+        ):
+            if window is None:
+                continue
+            window.hide()
+            window.close()
 
     @pyqtSlot(QSystemTrayIcon.ActivationReason)
     def _on_tray_activated(self, reason: QSystemTrayIcon.ActivationReason) -> None:
@@ -824,5 +821,8 @@ class MainWindow(QMainWindow):
 
     def closeEvent(self, event: QCloseEvent) -> None:  # type: ignore[override]
         """Hide to tray instead of closing."""
+        if self._is_quitting:
+            event.accept()
+            return
         event.ignore()
         self._hide_to_tray()

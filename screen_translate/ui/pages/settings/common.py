@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from PyQt6.QtWidgets import QFormLayout
 from qfluentwidgets import CheckBox, ComboBox, LineEdit, SpinBox
 
 
@@ -90,3 +91,9 @@ def bind_combo_with_callback(
     cb.currentTextChanged.connect(lambda v: settings.set(key, v))
     cb.currentTextChanged.connect(lambda _v: callback())
     return cb
+
+
+def configure_form_layout(form: QFormLayout) -> None:
+    """Make settings forms shrink and wrap more gracefully in narrow viewports."""
+    form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow)
+    form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
