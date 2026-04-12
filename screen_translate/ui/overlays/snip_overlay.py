@@ -9,6 +9,7 @@ from PyQt6.QtCore import QPoint, QRect, Qt
 from PyQt6.QtGui import QColor, QKeyEvent, QMouseEvent, QPainter, QPen, QPixmap
 from PyQt6.QtWidgets import QApplication, QWidget
 
+from screen_translate.core.ocr_images import new_ocr_run_id
 from screen_translate.ui.screen_capture import capture_rect_image, pixmap_to_pil, save_cropped_image
 
 if TYPE_CHECKING:
@@ -175,6 +176,8 @@ class SnipOverlay(QWidget):
         QApplication.processEvents()
 
         screen = QApplication.screenAt(capture_rect.center()) or QApplication.primaryScreen()
+        run_id = new_ocr_run_id()
+        self.controller._pending_ocr_run_id = run_id
         pil_image = None
         if self._screen_pixmap is not None and not self._screen_pixmap.isNull():
             cropped = self._screen_pixmap.copy(sel)
@@ -185,11 +188,18 @@ class SnipOverlay(QWidget):
                 screen,
                 keep_full_image=bool(self.controller.settings.get("keep_image", True)),
                 backend=str(self.controller.settings.get("capture_backend", "Auto")),
+                run_id=run_id,
             )
         if pil_image:
             if bool(self.controller.settings.get("save_cropped_image", False)):
-                save_cropped_image(pil_image, prefix="cropped_snip")
-            self.controller.run_ocr(pil_image)
+                save_cropped_image(
+                    pil_image,
+                    prefix="cropped_snip",
+                    run_id=run_id,
+                    tag="snip_cropped",
+                    source="snip-overlay",
+                )
+            self.controller.run_ocr(pil_image, run_id=run_id)
         else:
             logger.error("Snip capture failed for rect %s", capture_rect.getRect())
 

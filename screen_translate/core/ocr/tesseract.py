@@ -13,6 +13,8 @@ import numpy as np
 from PIL import Image, ImageFilter, ImageOps
 from platformdirs import user_data_dir
 
+from screen_translate.core.ocr_images import append_ocr_image_record
+
 from .base import OCRBackend, OCRError
 
 logger = logging.getLogger(__name__)
@@ -99,6 +101,7 @@ def _run_cv2_contour_ocr(
     grayscale: bool,
     background_mode: str,
     save_debug_image: bool,
+    run_id: str | None = None,
 ) -> str:
     """Use OpenCV contour detection to OCR likely text blocks."""
     try:
@@ -148,12 +151,12 @@ def _run_cv2_contour_ocr(
             chunks.append(text)
 
     if save_debug_image:
-        _save_cv2_debug_image(annotated)
+        _save_cv2_debug_image(annotated, run_id=run_id)
 
     return "\n".join(chunks).strip()
 
 
-def _save_cv2_debug_image(image: np.ndarray) -> None:
+def _save_cv2_debug_image(image: np.ndarray, run_id: str | None = None) -> None:
     """Save the contour-annotated debug image to the captured directory."""
     try:
         import cv2
@@ -167,6 +170,13 @@ def _save_cv2_debug_image(image: np.ndarray) -> None:
             / f"cv2_contour_{datetime.now().strftime('%Y%m%d_%H%M%S_%f')}.png"
         )
         cv2.imwrite(str(path), image)
+        if run_id:
+            append_ocr_image_record(
+                run_id=run_id,
+                tag="cv2_contour",
+                path=path,
+                source="tesseract",
+            )
         logger.info("Saved OpenCV contour debug image to %s", path)
     except Exception as exc:
         logger.exception("Could not save OpenCV contour debug image: %s", exc)
@@ -232,7 +242,11 @@ class TesseractOCRBackend(OCRBackend):
         """
         return _get_installed_languages(self._pytesseract)
 
-    def extract_text(self, image: Image.Image) -> str:  # type: ignore[override]
+    def extract_text(
+        self,
+        image: Image.Image,
+        run_id: str | None = None,
+    ) -> str:  # type: ignore[override]
         """Run OCR on *image* and return recognised text.
 
         Args:
@@ -254,6 +268,7 @@ class TesseractOCRBackend(OCRBackend):
                     self._grayscale,
                     self._background_mode,
                     self._save_cv2_contour_image,
+                    run_id,
                 )
             else:
                 processed = _preprocess(image, grayscale=self._grayscale)
@@ -270,6 +285,7 @@ class TesseractOCRBackend(OCRBackend):
         lang_code: str,
         extra_config: str = "",
         psm5_vertical: bool = True,
+        run_id: str | None = None,
     ) -> str:
         """Run OCR with a specific language code.
 
@@ -299,6 +315,7 @@ class TesseractOCRBackend(OCRBackend):
                     self._grayscale,
                     self._background_mode,
                     self._save_cv2_contour_image,
+                    run_id,
                 )
             else:
                 processed = _preprocess(image, grayscale=self._grayscale)

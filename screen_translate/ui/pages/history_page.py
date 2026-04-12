@@ -34,8 +34,9 @@ _COL_ID = 0
 _COL_FROM = 1
 _COL_TO = 2
 _COL_ENGINE = 3
-_COL_QUERY = 4
-_COL_RESULT = 5
+_COL_OCR_TAGS = 4
+_COL_QUERY = 5
+_COL_RESULT = 6
 
 
 class HistoryPage(QWidget):
@@ -76,6 +77,11 @@ class HistoryPage(QWidget):
         self._btn_delete.setEnabled(False)
         hl.addWidget(self._btn_delete)
 
+        self._btn_open_images = PushButton("Open OCR Images")
+        self._btn_open_images.clicked.connect(self._open_selected_images)
+        self._btn_open_images.setEnabled(False)
+        hl.addWidget(self._btn_open_images)
+
         self._btn_clear = PushButton("Clear All")
         self._btn_clear.clicked.connect(self._clear_all)
         self._btn_clear.setEnabled(False)
@@ -86,9 +92,9 @@ class HistoryPage(QWidget):
         # Table
         self._table = TableWidget()
         self._table.setRowCount(0)
-        self._table.setColumnCount(6)
+        self._table.setColumnCount(7)
         self._table.setHorizontalHeaderLabels(
-            ["ID", "From", "To", "Engine", "Query", "Result"]
+            ["ID", "From", "To", "Engine", "OCR Tags", "Query", "Result"]
         )
         self._table.horizontalHeader().setSectionResizeMode(
             QHeaderView.ResizeMode.ResizeToContents
@@ -119,12 +125,22 @@ class HistoryPage(QWidget):
                     entry.from_lang,
                     entry.to_lang,
                     entry.engine,
+                    ", ".join(entry.ocr_image_tags or []),
                     entry.query,
                     entry.result,
                 ]
             ):
                 item = QTableWidgetItem(val)
                 item.setData(Qt.ItemDataRole.UserRole, entry.id)
+                if col == _COL_OCR_TAGS:
+                    item.setData(
+                        Qt.ItemDataRole.UserRole + 1,
+                        list(entry.ocr_image_paths or []),
+                    )
+                    item.setData(
+                        Qt.ItemDataRole.UserRole + 2,
+                        str(entry.ocr_run_id or ""),
+                    )
                 self._table.setItem(row, col, item)
         self._update_action_state()
 
@@ -142,22 +158,52 @@ class HistoryPage(QWidget):
                 ids.add(int(item.text()))
         return ids
 
+    def _selected_image_paths(self) -> list[str]:
+        """Return OCR image paths associated with the selected rows."""
+        selected_rows = {idx.row() for idx in self._table.selectedIndexes()}
+        paths: list[str] = []
+        for row in selected_rows:
+            item = self._table.item(row, _COL_OCR_TAGS)
+            if item is None:
+                continue
+            raw_paths = item.data(Qt.ItemDataRole.UserRole + 1)
+            if isinstance(raw_paths, list):
+                paths.extend(str(path) for path in raw_paths if str(path).strip())
+        return paths
+
+    def _selected_run_id(self) -> str:
+        """Return the OCR run ID for the current selection, if any."""
+        selected_rows = {idx.row() for idx in self._table.selectedIndexes()}
+        for row in selected_rows:
+            item = self._table.item(row, _COL_OCR_TAGS)
+            if item is None:
+                continue
+            run_id = item.data(Qt.ItemDataRole.UserRole + 2)
+            if isinstance(run_id, str) and run_id.strip():
+                return run_id
+        return ""
+
     @pyqtSlot()
     def _update_action_state(self) -> None:
         """Enable destructive actions only when they are valid."""
         has_history = self._has_history_rows()
         has_selection = bool(self._selected_history_ids())
+        has_images = bool(self._selected_image_paths())
         self._btn_clear.setEnabled(has_history)
         self._btn_delete.setEnabled(has_history and has_selection)
+        self._btn_open_images.setEnabled(has_history and has_selection and has_images)
 
     @pyqtSlot(str)
     def _filter(self, text: str) -> None:
-        """Show only rows containing *text* in query or result columns."""
+        """Show only rows containing *text* in OCR tags, query, or result columns."""
         text_lower = text.lower()
         for row in range(self._table.rowCount()):
+            tags_item = self._table.item(row, _COL_OCR_TAGS)
             query_item = self._table.item(row, _COL_QUERY)
             result_item = self._table.item(row, _COL_RESULT)
             match = (
+                (tags_item and text_lower in tags_item.text().lower())
+                or
                 (query_item and text_lower in query_item.text().lower())
                 or (result_item and text_lower in result_item.text().lower())
                 or not text_lower
@@ -195,6 +241,21 @@ class HistoryPage(QWidget):
         if box.exec():
             clear_history()
             self._load()
+
+    @pyqtSlot()
+    def _open_selected_images(self) -> None:
+        """Route to the OCR Images page and focus the selected OCR artifacts."""
+        run_id = self._selected_run_id()
+        paths = self._selected_image_paths()
+        if not run_id and not paths:
+            return
+        if self.controller.ocr_images_page is not None:
+            if run_id:
+                self.controller.ocr_images_page.show_run(run_id)
+            else:
+                self.controller.ocr_images_page.show_image_paths(paths)
+        if self.controller.main_window is not None:
+            self.controller.main_window._open_ocr_images()
 
 
 HistoryWindow = HistoryPage

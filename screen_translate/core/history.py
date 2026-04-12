@@ -24,6 +24,9 @@ class HistoryEntry:
     query: str
     result: str
     engine: str
+    ocr_run_id: str = ""
+    ocr_image_tags: list[str] | None = None
+    ocr_image_paths: list[str] | None = None
 
 
 def _ensure_dir() -> None:
@@ -47,6 +50,9 @@ def load_history() -> list[HistoryEntry]:
                 query=item.get("query", ""),
                 result=item.get("result", ""),
                 engine=item.get("engine", ""),
+                ocr_run_id=item.get("ocr_run_id", ""),
+                ocr_image_tags=list(item.get("ocr_image_tags", []) or []),
+                ocr_image_paths=list(item.get("ocr_image_paths", []) or []),
             )
             for item in data.get("tl_history", [])
         ]
@@ -57,7 +63,7 @@ def load_history() -> list[HistoryEntry]:
         return []
 
 
-def append_history(entry: dict[str, str]) -> None:
+def append_history(entry: dict[str, object]) -> HistoryEntry:
     """Append a new translation record to history.
 
     Args:
@@ -68,14 +74,22 @@ def append_history(entry: dict[str, str]) -> None:
     new_id = len(existing)
     record = HistoryEntry(
         id=new_id,
-        from_lang=entry.get("from", ""),
-        to_lang=entry.get("to", ""),
-        query=entry.get("query", ""),
-        result=entry.get("result", ""),
-        engine=entry.get("engine", ""),
+        from_lang=str(entry.get("from", "")),
+        to_lang=str(entry.get("to", "")),
+        query=str(entry.get("query", "")),
+        result=str(entry.get("result", "")),
+        engine=str(entry.get("engine", "")),
+        ocr_run_id=str(entry.get("ocr_run_id", "")),
+        ocr_image_tags=[
+            str(tag) for tag in list(entry.get("ocr_image_tags", []) or [])
+        ],
+        ocr_image_paths=[
+            str(path) for path in list(entry.get("ocr_image_paths", []) or [])
+        ],
     )
     existing.append(record)
     _save(existing)
+    return record
 
 
 def delete_history_by_ids(ids: set[int]) -> None:
@@ -101,5 +115,20 @@ def _save(entries: list[HistoryEntry]) -> None:
     Args:
         entries: List of HistoryEntry to persist.
     """
-    payload = {"tl_history": [{"id": e.id, "from": e.from_lang, "to": e.to_lang, "query": e.query, "result": e.result, "engine": e.engine} for e in entries]}
+    payload = {
+        "tl_history": [
+            {
+                "id": e.id,
+                "from": e.from_lang,
+                "to": e.to_lang,
+                "query": e.query,
+                "result": e.result,
+                "engine": e.engine,
+                "ocr_run_id": e.ocr_run_id,
+                "ocr_image_tags": list(e.ocr_image_tags or []),
+                "ocr_image_paths": list(e.ocr_image_paths or []),
+            }
+            for e in entries
+        ]
+    }
     _HISTORY_PATH.write_text(json.dumps(payload, ensure_ascii=False, indent=2), "utf-8")

@@ -15,6 +15,13 @@ from typing import Any
 from platformdirs import user_data_dir
 from PyQt6.QtCore import QRect
 from PyQt6.QtGui import QImage, QPixmap
+from PIL import Image
+
+from screen_translate.core.ocr_images import (
+    OCRImageRecord,
+    append_ocr_image_record,
+    save_ocr_image,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -55,15 +62,33 @@ def capture_filename(prefix: str = "capture") -> str:
     return f"{prefix}_{datetime.now().strftime('%Y%m%d_%H%M%S_%f')}.png"
 
 
-def save_cropped_image(image: Any, prefix: str = "cropped_capture") -> None:
-    """Persist a captured image for debugging."""
+def save_cropped_image(
+    image: Any,
+    prefix: str = "cropped_capture",
+    *,
+    run_id: str | None = None,
+    tag: str = "capture_cropped",
+    source: str = "capture",
+) -> OCRImageRecord | None:
+    """Persist a captured image for debugging, optionally tagging it for OCR history."""
     try:
         output_path = captured_dir() / capture_filename(prefix=prefix)
         output_path.parent.mkdir(parents=True, exist_ok=True)
+        if run_id:
+            record = save_ocr_image(
+                image.convert("RGB") if hasattr(image, "convert") else image,
+                output_path=output_path,
+                run_id=run_id,
+                tag=tag,
+                source=source,
+            )
+            logger.info("Saved tagged OCR image to %s (%s)", output_path, tag)
+            return record
         image.save(output_path)
         logger.info("Saved cropped capture to %s", output_path)
     except Exception as exc:
         logger.exception("Could not save cropped capture: %s", exc)
+    return None
 
 
 def capture_rect_image(
@@ -72,6 +97,7 @@ def capture_rect_image(
     *,
     keep_full_image: bool,
     backend: str,
+    run_id: str | None = None,
 ) -> object | None:
     """Capture a global rectangle, falling back to external tools when needed."""
     if screen is None:
@@ -92,6 +118,7 @@ def capture_rect_image(
         screen,
         keep_full_image=keep_full_image,
         backend=backend,
+        run_id=run_id,
     )
 
 
@@ -99,6 +126,7 @@ def capture_interactive_region_image(
     *,
     keep_full_image: bool,
     backend: str,
+    run_id: str | None = None,
 ) -> object | None:
     """Capture a user-selected screen region via desktop-native tools.
 
@@ -106,9 +134,15 @@ def capture_interactive_region_image(
         CaptureCancelledError: If the user cancels the interactive capture UI.
     """
     if backend == "Spectacle":
-        return _capture_interactive_with_spectacle(keep_full_image=keep_full_image)
+        return _capture_interactive_with_spectacle(
+            keep_full_image=keep_full_image,
+            run_id=run_id,
+        )
     if backend == "GNOME Shell":
-        return _capture_interactive_with_gnome_shell(keep_full_image=keep_full_image)
+        return _capture_interactive_with_gnome_shell(
+            keep_full_image=keep_full_image,
+            run_id=run_id,
+        )
 
     return None
 
@@ -167,6 +201,7 @@ def _capture_with_spectacle(
     screen: object,
     *,
     keep_full_image: bool,
+    run_id: str | None = None,
 ) -> object | None:
     """Use Spectacle background mode and crop the requested region locally."""
     if shutil.which("spectacle") is None:
@@ -178,8 +213,6 @@ def _capture_with_spectacle(
         keep_full_image,
     )
     try:
-        from PIL import Image
-
         output_dir = captured_dir()
         output_dir.mkdir(parents=True, exist_ok=True)
         tmp_path = output_dir / capture_filename(prefix="full_capture")
@@ -223,7 +256,15 @@ def _capture_with_spectacle(
                     crop_box,
                     keep_full_image,
                 )
-                return image.convert("RGB").crop(crop_box)
+                pil_image = image.convert("RGB")
+                if keep_full_image and run_id:
+                    append_ocr_image_record(
+                        run_id=run_id,
+                        tag="capture_full",
+                        path=tmp_path,
+                        source="spectacle",
+                    )
+                return pil_image.crop(crop_box)
         finally:
             if not keep_full_image:
                 try:
@@ -245,6 +286,7 @@ def _capture_with_gnome_shell(
     capture_rect: QRect,
     *,
     keep_full_image: bool,
+    run_id: str | None = None,
 ) -> object | None:
     """Use GNOME Shell's screenshot D-Bus API for area capture."""
     if shutil.which("gdbus") is None:
@@ -256,8 +298,6 @@ def _capture_with_gnome_shell(
         keep_full_image,
     )
     try:
-        from PIL import Image
-
         output_dir = captured_dir()
         output_dir.mkdir(parents=True, exist_ok=True)
         tmp_path = output_dir / capture_filename(prefix="gnome_capture")
@@ -294,7 +334,20 @@ def _capture_with_gnome_shell(
 
         final_path = Path(filename_used) if filename_used else tmp_path
         with Image.open(final_path) as image:
-            return image.convert("RGB")
+            pil_image = image.convert("RGB")
+            if keep_full_image and run_id:
+                target_path = tmp_path if final_path != tmp_path else final_path
+                if final_path != target_path:
+                    pil_image.save(target_path)
+                append_ocr_image_record(
+                    run_id=run_id,
+                    tag="gnome_capture",
+                    path=target_path,
+                    source="gnome-shell",
+                )
+            elif keep_full_image and final_path != tmp_path:
+                pil_image.save(tmp_path)
+            return pil_image
     except subprocess.CalledProcessError as exc:
         logger.error(
             "GNOME Shell ScreenshotArea failed with stderr: %s",
@@ -314,7 +367,11 @@ def _capture_with_gnome_shell(
                         pass
 
 
-def _capture_interactive_with_gnome_shell(*, keep_full_image: bool) -> object | None:
+def _capture_interactive_with_gnome_shell(
+    *,
+    keep_full_image: bool,
+    run_id: str | None = None,
+) -> object | None:
     """Use GNOME Shell's native area picker and screenshot D-Bus methods."""
     if shutil.which("gdbus") is None:
         return None
@@ -350,6 +407,7 @@ def _capture_interactive_with_gnome_shell(*, keep_full_image: bool) -> object | 
         return _capture_with_gnome_shell(
             capture_rect,
             keep_full_image=keep_full_image,
+            run_id=run_id,
         )
     except subprocess.CalledProcessError as exc:
         if _looks_like_user_cancel(exc.stderr):
@@ -364,14 +422,16 @@ def _capture_interactive_with_gnome_shell(*, keep_full_image: bool) -> object | 
         return None
 
 
-def _capture_interactive_with_spectacle(*, keep_full_image: bool) -> object | None:
+def _capture_interactive_with_spectacle(
+    *,
+    keep_full_image: bool,
+    run_id: str | None = None,
+) -> object | None:
     """Use Spectacle's native region picker and return the captured image."""
     if shutil.which("spectacle") is None:
         return None
 
     try:
-        from PIL import Image
-
         output_dir = captured_dir()
         output_dir.mkdir(parents=True, exist_ok=True)
         tmp_path = output_dir / capture_filename(prefix="snip_capture")
@@ -390,6 +450,13 @@ def _capture_interactive_with_spectacle(*, keep_full_image: bool) -> object | No
 
             with Image.open(tmp_path) as image:
                 pil_image = image.convert("RGB")
+                if keep_full_image and run_id:
+                    append_ocr_image_record(
+                        run_id=run_id,
+                        tag="snip_raw",
+                        path=tmp_path,
+                        source="spectacle",
+                    )
                 logger.debug(
                     "Spectacle snip image loaded from %s with size=%s",
                     tmp_path,
@@ -462,6 +529,7 @@ def _capture_with_external_tool(
     *,
     keep_full_image: bool,
     backend: str,
+    run_id: str | None = None,
 ) -> object | None:
     """Try platform-specific external capture tools when Qt screen grab is blocked."""
     desktop = os.environ.get("XDG_CURRENT_DESKTOP", "").lower()
@@ -472,11 +540,13 @@ def _capture_with_external_tool(
             capture_rect,
             screen,
             keep_full_image=keep_full_image,
+            run_id=run_id,
         )
     if backend == "GNOME Shell":
         return _capture_with_gnome_shell(
             capture_rect,
             keep_full_image=keep_full_image,
+            run_id=run_id,
         )
     if backend == "grim":
         return _capture_with_grim(
@@ -491,6 +561,7 @@ def _capture_with_external_tool(
             capture_rect,
             screen,
             keep_full_image=keep_full_image,
+            run_id=run_id,
         )
         if image is not None:
             return image
@@ -499,6 +570,7 @@ def _capture_with_external_tool(
         image = _capture_with_gnome_shell(
             capture_rect,
             keep_full_image=keep_full_image,
+            run_id=run_id,
         )
         if image is not None:
             return image

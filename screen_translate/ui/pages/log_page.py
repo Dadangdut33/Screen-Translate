@@ -6,7 +6,9 @@ from typing import TYPE_CHECKING
 
 from loguru import logger
 from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot
+from PyQt6.QtGui import QFont
 from PyQt6.QtWidgets import (
+    QFontComboBox,
     QHBoxLayout,
     QLabel,
     QPlainTextEdit,
@@ -75,6 +77,16 @@ class LogPage(QWidget):
         self._cb_level.currentTextChanged.connect(self._on_level_changed)
         hl.addWidget(self._cb_level)
 
+        hl.addWidget(QLabel("Font:"))
+        self._cb_font = QFontComboBox(self)
+        saved_font = (
+            str(self.controller.settings.get("log_font_family", "Courier New")).strip()
+            or "Courier New"
+        )
+        self._cb_font.setCurrentFont(QFont(saved_font))
+        self._cb_font.currentFontChanged.connect(self._on_font_changed)
+        hl.addWidget(self._cb_font)
+
         self._chk_scroll = CheckBox("Auto-scroll")
         self._chk_scroll.setChecked(True)
         hl.addWidget(self._chk_scroll)
@@ -91,7 +103,7 @@ class LogPage(QWidget):
         self._log_view.setReadOnly(True)
         self._log_view.setMaximumBlockCount(5000)
         font = self._log_view.font()
-        font.setFamily("Courier New")
+        font.setFamily(saved_font)
         font.setPointSize(9)
         self._log_view.setFont(font)
         vl.addWidget(self._log_view)
@@ -125,6 +137,14 @@ class LogPage(QWidget):
         """Update the effective application log level."""
         set_log_level(level_name)
         self.controller.settings.set("log_level", level_name)
+
+    @pyqtSlot(QFont)
+    def _on_font_changed(self, font: QFont) -> None:
+        """Update the log viewer font family and persist it."""
+        current = self._log_view.font()
+        current.setFamily(font.family())
+        self._log_view.setFont(current)
+        self.controller.settings.set("log_font_family", font.family())
 
     def __del__(self) -> None:
         """Remove handler on garbage collection."""

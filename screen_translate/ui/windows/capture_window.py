@@ -24,6 +24,7 @@ from PyQt6.QtWidgets import (
 )
 from qfluentwidgets import PrimaryPushButton, PushButton
 
+from screen_translate.core.ocr_images import new_ocr_run_id
 from screen_translate.ui.screen_capture import capture_rect_image, save_cropped_image
 from screen_translate.ui.theme.style_sheet import StyleSheet
 from screen_translate.ui.theme.utils import load_icon
@@ -245,16 +246,24 @@ class CaptureWindow(QWidget):
                 screen.virtualGeometry().getRect(),
             )
         if screen:
+            run_id = new_ocr_run_id()
+            self.controller._pending_ocr_run_id = run_id
             pil_img = capture_rect_image(
                 capture_rect,
                 screen,
                 keep_full_image=save_full_image,
                 backend=str(self.controller.settings.get("capture_backend", "Auto")),
+                run_id=run_id,
             )
             if pil_img is not None:
                 if should_save_cropped_image:
-                    save_cropped_image(pil_img)
-                self.controller.run_ocr(pil_img)
+                    save_cropped_image(
+                        pil_img,
+                        run_id=run_id,
+                        tag="capture_cropped",
+                        source="capture-window",
+                    )
+                self.controller.run_ocr(pil_img, run_id=run_id)
             else:
                 logger.error(
                     "Screen capture failed for rect %s. This can happen on Linux/Wayland when "

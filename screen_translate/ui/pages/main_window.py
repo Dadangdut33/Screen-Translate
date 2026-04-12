@@ -32,6 +32,7 @@ from qfluentwidgets import (
     PushButton,
     SmoothScrollArea,
 )
+import qtawesome as qta
 
 from screen_translate import __version__
 from screen_translate.ui.theme.style_sheet import StyleSheet
@@ -106,6 +107,7 @@ class MainWindow(QMainWindow):
         self._is_quitting = False
         self._history_page_index: int | None = None
         self._log_page_index: int | None = None
+        self._ocr_images_page_index: int | None = None
         self._about_page_index: int | None = None
         self._settings_page_index: int | None = None
 
@@ -254,6 +256,13 @@ class MainWindow(QMainWindow):
             position=NavigationItemPosition.TOP,
         )
         self.navigationInterface.addItem(
+            routeKey="tools",
+            icon=FIF.APPLICATION,
+            text="Tools",
+            onClick=lambda: self._show_stack_page(1, "tools"),
+            position=NavigationItemPosition.TOP,
+        )
+        self.navigationInterface.addItem(
             routeKey="history",
             icon=FIF.HISTORY,
             text="History",
@@ -261,17 +270,17 @@ class MainWindow(QMainWindow):
             position=NavigationItemPosition.TOP,
         )
         self.navigationInterface.addItem(
-            routeKey="log",
-            icon=FIF.SEARCH,
-            text="Log",
-            onClick=self._open_log,
+            routeKey="ocr_images",
+            icon=FIF.PHOTO,
+            text="OCR Images",
+            onClick=self._open_ocr_images,
             position=NavigationItemPosition.TOP,
         )
         self.navigationInterface.addItem(
-            routeKey="tools",
-            icon=FIF.APPLICATION,
-            text="Tools",
-            onClick=lambda: self._show_stack_page(1, "tools"),
+            routeKey="log",
+            icon=qta.icon("mdi6.console"),
+            text="Log",
+            onClick=self._open_log,
             position=NavigationItemPosition.TOP,
         )
 
@@ -311,12 +320,14 @@ class MainWindow(QMainWindow):
         self,
         history_page: QWidget,
         log_page: QWidget,
+        ocr_images_page: QWidget,
         about_page: QWidget,
         settings_page: QWidget,
     ) -> None:
         """Embed auxiliary windows into the main stacked area."""
         self._history_page_index = self._embed_page_widget(history_page)
         self._log_page_index = self._embed_page_widget(log_page)
+        self._ocr_images_page_index = self._embed_page_widget(ocr_images_page)
         self._about_page_index = self._embed_page_widget(about_page)
         self._settings_page_index = self._embed_page_widget(settings_page)
 
@@ -689,6 +700,11 @@ class MainWindow(QMainWindow):
     def _open_log(self) -> None:
         if self.controller.log_window and self._log_page_index is not None:
             self._show_stack_page(self._log_page_index, "log")
+
+    def _open_ocr_images(self) -> None:
+        if self.controller.ocr_images_page and self._ocr_images_page_index is not None:
+            self.controller.ocr_images_page.refresh_gallery()
+            self._show_stack_page(self._ocr_images_page_index, "ocr_images")
 
     def _open_about(self) -> None:
         if self.controller.about_page and self._about_page_index is not None:

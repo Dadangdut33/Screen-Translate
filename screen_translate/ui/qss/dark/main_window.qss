@@ -78,6 +78,22 @@ MainWindow QStatusBar {
     border-radius: 10px;
 }
 
+#OCRImageCard {
+    background-color: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+}
+
+#OCRImagePreview {
+    background-color: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+}
+
+#OCRImageTag {
+    font: 600 14px --FontFamilies;
+}
+
 #AboutVersion {
     color: rgba(255, 255, 255, 0.72);
     font: 15px --FontFamilies;

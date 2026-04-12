@@ -25,6 +25,7 @@ from screen_translate.ui.pages import (
     HistoryPage,
     LogPage,
     MainWindow,
+    OCRImagesPage,
     SettingsPage,
 )
 from screen_translate.ui.controller import AppController
@@ -111,13 +112,22 @@ def main() -> None:
     log_win = LogPage(controller)
     controller.log_window = log_win
 
+    ocr_images_page = OCRImagesPage()
+    controller.ocr_images_page = ocr_images_page
+
     settings_page = SettingsPage(controller)
     controller.settings_page = settings_page
 
     about_page = AboutPage()
     controller.about_page = about_page
 
-    main_win.register_internal_pages(history_win, log_win, about_page, settings_page)
+    main_win.register_internal_pages(
+        history_win,
+        log_win,
+        ocr_images_page,
+        about_page,
+        settings_page,
+    )
 
     # --- Register global hotkeys (if keyboard package is available) ---
     _register_hotkeys(controller, settings)

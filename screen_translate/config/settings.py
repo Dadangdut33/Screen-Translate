@@ -35,6 +35,7 @@ DEFAULTS: dict[str, Any] = {
     "max_log_rotation_days": 5,
     "auto_scroll_log": True,
     "auto_refresh_log": True,
+    "log_font_family": "Courier New",
     # Capture window offsets
     "offSetX": 0,
     "offSetY": 0,

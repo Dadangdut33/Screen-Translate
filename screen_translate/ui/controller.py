@@ -19,6 +19,11 @@ from PyQt6.QtWidgets import QApplication, QMessageBox
 
 from screen_translate.config.settings import SettingsManager
 from screen_translate.core.history import append_history
+from screen_translate.core.ocr_images import (
+    link_history_to_ocr_run,
+    list_ocr_images_for_run,
+    new_ocr_run_id,
+)
 from screen_translate.core.ocr.language_compat import (
     is_tesseract_language_compatible,
     resolve_tesseract_language_code,
@@ -51,6 +56,7 @@ if TYPE_CHECKING:
     from screen_translate.ui.pages.history_page import HistoryPage
     from screen_translate.ui.pages.log_page import LogPage
     from screen_translate.ui.pages.main_window import MainWindow
+    from screen_translate.ui.pages.ocr_images_page import OCRImagesPage
     from screen_translate.ui.pages.settings_page import SettingsPage
     from screen_translate.ui.windows.capture_window import CaptureWindow
     from screen_translate.ui.windows.floating_text_window import FloatingTextWindow
@@ -99,6 +105,7 @@ class _OCRWorker(QRunnable):
         source_lang: str,
         extra_config: str,
         psm5_vertical: bool,
+        run_id: str | None,
     ) -> None:
         """Initialise the worker.
 
@@ -115,6 +122,7 @@ class _OCRWorker(QRunnable):
         self.source_lang = source_lang
         self.extra_config = extra_config
         self.psm5_vertical = psm5_vertical
+        self.run_id = run_id
         self.signals = _WorkerSignals()
         self.setAutoDelete(True)
 
@@ -127,6 +135,7 @@ class _OCRWorker(QRunnable):
                 self.source_lang,
                 extra_config=self.extra_config,
                 psm5_vertical=self.psm5_vertical,
+                run_id=self.run_id,
             )
             self.signals.finished.emit(text)
         except (OCRError, Exception) as exc:
@@ -220,6 +229,7 @@ class AppController(QObject):
         self.mask_window: MaskWindow | None = None
         self.history_window: HistoryPage | None = None
         self.log_window: LogPage | None = None
+        self.ocr_images_page: OCRImagesPage | None = None
         self.settings_page: SettingsPage | None = None
         self.about_page: AboutPage | None = None
 
@@ -227,6 +237,7 @@ class AppController(QObject):
         self._ocr_backend: TesseractOCRBackend | None = None
         self._capture_region_rect: QRect | None = self._load_capture_region_rect()
         self._pending_history_query: str = ""
+        self._pending_ocr_run_id: str = ""
 
         # Translation backends
         self._backends: dict[str, TranslationBackend] = {}
@@ -464,7 +475,7 @@ class AppController(QObject):
     # Async OCR
     # ------------------------------------------------------------------
 
-    def run_ocr(self, pil_image: Any) -> None:
+    def run_ocr(self, pil_image: Any, run_id: str | None = None) -> None:
         """Run OCR asynchronously on *pil_image*.
 
         Emits :attr:`ocr_started`, then either :attr:`ocr_completed` (text)
@@ -485,7 +496,24 @@ class AppController(QObject):
         extra_config: str = self.settings.get("tesseract_config", "")
         psm5: bool = self.settings.get("tesseract_psm5_vertical", True)
 
-        worker = _OCRWorker(backend, pil_image, source_lang, extra_config, psm5)
+        effective_run_id = run_id or self._pending_ocr_run_id or new_ocr_run_id()
+        self._pending_ocr_run_id = effective_run_id
+        if bool(self.settings.get("save_cropped_image", False)):
+            save_cropped_image(
+                pil_image,
+                prefix="ocr_input",
+                run_id=effective_run_id,
+                tag="ocr_input",
+                source="ocr",
+            )
+        worker = _OCRWorker(
+            backend,
+            pil_image,
+            source_lang,
+            extra_config,
+            psm5,
+            effective_run_id,
+        )
         worker.signals.finished.connect(self._on_ocr_done)
         worker.signals.error.connect(self._on_ocr_error)
         self.ocr_started.emit()
@@ -517,6 +545,8 @@ class AppController(QObject):
 
         self.ocr_completed.emit(text)
         self.status_idle.emit()
+        if self.ocr_images_page is not None:
+            self.ocr_images_page.refresh_gallery()
 
         # Auto-translate if not in OCR-only mode
         if self._active_backend_name != "None" and text.strip():
@@ -533,6 +563,9 @@ class AppController(QObject):
         logger.error("OCR failed: %s", error)
         self.ocr_failed.emit(error)
         self.status_idle.emit()
+        self._pending_ocr_run_id = ""
+        if self.ocr_images_page is not None:
+            self.ocr_images_page.refresh_gallery()
         if "not installed" in error or "not in your PATH" in error:
             from screen_translate.core.ocr.tesseract import (
                 _platform_install_instructions,
@@ -625,16 +658,28 @@ class AppController(QObject):
             pyperclip.copy(result)
 
         if self.settings.get("save_history", True):
-            append_history(
+            run_id = self._pending_ocr_run_id
+            ocr_records = list_ocr_images_for_run(run_id) if run_id else []
+            entry = append_history(
                 {
                     "from": self.settings.get("sourceLang", ""),
                     "to": self.settings.get("targetLang", ""),
                     "query": self._pending_history_query,
                     "result": result,
                     "engine": self._active_backend_name,
+                    "ocr_run_id": run_id,
+                    "ocr_image_tags": [record.tag for record in ocr_records],
+                    "ocr_image_paths": [record.path for record in ocr_records],
                 }
             )
+            if run_id:
+                link_history_to_ocr_run(run_id, entry.id)
+            if self.history_window is not None:
+                self.history_window._load()
+            if self.ocr_images_page is not None:
+                self.ocr_images_page.refresh_gallery()
         self._pending_history_query = ""
+        self._pending_ocr_run_id = ""
 
         self.translation_completed.emit(result)
         self.status_idle.emit()
@@ -650,6 +695,7 @@ class AppController(QObject):
         self.translation_failed.emit(error)
         self.status_idle.emit()
         self._pending_history_query = ""
+        self._pending_ocr_run_id = ""
         self._show_critical("Translation Error", error)
 
     # ------------------------------------------------------------------
@@ -689,9 +735,12 @@ class AppController(QObject):
         options = self._snip_capture_options()
 
         try:
+            run_id = new_ocr_run_id()
+            self._pending_ocr_run_id = run_id
             pil_image = capture_interactive_region_image(
                 keep_full_image=options.keep_full_image,
                 backend=backend,
+                run_id=run_id,
             )
             if pil_image is None:
                 self._show_critical(
@@ -701,13 +750,19 @@ class AppController(QObject):
                 return False
 
             if options.save_cropped_image:
-                save_cropped_image(pil_image, prefix="cropped_snip")
+                save_cropped_image(
+                    pil_image,
+                    prefix="cropped_snip",
+                    run_id=run_id,
+                    tag="snip_cropped",
+                    source=backend.lower().replace(" ", "-"),
+                )
 
-            if options.keep_full_image:
+            if options.keep_full_image and backend not in {"Spectacle", "GNOME Shell"}:
                 normalized_path = output_dir / capture_filename(prefix="snip_capture")
                 pil_image.save(normalized_path)
                 logger.info("Saved snip capture to %s", normalized_path)
-            self.run_ocr(pil_image)
+            self.run_ocr(pil_image, run_id=run_id)
             return True
         except CaptureCancelledError:
             logger.info("%s snip capture canceled by user", backend)
