@@ -21,6 +21,7 @@ Screen Translate is an OCR translator tool utilizing Tesseract and a variety of 
 - [Installation](#installation)
   - [Capture Backends](#capture-backends)
   - [Network Notes](#network-notes)
+  - [Wayland](#wayland)
   - [Tiling / Scrolling Compositors](#tiling--scrolling-compositors)
 - [Development](#development)
 - [Attribution](#attribution)
@@ -106,6 +107,28 @@ Translation engines are provided by the third-party `translators` package. When 
 - Actual translation requests may also use the remote provider directly, such as `translate.google.com`.
 - HTTP/3 / QUIC transport can emit low-level probe or keepalive logs like `PING (probe)`. These are transport logs, not separate app-defined telemetry.
 - This project now defaults `translators_default_region=EN` before importing `translators` and suppresses noisy low-level dependency logs in normal app output so you might not see them (the PING logs).
+
+## Wayland
+
+If you want to force the app to run using xwayland, you can set the environment variable `QT_QPA_PLATFORM=xcb` before launching the app. Example: 
+
+```bash
+QT_QPA_PLATFORM=xcb screen-translate
+```
+
+This app should work on Wayland sessions, but there are some caveats:
+
+- Due to Wayland's security model, the app cannot accurately get the position windows or overlays. (There is already a workaround for this by allowing users to set capture window to virtual overlay mode)
+- Some feature like dragging the window by dragging a label does not work
+- Keybind does not work. So the app provided a workaround using IPC that you can set to your keybind in your compositor / DE. example in `niri`:
+
+```kdl
+binds {
+  Mod+Shift+T {
+    spawn-sh "screen-translate --ipc send snip_translate"
+  }
+}
+```
 
 ## Tiling / Scrolling Compositors
 
