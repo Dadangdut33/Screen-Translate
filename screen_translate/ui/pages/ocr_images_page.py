@@ -161,11 +161,21 @@ class OCRImagesPage(QWidget):
         layout.setContentsMargins(8, 8, 8, 8)
         layout.setSpacing(12)
 
+        header_card = QFrame(self)
+        header_card.setObjectName("PageHeaderCard")
+        header_card_layout = QVBoxLayout(header_card)
+        header_card_layout.setContentsMargins(16, 16, 16, 16)
+        header_card_layout.setSpacing(12)
+
+        title_row = QHBoxLayout()
+        title_row.setContentsMargins(0, 0, 0, 0)
+        title_row.addWidget(TitleLabel("OCR Images", self))
+        title_row.addStretch(1)
+        header_card_layout.addLayout(title_row)
+
         header = QHBoxLayout()
         header.setContentsMargins(0, 0, 0, 0)
         header.setSpacing(12)
-        header.addWidget(TitleLabel("OCR Images", self))
-        header.addStretch(1)
 
         self._group_by = ComboBox()
         self._group_by.addItem("By Tag", userData="tag")
@@ -194,7 +204,8 @@ class OCRImagesPage(QWidget):
         self._btn_utils.setMenu(self._utils_menu)
         header.addWidget(self._btn_utils)
 
-        layout.addLayout(header)
+        header_card_layout.addLayout(header)
+        layout.addWidget(header_card)
 
         self._content = QWidget(self)
         self._content_layout = QVBoxLayout(self._content)

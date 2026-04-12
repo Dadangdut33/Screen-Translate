@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import platform
 from typing import TYPE_CHECKING, Callable
 
 from PyQt6.QtCore import Qt, QTimer
@@ -52,8 +53,17 @@ class ToolsPage(QWidget):
         layout = QVBoxLayout(self)
         layout.setSpacing(14)
 
-        title = TitleLabel("Tools")
-        layout.addWidget(title)
+        header_card = QFrame(self)
+        header_card.setObjectName("PageHeaderCard")
+        header_layout = QVBoxLayout(header_card)
+        header_layout.setContentsMargins(16, 16, 16, 16)
+        header_layout.setSpacing(8)
+        header_layout.addWidget(TitleLabel("Tools"))
+        subtitle = BodyLabel("Manage the main window and floating OCR windows.")
+        subtitle.setObjectName("PageHeaderSubtitle")
+        subtitle.setWordWrap(True)
+        header_layout.addWidget(subtitle)
+        layout.addWidget(header_card)
 
         self._build_window_card(
             layout,
@@ -92,8 +102,8 @@ class ToolsPage(QWidget):
                     self.main_window._quit_app,
                 ),
             ],
-            opacity_getter=lambda win: float(win.windowOpacity() or 1.0),
-            opacity_setter=lambda win, value: win.setWindowOpacity(value),
+            opacity_getter=None,
+            opacity_setter=None,
             top_getter=lambda win: bool(
                 win.windowFlags() & Qt.WindowType.WindowStaysOnTopHint
             ),
@@ -282,8 +292,8 @@ class ToolsPage(QWidget):
         title: str,
         window_getter: Callable[[], QWidget | None],
         action_specs: list[tuple[str, QIcon, Callable[[], None]]],
-        opacity_getter: Callable[[QWidget], float],
-        opacity_setter: Callable[[QWidget, float], None],
+        opacity_getter: Callable[[QWidget], float] | None,
+        opacity_setter: Callable[[QWidget, float], None] | None,
         top_getter: Callable[[QWidget], bool],
         top_setter: Callable[[QWidget, bool], None],
         color_getter: Callable[[QWidget], str] | None,
@@ -477,7 +487,7 @@ class ToolsPage(QWidget):
             opacity_slider.blockSignals(True)
             opacity_slider.setEnabled(supports_opacity)
             opacity = 1.0
-            if enabled and callable(refs["opacity_getter"]):
+            if enabled and supports_opacity and callable(refs["opacity_getter"]):
                 opacity = float(refs["opacity_getter"](window))
             opacity_slider.setValue(int(opacity * 100))
             opacity_slider.blockSignals(False)
@@ -532,6 +542,11 @@ class ToolsPage(QWidget):
 
     def _supports_opacity_control(self, key: str, window: QWidget) -> bool:
         """Return whether opacity control is safe for the given managed window."""
+        refs = self._tool_cards.get(key)
+        getter = None if refs is None else refs.get("opacity_getter")
+        setter = None if refs is None else refs.get("opacity_setter")
+        if not callable(getter) or not callable(setter):
+            return False
         if key != "main":
             return True
         app = QApplication.instance()

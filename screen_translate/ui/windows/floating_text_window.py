@@ -9,6 +9,7 @@ from PyQt6.QtCore import QPoint, Qt
 from PyQt6.QtGui import (
     QColor,
     QContextMenuEvent,
+    QPainter,
     QFont,
     QMouseEvent,
     QPalette,
@@ -65,9 +66,16 @@ class DetachedWindow(QWidget):
         self._text = ""
         self._pinned = True
         self._always_on_top = True
+        self._font_color = QColor("#FFFFFF")
+        self._background_color = QColor("#000000")
         StyleSheet.FLOATING_WINDOW.apply(self)
 
-        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, False)
+        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
+        self.setWindowFlags(
+            Qt.WindowType.FramelessWindowHint
+            | Qt.WindowType.WindowStaysOnTopHint
+            | Qt.WindowType.Tool
+        )
         self.resize(600, 120)
         self._build_ui()
         self._apply_settings()
@@ -81,13 +89,17 @@ class DetachedWindow(QWidget):
         self._label = BodyLabel()
         self._label.setWordWrap(True)
         self._label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
-        self._label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        self._label.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+        self._label.setSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
+        )
+        self._label.setTextInteractionFlags(
+            Qt.TextInteractionFlag.TextSelectableByMouse
+        )
         layout.addWidget(self._label)
 
         # Drag using the label
-        self._label.mousePressEvent = self._drag_press    # type: ignore[method-assign]
-        self._label.mouseMoveEvent = self._drag_move      # type: ignore[method-assign]
+        self._label.mousePressEvent = self._drag_press  # type: ignore[method-assign]
+        self._label.mouseMoveEvent = self._drag_move  # type: ignore[method-assign]
         self._label.mouseReleaseEvent = self._drag_release  # type: ignore[method-assign]
 
     def _apply_settings(self) -> None:
@@ -103,13 +115,16 @@ class DetachedWindow(QWidget):
         self._label.setFont(font)
 
         palette = self._label.palette()
-        palette.setColor(QPalette.ColorRole.WindowText, QColor(fg))
-        palette.setColor(QPalette.ColorRole.Window, QColor(bg))
+        self._font_color = QColor(fg)
+        self._background_color = QColor(bg)
+        text_color = QColor(self._font_color)
+        text_color.setAlpha(max(40, min(255, int(255 * self._opacity))))
+        palette.setColor(QPalette.ColorRole.WindowText, text_color)
+        palette.setColor(QPalette.ColorRole.Window, Qt.GlobalColor.transparent)
         self._label.setPalette(palette)
-        self.setAutoFillBackground(True)
-        pal = self.palette()
-        pal.setColor(QPalette.ColorRole.Window, QColor(bg))
-        self.setPalette(pal)
+        self._label.setAutoFillBackground(False)
+        self.setAutoFillBackground(False)
+        self.update()
 
     def refresh_from_settings(self) -> None:
         """Re-apply appearance settings from persistent storage."""
@@ -143,11 +158,14 @@ class DetachedWindow(QWidget):
     def set_overlay_opacity(self, opacity: float) -> None:
         """Set the current window opacity."""
         self._opacity = min(1.0, max(0.05, opacity))
-        self.setWindowOpacity(self._opacity)
+        self._apply_settings()
+        self.update()
 
     def background_color(self) -> str:
         """Return the configured background color for this floating window."""
-        return str(self.controller.settings.get(f"tb_ex_{self.role}_bg_color", "#000000"))
+        return str(
+            self.controller.settings.get(f"tb_ex_{self.role}_bg_color", "#000000")
+        )
 
     def set_background_color(self, color: str) -> None:
         """Persist and apply a new background color."""
@@ -185,6 +203,17 @@ class DetachedWindow(QWidget):
         self.setGeometry(geometry)
         if was_visible:
             self.show()
+            self.raise_()
+        self.update()
+
+    def paintEvent(self, event: object) -> None:  # type: ignore[override]
+        """Paint the window background with manual alpha to avoid setWindowOpacity()."""
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        color = QColor(self._background_color)
+        color.setAlpha(max(20, min(255, int(255 * self._opacity))))
+        painter.fillRect(self.rect(), color)
+        super().paintEvent(event)  # type: ignore[arg-type]
 
     # ------------------------------------------------------------------
     # Context menu
@@ -216,7 +245,9 @@ class DetachedWindow(QWidget):
 
     def _drag_press(self, event: QMouseEvent) -> None:
         if event.button() == Qt.MouseButton.LeftButton:
-            self._drag_pos = event.globalPosition().toPoint() - self.frameGeometry().topLeft()
+            self._drag_pos = (
+                event.globalPosition().toPoint() - self.frameGeometry().topLeft()
+            )
 
     def _drag_move(self, event: QMouseEvent) -> None:
         if self._drag_pos and event.buttons() == Qt.MouseButton.LeftButton:

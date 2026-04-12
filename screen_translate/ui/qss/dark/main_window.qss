@@ -10,6 +10,20 @@ MainWindow QWidget#ContentScrollContainer {
     border: none;
 }
 
+MainWindow QWidget#MainContentShell {
+    background-color: transparent;
+    border-top-right-radius: 10px;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+}
+
+MainWindow QWidget#MainStackedWidget {
+    background-color: rgba(32, 32, 32, 0.98);
+    border-top-right-radius: 10px;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+}
+
 MainWindow QWidget,
 MainWindow QLabel,
 MainWindow QCheckBox,
@@ -62,11 +76,38 @@ MainWindow QStatusBar {
     color: rgb(244, 244, 244);
 }
 
+MainWindow QToolButton#WorkspaceActionButton {
+    background-color: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    border-radius: 10px;
+}
+
+MainWindow QToolButton#WorkspaceActionButton:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+MainWindow QToolButton#WorkspaceActionButton:pressed {
+    background-color: rgba(255, 255, 255, 0.12);
+}
+
+MainWindow QToolButton#WorkspaceActionButton:disabled {
+    background-color: rgba(255, 255, 255, 0.0);
+    border: 1px dashed rgba(255, 255, 255, 0.10);
+    color: rgba(244, 244, 244, 0.35);
+}
+
 #AboutPage {
     background-color: transparent;
 }
 
 #AboutHeroCard, #AboutInfoCard {
+    background-color: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+}
+
+#PageHeaderCard {
     background-color: rgba(255, 255, 255, 0.04);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 10px;
@@ -101,6 +142,10 @@ MainWindow QStatusBar {
 
 #AboutSectionTitle {
     font: 600 18px --FontFamilies;
+}
+
+#PageHeaderSubtitle {
+    color: rgba(255, 255, 255, 0.72);
 }
 
 #AboutUpdateStatus {

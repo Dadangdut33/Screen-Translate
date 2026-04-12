@@ -6,7 +6,7 @@ import logging
 from typing import TYPE_CHECKING
 
 from PyQt6.QtCore import QPoint, Qt
-from PyQt6.QtGui import QColor, QContextMenuEvent, QMouseEvent, QPalette
+from PyQt6.QtGui import QColor, QContextMenuEvent, QMouseEvent, QPainter, QPalette
 from PyQt6.QtWidgets import QColorDialog, QMenu, QVBoxLayout, QWidget
 from qfluentwidgets import BodyLabel
 from screen_translate.ui.theme.style_sheet import StyleSheet
@@ -41,8 +41,15 @@ class MaskWindow(QWidget):
         self._opacity = 1.0
         self._pinned = True
         self._always_on_top = True
+        self._background_color = QColor("#555555")
         StyleSheet.FLOATING_WINDOW.apply(self)
 
+        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
+        self.setWindowFlags(
+            Qt.WindowType.FramelessWindowHint
+            | Qt.WindowType.WindowStaysOnTopHint
+            | Qt.WindowType.Tool
+        )
         self.setWindowTitle("Mask Window")
         self.resize(400, 300)
         self._apply_color()
@@ -60,10 +67,12 @@ class MaskWindow(QWidget):
 
     def _apply_color(self) -> None:
         color_str: str = self.controller.settings.get("mask_window_bg_color", "#555555")
+        self._background_color = QColor(color_str)
         pal = self.palette()
-        pal.setColor(QPalette.ColorRole.Window, QColor(color_str))
+        pal.setColor(QPalette.ColorRole.Window, Qt.GlobalColor.transparent)
         self.setPalette(pal)
-        self.setAutoFillBackground(True)
+        self.setAutoFillBackground(False)
+        self.update()
 
     def refresh_from_settings(self) -> None:
         """Re-apply appearance settings from persistent storage."""
@@ -94,7 +103,11 @@ class MaskWindow(QWidget):
     def set_overlay_opacity(self, opacity: float) -> None:
         """Set the current window opacity."""
         self._opacity = min(1.0, max(0.05, opacity))
-        self.setWindowOpacity(self._opacity)
+        hint_color = QColor(200, 200, 200, max(30, min(180, int(80 * self._opacity))))
+        self._hint.setStyleSheet(
+            f"color: rgba({hint_color.red()},{hint_color.green()},{hint_color.blue()},{hint_color.alpha()}); font-size: 10px;"
+        )
+        self.update()
 
     def background_color(self) -> str:
         """Return the configured mask color."""
@@ -136,10 +149,22 @@ class MaskWindow(QWidget):
         self.setGeometry(geometry)
         if was_visible:
             self.show()
+            self.raise_()
+        self.update()
+
+    def paintEvent(self, event: object) -> None:  # type: ignore[override]
+        """Paint the mask color with manual alpha to avoid setWindowOpacity()."""
+        painter = QPainter(self)
+        color = QColor(self._background_color)
+        color.setAlpha(max(20, min(255, int(255 * self._opacity))))
+        painter.fillRect(self.rect(), color)
+        super().paintEvent(event)  # type: ignore[arg-type]
 
     def mousePressEvent(self, event: QMouseEvent) -> None:  # type: ignore[override]
         if event.button() == Qt.MouseButton.LeftButton:
-            self._drag_pos = event.globalPosition().toPoint() - self.frameGeometry().topLeft()
+            self._drag_pos = (
+                event.globalPosition().toPoint() - self.frameGeometry().topLeft()
+            )
 
     def mouseMoveEvent(self, event: QMouseEvent) -> None:  # type: ignore[override]
         if self._drag_pos and event.buttons() == Qt.MouseButton.LeftButton:

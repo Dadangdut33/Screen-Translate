@@ -1,8 +1,9 @@
-"""Main application window (QMainWindow)."""
+"""Main application window using QFluentWidgets' FluentWindow shell."""
 
 from __future__ import annotations
 
 import logging
+import platform
 from typing import TYPE_CHECKING
 
 import pycountry
@@ -11,30 +12,26 @@ from PyQt6.QtGui import QCloseEvent, QIcon
 from PyQt6.QtWidgets import (
     QHBoxLayout,
     QLabel,
-    QMainWindow,
     QMenu,
-    QSlider,
     QSplitter,
-    QStackedWidget,
-    QStatusBar,
     QSystemTrayIcon,
     QTextEdit,
     QVBoxLayout,
     QWidget,
 )
 from qfluentwidgets import (
-    ComboBox,
     FluentIcon as FIF,
-    NavigationInterface,
+    FluentWindow,
     NavigationItemPosition,
-    PrimaryPushButton,
     ProgressBar,
-    PushButton,
     SmoothScrollArea,
+    ToolButton,
+    isDarkTheme,
 )
 import qtawesome as qta
 
 from screen_translate import __version__
+from screen_translate.ui.widgets import SuggestionComboBox
 from screen_translate.ui.theme.style_sheet import StyleSheet
 from screen_translate.ui.theme.utils import load_icon
 
@@ -75,7 +72,7 @@ class _PageScrollArea(SmoothScrollArea):
         container = QWidget(self)
         container.setObjectName("ContentScrollContainer")
         container_layout = QVBoxLayout(container)
-        container_layout.setContentsMargins(0, 0, 0, 0)
+        container_layout.setContentsMargins(0, 0, 12, 0)
         container_layout.setSpacing(0)
         container_layout.addWidget(widget)
 
@@ -88,7 +85,7 @@ class _PageScrollArea(SmoothScrollArea):
         self.setObjectName("ContentScrollArea")
 
 
-class MainWindow(QMainWindow):
+class MainWindow(FluentWindow):
     """Primary application shell.
 
     Contains the query/result text areas, toolbar with language selectors,
@@ -105,11 +102,11 @@ class MainWindow(QMainWindow):
         self.controller = controller
         self._notified_hidden = False
         self._is_quitting = False
-        self._history_page_index: int | None = None
-        self._log_page_index: int | None = None
-        self._ocr_images_page_index: int | None = None
-        self._about_page_index: int | None = None
-        self._settings_page_index: int | None = None
+        self._history_page: QWidget | None = None
+        self._log_page: QWidget | None = None
+        self._ocr_images_page: QWidget | None = None
+        self._about_page: QWidget | None = None
+        self._settings_page: QWidget | None = None
 
         self.setWindowTitle(f"{_APP_NAME} v{__version__}")
         self.setMinimumSize(QSize(700, 300))
@@ -130,39 +127,58 @@ class MainWindow(QMainWindow):
     # ------------------------------------------------------------------
 
     def _build_ui(self) -> None:
-        """Create the Fluent navigation shell and page content."""
-        shell = QWidget(self)
-        shell_layout = QHBoxLayout(shell)
-        shell_layout.setContentsMargins(0, 0, 0, 0)
-        shell_layout.setSpacing(0)
-
-        self.navigationInterface = NavigationInterface(self, showMenuButton=True)
-        self.navigationInterface.setObjectName("MainNavigation")
-        shell_layout.addWidget(self.navigationInterface)
-
-        self.stackWidget = QStackedWidget(self)
-        shell_layout.addWidget(self.stackWidget, 1)
-        self.setCentralWidget(shell)
+        """Create the FluentWindow content and page content."""
+        self.widgetLayout.removeWidget(self.stackedWidget)
+        self.stackedWidget.setObjectName("MainStackedWidget")
+        content_shell = QWidget(self)
+        content_shell.setObjectName("MainContentShell")
+        content_layout = QVBoxLayout(content_shell)
+        content_layout.setContentsMargins(0, 0, 18, 12)
+        content_layout.setSpacing(10)
+        content_layout.addWidget(self.stackedWidget, 1)
+        self.widgetLayout.addWidget(content_shell, 1)
 
         from screen_translate.ui.pages.tools_page import ToolsPage
 
-        workspace = self._wrap_scroll_page(self._build_workspace_page())
-        tools = self._wrap_scroll_page(ToolsPage(self))
-        self.stackWidget.addWidget(workspace)
-        self.stackWidget.addWidget(tools)
+        self._workspace_page = self._wrap_scroll_page(self._build_workspace_page())
+        self._workspace_page.setObjectName("translate")
+        self._tools_page = self._wrap_scroll_page(ToolsPage(self))
+        self._tools_page.setObjectName("tools")
 
-        self._add_navigation_items()
-        self.stackWidget.setCurrentWidget(workspace)
+        self.addSubInterface(self._workspace_page, FIF.EDIT, "Translate")
+        self.addSubInterface(self._tools_page, FIF.APPLICATION, "Tools")
+
+        self.switchTo(self._workspace_page)
         self.navigationInterface.setCurrentItem("translate")
 
-        # --- Status bar ---
+        status_host = QWidget(content_shell)
+        status_layout = QHBoxLayout(status_host)
+        status_layout.setContentsMargins(16, 0, 16, 6)
+        status_layout.setSpacing(10)
+        status_layout.addStretch(1)
+        self._progress_label = QLabel("Working...", status_host)
+        self._progress_label.setVisible(False)
+        status_layout.addWidget(self._progress_label)
         self.progress = ProgressBar()
         self.progress.setRange(0, 0)  # indeterminate
         self.progress.setVisible(False)
-        self.progress.setMaximumWidth(120)
-        status_bar = QStatusBar()
-        status_bar.addPermanentWidget(self.progress)
-        self.setStatusBar(status_bar)
+        self.progress.setFixedWidth(180)
+        self.progress.setFixedHeight(8)
+        self.progress.setStyleSheet(
+            """
+            QProgressBar {
+                background-color: rgba(255, 255, 255, 0.10);
+                border: 1px solid rgba(255, 255, 255, 0.08);
+                border-radius: 4px;
+            }
+            QProgressBar::chunk {
+                background-color: #2de2ff;
+                border-radius: 4px;
+            }
+            """
+        )
+        status_layout.addWidget(self.progress)
+        content_layout.addWidget(status_host)
 
     def _build_workspace_page(self) -> QWidget:
         """Build the main translation workspace page."""
@@ -170,61 +186,77 @@ class MainWindow(QMainWindow):
         page.setObjectName("WorkspacePage")
         layout = QVBoxLayout(page)
         layout.setContentsMargins(14, 14, 14, 14)
-        layout.setSpacing(10)
+        layout.setSpacing(12)
 
         controls = QWidget(page)
         controls_layout = QHBoxLayout(controls)
         controls_layout.setContentsMargins(0, 0, 0, 0)
-        controls_layout.setSpacing(8)
+        controls_layout.setSpacing(10)
 
-        self.btn_translate = PrimaryPushButton("Translate")
+        self.btn_translate = ToolButton(
+            self._workspace_action_icon("mdi6.translate"), controls
+        )
+        self.btn_translate.setObjectName("WorkspaceActionButton")
         self.btn_translate.setToolTip("Translate typed text (no OCR)")
+        self.btn_translate.setFixedSize(38, 38)
+        self.btn_translate.setIconSize(QSize(18, 18))
         controls_layout.addWidget(self.btn_translate)
 
-        self.btn_capture = PrimaryPushButton("Capture & Translate")
+        self.btn_capture = ToolButton(
+            self._workspace_action_icon("mdi6.camera-outline"), controls
+        )
+        self.btn_capture.setObjectName("WorkspaceActionButton")
         self.btn_capture.setToolTip(
             "Capture the region inside the Capture Window and translate"
         )
+        self.btn_capture.setFixedSize(38, 38)
+        self.btn_capture.setIconSize(QSize(18, 18))
         controls_layout.addWidget(self.btn_capture)
 
-        self.btn_snip = PrimaryPushButton("Snip -> Translate")
+        self.btn_snip = ToolButton(self._workspace_action_icon("mdi6.crop"), controls)
+        self.btn_snip.setObjectName("WorkspaceActionButton")
         self.btn_snip.setToolTip(
-            "Draw a selection on any monitor to capture and translate (Ctrl+Alt+T)"
+            "Draw a selection on any monitor to capture and translate"
         )
+        self.btn_snip.setFixedSize(38, 38)
+        self.btn_snip.setIconSize(QSize(18, 18))
         controls_layout.addWidget(self.btn_snip)
 
-        controls_layout.addWidget(QLabel("Opacity:"))
-        self.slider_opacity = QSlider(Qt.Orientation.Horizontal)
-        self.slider_opacity.setRange(10, 100)
-        self.slider_opacity.setValue(80)
-        self.slider_opacity.setFixedWidth(100)
-        self.slider_opacity.setToolTip("Capture Window opacity")
-        controls_layout.addWidget(self.slider_opacity)
-
         controls_layout.addWidget(QLabel("Engine:"))
-        self.cb_engine = ComboBox()
+        self.cb_engine = SuggestionComboBox()
         self.cb_engine.setMinimumWidth(160)
         self.cb_engine.setMaximumHeight(_COMBOBOX_HEIGHT)
+        self.cb_engine.setPlaceholderText("Choose engine")
         controls_layout.addWidget(self.cb_engine)
 
         controls_layout.addWidget(QLabel("From:"))
-        self.cb_source = ComboBox()
+        self.cb_source = SuggestionComboBox()
         self.cb_source.setMinimumWidth(140)
         self.cb_source.setMaximumHeight(_COMBOBOX_HEIGHT)
+        self.cb_source.setPlaceholderText("Source language")
         controls_layout.addWidget(self.cb_source)
 
         controls_layout.addWidget(QLabel("To:"))
-        self.cb_target = ComboBox()
+        self.cb_target = SuggestionComboBox()
         self.cb_target.setMinimumWidth(140)
         self.cb_target.setMaximumHeight(_COMBOBOX_HEIGHT)
+        self.cb_target.setPlaceholderText("Target language")
         controls_layout.addWidget(self.cb_target)
 
-        self.btn_swap = PushButton("⮁ Swap")
+        self.btn_swap = ToolButton(
+            self._workspace_action_icon("mdi6.swap-horizontal"), controls
+        )
+        self.btn_swap.setObjectName("WorkspaceActionButton")
         self.btn_swap.setToolTip("Swap source and target languages and text")
+        self.btn_swap.setFixedSize(38, 38)
+        self.btn_swap.setIconSize(QSize(18, 18))
         controls_layout.addWidget(self.btn_swap)
 
-        self.btn_clear = PushButton("✕ Clear")
+        self.btn_clear = ToolButton(self._workspace_action_icon("mdi6.broom"), controls)
+        self.btn_clear.setObjectName("WorkspaceActionButton")
         self.btn_clear.setToolTip("Clear both text areas")
+        self.btn_clear.setFixedSize(38, 38)
+        self.btn_clear.setIconSize(QSize(18, 18))
         controls_layout.addWidget(self.btn_clear)
         controls_layout.addStretch(1)
         layout.addWidget(controls)
@@ -248,42 +280,6 @@ class MainWindow(QMainWindow):
 
     def _add_navigation_items(self) -> None:
         """Populate the left Fluent navigation bar."""
-        self.navigationInterface.addItem(
-            routeKey="translate",
-            icon=FIF.EDIT,
-            text="Translate",
-            onClick=lambda: self._show_stack_page(0, "translate"),
-            position=NavigationItemPosition.TOP,
-        )
-        self.navigationInterface.addItem(
-            routeKey="tools",
-            icon=FIF.APPLICATION,
-            text="Tools",
-            onClick=lambda: self._show_stack_page(1, "tools"),
-            position=NavigationItemPosition.TOP,
-        )
-        self.navigationInterface.addItem(
-            routeKey="history",
-            icon=FIF.HISTORY,
-            text="History",
-            onClick=self._open_history,
-            position=NavigationItemPosition.TOP,
-        )
-        self.navigationInterface.addItem(
-            routeKey="ocr_images",
-            icon=FIF.PHOTO,
-            text="OCR Images",
-            onClick=self._open_ocr_images,
-            position=NavigationItemPosition.TOP,
-        )
-        self.navigationInterface.addItem(
-            routeKey="log",
-            icon=qta.icon("mdi6.console"),
-            text="Log",
-            onClick=self._open_log,
-            position=NavigationItemPosition.TOP,
-        )
-
         self.navigationInterface.addSeparator()
 
         for route_key, icon, text, slot in [
@@ -299,22 +295,21 @@ class MainWindow(QMainWindow):
                 position=NavigationItemPosition.SCROLL,
             )
 
-        self.navigationInterface.addItem(
-            routeKey="settings",
-            icon=FIF.SETTING,
-            text="Settings",
-            onClick=self._open_settings,
-            selectable=True,
-            position=NavigationItemPosition.BOTTOM,
-        )
-        self.navigationInterface.addItem(
-            routeKey="about",
-            icon=FIF.INFO,
-            text="About",
-            onClick=self._open_about,
-            selectable=True,
-            position=NavigationItemPosition.BOTTOM,
-        )
+    def _workspace_action_icon(self, icon_name: str) -> QIcon:
+        """Create a workspace action icon with an explicit disabled-state color."""
+        if isDarkTheme():
+            color = "#f4f4f4"
+            disabled = "#6f6f6f"
+        else:
+            color = "#1c1c1c"
+            disabled = "#9a9a9a"
+        normal_icon = qta.icon(icon_name, color=color)
+        disabled_icon = qta.icon(icon_name, color=disabled)
+        icon = QIcon()
+        for size in (16, 18, 20, 24, 32):
+            icon.addPixmap(normal_icon.pixmap(size, size), QIcon.Mode.Normal)
+            icon.addPixmap(disabled_icon.pixmap(size, size), QIcon.Mode.Disabled)
+        return icon
 
     def register_internal_pages(
         self,
@@ -325,27 +320,54 @@ class MainWindow(QMainWindow):
         settings_page: QWidget,
     ) -> None:
         """Embed auxiliary windows into the main stacked area."""
-        self._history_page_index = self._embed_page_widget(history_page)
-        self._log_page_index = self._embed_page_widget(log_page)
-        self._ocr_images_page_index = self._embed_page_widget(ocr_images_page)
-        self._about_page_index = self._embed_page_widget(about_page)
-        self._settings_page_index = self._embed_page_widget(settings_page)
+        self._history_page = self._embed_page_widget(
+            history_page, "history", FIF.HISTORY, "History", NavigationItemPosition.TOP
+        )
+        self._ocr_images_page = self._embed_page_widget(
+            ocr_images_page,
+            "ocr_images",
+            FIF.PHOTO,
+            "OCR Images",
+            NavigationItemPosition.TOP,
+        )
+        self._log_page = self._embed_page_widget(
+            log_page, "log", qta.icon("mdi6.console"), "Log", NavigationItemPosition.TOP
+        )
+        self._about_page = self._embed_page_widget(
+            about_page, "about", FIF.INFO, "About", NavigationItemPosition.BOTTOM
+        )
+        self._settings_page = self._embed_page_widget(
+            settings_page,
+            "settings",
+            FIF.SETTING,
+            "Settings",
+            NavigationItemPosition.BOTTOM,
+        )
+        self._add_navigation_items()
 
-    def _embed_page_widget(self, widget: QWidget) -> int:
-        """Turn an auxiliary top-level widget into a stacked page."""
+    def _embed_page_widget(
+        self,
+        widget: QWidget,
+        route_key: str,
+        icon: object,
+        text: str,
+        position: NavigationItemPosition,
+    ) -> QWidget:
+        """Turn an auxiliary widget into a Fluent stacked page."""
         widget.setParent(None)
         widget.setWindowFlags(Qt.WindowType.Widget)
         scroll_page = self._wrap_scroll_page(widget)
-        self.stackWidget.addWidget(scroll_page)
-        return self.stackWidget.indexOf(scroll_page)
+        scroll_page.setObjectName(route_key)
+        self.addSubInterface(scroll_page, icon, text, position=position)
+        return scroll_page
 
     def _wrap_scroll_page(self, widget: QWidget) -> _PageScrollArea:
         """Wrap a page widget in a Fluent scroll area."""
-        return _PageScrollArea(widget, self.stackWidget)
+        return _PageScrollArea(widget, self.stackedWidget)
 
-    def _show_stack_page(self, index: int, route_key: str) -> None:
+    def _show_stack_page(self, page: QWidget, route_key: str) -> None:
         """Show a stacked page and sync the Fluent navigation indicator."""
-        self.stackWidget.setCurrentIndex(index)
+        self.switchTo(page)
         self.navigationInterface.setCurrentItem(route_key)
 
     def _build_tray(self) -> None:
@@ -379,10 +401,9 @@ class MainWindow(QMainWindow):
         self.btn_snip.clicked.connect(self._trigger_snip)
         self.btn_swap.clicked.connect(self._swap_languages)
         self.btn_clear.clicked.connect(self._clear_text)
-        self.slider_opacity.valueChanged.connect(self._on_opacity_changed)
-        self.cb_engine.currentTextChanged.connect(self._on_engine_changed)
-        self.cb_source.currentIndexChanged.connect(self._on_source_changed)
-        self.cb_target.currentIndexChanged.connect(self._on_target_changed)
+        self.cb_engine.committed.connect(self._on_engine_changed)
+        self.cb_source.committed.connect(self._on_source_changed)
+        self.cb_target.committed.connect(self._on_target_changed)
 
         ctrl = self.controller
         ctrl.ocr_started.connect(self._on_busy)
@@ -399,6 +420,7 @@ class MainWindow(QMainWindow):
         self.cb_engine.blockSignals(True)
         for name in self.controller.available_backend_names():
             self.cb_engine.addItem(name)
+        self.cb_engine.refresh_completer()
         saved_engine = s.get("engine", "translators-google")
         idx = self.cb_engine.findText(saved_engine)
         if idx < 0:
@@ -430,6 +452,8 @@ class MainWindow(QMainWindow):
             prefix_code=True,
         )
         self._populate_language_combo(self.cb_target, tgt_langs)
+        self.cb_source.refresh_completer()
+        self.cb_target.refresh_completer()
 
         saved_src = s.get("sourceLang", "auto")
         saved_tgt = s.get("targetLang", "en")
@@ -462,7 +486,7 @@ class MainWindow(QMainWindow):
 
     def _populate_language_combo(
         self,
-        combo: ComboBox,
+        combo: SuggestionComboBox,
         languages: list[str],
         *,
         mark_ocr_compat: bool = False,
@@ -545,17 +569,17 @@ class MainWindow(QMainWindow):
         )
         self.btn_snip.setToolTip(
             disabled_reason
-            or "Draw a selection on any monitor to capture and translate (Ctrl+Alt+T)"
+            or "Draw a selection on any monitor to capture and translate"
         )
 
-    def _find_language_index(self, combo: ComboBox, code: str) -> int:
+    def _find_language_index(self, combo: SuggestionComboBox, code: str) -> int:
         """Find the combobox index for a language code stored as user data."""
         for idx in range(combo.count()):
             if combo.itemData(idx) == code:
                 return idx
         return -1
 
-    def _persist_selected_language(self, combo: ComboBox, key: str) -> None:
+    def _persist_selected_language(self, combo: SuggestionComboBox, key: str) -> None:
         """Persist the currently selected language code."""
         code = combo.currentData()
         if isinstance(code, str) and code:
@@ -596,9 +620,12 @@ class MainWindow(QMainWindow):
 
         self.controller.start_snip_capture()
 
-    @pyqtSlot(str)
-    def _on_engine_changed(self, name: str) -> None:
+    @pyqtSlot(int)
+    def _on_engine_changed(self, _: int) -> None:
         """React to engine combobox change."""
+        name = self.cb_engine.currentText().strip()
+        if not name:
+            return
         self.controller.set_active_backend(name)
         self._refresh_lang_combos()
 
@@ -630,6 +657,9 @@ class MainWindow(QMainWindow):
         r = self.tb_result.toPlainText()
         self.tb_query.setPlainText(r)
         self.tb_result.setPlainText(q)
+        self._persist_selected_language(self.cb_source, "sourceLang")
+        self._persist_selected_language(self.cb_target, "targetLang")
+        self.refresh_ocr_compatibility_state()
 
     @pyqtSlot()
     def _clear_text(self) -> None:
@@ -641,21 +671,16 @@ class MainWindow(QMainWindow):
         if self.controller.result_window:
             self.controller.result_window.set_text("")
 
-    @pyqtSlot(int)
-    def _on_opacity_changed(self, val: int) -> None:
-        """Update capture window opacity from slider."""
-        opacity = val / 100.0
-        if self.controller.capture_window:
-            self.controller.capture_window.set_overlay_opacity(opacity)
-
     @pyqtSlot()
     def _on_busy(self) -> None:
         """Show busy indicator."""
+        self._progress_label.setVisible(True)
         self.progress.setVisible(True)
 
     @pyqtSlot()
     def _on_idle(self) -> None:
         """Hide busy indicator."""
+        self._progress_label.setVisible(False)
         self.progress.setVisible(False)
 
     @pyqtSlot(str)
@@ -689,26 +714,26 @@ class MainWindow(QMainWindow):
     # ------------------------------------------------------------------
 
     def _open_settings(self) -> None:
-        if self.controller.settings_page and self._settings_page_index is not None:
-            self._show_stack_page(self._settings_page_index, "settings")
+        if self.controller.settings_page and self._settings_page is not None:
+            self._show_stack_page(self._settings_page, "settings")
 
     def _open_history(self) -> None:
-        if self.controller.history_window and self._history_page_index is not None:
+        if self.controller.history_window and self._history_page is not None:
             self.controller.history_window._load()
-            self._show_stack_page(self._history_page_index, "history")
+            self._show_stack_page(self._history_page, "history")
 
     def _open_log(self) -> None:
-        if self.controller.log_window and self._log_page_index is not None:
-            self._show_stack_page(self._log_page_index, "log")
+        if self.controller.log_window and self._log_page is not None:
+            self._show_stack_page(self._log_page, "log")
 
     def _open_ocr_images(self) -> None:
-        if self.controller.ocr_images_page and self._ocr_images_page_index is not None:
+        if self.controller.ocr_images_page and self._ocr_images_page is not None:
             self.controller.ocr_images_page.refresh_gallery()
-            self._show_stack_page(self._ocr_images_page_index, "ocr_images")
+            self._show_stack_page(self._ocr_images_page, "ocr_images")
 
     def _open_about(self) -> None:
-        if self.controller.about_page and self._about_page_index is not None:
-            self._show_stack_page(self._about_page_index, "about")
+        if self.controller.about_page and self._about_page is not None:
+            self._show_stack_page(self._about_page, "about")
 
     def _open_capture_window(self) -> None:
         if self.controller.capture_window:
