@@ -31,6 +31,7 @@ from qfluentwidgets import (
 import qtawesome as qta
 
 from screen_translate import __version__
+from qfluentwidgets.common.router import qrouter
 from screen_translate.ui.widgets import SuggestionComboBox
 from screen_translate.ui.theme.style_sheet import StyleSheet
 from screen_translate.ui.theme.utils import load_icon
@@ -145,8 +146,8 @@ class MainWindow(FluentWindow):
         self._tools_page = self._wrap_scroll_page(ToolsPage(self))
         self._tools_page.setObjectName("tools")
 
-        self.addSubInterface(self._workspace_page, FIF.EDIT, "Translate")
-        self.addSubInterface(self._tools_page, FIF.APPLICATION, "Tools")
+        self._add_sub_interface(self._workspace_page, FIF.EDIT, "Translate")
+        self._add_sub_interface(self._tools_page, FIF.APPLICATION, "Tools")
 
         self.switchTo(self._workspace_page)
         self.navigationInterface.setCurrentItem("translate")
@@ -340,8 +341,50 @@ class MainWindow(FluentWindow):
         widget.setWindowFlags(Qt.WindowType.Widget)
         scroll_page = self._wrap_scroll_page(widget)
         scroll_page.setObjectName(route_key)
-        self.addSubInterface(scroll_page, icon, text, position=position)
+        self._add_sub_interface(scroll_page, icon, text, position=position)
         return scroll_page
+
+    def _add_sub_interface(
+        self,
+        interface: QWidget,
+        icon: object,
+        text: str,
+        position: NavigationItemPosition = NavigationItemPosition.TOP,
+        parent: QWidget | str | None = None,
+        *,
+        is_transparent: bool = False,
+    ) -> QWidget:
+        """Add a Fluent sub-interface without enabling the built-in nav tooltip."""
+        if not interface.objectName():
+            raise ValueError("The object name of `interface` can't be empty string.")
+
+        parent_route_key = parent
+        if parent and isinstance(parent, QWidget):
+            parent_route_key = parent.objectName()
+            if not parent_route_key:
+                raise ValueError("The object name of `parent` can't be empty string.")
+
+        interface.setProperty("isStackedTransparent", is_transparent)
+        self.stackedWidget.addWidget(interface)
+
+        route_key = interface.objectName()
+        self.navigationInterface.addItem(
+            routeKey=route_key,
+            icon=icon,
+            text=text,
+            onClick=lambda: self.switchTo(interface),
+            position=position,
+            tooltip=None,
+            parentRouteKey=parent_route_key,
+        )
+
+        if self.stackedWidget.count() == 1:
+            self.stackedWidget.currentChanged.connect(self._onCurrentInterfaceChanged)
+            self.navigationInterface.setCurrentItem(route_key)
+            qrouter.setDefaultRouteKey(self.stackedWidget, route_key)
+
+        self._updateStackedBackground()
+        return interface
 
     def _wrap_scroll_page(self, widget: QWidget) -> _PageScrollArea:
         """Wrap a page widget in a Fluent scroll area."""
