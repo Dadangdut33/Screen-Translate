@@ -15,6 +15,7 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 from qfluentwidgets import (
+    CheckBox,
     ComboBox,
     InfoBar,
     InfoBarIcon,
@@ -36,13 +37,29 @@ def _is_theme_current(theme: str) -> bool:
     return qconfig.theme == target_theme
 
 
+def _is_fusion_style_current(dialog: Any) -> bool:
+    """Return whether the selected Fusion base-style preference matches the live app."""
+    app = QApplication.instance()
+    if app is None:
+        return True
+    expected = bool(dialog.s.get("use_fusion_base_style", False))
+    current = app.property("useFusionBaseStyle")
+    if current is None:
+        return True
+    return bool(current) == expected
+
+
+def _needs_restart(dialog: Any, theme: str) -> bool:
+    """Return whether the current appearance settings differ from the live app state."""
+    return (not _is_theme_current(theme)) or (not _is_fusion_style_current(dialog))
+
+
 def _update_theme_restart_notice(dialog: Any, theme: str) -> None:
-    """Show or hide the restart notice for theme changes."""
+    """Show or hide the restart notice for appearance changes."""
     notice = getattr(dialog, "_theme_restart_notice", None)
     if notice is None:
         return
-    needs_restart = not _is_theme_current(theme)
-    notice.setVisible(needs_restart)
+    notice.setVisible(_needs_restart(dialog, theme))
 
 
 def _restart_application(dialog: Any) -> None:
@@ -83,6 +100,14 @@ def on_theme_changed(dialog: Any, theme: str) -> None:
     current Qt/QFluentWidgets widget tree on some systems.
     """
     dialog.s.set("theme", theme)
+    _update_theme_restart_notice(dialog, theme)
+
+
+def on_fusion_base_style_changed(dialog: Any, enabled: bool) -> None:
+    """Persist the Fusion base-style preference."""
+    dialog.s.set("use_fusion_base_style", enabled)
+    theme_combo = getattr(dialog, "_cb_theme", None)
+    theme = theme_combo.currentText() if theme_combo is not None else "Dark"
     _update_theme_restart_notice(dialog, theme)
 
 
@@ -129,10 +154,18 @@ def build_appearance_page(dialog: Any) -> QWidget:
         lambda theme: on_theme_changed(dialog, theme)
     )
     fl_theme.addRow("Theme:", dialog._cb_theme)
+    dialog._chk_use_fusion_base_style = CheckBox("Set base style to Fusion")
+    dialog._chk_use_fusion_base_style.setChecked(
+        bool(dialog.s.get("use_fusion_base_style", False))
+    )
+    dialog._chk_use_fusion_base_style.toggled.connect(
+        lambda checked: on_fusion_base_style_changed(dialog, checked)
+    )
+    fl_theme.addRow("", dialog._chk_use_fusion_base_style)
     dialog._theme_restart_notice = InfoBar(
         InfoBarIcon.WARNING,
         "Restart Required",
-        "Restart the app to apply the selected theme.",
+        "Restart the app to apply the selected appearance settings.",
         duration=-1,
         position=InfoBarPosition.NONE,
         parent=w,

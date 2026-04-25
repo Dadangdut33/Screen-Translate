@@ -151,16 +151,22 @@ def main() -> None:
 def _apply_theme(app: QApplication, settings: SettingsManager) -> None:
     """Apply the configured Fluent light/dark theme."""
     theme_name = str(settings.get("theme", _DEFAULT_THEME)).title()
+    use_fusion_base_style = bool(settings.get("use_fusion_base_style", False))
     if theme_name not in {"Dark", "Light"}:
         theme_name = _DEFAULT_THEME
         settings.set("theme", theme_name)
     theme = Theme.DARK if theme_name == "Dark" else Theme.LIGHT
     try:
-        app.setStyle("Fusion")
+        if use_fusion_base_style:
+            app.setStyle("Fusion")
+        app.setProperty("useFusionBaseStyle", use_fusion_base_style)
         setTheme(theme, save=False, lazy=True)
-        logger.info("Applied QFluentWidgets theme: %s", theme_name)
+        logger.info(
+            "Applied QFluentWidgets theme: %s (Fusion base style: %s)",
+            theme_name,
+            "on" if use_fusion_base_style else "off",
+        )
     except Exception as exc:
-        app.setStyle("Fusion")
         logger.warning("Could not apply QFluentWidgets theme %s: %s", theme_name, exc)
 
 
