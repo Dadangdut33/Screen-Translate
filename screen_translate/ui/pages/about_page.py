@@ -44,6 +44,7 @@ from screen_translate.ui.update_check import (
     releases_url,
     update_instructions,
 )
+from screen_translate.ui.widgets.icons import load_qta_icon
 
 _SOURCE_FUNDING_FILE = Path(__file__).resolve().parents[3] / ".github" / "FUNDING.yml"
 _FUNDING_PLATFORM_URLS: dict[str, str] = {
@@ -64,7 +65,7 @@ _FUNDING_PLATFORM_ICONS: dict[str, str] = {
     "issuehunt": "mdi6.bug-outline",
     "otechie": "mdi6.lifebuoy",
     "custom": "mdi6.cash",
-    "paypal": "mdi6.paypal",
+    "paypal": "mdi6.cash",
     "buymeacoffee": "mdi6.coffee",
 }
 
@@ -133,10 +134,7 @@ def _detect_custom_funding_target(url: str) -> tuple[str, str]:
 def _funding_icon(icon_key: str) -> object:
     """Return a qtawesome mdi6 icon for a funding entry."""
     icon_name = _FUNDING_PLATFORM_ICONS.get(icon_key, "mdi6.cash")
-    try:
-        return qta.icon(icon_name)
-    except Exception:
-        return qta.icon("mdi6.cash")
+    return load_qta_icon(icon_name)
 
 
 def _read_funding_text() -> str:

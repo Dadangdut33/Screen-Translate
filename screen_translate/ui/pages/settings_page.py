@@ -30,6 +30,7 @@ from screen_translate.ui.pages.settings import (
 )
 from screen_translate.ui.pages.settings.common import configure_form_layout
 from screen_translate.ui.theme.style_sheet import StyleSheet
+from screen_translate.ui.widgets.icons import load_qta_icon
 
 if TYPE_CHECKING:
     from screen_translate.ui.controller import AppController
@@ -280,15 +281,7 @@ class SettingsPage(QWidget):
         if not icon_name:
             return QIcon()
         try:
-            color = self.palette().color(QPalette.ColorRole.WindowText)
-            color_key = (label, color.name(QColor.NameFormat.HexArgb))
-            cached_icon = self._nav_icon_cache.get(color_key)
-            if cached_icon is not None:
-                return cached_icon
-
-            kwargs: dict[str, Any] = {"color": QColor(color)}
-            icon = qta.icon(icon_name, **kwargs)
-            self._nav_icon_cache[color_key] = icon
+            icon = load_qta_icon(icon_name)
             return icon
         except Exception as exc:
             logger.debug(

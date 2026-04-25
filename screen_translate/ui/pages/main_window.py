@@ -34,6 +34,7 @@ from screen_translate import __version__
 from screen_translate.ui.widgets import SuggestionComboBox
 from screen_translate.ui.theme.style_sheet import StyleSheet
 from screen_translate.ui.theme.utils import load_icon
+from screen_translate.ui.widgets.icons import load_qta_icon
 
 if TYPE_CHECKING:
     from screen_translate.ui.controller import AppController
@@ -42,7 +43,6 @@ logger = logging.getLogger(__name__)
 
 _APP_NAME = "Screen Translate"
 _COMBOBOX_HEIGHT = 36
-_COMBOBOX_POPUP_MAX_HEIGHT = 320
 _LANGUAGE_NAME_OVERRIDES: dict[str, str] = {
     "auto": "Auto Detect",
     "zh-CN": "Chinese (Simplified)",
@@ -193,18 +193,14 @@ class MainWindow(FluentWindow):
         controls_layout.setContentsMargins(0, 0, 0, 0)
         controls_layout.setSpacing(10)
 
-        self.btn_translate = ToolButton(
-            self._workspace_action_icon("mdi6.translate"), controls
-        )
+        self.btn_translate = ToolButton(load_qta_icon("mdi6.translate"), controls)
         self.btn_translate.setObjectName("WorkspaceActionButton")
         self.btn_translate.setToolTip("Translate typed text (no OCR)")
         self.btn_translate.setFixedSize(38, 38)
         self.btn_translate.setIconSize(QSize(18, 18))
         controls_layout.addWidget(self.btn_translate)
 
-        self.btn_capture = ToolButton(
-            self._workspace_action_icon("mdi6.camera-outline"), controls
-        )
+        self.btn_capture = ToolButton(load_qta_icon("mdi6.camera-outline"), controls)
         self.btn_capture.setObjectName("WorkspaceActionButton")
         self.btn_capture.setToolTip(
             "Capture the region inside the Capture Window and translate"
@@ -213,7 +209,7 @@ class MainWindow(FluentWindow):
         self.btn_capture.setIconSize(QSize(18, 18))
         controls_layout.addWidget(self.btn_capture)
 
-        self.btn_snip = ToolButton(self._workspace_action_icon("mdi6.crop"), controls)
+        self.btn_snip = ToolButton(load_qta_icon("mdi6.crop"), controls)
         self.btn_snip.setObjectName("WorkspaceActionButton")
         self.btn_snip.setToolTip(
             "Draw a selection on any monitor to capture and translate"
@@ -243,16 +239,14 @@ class MainWindow(FluentWindow):
         self.cb_target.setPlaceholderText("Target language")
         controls_layout.addWidget(self.cb_target)
 
-        self.btn_swap = ToolButton(
-            self._workspace_action_icon("mdi6.swap-horizontal"), controls
-        )
+        self.btn_swap = ToolButton(load_qta_icon("mdi6.swap-horizontal"), controls)
         self.btn_swap.setObjectName("WorkspaceActionButton")
         self.btn_swap.setToolTip("Swap source and target languages and text")
         self.btn_swap.setFixedSize(38, 38)
         self.btn_swap.setIconSize(QSize(18, 18))
         controls_layout.addWidget(self.btn_swap)
 
-        self.btn_clear = ToolButton(self._workspace_action_icon("mdi6.broom"), controls)
+        self.btn_clear = ToolButton(load_qta_icon("mdi6.broom"), controls)
         self.btn_clear.setObjectName("WorkspaceActionButton")
         self.btn_clear.setToolTip("Clear both text areas")
         self.btn_clear.setFixedSize(38, 38)
@@ -295,22 +289,6 @@ class MainWindow(FluentWindow):
                 position=NavigationItemPosition.SCROLL,
             )
 
-    def _workspace_action_icon(self, icon_name: str) -> QIcon:
-        """Create a workspace action icon with an explicit disabled-state color."""
-        if isDarkTheme():
-            color = "#f4f4f4"
-            disabled = "#6f6f6f"
-        else:
-            color = "#1c1c1c"
-            disabled = "#9a9a9a"
-        normal_icon = qta.icon(icon_name, color=color)
-        disabled_icon = qta.icon(icon_name, color=disabled)
-        icon = QIcon()
-        for size in (16, 18, 20, 24, 32):
-            icon.addPixmap(normal_icon.pixmap(size, size), QIcon.Mode.Normal)
-            icon.addPixmap(disabled_icon.pixmap(size, size), QIcon.Mode.Disabled)
-        return icon
-
     def register_internal_pages(
         self,
         history_page: QWidget,
@@ -331,7 +309,11 @@ class MainWindow(FluentWindow):
             NavigationItemPosition.TOP,
         )
         self._log_page = self._embed_page_widget(
-            log_page, "log", qta.icon("mdi6.console"), "Log", NavigationItemPosition.TOP
+            log_page,
+            "log",
+            load_qta_icon("mdi6.console"),
+            "Log",
+            NavigationItemPosition.TOP,
         )
         self._about_page = self._embed_page_widget(
             about_page, "about", FIF.INFO, "About", NavigationItemPosition.BOTTOM

@@ -21,7 +21,9 @@ def load_icon() -> QIcon:
         QIcon (may be null if asset unavailable).
     """
     try:
-        asset = importlib.resources.files("screen_translate.assets").joinpath("logo.ico")
+        asset = importlib.resources.files("screen_translate.assets").joinpath(
+            "logo.ico"
+        )
         with importlib.resources.as_file(asset) as path:
             if path.exists():
                 return QIcon(str(path))

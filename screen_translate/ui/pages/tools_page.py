@@ -22,11 +22,11 @@ from qfluentwidgets import (
     PushButton,
     Slider,
     ToolButton,
-    ToolTipFilter,
-    ToolTipPosition,
     TitleLabel,
 )
 import qtawesome as qta
+
+from screen_translate.ui.widgets.icons import load_qta_icon
 
 if TYPE_CHECKING:
     from screen_translate.ui.pages.main_window import MainWindow
@@ -439,8 +439,7 @@ class ToolsPage(QWidget):
         if qta is None:
             return fallback
         try:
-            color = self.palette().color(self.foregroundRole())
-            return qta.icon(name, color=QColor(color))
+            return load_qta_icon(name)
         except Exception:
             return fallback
 
