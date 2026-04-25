@@ -21,3 +21,30 @@ QWidget#LogPage BodyLabel,
 QWidget#AboutPage BodyLabel {
     color: rgb(32, 32, 32);
 }
+
+QWidget#LogPage QFontComboBox,
+QWidget#LogPage QFontComboBox QLineEdit,
+QWidget#LogPage QFontComboBox QAbstractItemView,
+QWidget#LogPage ComboBox,
+QWidget#LogPage ComboBox QLineEdit,
+QWidget#LogPage ComboBox QAbstractItemView,
+QWidget#LogPage PushButton,
+QWidget#LogPage CheckBox {
+    color: rgb(32, 32, 32);
+}
+
+QWidget#LogPage QFontComboBox,
+QWidget#LogPage ComboBox {
+    background-color: rgba(255, 255, 255, 0.88);
+    border: 1px solid rgba(0, 0, 0, 0.10);
+    border-radius: 6px;
+    padding: 4px 8px;
+}
+
+QWidget#LogPage QFontComboBox QAbstractItemView,
+QWidget#LogPage ComboBox QAbstractItemView {
+    background-color: rgb(249, 249, 249);
+    color: rgb(32, 32, 32);
+    selection-color: rgb(255, 255, 255);
+    selection-background-color: rgba(0, 120, 212, 0.88);
+}

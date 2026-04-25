@@ -176,9 +176,7 @@ class SettingsPage(QWidget):
             panel_color = panel_color.darker(103)
             border_color = border_color.darker(110)
             active_bg = active_bg.darker(112)
-        active_text = (
-            QColor("#ffffff") if is_dark_theme else _contrast_text_for(active_bg)
-        )
+        active_text = QColor("#ffffff") if is_dark_theme else QColor("#111111")
 
         for row in range(self._nav_list.count()):
             item = self._nav_list.item(row)
@@ -191,7 +189,7 @@ class SettingsPage(QWidget):
         nav_palette.setColor(QPalette.ColorRole.Highlight, active_bg)
         nav_palette.setColor(QPalette.ColorRole.HighlightedText, active_text)
         self._nav_list.setPalette(nav_palette)
-        self._sync_nav_item_colors(text_color=active_text, active_text=active_text)
+        self._sync_nav_item_colors(text_color=text_color, active_text=active_text)
         self._nav_panel.setStyleSheet(
             f"""
             QWidget {{
@@ -247,7 +245,7 @@ class SettingsPage(QWidget):
             active_text = (
                 QColor("#ffffff")
                 if window_color.lightnessF() < 0.5
-                else QColor("#111111" if active_bg.lightnessF() >= 0.58 else "#ffffff")
+                else QColor("#111111")
             )
 
         current_row = self._nav_list.currentRow()

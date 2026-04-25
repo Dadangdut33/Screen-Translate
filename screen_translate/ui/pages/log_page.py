@@ -79,6 +79,7 @@ class LogPage(QWidget):
 
         hl.addWidget(QLabel("Font:"))
         self._cb_font = QFontComboBox(self)
+        self._cb_font.setObjectName("LogFontCombo")
         saved_font = (
             str(self.controller.settings.get("log_font_family", "Courier New")).strip()
             or "Courier New"

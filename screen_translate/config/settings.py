@@ -28,6 +28,7 @@ DEFAULTS: dict[str, Any] = {
     "supress_no_text_alert": True,
     "run_on_startup": False,
     "theme": "Dark",
+    "use_fusion_base_style": False,
     # Logging
     "keep_log": True,
     "log_level": "DEBUG",

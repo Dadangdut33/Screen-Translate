@@ -7,4 +7,42 @@ QWidget#LogPage QPlainTextEdit {
     background-color: rgba(39, 39, 39, 0.92);
     border-radius: 8px;
     border: 1px solid rgba(255, 255, 255, 0.08);
+    color: rgb(244, 244, 244);
+    selection-color: rgb(255, 255, 255);
+    selection-background-color: rgba(0, 120, 212, 0.88);
+}
+
+QWidget#LogPage QLabel,
+QWidget#LogPage QFontComboBox,
+QWidget#LogPage QFontComboBox QLineEdit,
+QWidget#LogPage QFontComboBox QAbstractItemView,
+QWidget#LogPage ComboBox,
+QWidget#LogPage ComboBox QLineEdit,
+QWidget#LogPage ComboBox QAbstractItemView,
+QWidget#LogPage PushButton,
+QWidget#LogPage CheckBox,
+QWidget#HistoryPage QLabel,
+QWidget#HistoryPage PushButton,
+QWidget#AboutPage QLabel,
+QWidget#AboutPage PushButton,
+QWidget#HistoryPage BodyLabel,
+QWidget#LogPage BodyLabel,
+QWidget#AboutPage BodyLabel {
+    color: rgb(244, 244, 244);
+}
+
+QWidget#LogPage QFontComboBox,
+QWidget#LogPage ComboBox {
+    background-color: rgba(39, 39, 39, 0.92);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    border-radius: 6px;
+    padding: 4px 8px;
+}
+
+QWidget#LogPage QFontComboBox QAbstractItemView,
+QWidget#LogPage ComboBox QAbstractItemView {
+    background-color: rgb(32, 32, 32);
+    color: rgb(244, 244, 244);
+    selection-color: rgb(255, 255, 255);
+    selection-background-color: rgba(0, 120, 212, 0.88);
 }
