@@ -77,8 +77,19 @@ DEFAULTS: dict[str, Any] = {
     "libre_host": "translate.argosopentech.com",
     "libre_port": "",
     "libre_https": True,
+    "libre_use_local": False,
+    "libre_local_dir": "",
+    "libre_local_port": "5000",
+    "libre_local_package_dir": "",
+    # Argos Translate
+    "argos_package_dir": "",
     # DeepL official
     "deepl_api_key": "",
+    # Translation proxy
+    "translation_proxy_enabled": False,
+    "translation_proxy_http": "",
+    "translation_proxy_https": "",
+    "translation_proxy_no_proxy": "",
     # Hotkeys
     "hk_cap_window": "",
     "hk_cap_window_delay": 1000,

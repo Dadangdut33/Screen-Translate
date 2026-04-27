@@ -20,6 +20,7 @@ dependencies = [
     "pyperclip>=1.8",
     "keyboard>=0.13",
     "platformdirs>=4.9.6",
+    "requests>=2.32.0",
     "pycountry>=26.2.16",
     "pyqt6-fluent-widgets>=1.11.1",
     "opencv-python>=4.10",

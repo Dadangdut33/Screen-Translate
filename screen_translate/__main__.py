@@ -80,6 +80,7 @@ def main() -> None:
 
     # --- Controller ---
     controller = AppController(settings)
+    app.aboutToQuit.connect(controller.shutdown)
 
     # --- Create all windows (none shown yet) ---
     main_win = MainWindow(controller)

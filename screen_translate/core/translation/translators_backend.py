@@ -31,7 +31,7 @@ def _import_translators() -> ModuleType:
 class TranslatorsBackend(TranslationBackend):
     """A generic backend wrapping a specific provider from the translators library."""
 
-    def __init__(self, provider: str) -> None:
+    def __init__(self, provider: str, proxies: dict[str, str] | None = None) -> None:
         """Create a new backend for the given provider.
 
         Args:
@@ -41,6 +41,7 @@ class TranslatorsBackend(TranslationBackend):
         self._name = f"translators-{provider}"
         self._langs: list[str] = []
         self._langs_loaded = False
+        self._proxies = proxies or {}
 
     @property
     def name(self) -> str:
@@ -76,19 +77,22 @@ class TranslatorsBackend(TranslationBackend):
                 translator=self._provider,
                 from_language=source_lang,
                 to_language=target_lang,
+                proxies=self._proxies or None,
             )
         except Exception as e:
             raise TranslationError(f"{self.name} error: {e}") from e
 
 
-def get_all_translators_backends() -> list[TranslationBackend]:
+def get_all_translators_backends(
+    proxies: dict[str, str] | None = None,
+) -> list[TranslationBackend]:
     """Return an instantiated backend for every provider in translators_pool."""
     backends: list[TranslationBackend] = []
     try:
         ts = _import_translators()
         for provider in ts.translators_pool:
             try:
-                backends.append(TranslatorsBackend(provider))
+                backends.append(TranslatorsBackend(provider, proxies=proxies))
             except Exception as e:
                 logger.debug("Failed to init translator %s: %s", provider, e)
     except ImportError:

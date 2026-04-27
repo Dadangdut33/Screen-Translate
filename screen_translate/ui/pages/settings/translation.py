@@ -4,90 +4,52 @@ from __future__ import annotations
 
 from typing import Any
 
-from PyQt6.QtCore import pyqtSlot
-from PyQt6.QtWidgets import QFormLayout, QGroupBox, QVBoxLayout, QWidget
-from qfluentwidgets import ComboBox, LineEdit
+from PyQt6.QtWidgets import QStackedWidget, QVBoxLayout, QWidget
+from qfluentwidgets import SegmentedWidget
 
-from .common import bind_check, bind_line
-from screen_translate.core.translation.translators_backend import (
-    configure_translators_region,
-)
-
-
-def update_deepl_visibility(dialog: Any, name: str) -> None:
-    """Show DeepL key field only when the official backend is selected."""
-    dialog._grp_deepl.setVisible(
-        "deepl" in name.lower() and "official" in name.lower()
-    )
-
-
-@pyqtSlot(str)
-def on_backend_changed(dialog: Any, name: str) -> None:
-    """Switch active backend and update API key visibility."""
-    dialog.controller.set_active_backend(name)
-    update_deepl_visibility(dialog, name)
-    if dialog.controller.main_window:
-        dialog.controller.main_window._refresh_lang_combos()
-
-
-@pyqtSlot(str)
-def on_translators_region_changed(dialog: Any, region: str) -> None:
-    """Persist and apply the translators region mode immediately."""
-    dialog.s.set("translators_region", region)
-    configure_translators_region(region)
+from .translation_sections.argos import build_argos_section, refresh_argos_info, refresh_argos_package_index
+from .translation_sections.deepl import build_deepl_section
+from .translation_sections.libre import build_libre_section, refresh_libre_local_info
+from .translation_sections.proxy import build_proxy_section
+from .translation_sections.shared import update_libre_mode_visibility
+from .translation_sections.translators import build_translators_section
 
 
 def build_translation_page(dialog: Any) -> QWidget:
     """Build the Translation settings page."""
     w = QWidget()
     vl = QVBoxLayout(w)
+    dialog._translation_sections = SegmentedWidget()
+    dialog._translation_stack = QStackedWidget()
 
-    grp = QGroupBox("Active Backend")
-    gfl = QFormLayout(grp)
-    dialog._cb_backend = ComboBox()
-    for name in dialog.controller.available_backend_names():
-        dialog._cb_backend.addItem(name)
-    saved = dialog.s.get("engine", "translators-google")
-    idx = dialog._cb_backend.findText(saved)
-    if idx < 0:
-        idx = 0
-    dialog._cb_backend.setCurrentIndex(max(0, idx))
-    dialog._cb_backend.currentTextChanged.connect(
-        lambda name: on_backend_changed(dialog, name)
-    )
-    gfl.addRow("Backend:", dialog._cb_backend)
-    vl.addWidget(grp)
+    pages = [
+        ("translators", "translators", build_translators_section(dialog)),
+        ("argos", "Argos", build_argos_section(dialog)),
+        ("libre", "LibreTranslate", build_libre_section(dialog)),
+        ("deepl", "DeepL", build_deepl_section(dialog)),
+        ("proxy", "Proxy", build_proxy_section(dialog)),
+    ]
 
-    dialog._grp_deepl = QGroupBox("DeepL Official API Key")
-    deepl_fl = QFormLayout(dialog._grp_deepl)
-    dialog._deepl_key = LineEdit()
-    dialog._deepl_key.setText(str(dialog.s.get("deepl_api_key", "")))
-    dialog._deepl_key.setEchoMode(LineEdit.EchoMode.Password)
-    dialog._deepl_key.setPlaceholderText("Enter DEEPL_API_KEY…")
-    dialog._deepl_key.textChanged.connect(lambda v: dialog.s.set("deepl_api_key", v))
-    deepl_fl.addRow("API Key:", dialog._deepl_key)
-    vl.addWidget(dialog._grp_deepl)
+    for route_key, label, page in pages:
+        page_layout = page.layout()
+        if page_layout is not None:
+            page_layout.setContentsMargins(0, 0, 0, 0)
+            page_layout.setSpacing(12)
+        dialog._translation_stack.addWidget(page)
+        dialog._translation_sections.addItem(
+            routeKey=route_key,
+            text=label,
+            onClick=lambda _checked=False, idx=dialog._translation_stack.count() - 1: dialog._translation_stack.setCurrentIndex(idx),
+        )
 
-    grp_libre = QGroupBox("LibreTranslate Server")
-    libre_fl = QFormLayout(grp_libre)
-    libre_fl.addRow(
-        "Host:", bind_line("libre_host", dialog.s, "translate.argosopentech.com")
-    )
-    libre_fl.addRow("Port:", bind_line("libre_port", dialog.s, "5000 or blank"))
-    libre_fl.addRow(bind_check("libre_https", "Use HTTPS", dialog.s))
-    libre_fl.addRow("API Key:", bind_line("libre_api_key", dialog.s, "optional"))
-    vl.addWidget(grp_libre)
+    dialog._translation_sections.setCurrentItem("translators")
+    dialog._translation_stack.setCurrentIndex(0)
+    vl.addWidget(dialog._translation_sections)
+    vl.addWidget(dialog._translation_stack, 1)
 
-    dialog._cb_translators_region = ComboBox()
-    dialog._cb_translators_region.addItems(["EN", "CN", "Auto"])
-    saved_region = str(dialog.s.get("translators_region", "EN"))
-    idx_region = dialog._cb_translators_region.findText(saved_region)
-    dialog._cb_translators_region.setCurrentIndex(max(0, idx_region))
-    dialog._cb_translators_region.currentTextChanged.connect(
-        lambda region: on_translators_region_changed(dialog, region)
-    )
-    gfl.addRow("translators region:", dialog._cb_translators_region)
+    refresh_argos_info(dialog)
+    refresh_argos_package_index(dialog)
+    refresh_libre_local_info(dialog)
+    update_libre_mode_visibility(dialog)
 
-    update_deepl_visibility(dialog, dialog._cb_backend.currentText())
-    vl.addStretch()
     return w

@@ -443,6 +443,7 @@ class MainWindow(FluentWindow):
 
         # Engine list
         self.cb_engine.blockSignals(True)
+        self.cb_engine.clear()
         for name in self.controller.available_backend_names():
             self.cb_engine.addItem(name)
         self.cb_engine.refresh_completer()
@@ -460,28 +461,24 @@ class MainWindow(FluentWindow):
         """Update source/target language combos for the active backend."""
         s = self.controller.settings
         engine_name = self.cb_engine.currentText()
+        self.controller.ensure_backend_ready(engine_name)
         backend = self.controller._backends.get(engine_name)
 
         langs = backend.available_languages() if backend else []
         src_langs = langs
-        tgt_langs = [lang for lang in langs if lang != "auto" and lang != "Auto"]
 
         self.cb_source.blockSignals(True)
         self.cb_target.blockSignals(True)
         self.cb_source.clear()
-        self.cb_target.clear()
         self._populate_language_combo(
             self.cb_source,
             src_langs,
             mark_ocr_compat=True,
             prefix_code=True,
         )
-        self._populate_language_combo(self.cb_target, tgt_langs)
         self.cb_source.refresh_completer()
-        self.cb_target.refresh_completer()
 
         saved_src = s.get("sourceLang", "auto")
-        saved_tgt = s.get("targetLang", "en")
 
         idx_src = self._find_language_index(self.cb_source, saved_src)
         if idx_src < 0:
@@ -489,25 +486,54 @@ class MainWindow(FluentWindow):
         if idx_src < 0 and self.cb_source.count() > 0:
             idx_src = 0
 
-        idx_tgt = self._find_language_index(self.cb_target, saved_tgt)
-        if idx_tgt < 0:
-            idx_tgt = self._find_language_index(self.cb_target, "en")
-        if idx_tgt < 0 and self.cb_target.count() > 0:
-            idx_tgt = 0
-
         self.cb_source.setCurrentIndex(max(0, idx_src))
-        self.cb_target.setCurrentIndex(max(0, idx_tgt))
+        selected_source = self.cb_source.currentData()
+        source_code = selected_source if isinstance(selected_source, str) else "auto"
+        self._refresh_target_combo(
+            backend,
+            source_code,
+            saved_target=str(s.get("targetLang", "en")),
+        )
 
         is_none = engine_name == "None"
         has_languages = bool(langs)
         self.cb_source.setEnabled(not is_none and has_languages)
-        self.cb_target.setEnabled(not is_none and has_languages)
+        self.cb_target.setEnabled(not is_none and self.cb_target.count() > 0)
         self.cb_source.blockSignals(False)
         self.cb_target.blockSignals(False)
 
         self._persist_selected_language(self.cb_source, "sourceLang")
         self._persist_selected_language(self.cb_target, "targetLang")
         self.refresh_ocr_compatibility_state()
+
+    def _refresh_target_combo(
+        self,
+        backend: object | None,
+        source_code: str,
+        *,
+        saved_target: str | None = None,
+    ) -> None:
+        """Refresh the target-language combo for the selected source language."""
+        if hasattr(backend, "available_target_languages"):
+            target_candidates = backend.available_target_languages(source_code) if backend else []
+        else:
+            all_languages = backend.available_languages() if backend else []
+            target_candidates = [
+                lang for lang in all_languages if lang not in {"auto", "Auto"}
+            ]
+
+        self.cb_target.clear()
+        self._populate_language_combo(self.cb_target, target_candidates)
+        self.cb_target.refresh_completer()
+
+        target_code = saved_target or str(self.controller.settings.get("targetLang", "en"))
+        idx_tgt = self._find_language_index(self.cb_target, target_code)
+        if idx_tgt < 0:
+            idx_tgt = self._find_language_index(self.cb_target, "en")
+        if idx_tgt < 0 and self.cb_target.count() > 0:
+            idx_tgt = 0
+        if idx_tgt >= 0:
+            self.cb_target.setCurrentIndex(idx_tgt)
 
     def _populate_language_combo(
         self,
@@ -658,6 +684,16 @@ class MainWindow(FluentWindow):
     def _on_source_changed(self, _: int) -> None:
         """Persist new source language."""
         self._persist_selected_language(self.cb_source, "sourceLang")
+        backend = self.controller._backends.get(self.cb_engine.currentText())
+        selected_source = self.cb_source.currentData()
+        self.cb_target.blockSignals(True)
+        self._refresh_target_combo(
+            backend,
+            selected_source if isinstance(selected_source, str) else "auto",
+        )
+        self.cb_target.setEnabled(self.cb_target.count() > 0)
+        self.cb_target.blockSignals(False)
+        self._persist_selected_language(self.cb_target, "targetLang")
         self.refresh_ocr_compatibility_state()
 
     @pyqtSlot(int)
@@ -854,6 +890,7 @@ class MainWindow(FluentWindow):
         self._is_quitting = True
         self._tray.hide()
         self._close_auxiliary_windows_for_quit()
+        self.controller.shutdown()
         self.close()
         QApplication.quit()
 

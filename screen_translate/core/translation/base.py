@@ -35,6 +35,18 @@ class TranslationBackend(ABC):
             Sorted list of language display names.
         """
 
+    def available_target_languages(self, source_lang: str) -> list[str]:
+        """Return target languages available from *source_lang*.
+
+        Backends that do not have pair-specific metadata can simply fall back
+        to the generic language list.
+        """
+        return [
+            lang
+            for lang in self.available_languages()
+            if lang not in {"auto", "Auto"}
+        ]
+
     @abstractmethod
     def translate(self, text: str, source_lang: str, target_lang: str) -> str:
         """Translate *text* from *source_lang* to *target_lang*.

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import time
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
@@ -10,6 +11,8 @@ import pyperclip
 from PyQt6.QtCore import (
     QObject,
     QRect,
+    QProcess,
+    QProcessEnvironment,
     QThreadPool,
     QRunnable,
     pyqtSignal,
@@ -30,10 +33,25 @@ from screen_translate.core.ocr.language_compat import (
 )
 from screen_translate.core.ocr.base import OCRError
 from screen_translate.core.ocr.tesseract import TesseractOCRBackend
-from screen_translate.core.translation.argos_backend import load_argos_backend
+from screen_translate.core.translation.argos_backend import (
+    argos_package_dir_from_setting,
+    load_argos_backend,
+)
 from screen_translate.core.translation.base import TranslationBackend, TranslationError
 from screen_translate.core.translation.deepl_official_backend import (
     load_deepl_official_backend,
+)
+from screen_translate.core.translation.libretranslate_backend import (
+    load_libretranslate_backend,
+)
+from screen_translate.core.translation.libretranslate_local import (
+    inspect_local_libretranslate,
+    local_libretranslate_dir_from_setting,
+    local_libretranslate_server_command,
+)
+from screen_translate.core.translation.proxy import (
+    build_translation_proxies,
+    translation_no_proxy,
 )
 from screen_translate.core.translation.translators_backend import (
     get_all_translators_backends,
@@ -238,6 +256,8 @@ class AppController(QObject):
         self._capture_region_rect: QRect | None = self._load_capture_region_rect()
         self._pending_history_query: str = ""
         self._pending_ocr_run_id: str = ""
+        self._libre_server_process: QProcess | None = None
+        self._libre_server_port: str = ""
 
         # Translation backends
         self._backends: dict[str, TranslationBackend] = {}
@@ -256,18 +276,194 @@ class AppController(QObject):
 
     def _discover_translation_backends(self) -> list[TranslationBackend]:
         """Discover all configured translation backends."""
-        backends: list[TranslationBackend] = get_all_translators_backends()
+        proxies = build_translation_proxies(self.settings)
+        no_proxy = translation_no_proxy(self.settings)
 
-        argos = load_argos_backend()
+        backends: list[TranslationBackend] = get_all_translators_backends(proxies=proxies)
+
+        argos = load_argos_backend(
+            package_dir=str(self.settings.get("argos_package_dir", ""))
+        )
         if argos:
             backends.append(argos)
 
+        libre = load_libretranslate_backend(
+            use_local=bool(self.settings.get("libre_use_local", False)),
+            local_port=str(self.settings.get("libre_local_port", "5000")),
+            host=str(self.settings.get("libre_host", "translate.argosopentech.com")),
+            port=str(self.settings.get("libre_port", "")),
+            use_https=bool(self.settings.get("libre_https", True)),
+            api_key=str(self.settings.get("libre_api_key", "")),
+            proxies=proxies,
+        )
+        backends.append(libre)
+
         deepl_key: str = self.settings.get("deepl_api_key", "")
-        deepl_official = load_deepl_official_backend(api_key=deepl_key)
+        deepl_official = load_deepl_official_backend(
+            api_key=deepl_key,
+            proxies=proxies,
+            no_proxy=no_proxy,
+        )
         if deepl_official:
             backends.append(deepl_official)
 
         return backends
+
+    def reload_translation_backends(self) -> None:
+        """Reload translation backends after settings changes."""
+        previous = self._active_backend_name
+        self._reconcile_local_libretranslate_server()
+        self._load_backends()
+        if previous in self._backends or previous == "None":
+            self._active_backend_name = previous
+        elif self._backends:
+            self._active_backend_name = next(iter(self._backends))
+        else:
+            self._active_backend_name = "None"
+        self.settings.set("engine", self._active_backend_name)
+
+    def invalidate_translation_backend_languages(self, backend_name: str) -> None:
+        """Clear cached language data for a specific backend, if supported."""
+        backend = self._backends.get(backend_name)
+        if backend is None:
+            return
+        invalidate = getattr(backend, "invalidate_languages_cache", None)
+        if callable(invalidate):
+            invalidate()
+
+    def _local_libre_port(self) -> str:
+        """Return the configured local LibreTranslate port."""
+        return str(self.settings.get("libre_local_port", "5000")).strip() or "5000"
+
+    def _local_libre_package_dir(self) -> str:
+        """Return the package/model directory used by managed local LibreTranslate."""
+        raw = str(self.settings.get("libre_local_package_dir", "")).strip()
+        if raw:
+            return str(argos_package_dir_from_setting(raw))
+        return str(
+            argos_package_dir_from_setting(
+                str(self.settings.get("argos_package_dir", ""))
+            )
+        )
+
+    def local_libretranslate_enabled(self) -> bool:
+        """Return True when the local managed LibreTranslate mode is enabled."""
+        return bool(self.settings.get("libre_use_local", False))
+
+    def local_libretranslate_endpoint(self) -> str:
+        """Return the configured local LibreTranslate endpoint."""
+        return f"http://127.0.0.1:{self._local_libre_port()}"
+
+    def is_local_libretranslate_running(self, timeout: float = 1.5) -> bool:
+        """Return True if a local LibreTranslate server responds on the configured port."""
+        import requests
+
+        try:
+            response = requests.get(
+                f"{self.local_libretranslate_endpoint().rstrip('/')}/languages",
+                timeout=timeout,
+            )
+            return bool(response.ok)
+        except Exception:
+            return False
+
+    def _reconcile_local_libretranslate_server(self) -> None:
+        """Stop the managed local LibreTranslate server when settings no longer match."""
+        if not self.local_libretranslate_enabled():
+            self.stop_local_libretranslate_server()
+            return
+
+        configured_port = self._local_libre_port()
+        if (
+            self._libre_server_process is not None
+            and self._libre_server_process.state() != QProcess.ProcessState.NotRunning
+            and self._libre_server_port != configured_port
+        ):
+            self.stop_local_libretranslate_server()
+
+    def ensure_local_libretranslate_server_started(self, timeout: float = 20.0) -> bool:
+        """Start the managed local LibreTranslate server if needed and wait until ready."""
+        if not self.local_libretranslate_enabled():
+            return False
+        if self.is_local_libretranslate_running():
+            return True
+
+        install_dir = local_libretranslate_dir_from_setting(
+            str(self.settings.get("libre_local_dir", ""))
+        )
+        info = inspect_local_libretranslate(install_dir)
+        if not info.command_executable.exists():
+            logger.warning("Managed local LibreTranslate command not found at %s", info.command_executable)
+            return False
+
+        port = self._local_libre_port()
+        process = self._libre_server_process
+        if process is None or process.state() == QProcess.ProcessState.NotRunning:
+            process = QProcess(self)
+            process.setProcessChannelMode(QProcess.ProcessChannelMode.MergedChannels)
+            env = QProcessEnvironment.systemEnvironment()
+            argos_dir = self._local_libre_package_dir()
+            env.insert("ARGOS_PACKAGES_DIR", argos_dir)
+            env.insert("ARGOS_PACKAGE_DIR", argos_dir)
+            env.insert("ARGOS_TRANSLATE_PACKAGE_DIR", argos_dir)
+            process.setProcessEnvironment(env)
+            process.readyReadStandardOutput.connect(
+                lambda proc=process: self._log_libre_server_output(proc)
+            )
+            self._libre_server_process = process
+            command = local_libretranslate_server_command(install_dir, port)
+            logger.info("Starting managed local LibreTranslate server: %s", command)
+            process.start(command[0], command[1:])
+            if not process.waitForStarted(5000):
+                logger.warning("Managed local LibreTranslate server failed to start")
+                return False
+        self._libre_server_port = port
+
+        deadline = time.monotonic() + timeout
+        while time.monotonic() < deadline:
+            if self.is_local_libretranslate_running(timeout=1.0):
+                return True
+            if (
+                self._libre_server_process is not None
+                and self._libre_server_process.state() == QProcess.ProcessState.NotRunning
+            ):
+                break
+            time.sleep(0.25)
+        logger.warning("Managed local LibreTranslate server did not become reachable in time")
+        return False
+
+    def stop_local_libretranslate_server(self) -> None:
+        """Stop the managed local LibreTranslate server if this app started it."""
+        process = self._libre_server_process
+        if process is None:
+            return
+        if process.state() != QProcess.ProcessState.NotRunning:
+            logger.info("Stopping managed local LibreTranslate server")
+            process.terminate()
+            if not process.waitForFinished(4000):
+                process.kill()
+                process.waitForFinished(2000)
+        process.deleteLater()
+        self._libre_server_process = None
+        self._libre_server_port = ""
+
+    def _log_libre_server_output(self, process: QProcess) -> None:
+        """Log managed LibreTranslate server output safely."""
+        try:
+            output = bytes(process.readAllStandardOutput()).decode(errors="replace").strip()
+        except RuntimeError:
+            return
+        if output:
+            logger.debug("LibreTranslate local server: %s", output)
+
+    def ensure_backend_ready(self, backend_name: str) -> bool:
+        """Prepare a backend for use if it requires runtime setup."""
+        if backend_name == "LibreTranslate" and self.local_libretranslate_enabled():
+            ready = self.ensure_local_libretranslate_server_started()
+            if ready:
+                self.invalidate_translation_backend_languages("LibreTranslate")
+            return ready
+        return True
 
     def available_backend_names(self) -> list[str]:
         """Return the names of all loaded backends plus 'None' (OCR-only mode).
@@ -293,6 +489,7 @@ class AppController(QObject):
         """
         self._active_backend_name = name
         self.settings.set("engine", name)
+        self.ensure_backend_ready(name)
         logger.debug("Active backend → %s", name)
 
     def get_ocr_backend(self) -> TesseractOCRBackend:
@@ -607,6 +804,13 @@ class AppController(QObject):
         if backend is None:
             logger.warning("No translation backend active")
             return None
+        if not self.ensure_backend_ready(self._active_backend_name):
+            self._show_warning(
+                "LibreTranslate Unavailable",
+                "The managed local LibreTranslate server could not be started. "
+                "Please run setup again or review the local install settings.",
+            )
+            return None
 
         supported_languages = backend.available_languages()
         if not supported_languages:
@@ -851,3 +1055,7 @@ class AppController(QObject):
             """
         )
         box.exec()
+
+    def shutdown(self) -> None:
+        """Release managed runtime processes owned by the controller."""
+        self.stop_local_libretranslate_server()
