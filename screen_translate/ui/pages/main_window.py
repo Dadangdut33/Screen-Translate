@@ -296,7 +296,7 @@ class MainWindow(FluentWindow):
         log_page: QWidget,
         ocr_images_page: QWidget,
         about_page: QWidget,
-        settings_page: QWidget,
+        settings_page: QWidget | None = None,
     ) -> None:
         """Embed auxiliary windows into the main stacked area."""
         self._history_page = self._embed_page_widget(
@@ -319,6 +319,12 @@ class MainWindow(FluentWindow):
         self._about_page = self._embed_page_widget(
             about_page, "about", FIF.INFO, "About", NavigationItemPosition.BOTTOM
         )
+        if settings_page is not None:
+            self.register_settings_page(settings_page)
+        self._add_navigation_items()
+
+    def register_settings_page(self, settings_page: QWidget) -> None:
+        """Embed the settings page into the main stacked area."""
         self._settings_page = self._embed_page_widget(
             settings_page,
             "settings",
@@ -326,7 +332,6 @@ class MainWindow(FluentWindow):
             "Settings",
             NavigationItemPosition.BOTTOM,
         )
-        self._add_navigation_items()
 
     def _embed_page_widget(
         self,
@@ -436,6 +441,8 @@ class MainWindow(FluentWindow):
         ctrl.status_idle.connect(self._on_idle)
         ctrl.ocr_completed.connect(self._on_ocr_result)
         ctrl.translation_completed.connect(self._on_translation_result)
+        ctrl.translation_backends_reloaded.connect(self._restore_state)
+        ctrl.translation_backends_loading.connect(self._on_backends_loading_changed)
 
     def _restore_state(self) -> None:
         """Populate comboboxes from settings."""
@@ -453,6 +460,7 @@ class MainWindow(FluentWindow):
             idx = 0
         self.cb_engine.setCurrentIndex(max(0, idx))
         self.cb_engine.blockSignals(False)
+        self._on_backends_loading_changed(not self.controller.translation_backends_ready())
 
         self._refresh_lang_combos()
         self.refresh_ocr_compatibility_state()
@@ -737,6 +745,22 @@ class MainWindow(FluentWindow):
         """Show busy indicator."""
         self._progress_label.setVisible(True)
         self.progress.setVisible(True)
+
+    @pyqtSlot(bool)
+    def _on_backends_loading_changed(self, loading: bool) -> None:
+        """Reflect backend-loading state in the main translation controls."""
+        self.cb_engine.setEnabled(not loading)
+        self.cb_source.setEnabled(not loading and self.cb_source.count() > 0)
+        self.cb_target.setEnabled(not loading and self.cb_target.count() > 0)
+        self.btn_translate.setEnabled(not loading)
+        if loading:
+            self._progress_label.setText("Loading backends…")
+            self._progress_label.setVisible(True)
+            self.progress.setVisible(True)
+        else:
+            self._progress_label.setText("Working...")
+            self._progress_label.setVisible(False)
+            self.progress.setVisible(False)
 
     @pyqtSlot()
     def _on_idle(self) -> None:

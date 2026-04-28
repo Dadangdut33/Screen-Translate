@@ -8,10 +8,20 @@ import signal
 import socket
 import sys
 
-from PyQt6.QtCore import QMetaObject, QThreadPool, QTimer, Qt, QSocketNotifier, QUrl
-from PyQt6.QtGui import QDesktopServices
-from PyQt6.QtWidgets import QApplication, QMessageBox
-from qfluentwidgets import Dialog, Theme, setTheme
+from PyQt6.QtCore import (
+    QCoreApplication,
+    QEventLoop,
+    QMetaObject,
+    QThreadPool,
+    QTimer,
+    Qt,
+    QSocketNotifier,
+    QUrl,
+    QSize,
+)
+from PyQt6.QtGui import QColor, QDesktopServices, QPainter, QPixmap
+from PyQt6.QtWidgets import QApplication, QMessageBox, QSplashScreen
+from qfluentwidgets import Dialog, IndeterminateProgressBar, Theme, isDarkTheme, setTheme
 
 from screen_translate import __version__
 from screen_translate.config.settings import SettingsManager
@@ -29,6 +39,7 @@ from screen_translate.ui.pages import (
     SettingsPage,
 )
 from screen_translate.ui.controller import AppController
+from screen_translate.ui.pages.main_window import _APP_NAME
 from screen_translate.ui.update_check import (
     UpdateCheckWorker,
     detect_install_method,
@@ -37,6 +48,7 @@ from screen_translate.ui.update_check import (
     update_instructions,
 )
 from screen_translate.ui.windows import CaptureWindow, FloatingTextWindow, MaskWindow
+from screen_translate.ui.theme.utils import load_icon
 
 logger = logging.getLogger(__name__)
 
@@ -78,74 +90,119 @@ def main() -> None:
 
     logger.info("Screen Translate v%s starting", __version__)
 
-    # --- Controller ---
-    controller = AppController(settings)
-    app.aboutToQuit.connect(controller.shutdown)
-
-    # --- Create all windows (none shown yet) ---
-    main_win = MainWindow(controller)
-    controller.main_window = main_win
-    _configure_unix_signal_handling(app, main_win)
-
-    capture_win = CaptureWindow(controller)
-    controller.capture_window = capture_win
-
-    for i, _ in enumerate(app.screens()):
-        region_overlay = CaptureRegionOverlay(controller, screen_index=i)
-        controller.capture_region_overlays.append(region_overlay)
-
-    # Multi-monitor snip overlays
-    for i, _ in enumerate(app.screens()):
-        overlay = SnipOverlay(controller, screen_index=i)
-        controller.snip_overlays.append(overlay)
-
-    query_win = FloatingTextWindow(controller, role="q")
-    result_win = FloatingTextWindow(controller, role="res")
-    controller.query_window = query_win
-    controller.result_window = result_win
-
-    mask_win = MaskWindow(controller)
-    controller.mask_window = mask_win
-
-    history_win = HistoryPage(controller)
-    controller.history_window = history_win
-
-    log_win = LogPage(controller)
-    controller.log_window = log_win
-
-    ocr_images_page = OCRImagesPage()
-    controller.ocr_images_page = ocr_images_page
-
-    settings_page = SettingsPage(controller)
-    controller.settings_page = settings_page
-
-    about_page = AboutPage()
-    controller.about_page = about_page
-
-    main_win.register_internal_pages(
-        history_win,
-        log_win,
-        ocr_images_page,
-        about_page,
-        settings_page,
-    )
-
-    # --- Register global hotkeys (if keyboard package is available) ---
-    _register_hotkeys(controller, settings)
-
-    # --- Show the main window (unless launched silent with -s) ---
+    splash: QSplashScreen | None = None
     if "-s" not in sys.argv:
-        main_win.show()
-        logger.info("Main window shown")
-    else:
-        logger.info("Silent start (-s flag): running in tray only")
+        splash = _show_startup_splash(app, settings)
 
-    if bool(settings.get("checkUpdateOnStart", True)):
-        QTimer.singleShot(
-            1200,
-            lambda: _check_for_updates_on_startup(app, main_win),
-        )
+    def _bootstrap() -> None:
+        """Construct the heavy app objects after the event loop has started."""
+        def _pump_ui(message: str | None = None) -> None:
+            """Let Qt repaint the splash and advance startup animations."""
+            if splash is not None:
+                if message:
+                    splash.showMessage(
+                        f"{_APP_NAME} v{__version__}\n{message}",
+                        Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignBottom,
+                        QColor("#f5f5f5" if isDarkTheme() else "#202020"),
+                    )
+                splash.repaint()
+            QCoreApplication.processEvents(QEventLoop.ProcessEventsFlag.AllEvents, 50)
 
+        try:
+            # --- Controller ---
+            _pump_ui("Loading controller…")
+            controller = AppController(settings)
+            app.aboutToQuit.connect(controller.shutdown)
+            app._controller = controller  # type: ignore[attr-defined]
+
+            # --- Create all windows (none shown yet) ---
+            _pump_ui("Building main window…")
+            main_win = MainWindow(controller)
+            controller.main_window = main_win
+            app._main_window = main_win  # type: ignore[attr-defined]
+            _configure_unix_signal_handling(app, main_win)
+
+            _pump_ui("Preparing capture tools…")
+            capture_win = CaptureWindow(controller)
+            controller.capture_window = capture_win
+
+            for i, _ in enumerate(app.screens()):
+                region_overlay = CaptureRegionOverlay(controller, screen_index=i)
+                controller.capture_region_overlays.append(region_overlay)
+
+            for i, _ in enumerate(app.screens()):
+                overlay = SnipOverlay(controller, screen_index=i)
+                controller.snip_overlays.append(overlay)
+
+            _pump_ui("Preparing floating windows…")
+            query_win = FloatingTextWindow(controller, role="q")
+            result_win = FloatingTextWindow(controller, role="res")
+            controller.query_window = query_win
+            controller.result_window = result_win
+
+            mask_win = MaskWindow(controller)
+            controller.mask_window = mask_win
+
+            _pump_ui("Building pages…")
+            history_win = HistoryPage(controller)
+            controller.history_window = history_win
+
+            log_win = LogPage(controller)
+            controller.log_window = log_win
+
+            ocr_images_page = OCRImagesPage()
+            controller.ocr_images_page = ocr_images_page
+
+            about_page = AboutPage()
+            controller.about_page = about_page
+
+            _pump_ui("Registering pages…")
+            main_win.register_internal_pages(
+                history_win,
+                log_win,
+                ocr_images_page,
+                about_page,
+                None,
+            )
+
+            _pump_ui("Registering hotkeys…")
+            _register_hotkeys(controller, settings)
+
+            if "-s" not in sys.argv:
+                _pump_ui("Opening main window…")
+                main_win.show()
+                if splash is not None:
+                    splash.finish(main_win)
+                logger.info("Main window shown")
+
+                def _load_settings_page() -> None:
+                    """Build and register the heavy settings page after the main UI is visible."""
+                    if controller.settings_page is not None:
+                        return
+                    logger.debug("Loading settings page after main window show")
+                    settings_page = SettingsPage(controller)
+                    controller.settings_page = settings_page
+                    main_win.register_settings_page(settings_page)
+                controller.translation_backends_reloaded.connect(_load_settings_page)
+                controller.start_async_translation_backends_load()
+            else:
+                if splash is not None:
+                    splash.close()
+                logger.info("Silent start (-s flag): running in tray only")
+                controller.start_async_translation_backends_load()
+
+            if bool(settings.get("checkUpdateOnStart", True)):
+                QTimer.singleShot(
+                    1200,
+                    lambda: _check_for_updates_on_startup(app, main_win),
+                )
+        except Exception:
+            if splash is not None:
+                splash.close()
+            logger.exception("Failed during application bootstrap")
+            raise
+
+    QTimer.singleShot(50, _bootstrap)
     sys.exit(app.exec())
 
 
@@ -169,6 +226,63 @@ def _apply_theme(app: QApplication, settings: SettingsManager) -> None:
         )
     except Exception as exc:
         logger.warning("Could not apply QFluentWidgets theme %s: %s", theme_name, exc)
+
+
+def _show_startup_splash(
+    app: QApplication,
+    settings: SettingsManager,
+) -> QSplashScreen:
+    """Show a lightweight native splash screen while heavy startup work runs."""
+    theme_name = str(settings.get("theme", _DEFAULT_THEME)).title()
+    is_dark = theme_name != "Light"
+    icon = load_icon()
+    pixmap = QPixmap(QSize(420, 260))
+    pixmap.fill(QColor("#202020" if is_dark else "#f4f4f4"))
+
+    painter = QPainter(pixmap)
+    painter.setRenderHints(
+        QPainter.RenderHint.Antialiasing | QPainter.RenderHint.SmoothPixmapTransform
+    )
+    if not icon.isNull():
+        splash_icon = icon.pixmap(112, 112)
+        x = (pixmap.width() - splash_icon.width()) // 2
+        y = (pixmap.height() - splash_icon.height()) // 2 - 10
+        painter.drawPixmap(x, y, splash_icon)
+    painter.end()
+
+    splash = QSplashScreen(pixmap)
+    splash.setWindowFlag(Qt.WindowType.WindowStaysOnTopHint, True)
+    splash.showMessage(
+        f"{_APP_NAME} v{__version__}\nLoading…",
+        Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignBottom,
+        QColor("#f5f5f5" if is_dark else "#202020"),
+    )
+
+    progress = IndeterminateProgressBar(splash, start=True)
+    progress.setObjectName("StartupSplashProgress")
+    progress.setFixedWidth(220)
+    progress.setFixedHeight(6)
+    if is_dark:
+        progress.setCustomBarColor("#2de2ff", "#2de2ff")
+    else:
+        progress.setCustomBarColor("#0078d4", "#0078d4")
+    progress.move((pixmap.width() - progress.width()) // 2, pixmap.height() - 44)
+    splash._progress = progress  # type: ignore[attr-defined]
+
+    screen = app.primaryScreen()
+    if screen is not None:
+        geometry = screen.availableGeometry()
+        splash.move(
+            geometry.center().x() - splash.width() // 2,
+            geometry.center().y() - splash.height() // 2,
+        )
+
+    splash.show()
+    splash.raise_()
+    progress.show()
+    splash.repaint()
+    app.processEvents()
+    return splash
 
 
 def _check_for_updates_on_startup(app: QApplication, main_win: MainWindow) -> None:

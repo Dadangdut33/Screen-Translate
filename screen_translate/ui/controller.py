@@ -113,6 +113,13 @@ class _WorkerSignals(QObject):
     error: pyqtSignal = pyqtSignal(str)
 
 
+class _BackendDiscoverySignals(QObject):
+    """Signals emitted by the background backend discovery worker."""
+
+    finished: pyqtSignal = pyqtSignal(object)
+    error: pyqtSignal = pyqtSignal(str)
+
+
 class _OCRWorker(QRunnable):
     """Runs OCR in a thread-pool thread and emits the result."""
 
@@ -198,6 +205,27 @@ class _TranslationWorker(QRunnable):
             self.signals.error.emit(str(exc))
 
 
+class _BackendDiscoveryWorker(QRunnable):
+    """Discover translation backends off the UI thread."""
+
+    def __init__(self, settings_snapshot: dict[str, object]) -> None:
+        super().__init__()
+        self.settings_snapshot = settings_snapshot
+        self.signals = _BackendDiscoverySignals()
+        self.setAutoDelete(True)
+
+    @pyqtSlot()
+    def run(self) -> None:
+        """Discover translation backends and emit them back to the UI thread."""
+        try:
+            backends = AppController.discover_translation_backends_from_snapshot(
+                self.settings_snapshot
+            )
+            self.signals.finished.emit(backends)
+        except Exception as exc:
+            self.signals.error.emit(str(exc))
+
+
 # ---------------------------------------------------------------------------
 # AppController
 # ---------------------------------------------------------------------------
@@ -223,6 +251,8 @@ class AppController(QObject):
     # Generic status
     status_busy: pyqtSignal = pyqtSignal()
     status_idle: pyqtSignal = pyqtSignal()
+    translation_backends_loading: pyqtSignal = pyqtSignal(bool)
+    translation_backends_reloaded: pyqtSignal = pyqtSignal()
 
     def __init__(
         self, settings: SettingsManager, parent: QObject | None = None
@@ -262,7 +292,7 @@ class AppController(QObject):
         # Translation backends
         self._backends: dict[str, TranslationBackend] = {}
         self._active_backend_name: str = settings.get("engine", "translators-google")
-        self._load_backends()
+        self._backend_load_in_progress = False
 
     # ------------------------------------------------------------------
     # Backend management
@@ -276,29 +306,46 @@ class AppController(QObject):
 
     def _discover_translation_backends(self) -> list[TranslationBackend]:
         """Discover all configured translation backends."""
-        proxies = build_translation_proxies(self.settings)
-        no_proxy = translation_no_proxy(self.settings)
+        return self.discover_translation_backends_from_snapshot(
+            self._translation_backend_settings_snapshot()
+        )
+
+    @staticmethod
+    def discover_translation_backends_from_snapshot(
+        snapshot: dict[str, object],
+    ) -> list[TranslationBackend]:
+        """Discover translation backends from a plain settings snapshot."""
+        class _SettingsProxy:
+            def __init__(self, values: dict[str, object]) -> None:
+                self._values = values
+
+            def get(self, key: str, default: object = None) -> object:
+                return self._values.get(key, default)
+
+        settings = _SettingsProxy(snapshot)
+        proxies = build_translation_proxies(settings)
+        no_proxy = translation_no_proxy(settings)
 
         backends: list[TranslationBackend] = get_all_translators_backends(proxies=proxies)
 
         argos = load_argos_backend(
-            package_dir=str(self.settings.get("argos_package_dir", ""))
+            package_dir=str(settings.get("argos_package_dir", ""))
         )
         if argos:
             backends.append(argos)
 
         libre = load_libretranslate_backend(
-            use_local=bool(self.settings.get("libre_use_local", False)),
-            local_port=str(self.settings.get("libre_local_port", "5000")),
-            host=str(self.settings.get("libre_host", "translate.argosopentech.com")),
-            port=str(self.settings.get("libre_port", "")),
-            use_https=bool(self.settings.get("libre_https", True)),
-            api_key=str(self.settings.get("libre_api_key", "")),
+            use_local=bool(settings.get("libre_use_local", False)),
+            local_port=str(settings.get("libre_local_port", "5000")),
+            host=str(settings.get("libre_host", "translate.argosopentech.com")),
+            port=str(settings.get("libre_port", "")),
+            use_https=bool(settings.get("libre_https", True)),
+            api_key=str(settings.get("libre_api_key", "")),
             proxies=proxies,
         )
         backends.append(libre)
 
-        deepl_key: str = self.settings.get("deepl_api_key", "")
+        deepl_key = str(settings.get("deepl_api_key", ""))
         deepl_official = load_deepl_official_backend(
             api_key=deepl_key,
             proxies=proxies,
@@ -308,6 +355,58 @@ class AppController(QObject):
             backends.append(deepl_official)
 
         return backends
+
+    def _translation_backend_settings_snapshot(self) -> dict[str, object]:
+        """Capture backend-related settings for worker-thread discovery."""
+        keys = [
+            "translation_proxy_enabled",
+            "translation_http_proxy",
+            "translation_https_proxy",
+            "translation_no_proxy",
+            "argos_package_dir",
+            "libre_use_local",
+            "libre_local_port",
+            "libre_host",
+            "libre_port",
+            "libre_https",
+            "libre_api_key",
+            "deepl_api_key",
+            "translators_region",
+        ]
+        return {key: self.settings.get(key, "") for key in keys}
+
+    def start_async_translation_backends_load(self) -> None:
+        """Load translation backends in the background for smoother startup."""
+        if self._backend_load_in_progress:
+            return
+        self._backend_load_in_progress = True
+        self.translation_backends_loading.emit(True)
+        worker = _BackendDiscoveryWorker(self._translation_backend_settings_snapshot())
+        worker.signals.finished.connect(self._on_async_backends_loaded)
+        worker.signals.error.connect(self._on_async_backends_error)
+        self._pool.start(worker)
+
+    @pyqtSlot(object)
+    def _on_async_backends_loaded(self, backends: object) -> None:
+        """Apply asynchronously discovered translation backends."""
+        self._backend_load_in_progress = False
+        self.translation_backends_loading.emit(False)
+        if not isinstance(backends, list):
+            logger.warning("Async backend discovery returned unexpected result")
+            return
+        self._backends = {b.name: b for b in backends if hasattr(b, "name")}
+        logger.info("Loaded translation backends: %s", list(self._backends))
+        if self._active_backend_name not in self._backends and self._backends:
+            self._active_backend_name = next(iter(self._backends))
+            self.settings.set("engine", self._active_backend_name)
+        self.translation_backends_reloaded.emit()
+
+    @pyqtSlot(str)
+    def _on_async_backends_error(self, error: str) -> None:
+        """Handle background backend discovery failure."""
+        self._backend_load_in_progress = False
+        self.translation_backends_loading.emit(False)
+        logger.warning("Async translation backend discovery failed: %s", error)
 
     def reload_translation_backends(self) -> None:
         """Reload translation backends after settings changes."""
@@ -472,6 +571,10 @@ class AppController(QObject):
             List of backend name strings.
         """
         return [*list(self._backends.keys()), "None"]
+
+    def translation_backends_ready(self) -> bool:
+        """Return True when translation backends have finished loading."""
+        return bool(self._backends) and not self._backend_load_in_progress
 
     def active_backend_name(self) -> str:
         """Return the name of the currently active backend.
