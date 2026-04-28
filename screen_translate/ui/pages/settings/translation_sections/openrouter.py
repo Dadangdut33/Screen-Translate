@@ -80,14 +80,25 @@ def _set_openrouter_custom_languages(
     """Persist custom OpenRouter languages and refresh runtime."""
     dialog.s.set("openrouter_custom_languages", rows)
     refresh_translation_runtime(dialog)
+    backend = dialog.controller._backends.get("OpenRouter")
+    if backend is not None:
+        valid_codes = set(backend.available_languages())
+        overrides = dialog.controller.backend_ocr_overrides("OpenRouter")
+        for language_code in list(overrides):
+            if language_code.startswith("alias::") and language_code not in valid_codes:
+                dialog.controller.set_backend_ocr_override(
+                    "OpenRouter", language_code, ""
+                )
     if hasattr(dialog, "_cb_override_backend") and hasattr(
         dialog, "_tbl_ocr_overrides"
     ):
         try:
             from screen_translate.ui.pages.settings.ocr_overrides import (
+                refresh_ocr_override_backend_combo,
                 refresh_ocr_override_table,
             )
 
+            refresh_ocr_override_backend_combo(dialog)
             backend_name = dialog._cb_override_backend.currentText()
             if backend_name == "OpenRouter":
                 refresh_ocr_override_table(dialog, backend_name)

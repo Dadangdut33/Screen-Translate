@@ -5,7 +5,7 @@ from __future__ import annotations
 import os
 import shutil
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Protocol
 
 from qfluentwidgets import ComboBox, LineEdit, MessageBox
 
@@ -20,6 +20,15 @@ from screen_translate.core.translation.libretranslate_local import (
 from screen_translate.core.translation.translators_backend import (
     configure_translators_region,
 )
+
+if TYPE_CHECKING:
+    from screen_translate.ui.pages.settings_page import SettingsPage
+
+
+class WindowLike(Protocol):
+    """Minimal parent interface needed for confirmation dialogs."""
+
+    def window(self) -> object: ...
 
 
 def format_bytes(size_bytes: int) -> str:
@@ -58,7 +67,7 @@ def directory_has_content(path: str | Path) -> bool:
 
 
 def confirm_directory_move(
-    parent: Any,
+    parent: WindowLike | object,
     *,
     title: str,
     subject: str,
@@ -126,7 +135,7 @@ def move_directory_contents(source: str | Path, destination: str | Path) -> int:
     return moved
 
 
-def refresh_translation_runtime(dialog: Any) -> None:
+def refresh_translation_runtime(dialog: "SettingsPage") -> None:
     """Reload translation backends and refresh the main-window comboboxes."""
     dialog.controller.reload_translation_backends()
     main_window = getattr(dialog.controller, "main_window", None)
@@ -134,20 +143,22 @@ def refresh_translation_runtime(dialog: Any) -> None:
         main_window._restore_state()
 
 
-def persist_backend_setting(dialog: Any, key: str, value: Any) -> None:
+def persist_backend_setting(
+    dialog: "SettingsPage", key: str, value: object
+) -> None:
     """Persist a backend-related setting and refresh runtime state."""
     dialog.s.set(key, value)
     refresh_translation_runtime(dialog)
 
 
-def on_translators_region_changed(dialog: Any, region: str) -> None:
+def on_translators_region_changed(dialog: "SettingsPage", region: str) -> None:
     """Persist and apply the translators region mode immediately."""
     dialog.s.set("translators_region", region)
     configure_translators_region(region)
     refresh_translation_runtime(dialog)
 
 
-def libre_install_dir(dialog: Any) -> Path:
+def libre_install_dir(dialog: "SettingsPage") -> Path:
     """Return normalized managed LibreTranslate install directory."""
     raw = str(dialog.s.get("libre_local_dir", "")).strip()
     if not raw:
@@ -155,7 +166,7 @@ def libre_install_dir(dialog: Any) -> Path:
     return local_libretranslate_dir_from_setting(raw)
 
 
-def argos_install_dir(dialog: Any) -> Path:
+def argos_install_dir(dialog: "SettingsPage") -> Path:
     """Return normalized Argos package directory."""
     raw = str(dialog.s.get("argos_package_dir", "")).strip()
     if not raw:
@@ -163,7 +174,7 @@ def argos_install_dir(dialog: Any) -> Path:
     return argos_package_dir_from_setting(raw)
 
 
-def libre_package_dir(dialog: Any) -> Path:
+def libre_package_dir(dialog: "SettingsPage") -> Path:
     """Return normalized local LibreTranslate model/package directory."""
     raw = str(dialog.s.get("libre_local_package_dir", "")).strip()
     if raw:
@@ -171,7 +182,7 @@ def libre_package_dir(dialog: Any) -> Path:
     return argos_install_dir(dialog)
 
 
-def update_libre_mode_visibility(dialog: Any) -> None:
+def update_libre_mode_visibility(dialog: "SettingsPage") -> None:
     """Show either local-install controls or remote-endpoint controls."""
     use_local = bool(dialog.s.get("libre_use_local", False))
     if getattr(dialog, "_grp_libre_local", None) is not None:
@@ -181,7 +192,7 @@ def update_libre_mode_visibility(dialog: Any) -> None:
 
 
 def make_reload_line_edit(
-    dialog: Any,
+    dialog: "SettingsPage",
     key: str,
     placeholder: str = "",
     *,
@@ -203,7 +214,7 @@ def make_reload_line_edit(
 
 
 def make_passthrough_line_edit(
-    dialog: Any,
+    dialog: "SettingsPage",
     key: str,
     placeholder: str = "",
 ) -> LineEdit:
@@ -215,7 +226,7 @@ def make_passthrough_line_edit(
     return line_edit
 
 
-def build_translators_region_combo(dialog: Any) -> ComboBox:
+def build_translators_region_combo(dialog: "SettingsPage") -> ComboBox:
     """Build the region selector for translators library."""
     combo = ComboBox()
     combo.addItems(["EN", "CN", "Auto"])

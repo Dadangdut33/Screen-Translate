@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING, Callable
 
 from PyQt6.QtCore import QObject, QRunnable, pyqtSignal, pyqtSlot
 from PyQt6.QtWidgets import QStackedWidget, QVBoxLayout, QWidget
@@ -29,6 +29,9 @@ from .translation_sections.proxy import build_proxy_section
 from .translation_sections.shared import update_libre_mode_visibility
 from .translation_sections.translators import build_translators_section
 
+if TYPE_CHECKING:
+    from screen_translate.ui.pages.settings_page import SettingsPage
+
 
 class _TranslationSectionSignals(QObject):
     """Signals emitted by background translation-settings loaders."""
@@ -40,7 +43,7 @@ class _TranslationSectionSignals(QObject):
 class _TranslationSectionWorker(QRunnable):
     """Run a translation-settings data collection task off the UI thread."""
 
-    def __init__(self, key: str, fn) -> None:
+    def __init__(self, key: str, fn: Callable[[], object]) -> None:
         super().__init__()
         self.key = key
         self.fn = fn
@@ -55,7 +58,9 @@ class _TranslationSectionWorker(QRunnable):
             self.signals.error.emit(self.key, str(exc))
 
 
-def _start_translation_section_load(dialog: Any, key: str, fn) -> None:
+def _start_translation_section_load(
+    dialog: "SettingsPage", key: str, fn: Callable[[], object]
+) -> None:
     """Start a background loader for a heavy translation settings subsection."""
     in_progress = getattr(dialog, "_translation_section_loading", set())
     if key in in_progress:
@@ -68,7 +73,7 @@ def _start_translation_section_load(dialog: Any, key: str, fn) -> None:
     dialog.controller._pool.start(worker)
 
 
-def _on_section_loaded(dialog: Any, key: str, payload: object) -> None:
+def _on_section_loaded(dialog: "SettingsPage", key: str, payload: object) -> None:
     """Apply a completed background subsection refresh."""
     getattr(dialog, "_translation_section_loading", set()).discard(key)
     loaded = getattr(dialog, "_translation_section_loaded", set())
@@ -82,7 +87,7 @@ def _on_section_loaded(dialog: Any, key: str, payload: object) -> None:
         apply_libre_local_info(dialog, payload)
 
 
-def _on_section_error(dialog: Any, key: str, error: str) -> None:
+def _on_section_error(dialog: "SettingsPage", key: str, error: str) -> None:
     """Handle a failed background subsection refresh."""
     getattr(dialog, "_translation_section_loading", set()).discard(key)
     if key == "argos_info":
@@ -97,7 +102,9 @@ def _on_section_error(dialog: Any, key: str, error: str) -> None:
         dialog._lbl_libre_local_running.setText(error)
 
 
-def _ensure_translation_section_loaded(dialog: Any, route_key: str) -> None:
+def _ensure_translation_section_loaded(
+    dialog: "SettingsPage", route_key: str
+) -> None:
     """Kick off background loads for expensive translation subsections."""
     loaded = getattr(dialog, "_translation_section_loaded", set())
     if route_key == "argos":
@@ -113,13 +120,15 @@ def _ensure_translation_section_loaded(dialog: Any, route_key: str) -> None:
         _start_translation_section_load(dialog, "libre_info", lambda: collect_libre_local_info(dialog))
 
 
-def _on_translation_section_changed(dialog: Any, route_key: str, index: int) -> None:
+def _on_translation_section_changed(
+    dialog: "SettingsPage", route_key: str, index: int
+) -> None:
     """Switch the stacked page and trigger any needed lazy background loads."""
     dialog._translation_stack.setCurrentIndex(index)
     _ensure_translation_section_loaded(dialog, route_key)
 
 
-def build_translation_page(dialog: Any) -> QWidget:
+def build_translation_page(dialog: "SettingsPage") -> QWidget:
     """Build the Translation settings page."""
     w = QWidget()
     vl = QVBoxLayout(w)

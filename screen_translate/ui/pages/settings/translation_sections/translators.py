@@ -2,14 +2,17 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING
 
 from PyQt6.QtWidgets import QLabel, QVBoxLayout, QWidget
 
 from .shared import build_translators_region_combo
 
+if TYPE_CHECKING:
+    from screen_translate.ui.pages.settings_page import SettingsPage
 
-def build_translators_section(dialog: Any) -> QWidget:
+
+def build_translators_section(dialog: "SettingsPage") -> QWidget:
     """Build the translators-library settings section."""
     page = QWidget()
     layout = QVBoxLayout(page)
@@ -28,4 +31,3 @@ def build_translators_section(dialog: Any) -> QWidget:
     layout.addWidget(grp_translators)
     layout.addStretch()
     return page
-

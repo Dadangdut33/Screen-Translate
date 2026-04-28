@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING
 
 from PyQt6.QtCore import QProcess, QProcessEnvironment, QUrl
 from PyQt6.QtGui import QDesktopServices
@@ -11,12 +11,11 @@ from PyQt6.QtWidgets import (
     QFileDialog,
     QHBoxLayout,
     QLabel,
-    QPlainTextEdit,
     QProgressBar,
     QVBoxLayout,
     QWidget,
 )
-from qfluentwidgets import BodyLabel, CheckBox, PushButton
+from qfluentwidgets import BodyLabel, CheckBox, PlainTextEdit, PushButton
 
 from screen_translate.core.translation.argos_backend import configure_argos_package_dir
 from screen_translate.core.translation.libretranslate_local import (
@@ -28,6 +27,7 @@ from screen_translate.core.translation.libretranslate_local import (
 from screen_translate.ui.widgets import InfoBannerCard
 
 from .shared import (
+    argos_install_dir,
     confirm_directory_move,
     directory_has_content,
     format_bytes,
@@ -43,8 +43,11 @@ from .shared import (
     update_libre_mode_visibility,
 )
 
+if TYPE_CHECKING:
+    from screen_translate.ui.pages.settings_page import SettingsPage
 
-def collect_libre_local_info(dialog: Any) -> dict[str, object]:
+
+def collect_libre_local_info(dialog: "SettingsPage") -> dict[str, object]:
     """Collect managed local LibreTranslate status off the UI thread."""
     install_dir = libre_install_dir(dialog)
     info = inspect_local_libretranslate(install_dir)
@@ -75,9 +78,7 @@ def collect_libre_local_info(dialog: Any) -> dict[str, object]:
             }
         )
         if codes:
-            languages_summary = (
-                f"{len(codes)} installed language codes from {len(packages)} local model pairs"
-            )
+            languages_summary = f"{len(codes)} installed language codes from {len(packages)} local model pairs"
             languages_details = ", ".join(codes)
         else:
             languages_summary = "No local language models detected yet."
@@ -102,7 +103,7 @@ def collect_libre_local_info(dialog: Any) -> dict[str, object]:
     }
 
 
-def apply_libre_local_info(dialog: Any, payload: dict[str, object]) -> None:
+def apply_libre_local_info(dialog: "SettingsPage", payload: dict[str, object]) -> None:
     """Apply managed local LibreTranslate status on the UI thread."""
     install_dir = str(payload.get("install_dir", ""))
     package_dir = str(payload.get("package_dir", ""))
@@ -110,7 +111,9 @@ def apply_libre_local_info(dialog: Any, payload: dict[str, object]) -> None:
     port = str(payload.get("port", "5000"))
     endpoint = str(payload.get("endpoint", f"http://127.0.0.1:{port}"))
     is_running = bool(payload.get("is_running", False))
-    summary = str(payload.get("languages_summary", "No local language models detected yet."))
+    summary = str(
+        payload.get("languages_summary", "No local language models detected yet.")
+    )
     details = str(
         payload.get(
             "languages_details",
@@ -164,7 +167,7 @@ def apply_libre_local_info(dialog: Any, payload: dict[str, object]) -> None:
     dialog._libre_local_language_details.setPlainText(details)
 
 
-def _collect_local_libre_language_summary(dialog: Any) -> tuple[str, str]:
+def _collect_local_libre_language_summary(dialog: "SettingsPage") -> tuple[str, str]:
     """Return a summary and details of locally available LibreTranslate languages."""
     if dialog.controller.is_local_libretranslate_running():
         backend = dialog.controller._backends.get("LibreTranslate")
@@ -214,7 +217,7 @@ def _collect_local_libre_language_summary(dialog: Any) -> tuple[str, str]:
     )
 
 
-def refresh_libre_local_info(dialog: Any) -> None:
+def refresh_libre_local_info(dialog: "SettingsPage") -> None:
     """Refresh the app-local LibreTranslate installation summary."""
     install_dir = libre_install_dir(dialog)
     dialog._libre_local_dir.blockSignals(True)
@@ -266,7 +269,9 @@ def refresh_libre_local_info(dialog: Any) -> None:
     dialog._libre_local_language_details.setPlainText(details)
 
 
-def set_libre_setup_busy(dialog: Any, busy: bool, status_text: str = "") -> None:
+def set_libre_setup_busy(
+    dialog: "SettingsPage", busy: bool, status_text: str = ""
+) -> None:
     """Update the local LibreTranslate setup UI busy state."""
     dialog._btn_libre_setup.setEnabled(not busy)
     dialog._btn_libre_update_models.setEnabled(not busy)
@@ -285,7 +290,7 @@ def set_libre_setup_busy(dialog: Any, busy: bool, status_text: str = "") -> None
         dialog._lbl_libre_setup_runtime.setText(status_text)
 
 
-def _append_libre_runtime_output(dialog: Any, text: str) -> None:
+def _append_libre_runtime_output(dialog: "SettingsPage", text: str) -> None:
     """Append readable subprocess output to the Libre runtime output box."""
     lines = [line.rstrip() for line in text.splitlines() if line.strip()]
     if not lines:
@@ -297,7 +302,7 @@ def _append_libre_runtime_output(dialog: Any, text: str) -> None:
     )
 
 
-def _on_libre_setup_ready_read(dialog: Any) -> None:
+def _on_libre_setup_ready_read(dialog: "SettingsPage") -> None:
     """Handle streamed output from LibreTranslate setup subprocess."""
     process: QProcess | None = getattr(dialog, "_libre_setup_process", None)
     if process is None:
@@ -308,7 +313,7 @@ def _on_libre_setup_ready_read(dialog: Any) -> None:
         _append_libre_runtime_output(dialog, output)
 
 
-def _run_next_libre_setup_step(dialog: Any) -> None:
+def _run_next_libre_setup_step(dialog: "SettingsPage") -> None:
     """Run the next queued LibreTranslate setup subprocess step."""
     process: QProcess | None = getattr(dialog, "_libre_setup_process", None)
     steps: list[list[str]] = getattr(dialog, "_libre_setup_steps", [])
@@ -344,7 +349,7 @@ def _run_next_libre_setup_step(dialog: Any) -> None:
 
 
 def _finish_libre_setup(
-    dialog: Any, exit_code: int, exit_status: QProcess.ExitStatus
+    dialog: "SettingsPage", exit_code: int, exit_status: QProcess.ExitStatus
 ) -> None:
     """Handle completion of one LibreTranslate setup step."""
     process: QProcess | None = getattr(dialog, "_libre_setup_process", None)
@@ -362,7 +367,7 @@ def _finish_libre_setup(
     _run_next_libre_setup_step(dialog)
 
 
-def setup_local_libretranslate(dialog: Any) -> None:
+def setup_local_libretranslate(dialog: "SettingsPage") -> None:
     """Create or update the app-managed local LibreTranslate installation."""
     install_dir = libre_install_dir(dialog)
     install_dir.mkdir(parents=True, exist_ok=True)
@@ -405,7 +410,7 @@ def setup_local_libretranslate(dialog: Any) -> None:
     _run_next_libre_setup_step(dialog)
 
 
-def update_local_libre_models(dialog: Any) -> None:
+def update_local_libre_models(dialog: "SettingsPage") -> None:
     """Run `libretranslate --update-models` for the managed local instance."""
     install_dir = libre_install_dir(dialog)
     info = inspect_local_libretranslate(install_dir)
@@ -484,7 +489,7 @@ def update_local_libre_models(dialog: Any) -> None:
     process.start(str(local_libretranslate_command(install_dir)), ["--update-models"])
 
 
-def cancel_local_libre_models_update(dialog: Any) -> None:
+def cancel_local_libre_models_update(dialog: "SettingsPage") -> None:
     """Cancel the active LibreTranslate model update process."""
     process: QProcess | None = getattr(dialog, "_libre_model_update_process", None)
     if process is None:
@@ -496,7 +501,7 @@ def cancel_local_libre_models_update(dialog: Any) -> None:
         process.kill()
 
 
-def browse_libre_local_dir(dialog: Any) -> None:
+def browse_libre_local_dir(dialog: "SettingsPage") -> None:
     """Choose the managed LibreTranslate installation directory."""
     current = str(libre_install_dir(dialog))
     chosen = QFileDialog.getExistingDirectory(
@@ -509,14 +514,14 @@ def browse_libre_local_dir(dialog: Any) -> None:
     apply_libre_local_dir_change(dialog, chosen)
 
 
-def open_libre_local_dir(dialog: Any) -> None:
+def open_libre_local_dir(dialog: "SettingsPage") -> None:
     """Open the managed LibreTranslate install directory."""
     install_dir = libre_install_dir(dialog)
     install_dir.mkdir(parents=True, exist_ok=True)
     QDesktopServices.openUrl(QUrl.fromLocalFile(str(install_dir)))
 
 
-def browse_libre_package_dir(dialog: Any) -> None:
+def browse_libre_package_dir(dialog: "SettingsPage") -> None:
     """Choose the local LibreTranslate model/package directory."""
     current = str(libre_package_dir(dialog))
     chosen = QFileDialog.getExistingDirectory(
@@ -529,7 +534,7 @@ def browse_libre_package_dir(dialog: Any) -> None:
     apply_libre_package_dir_change(dialog, chosen)
 
 
-def apply_libre_local_dir_change(dialog: Any, raw_value: str) -> None:
+def apply_libre_local_dir_change(dialog: "SettingsPage", raw_value: str) -> None:
     """Persist a new managed LibreTranslate install directory and move content."""
     old_dir = libre_install_dir(dialog)
     new_dir = normalize_path(raw_value or default_local_libretranslate_dir())
@@ -574,11 +579,15 @@ def apply_libre_local_dir_change(dialog: Any, raw_value: str) -> None:
     refresh_libre_local_info(dialog)
 
 
-def apply_libre_package_dir_change(dialog: Any, raw_value: str) -> None:
+def apply_libre_package_dir_change(dialog: "SettingsPage", raw_value: str) -> None:
     """Persist a new local LibreTranslate package directory and move models."""
     old_dir = libre_package_dir(dialog)
     raw_text = raw_value.strip()
-    new_dir = normalize_path(raw_text) if raw_text else normalize_path(argos_install_dir(dialog))
+    new_dir = (
+        normalize_path(raw_text)
+        if raw_text
+        else normalize_path(argos_install_dir(dialog))
+    )
 
     if paths_equivalent(old_dir, new_dir):
         dialog._libre_local_package_dir.blockSignals(True)
@@ -622,21 +631,21 @@ def apply_libre_package_dir_change(dialog: Any, raw_value: str) -> None:
     refresh_translation_runtime(dialog)
 
 
-def open_libre_package_dir(dialog: Any) -> None:
+def open_libre_package_dir(dialog: "SettingsPage") -> None:
     """Open the local LibreTranslate model/package directory."""
     package_dir = libre_package_dir(dialog)
     package_dir.mkdir(parents=True, exist_ok=True)
     QDesktopServices.openUrl(QUrl.fromLocalFile(str(package_dir)))
 
 
-def on_libre_use_local_toggled(dialog: Any, checked: bool) -> None:
+def on_libre_use_local_toggled(dialog: "SettingsPage", checked: bool) -> None:
     """Persist local LibreTranslate mode and refresh UI/backend state."""
     dialog.s.set("libre_use_local", checked)
     update_libre_mode_visibility(dialog)
     refresh_translation_runtime(dialog)
 
 
-def build_libre_section(dialog: Any) -> QWidget:
+def build_libre_section(dialog: "SettingsPage") -> QWidget:
     """Build the LibreTranslate settings section."""
     page = QWidget()
     layout = QVBoxLayout(page)
@@ -752,13 +761,13 @@ def build_libre_section(dialog: Any) -> QWidget:
     libre_status_form.addRow(dialog._lbl_libre_local_note)
     libre_local_layout.addWidget(libre_status_group)
 
-    dialog._libre_local_language_details = QPlainTextEdit()
+    dialog._libre_local_language_details = PlainTextEdit()
     dialog._libre_local_language_details.setReadOnly(True)
     dialog._libre_local_language_details.setFixedHeight(72)
     libre_local_layout.addWidget(QLabel("Language details:"))
     libre_local_layout.addWidget(dialog._libre_local_language_details)
 
-    dialog._libre_local_details = QPlainTextEdit()
+    dialog._libre_local_details = PlainTextEdit()
     dialog._libre_local_details.setReadOnly(True)
     dialog._libre_local_details.setFixedHeight(90)
     libre_local_layout.addWidget(QLabel("Installed components:"))
@@ -787,7 +796,7 @@ def build_libre_section(dialog: Any) -> QWidget:
     dialog._libre_progress.setTextVisible(True)
     dialog._libre_progress.setValue(0)
     libre_local_layout.addWidget(dialog._libre_progress)
-    dialog._libre_runtime_output = QPlainTextEdit()
+    dialog._libre_runtime_output = PlainTextEdit()
     dialog._libre_runtime_output.setReadOnly(True)
     dialog._libre_runtime_output.setFixedHeight(90)
     libre_local_layout.addWidget(dialog._libre_runtime_output)

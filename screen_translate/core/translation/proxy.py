@@ -3,32 +3,50 @@
 from __future__ import annotations
 
 import os
+import random
 from contextlib import contextmanager
-from typing import Any, Iterator
+from typing import Iterator, Protocol
 
 
-def build_translation_proxies(settings: Any) -> dict[str, str]:
-    """Build a requests-style proxy mapping from settings."""
+class SettingsLike(Protocol):
+    """Minimal settings interface needed for proxy helpers."""
+
+    def get(self, key: str, default: object = None) -> object: ...
+
+
+def parse_proxy_list(raw: object) -> list[str]:
+    """Normalize proxy settings into a clean ordered list of entries."""
+    if isinstance(raw, list):
+        return [str(item).strip() for item in raw if str(item).strip()]
+    text = str(raw).replace(",", "\n")
+    return [line.strip() for line in text.splitlines() if line.strip()]
+
+
+def build_translation_proxies(settings: SettingsLike) -> dict[str, str]:
+    """Build a requests-style proxy mapping from settings.
+
+    When multiple proxies are configured for a scheme, one is chosen at random.
+    """
     if not bool(settings.get("translation_proxy_enabled", False)):
         return {}
 
     proxies: dict[str, str] = {}
-    http_proxy = str(settings.get("translation_proxy_http", "")).strip()
-    https_proxy = str(settings.get("translation_proxy_https", "")).strip()
+    http_candidates = parse_proxy_list(settings.get("translation_proxy_http", ""))
+    https_candidates = parse_proxy_list(settings.get("translation_proxy_https", ""))
 
-    if http_proxy:
-        proxies["http"] = http_proxy
-    if https_proxy:
-        proxies["https"] = https_proxy
+    if http_candidates:
+        proxies["http"] = random.choice(http_candidates)
+    if https_candidates:
+        proxies["https"] = random.choice(https_candidates)
 
     return proxies
 
 
-def translation_no_proxy(settings: Any) -> str:
+def translation_no_proxy(settings: SettingsLike) -> str:
     """Return the configured NO_PROXY value for translation backends."""
     if not bool(settings.get("translation_proxy_enabled", False)):
         return ""
-    return str(settings.get("translation_proxy_no_proxy", "")).strip()
+    return ",".join(parse_proxy_list(settings.get("translation_proxy_no_proxy", "")))
 
 
 @contextmanager

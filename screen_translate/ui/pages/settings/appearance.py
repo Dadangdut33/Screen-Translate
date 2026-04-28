@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 import sys
-from typing import Any
+from typing import TYPE_CHECKING
 
 from PyQt6.QtCore import QMetaObject, QProcess, Qt
 from PyQt6.QtGui import QColor
@@ -29,6 +29,9 @@ from screen_translate.ui.widgets import (
 
 from .common import bind_spin
 
+if TYPE_CHECKING:
+    from screen_translate.ui.pages.settings_page import SettingsPage
+
 _THEME_OPTIONS: list[str] = ["Dark", "Light"]
 logger = logging.getLogger(__name__)
 
@@ -39,7 +42,7 @@ def _is_theme_current(theme: str) -> bool:
     return qconfig.theme == target_theme
 
 
-def _is_fusion_style_current(dialog: Any) -> bool:
+def _is_fusion_style_current(dialog: "SettingsPage") -> bool:
     """Return whether the selected Fusion base-style preference matches the live app."""
     app = QApplication.instance()
     if app is None:
@@ -51,12 +54,12 @@ def _is_fusion_style_current(dialog: Any) -> bool:
     return bool(current) == expected
 
 
-def _needs_restart(dialog: Any, theme: str) -> bool:
+def _needs_restart(dialog: "SettingsPage", theme: str) -> bool:
     """Return whether the current appearance settings differ from the live app state."""
     return (not _is_theme_current(theme)) or (not _is_fusion_style_current(dialog))
 
 
-def _update_theme_restart_notice(dialog: Any, theme: str) -> None:
+def _update_theme_restart_notice(dialog: "SettingsPage", theme: str) -> None:
     """Show or hide the restart notice for appearance changes."""
     notice = getattr(dialog, "_theme_restart_notice", None)
     if notice is None:
@@ -64,7 +67,7 @@ def _update_theme_restart_notice(dialog: Any, theme: str) -> None:
     notice.setVisible(_needs_restart(dialog, theme))
 
 
-def _restart_application(dialog: Any) -> None:
+def _restart_application(dialog: "SettingsPage") -> None:
     """Restart the current application process."""
     app = QApplication.instance()
     program = sys.executable
@@ -95,13 +98,13 @@ def _restart_application(dialog: Any) -> None:
     )
 
 
-def on_theme_changed(dialog: Any, theme: str) -> None:
+def on_theme_changed(dialog: "SettingsPage", theme: str) -> None:
     """Persist the selected theme."""
     dialog.s.set("theme", theme)
     _update_theme_restart_notice(dialog, theme)
 
 
-def on_fusion_base_style_changed(dialog: Any, enabled: bool) -> None:
+def on_fusion_base_style_changed(dialog: "SettingsPage", enabled: bool) -> None:
     """Persist the Fusion base-style preference."""
     dialog.s.set("use_fusion_base_style", enabled)
     theme_combo = getattr(dialog, "_cb_theme", None)
@@ -109,7 +112,7 @@ def on_fusion_base_style_changed(dialog: Any, enabled: bool) -> None:
     _update_theme_restart_notice(dialog, theme)
 
 
-def color_picker_row(dialog: Any, key: str) -> PushButton:
+def color_picker_row(dialog: "SettingsPage", key: str) -> PushButton:
     """Create a colour-picker button tied to a settings key."""
     btn = PushButton()
     btn.setFixedWidth(60)
@@ -137,7 +140,7 @@ def color_picker_row(dialog: Any, key: str) -> PushButton:
     return btn
 
 
-def build_appearance_page(dialog: Any) -> QWidget:
+def build_appearance_page(dialog: "SettingsPage") -> QWidget:
     """Build the Appearance settings page."""
     w = QWidget()
     vl = QVBoxLayout(w)

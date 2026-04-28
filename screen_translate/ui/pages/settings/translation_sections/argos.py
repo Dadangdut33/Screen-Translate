@@ -6,7 +6,7 @@ import json
 import logging
 import sys
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING
 
 from PyQt6.QtCore import QProcess, QUrl, Qt
 from PyQt6.QtGui import QDesktopServices
@@ -45,8 +45,11 @@ from .shared import (
 
 logger = logging.getLogger(__name__)
 
+if TYPE_CHECKING:
+    from screen_translate.ui.pages.settings_page import SettingsPage
 
-def collect_argos_info(dialog: Any) -> dict[str, object]:
+
+def collect_argos_info(dialog: "SettingsPage") -> dict[str, object]:
     """Collect Argos Translate informational data off the UI thread."""
     import argostranslate.settings as argos_settings
     import argostranslate.translate as argos_translate
@@ -85,7 +88,7 @@ def collect_argos_info(dialog: Any) -> dict[str, object]:
     }
 
 
-def apply_argos_info(dialog: Any, payload: dict[str, object]) -> None:
+def apply_argos_info(dialog: "SettingsPage", payload: dict[str, object]) -> None:
     """Apply Argos Translate informational data on the UI thread."""
     installed_count = int(payload.get("installed_count", 0))
     configured_dir = str(payload.get("configured_dir", ""))
@@ -109,7 +112,7 @@ def apply_argos_info(dialog: Any, payload: dict[str, object]) -> None:
     refresh_argos_table_install_state(dialog)
 
 
-def collect_argos_package_index(dialog: Any) -> dict[str, object]:
+def collect_argos_package_index(dialog: "SettingsPage") -> dict[str, object]:
     """Collect Argos package-index data off the UI thread."""
     configure_argos_package_dir(str(dialog.s.get("argos_package_dir", "")))
     import argostranslate.package as argos_package
@@ -122,7 +125,7 @@ def collect_argos_package_index(dialog: Any) -> dict[str, object]:
     }
 
 
-def apply_argos_package_index(dialog: Any, payload: dict[str, object]) -> None:
+def apply_argos_package_index(dialog: "SettingsPage", payload: dict[str, object]) -> None:
     """Apply Argos package-index data on the UI thread."""
     available_packages = payload.get("available_packages", [])
     if not isinstance(available_packages, list):
@@ -134,7 +137,7 @@ def apply_argos_package_index(dialog: Any, payload: dict[str, object]) -> None:
     rebuild_argos_packages_table(dialog)
 
 
-def refresh_argos_info(dialog: Any) -> None:
+def refresh_argos_info(dialog: "SettingsPage") -> None:
     """Refresh Argos Translate informational labels."""
     try:
         import argostranslate.settings as argos_settings
@@ -169,7 +172,7 @@ def refresh_argos_info(dialog: Any) -> None:
             dialog._lbl_argos_installed_codes.setText("Unavailable")
 
 
-def refresh_argos_installed_set(dialog: Any) -> None:
+def refresh_argos_installed_set(dialog: "SettingsPage") -> None:
     """Cache installed Argos translation pairs for table state."""
     dialog._argos_installed_pairs = set()
     try:
@@ -195,7 +198,7 @@ def refresh_argos_installed_set(dialog: Any) -> None:
         return
 
 
-def refresh_argos_package_index(dialog: Any) -> None:
+def refresh_argos_package_index(dialog: "SettingsPage") -> None:
     """Refresh the Argos package index and rebuild the table."""
     try:
         configure_argos_package_dir(str(dialog.s.get("argos_package_dir", "")))
@@ -215,7 +218,7 @@ def refresh_argos_package_index(dialog: Any) -> None:
         )
 
 
-def open_argos_dir(dialog: Any) -> None:
+def open_argos_dir(dialog: "SettingsPage") -> None:
     """Open the Argos package directory in the desktop file manager."""
     try:
         import argostranslate.settings as argos_settings
@@ -229,7 +232,7 @@ def open_argos_dir(dialog: Any) -> None:
         )
 
 
-def apply_argos_dir_change(dialog: Any, raw_value: str) -> None:
+def apply_argos_dir_change(dialog: "SettingsPage", raw_value: str) -> None:
     """Persist a new Argos package directory and move existing content if needed."""
     old_dir = argos_install_dir(dialog)
     new_dir = configure_argos_package_dir(raw_value)
@@ -281,7 +284,7 @@ def apply_argos_dir_change(dialog: Any, raw_value: str) -> None:
     refresh_translation_runtime(dialog)
 
 
-def browse_argos_dir(dialog: Any) -> None:
+def browse_argos_dir(dialog: "SettingsPage") -> None:
     """Choose the Argos package directory."""
     current = str(argos_install_dir(dialog))
     chosen = QFileDialog.getExistingDirectory(
@@ -292,7 +295,9 @@ def browse_argos_dir(dialog: Any) -> None:
     apply_argos_dir_change(dialog, chosen)
 
 
-def set_argos_busy(dialog: Any, busy: bool, status_text: str = "") -> None:
+def set_argos_busy(
+    dialog: "SettingsPage", busy: bool, status_text: str = ""
+) -> None:
     """Update the Argos install UI busy state."""
     for widget_name in (
         "_btn_argos_refresh",
@@ -321,7 +326,7 @@ def set_progress(bar: QProgressBar | None, value: int, maximum: int) -> None:
     bar.setValue(value)
 
 
-def handle_argos_process_output(dialog: Any) -> None:
+def handle_argos_process_output(dialog: "SettingsPage") -> None:
     """Parse progress markers from the Argos install subprocess."""
     process: QProcess | None = getattr(dialog, "_argos_install_process", None)
     if process is None:
@@ -346,7 +351,7 @@ def handle_argos_process_output(dialog: Any) -> None:
 
 
 def finish_argos_install(
-    dialog: Any, exit_code: int, exit_status: QProcess.ExitStatus
+    dialog: "SettingsPage", exit_code: int, exit_status: QProcess.ExitStatus
 ) -> None:
     """Handle completion of the Argos pack-install subprocess."""
     process: QProcess | None = getattr(dialog, "_argos_install_process", None)
@@ -385,7 +390,9 @@ def finish_argos_install(
     refresh_translation_runtime(dialog)
 
 
-def start_argos_install(dialog: Any, pairs: list[tuple[str, str]]) -> None:
+def start_argos_install(
+    dialog: "SettingsPage", pairs: list[tuple[str, str]]
+) -> None:
     """Install one or more Argos language packs via subprocess."""
     if not pairs:
         dialog._lbl_argos_install_runtime.setText("No Argos packs selected to install.")
@@ -430,7 +437,7 @@ def start_argos_install(dialog: Any, pairs: list[tuple[str, str]]) -> None:
     process.start(command[0], command[1:])
 
 
-def cancel_argos_install(dialog: Any) -> None:
+def cancel_argos_install(dialog: "SettingsPage") -> None:
     """Cancel the active Argos package install process."""
     process: QProcess | None = getattr(dialog, "_argos_install_process", None)
     if process is None:
@@ -442,12 +449,14 @@ def cancel_argos_install(dialog: Any) -> None:
         process.kill()
 
 
-def install_argos_table_pack(dialog: Any, from_code: str, to_code: str) -> None:
+def install_argos_table_pack(
+    dialog: "SettingsPage", from_code: str, to_code: str
+) -> None:
     """Install a specific Argos language pack from the packages table."""
     start_argos_install(dialog, [(from_code, to_code)])
 
 
-def install_all_argos_packs(dialog: Any) -> None:
+def install_all_argos_packs(dialog: "SettingsPage") -> None:
     """Install every Argos language pack shown in the package table."""
     packages = getattr(dialog, "_argos_packages", [])
     installed_pairs = getattr(dialog, "_argos_installed_pairs", set())
@@ -467,7 +476,7 @@ def install_all_argos_packs(dialog: Any) -> None:
     start_argos_install(dialog, pairs)
 
 
-def refresh_argos_table_install_state(dialog: Any) -> None:
+def refresh_argos_table_install_state(dialog: "SettingsPage") -> None:
     """Refresh installed-state labels and button states in the Argos packages table."""
     table: TableWidget | None = getattr(dialog, "_tbl_argos_packs", None)
     if table is None:
@@ -488,7 +497,7 @@ def refresh_argos_table_install_state(dialog: Any) -> None:
             action_widget.setText("Installed" if installed else "Install")
 
 
-def filter_argos_packages_table(dialog: Any, text: str = "") -> None:
+def filter_argos_packages_table(dialog: "SettingsPage", text: str = "") -> None:
     """Filter visible Argos pack rows by language code or status."""
     table: TableWidget | None = getattr(dialog, "_tbl_argos_packs", None)
     if table is None:
@@ -504,7 +513,7 @@ def filter_argos_packages_table(dialog: Any, text: str = "") -> None:
         table.setRowHidden(row, bool(needle) and needle not in haystack)
 
 
-def rebuild_argos_packages_table(dialog: Any) -> None:
+def rebuild_argos_packages_table(dialog: "SettingsPage") -> None:
     """Rebuild the Argos language-packs table from the loaded package index."""
     table: TableWidget | None = getattr(dialog, "_tbl_argos_packs", None)
     if table is None:
@@ -533,7 +542,7 @@ def rebuild_argos_packages_table(dialog: Any) -> None:
     filter_argos_packages_table(dialog, search_text)
 
 
-def build_argos_section(dialog: Any) -> QWidget:
+def build_argos_section(dialog: "SettingsPage") -> QWidget:
     """Build the Argos Translate settings section."""
     page = QWidget()
     layout = QVBoxLayout(page)

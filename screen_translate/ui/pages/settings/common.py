@@ -2,13 +2,21 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Callable, Protocol
 
 from PyQt6.QtWidgets import QFormLayout
 from qfluentwidgets import CheckBox, ComboBox, LineEdit, SpinBox
 
 
-def bind_check(key: str, label: str, settings: Any) -> CheckBox:
+class SettingsLike(Protocol):
+    """Minimal settings interface used by settings binding helpers."""
+
+    def get(self, key: str, default: object = None) -> object: ...
+
+    def set(self, key: str, value: object) -> None: ...
+
+
+def bind_check(key: str, label: str, settings: SettingsLike) -> CheckBox:
     """Create a checkbox pre-filled from settings and auto-save on toggle."""
     cb = CheckBox(label)
     cb.setChecked(bool(settings.get(key, False)))
@@ -16,7 +24,7 @@ def bind_check(key: str, label: str, settings: Any) -> CheckBox:
     return cb
 
 
-def bind_line(key: str, settings: Any, placeholder: str = "") -> LineEdit:
+def bind_line(key: str, settings: SettingsLike, placeholder: str = "") -> LineEdit:
     """Create a line edit pre-filled from settings and auto-save on change."""
     le = LineEdit()
     le.setText(str(settings.get(key, "")))
@@ -26,7 +34,7 @@ def bind_line(key: str, settings: Any, placeholder: str = "") -> LineEdit:
 
 
 def bind_spin(
-    key: str, settings: Any, min_val: int = 0, max_val: int = 9999
+    key: str, settings: SettingsLike, min_val: int = 0, max_val: int = 9999
 ) -> SpinBox:
     """Create a spin box pre-filled from settings and auto-save on change."""
     sb = SpinBox()
@@ -36,7 +44,7 @@ def bind_spin(
     return sb
 
 
-def bind_combo(key: str, items: list[str], settings: Any) -> ComboBox:
+def bind_combo(key: str, items: list[str], settings: SettingsLike) -> ComboBox:
     """Create a combo box pre-filled from settings and auto-save on change."""
     cb = ComboBox()
     cb.addItems(items)
@@ -50,8 +58,8 @@ def bind_combo(key: str, items: list[str], settings: Any) -> ComboBox:
 def bind_check_with_callback(
     key: str,
     label: str,
-    settings: Any,
-    callback: Any,
+    settings: SettingsLike,
+    callback: Callable[[], None],
 ) -> CheckBox:
     """Create a checkbox that persists immediately and also runs a callback."""
     cb = CheckBox(label)
@@ -63,8 +71,8 @@ def bind_check_with_callback(
 
 def bind_line_with_callback(
     key: str,
-    settings: Any,
-    callback: Any,
+    settings: SettingsLike,
+    callback: Callable[[], None],
     placeholder: str = "",
 ) -> LineEdit:
     """Create a line edit that persists immediately and also runs a callback."""
@@ -79,8 +87,8 @@ def bind_line_with_callback(
 def bind_combo_with_callback(
     key: str,
     items: list[str],
-    settings: Any,
-    callback: Any,
+    settings: SettingsLike,
+    callback: Callable[[], None],
 ) -> ComboBox:
     """Create a combo box that persists immediately and also runs a callback."""
     cb = ComboBox()

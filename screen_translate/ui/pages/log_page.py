@@ -11,8 +11,8 @@ from PyQt6.QtWidgets import (
     QFontComboBox,
     QHBoxLayout,
     QLabel,
-    QPlainTextEdit,
     QVBoxLayout,
+    QPlainTextEdit,
     QWidget,
 )
 from qfluentwidgets import CheckBox, ComboBox, PushButton

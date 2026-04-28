@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING
 
 import pycountry
 from PyQt6.QtCore import Qt
@@ -10,6 +10,10 @@ from PyQt6.QtWidgets import QHeaderView, QTableWidgetItem, QVBoxLayout, QWidget
 from qfluentwidgets import BodyLabel, CheckBox, ComboBox, LineEdit, TableWidget
 
 from screen_translate.core.ocr.language_compat import resolve_tesseract_language_code
+from screen_translate.core.translation.base import TranslationBackend
+
+if TYPE_CHECKING:
+    from screen_translate.ui.pages.settings_page import SettingsPage
 
 _LANGUAGE_NAME_OVERRIDES: dict[str, str] = {
     "auto": "Auto Detect",
@@ -30,7 +34,7 @@ _LANGUAGE_NAME_OVERRIDES: dict[str, str] = {
 }
 
 
-def language_name(code: str, backend: Any | None = None) -> str:
+def language_name(code: str, backend: TranslationBackend | None = None) -> str:
     """Return a human-friendly language name for a backend language code."""
     backend_label = getattr(backend, "language_display_name", None)
     if callable(backend_label):
@@ -67,7 +71,7 @@ def language_name(code: str, backend: Any | None = None) -> str:
     return code
 
 
-def language_code_display(code: str, backend: Any | None = None) -> str:
+def language_code_display(code: str, backend: TranslationBackend | None = None) -> str:
     """Return a human-friendly short code for a backend language entry."""
     backend_code = getattr(backend, "language_display_code", None)
     if callable(backend_code):
@@ -80,7 +84,26 @@ def language_code_display(code: str, backend: Any | None = None) -> str:
     return code
 
 
-def refresh_ocr_override_table(dialog: Any, backend_name: str) -> None:
+def refresh_ocr_override_backend_combo(dialog: "SettingsPage") -> None:
+    """Rebuild the translation-backend selector from the live controller state."""
+    if not hasattr(dialog, "_cb_override_backend"):
+        return
+    combo = dialog._cb_override_backend
+    current = combo.currentText().strip()
+    names = [
+        name for name in dialog.controller.available_backend_names() if name != "None"
+    ]
+    combo.blockSignals(True)
+    combo.clear()
+    combo.addItems(names)
+    idx = combo.findText(current)
+    if idx < 0:
+        idx = combo.findText(dialog.controller.active_backend_name())
+    combo.setCurrentIndex(max(0, idx))
+    combo.blockSignals(False)
+
+
+def refresh_ocr_override_table(dialog: "SettingsPage", backend_name: str) -> None:
     """Refresh the override table for the selected translation backend."""
     if not hasattr(dialog, "_tbl_ocr_overrides"):
         return
@@ -147,7 +170,7 @@ def refresh_ocr_override_table(dialog: Any, backend_name: str) -> None:
     apply_ocr_override_filter(dialog)
 
 
-def apply_ocr_override_filter(dialog: Any, text: str = "") -> None:
+def apply_ocr_override_filter(dialog: "SettingsPage", text: str = "") -> None:
     """Filter OCR override rows by search text."""
     if not hasattr(dialog, "_tbl_ocr_overrides"):
         return
@@ -183,7 +206,7 @@ def apply_ocr_override_filter(dialog: Any, text: str = "") -> None:
 
 
 def set_ocr_override(
-    dialog: Any,
+    dialog: "SettingsPage",
     backend_name: str,
     language_code: str,
     tesseract_code: str,
@@ -225,7 +248,7 @@ def set_ocr_override(
     refresh_ocr_override_table(dialog, backend_name)
 
 
-def _find_override_combo_row(dialog: Any, combo: ComboBox) -> int | None:
+def _find_override_combo_row(dialog: "SettingsPage", combo: ComboBox) -> int | None:
     """Return the row index for a combo embedded in the override table."""
     for row_index in range(dialog._tbl_ocr_overrides.rowCount()):
         if dialog._tbl_ocr_overrides.cellWidget(row_index, 3) is combo:
@@ -233,7 +256,7 @@ def _find_override_combo_row(dialog: Any, combo: ComboBox) -> int | None:
     return None
 
 
-def _on_ocr_override_combo_changed(dialog: Any, combo: ComboBox) -> None:
+def _on_ocr_override_combo_changed(dialog: "SettingsPage", combo: ComboBox) -> None:
     """Handle override combo changes using combo properties instead of lambda-captured rows."""
     backend_name = combo.property("backendName")
     language_code = combo.property("languageCode")
@@ -250,7 +273,7 @@ def _on_ocr_override_combo_changed(dialog: Any, combo: ComboBox) -> None:
     )
 
 
-def build_ocr_overrides_page(dialog: Any) -> QWidget:
+def build_ocr_overrides_page(dialog: "SettingsPage") -> QWidget:
     """Build the per-backend OCR override page."""
     w = QWidget()
     vl = QVBoxLayout(w)
@@ -259,15 +282,15 @@ def build_ocr_overrides_page(dialog: Any) -> QWidget:
         "Per-Backend OCR Language Overrides"
     )
     dialog._cb_override_backend = ComboBox()
-    backend_names = [
-        name for name in dialog.controller.available_backend_names() if name != "None"
-    ]
-    dialog._cb_override_backend.addItems(backend_names)
-    active_backend = dialog.controller.active_backend_name()
-    idx_backend = dialog._cb_override_backend.findText(active_backend)
-    dialog._cb_override_backend.setCurrentIndex(max(0, idx_backend))
+    refresh_ocr_override_backend_combo(dialog)
     dialog._cb_override_backend.currentTextChanged.connect(
         lambda name: refresh_ocr_override_table(dialog, name)
+    )
+    dialog.controller.translation_backends_reloaded.connect(
+        lambda: (
+            refresh_ocr_override_backend_combo(dialog),
+            refresh_ocr_override_table(dialog, dialog._cb_override_backend.currentText()),
+        )
     )
     fl_tl_backend.addRow("Translation backend:", dialog._cb_override_backend)
     label_desc = BodyLabel(
