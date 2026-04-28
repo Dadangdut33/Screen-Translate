@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
+import os
+import shutil
 from pathlib import Path
 from typing import Any
 
-from qfluentwidgets import ComboBox, LineEdit
+from qfluentwidgets import ComboBox, LineEdit, MessageBox
 
 from screen_translate.core.translation.argos_backend import (
     argos_package_dir_from_setting,
@@ -29,6 +31,99 @@ def format_bytes(size_bytes: int) -> str:
             return f"{size:.1f} {unit}" if unit != "B" else f"{int(size)} B"
         size /= 1024.0
     return f"{size_bytes} B"
+
+
+def normalize_path(path: str | Path) -> Path:
+    """Return a normalized absolute path."""
+    return Path(path).expanduser().resolve()
+
+
+def paths_equivalent(left: str | Path, right: str | Path) -> bool:
+    """Return True when two paths refer to the same normalized location."""
+    return normalize_path(left) == normalize_path(right)
+
+
+def directory_has_content(path: str | Path) -> bool:
+    """Return True when a directory exists and contains at least one entry."""
+    target = Path(path).expanduser()
+    if not target.exists() or not target.is_dir():
+        return False
+    try:
+        next(target.iterdir())
+    except StopIteration:
+        return False
+    except OSError:
+        return False
+    return True
+
+
+def confirm_directory_move(
+    parent: Any,
+    *,
+    title: str,
+    subject: str,
+    source: str | Path,
+    destination: str | Path,
+) -> bool:
+    """Ask the user to confirm a directory migration."""
+    source_path = normalize_path(source)
+    destination_path = normalize_path(destination)
+    box = MessageBox(
+        title,
+        (
+            f"{subject} will be moved to the new directory.\n\n"
+            f"From:\n{source_path}\n\n"
+            f"To:\n{destination_path}\n\n"
+            "If the destination already contains same-named files or folders, "
+            "they will be replaced."
+        ),
+        parent.window() if hasattr(parent, "window") else parent,
+    )
+    box.yesButton.setText("Move")
+    box.cancelButton.setText("Cancel")
+    return bool(box.exec())
+
+
+def move_directory_contents(source: str | Path, destination: str | Path) -> int:
+    """Move all content from one directory to another, merging folders."""
+    source_path = normalize_path(source)
+    destination_path = normalize_path(destination)
+
+    if source_path == destination_path:
+        return 0
+    if source_path in destination_path.parents:
+        raise ValueError("Destination directory cannot be inside the source directory.")
+    if destination_path in source_path.parents:
+        raise ValueError("Source directory cannot be inside the destination directory.")
+
+    if not source_path.exists():
+        destination_path.mkdir(parents=True, exist_ok=True)
+        return 0
+
+    destination_path.mkdir(parents=True, exist_ok=True)
+    moved = 0
+    for child in list(source_path.iterdir()):
+        target = destination_path / child.name
+        if target.exists():
+            if child.is_dir() and target.is_dir():
+                moved += move_directory_contents(child, target)
+                try:
+                    child.rmdir()
+                except OSError:
+                    pass
+                continue
+            if target.is_dir():
+                shutil.rmtree(target)
+            else:
+                target.unlink()
+        shutil.move(str(child), str(target))
+        moved += 1
+
+    try:
+        source_path.rmdir()
+    except OSError:
+        pass
+    return moved
 
 
 def refresh_translation_runtime(dialog: Any) -> None:

@@ -28,11 +28,16 @@ from screen_translate.core.translation.libretranslate_local import (
 )
 
 from .shared import (
+    confirm_directory_move,
+    directory_has_content,
     format_bytes,
     libre_install_dir,
     libre_package_dir,
     make_passthrough_line_edit,
     make_reload_line_edit,
+    move_directory_contents,
+    normalize_path,
+    paths_equivalent,
     persist_backend_setting,
     refresh_translation_runtime,
     update_libre_mode_visibility,
@@ -381,8 +386,7 @@ def browse_libre_local_dir(dialog: Any) -> None:
     )
     if not chosen:
         return
-    dialog.s.set("libre_local_dir", chosen)
-    refresh_libre_local_info(dialog)
+    apply_libre_local_dir_change(dialog, chosen)
 
 
 def open_libre_local_dir(dialog: Any) -> None:
@@ -402,8 +406,98 @@ def browse_libre_package_dir(dialog: Any) -> None:
     )
     if not chosen:
         return
-    dialog.s.set("libre_local_package_dir", chosen)
+    apply_libre_package_dir_change(dialog, chosen)
+
+
+def apply_libre_local_dir_change(dialog: Any, raw_value: str) -> None:
+    """Persist a new managed LibreTranslate install directory and move content."""
+    old_dir = libre_install_dir(dialog)
+    new_dir = normalize_path(raw_value or default_local_libretranslate_dir())
+
+    if paths_equivalent(old_dir, new_dir):
+        dialog._libre_local_dir.blockSignals(True)
+        dialog._libre_local_dir.setText(str(new_dir))
+        dialog._libre_local_dir.blockSignals(False)
+        dialog.s.set("libre_local_dir", str(new_dir))
+        refresh_libre_local_info(dialog)
+        return
+
     dialog.controller.stop_local_libretranslate_server()
+
+    if directory_has_content(old_dir):
+        confirmed = confirm_directory_move(
+            dialog,
+            title="Move LibreTranslate Runtime",
+            subject="The managed LibreTranslate Python environment and runtime files",
+            source=old_dir,
+            destination=new_dir,
+        )
+        if not confirmed:
+            dialog._libre_local_dir.blockSignals(True)
+            dialog._libre_local_dir.setText(str(old_dir))
+            dialog._libre_local_dir.blockSignals(False)
+            refresh_libre_local_info(dialog)
+            return
+        try:
+            move_directory_contents(old_dir, new_dir)
+        except Exception as exc:
+            dialog._lbl_libre_setup_runtime.setText(
+                f"Could not move LibreTranslate runtime: {exc}"
+            )
+            dialog._libre_local_dir.blockSignals(True)
+            dialog._libre_local_dir.setText(str(old_dir))
+            dialog._libre_local_dir.blockSignals(False)
+            refresh_libre_local_info(dialog)
+            return
+
+    dialog.s.set("libre_local_dir", str(new_dir))
+    refresh_libre_local_info(dialog)
+
+
+def apply_libre_package_dir_change(dialog: Any, raw_value: str) -> None:
+    """Persist a new local LibreTranslate package directory and move models."""
+    old_dir = libre_package_dir(dialog)
+    raw_text = raw_value.strip()
+    new_dir = normalize_path(raw_text) if raw_text else normalize_path(argos_install_dir(dialog))
+
+    if paths_equivalent(old_dir, new_dir):
+        dialog._libre_local_package_dir.blockSignals(True)
+        dialog._libre_local_package_dir.setText(str(new_dir))
+        dialog._libre_local_package_dir.blockSignals(False)
+        dialog.s.set("libre_local_package_dir", raw_text)
+        refresh_libre_local_info(dialog)
+        refresh_translation_runtime(dialog)
+        return
+
+    dialog.controller.stop_local_libretranslate_server()
+
+    if directory_has_content(old_dir):
+        confirmed = confirm_directory_move(
+            dialog,
+            title="Move LibreTranslate Models",
+            subject="The local LibreTranslate model packages",
+            source=old_dir,
+            destination=new_dir,
+        )
+        if not confirmed:
+            dialog._libre_local_package_dir.blockSignals(True)
+            dialog._libre_local_package_dir.setText(str(old_dir))
+            dialog._libre_local_package_dir.blockSignals(False)
+            refresh_libre_local_info(dialog)
+            return
+        try:
+            move_directory_contents(old_dir, new_dir)
+        except Exception as exc:
+            dialog._lbl_libre_setup_runtime.setText(
+                f"Could not move LibreTranslate model packages: {exc}"
+            )
+            dialog._libre_local_package_dir.blockSignals(True)
+            dialog._libre_local_package_dir.setText(str(old_dir))
+            dialog._libre_local_package_dir.blockSignals(False)
+            refresh_libre_local_info(dialog)
+            return
+
+    dialog.s.set("libre_local_package_dir", raw_text)
     refresh_libre_local_info(dialog)
     refresh_translation_runtime(dialog)
 
@@ -502,7 +596,7 @@ def build_libre_section(dialog: Any) -> QWidget:
         str(default_local_libretranslate_dir()),
     )
     dialog._libre_local_dir.editingFinished.connect(
-        lambda: refresh_libre_local_info(dialog)
+        lambda: apply_libre_local_dir_change(dialog, dialog._libre_local_dir.text())
     )
     dialog._btn_libre_browse = PushButton("Browse")
     dialog._btn_libre_browse.clicked.connect(lambda: browse_libre_local_dir(dialog))
@@ -520,13 +614,8 @@ def build_libre_section(dialog: Any) -> QWidget:
         str(libre_package_dir(dialog)),
     )
     dialog._libre_local_package_dir.editingFinished.connect(
-        lambda: (
-            dialog.s.set(
-                "libre_local_package_dir", dialog._libre_local_package_dir.text()
-            ),
-            dialog.controller.stop_local_libretranslate_server(),
-            refresh_libre_local_info(dialog),
-            refresh_translation_runtime(dialog),
+        lambda: apply_libre_package_dir_change(
+            dialog, dialog._libre_local_package_dir.text()
         )
     )
     dialog._btn_libre_package_browse = PushButton("Browse")

@@ -34,7 +34,15 @@ from screen_translate.core.translation.argos_backend import (
     configure_argos_package_dir,
 )
 
-from .shared import argos_install_dir, format_bytes, refresh_translation_runtime
+from .shared import (
+    argos_install_dir,
+    confirm_directory_move,
+    directory_has_content,
+    format_bytes,
+    move_directory_contents,
+    paths_equivalent,
+    refresh_translation_runtime,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -172,6 +180,58 @@ def open_argos_dir(dialog: Any) -> None:
         )
 
 
+def apply_argos_dir_change(dialog: Any, raw_value: str) -> None:
+    """Persist a new Argos package directory and move existing content if needed."""
+    old_dir = argos_install_dir(dialog)
+    new_dir = configure_argos_package_dir(raw_value)
+
+    if paths_equivalent(old_dir, new_dir):
+        if getattr(dialog, "_argos_dir_edit", None) is not None:
+            dialog._argos_dir_edit.blockSignals(True)
+            dialog._argos_dir_edit.setText(str(new_dir))
+            dialog._argos_dir_edit.blockSignals(False)
+        dialog.s.set("argos_package_dir", str(new_dir))
+        refresh_argos_info(dialog)
+        return
+
+    if directory_has_content(old_dir):
+        confirmed = confirm_directory_move(
+            dialog,
+            title="Move Argos Packages",
+            subject="Installed Argos language packages",
+            source=old_dir,
+            destination=new_dir,
+        )
+        if not confirmed:
+            if getattr(dialog, "_argos_dir_edit", None) is not None:
+                dialog._argos_dir_edit.blockSignals(True)
+                dialog._argos_dir_edit.setText(str(old_dir))
+                dialog._argos_dir_edit.blockSignals(False)
+            return
+        try:
+            move_directory_contents(old_dir, new_dir)
+        except Exception as exc:
+            dialog._lbl_argos_install_runtime.setText(
+                f"Could not move Argos packages: {exc}"
+            )
+            if getattr(dialog, "_argos_dir_edit", None) is not None:
+                dialog._argos_dir_edit.blockSignals(True)
+                dialog._argos_dir_edit.setText(str(old_dir))
+                dialog._argos_dir_edit.blockSignals(False)
+            configure_argos_package_dir(str(old_dir))
+            return
+
+    dialog.s.set("argos_package_dir", str(new_dir))
+    configure_argos_package_dir(str(new_dir))
+    if dialog.controller.local_libretranslate_enabled():
+        dialog.controller.stop_local_libretranslate_server()
+        from .libre import refresh_libre_local_info
+
+        refresh_libre_local_info(dialog)
+    refresh_argos_info(dialog)
+    refresh_translation_runtime(dialog)
+
+
 def browse_argos_dir(dialog: Any) -> None:
     """Choose the Argos package directory."""
     current = str(argos_install_dir(dialog))
@@ -180,10 +240,7 @@ def browse_argos_dir(dialog: Any) -> None:
     )
     if not chosen:
         return
-    dialog.s.set("argos_package_dir", chosen)
-    configure_argos_package_dir(chosen)
-    refresh_argos_info(dialog)
-    refresh_translation_runtime(dialog)
+    apply_argos_dir_change(dialog, chosen)
 
 
 def set_argos_busy(dialog: Any, busy: bool, status_text: str = "") -> None:
@@ -459,11 +516,7 @@ def build_argos_section(dialog: Any) -> QWidget:
         str(default_argos_package_dir()),
     )
     dialog._argos_dir_edit.editingFinished.connect(
-        lambda: (
-            configure_argos_package_dir(dialog._argos_dir_edit.text()),
-            refresh_argos_info(dialog),
-            refresh_translation_runtime(dialog),
-        )
+        lambda: apply_argos_dir_change(dialog, dialog._argos_dir_edit.text())
     )
     dialog._lbl_argos_installed_codes = QLabel()
     dialog._lbl_argos_installed_codes.setWordWrap(True)
