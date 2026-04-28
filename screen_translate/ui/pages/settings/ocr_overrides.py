@@ -30,8 +30,17 @@ _LANGUAGE_NAME_OVERRIDES: dict[str, str] = {
 }
 
 
-def language_name(code: str) -> str:
+def language_name(code: str, backend: Any | None = None) -> str:
     """Return a human-friendly language name for a backend language code."""
+    backend_label = getattr(backend, "language_display_name", None)
+    if callable(backend_label):
+        try:
+            label = str(backend_label(code)).strip()
+            if label:
+                return label
+        except Exception:
+            pass
+
     override = _LANGUAGE_NAME_OVERRIDES.get(code)
     if override:
         return override
@@ -58,6 +67,19 @@ def language_name(code: str) -> str:
     return code
 
 
+def language_code_display(code: str, backend: Any | None = None) -> str:
+    """Return a human-friendly short code for a backend language entry."""
+    backend_code = getattr(backend, "language_display_code", None)
+    if callable(backend_code):
+        try:
+            display = str(backend_code(code)).strip()
+            if display:
+                return display
+        except Exception:
+            pass
+    return code
+
+
 def refresh_ocr_override_table(dialog: Any, backend_name: str) -> None:
     """Refresh the override table for the selected translation backend."""
     if not hasattr(dialog, "_tbl_ocr_overrides"):
@@ -73,8 +95,11 @@ def refresh_ocr_override_table(dialog: Any, backend_name: str) -> None:
     rows: list[tuple[str, str, str, str]] = []
     for language_code in languages:
         current_override = backend_overrides.get(language_code, "")
+        normalized_code = dialog.controller.normalize_backend_language_code(
+            backend_name, language_code
+        )
         resolved_with_override = resolve_tesseract_language_code(
-            language_code,
+            normalized_code,
             installed,
             overrides=backend_overrides,
         )
@@ -82,7 +107,7 @@ def refresh_ocr_override_table(dialog: Any, backend_name: str) -> None:
         rows.append(
             (
                 language_code,
-                language_name(language_code),
+                language_name(language_code, backend),
                 resolved_display,
                 current_override,
             )
@@ -94,7 +119,7 @@ def refresh_ocr_override_table(dialog: Any, backend_name: str) -> None:
         resolved_display,
         current_override,
     ) in enumerate(rows):
-        code_item = QTableWidgetItem(language_code)
+        code_item = QTableWidgetItem(language_code_display(language_code, backend))
         code_item.setFlags(code_item.flags() & ~Qt.ItemFlag.ItemIsEditable)
         name_item = QTableWidgetItem(resolved_display_name)
         name_item.setFlags(name_item.flags() & ~Qt.ItemFlag.ItemIsEditable)
@@ -174,8 +199,11 @@ def set_ocr_override(
         dialog.controller.main_window._refresh_lang_combos()
 
     installed = dialog.controller.installed_ocr_languages()
+    normalized_code = dialog.controller.normalize_backend_language_code(
+        backend_name, language_code
+    )
     resolved = resolve_tesseract_language_code(
-        language_code,
+        normalized_code,
         installed,
         overrides=dialog.controller.backend_ocr_overrides(backend_name),
     )

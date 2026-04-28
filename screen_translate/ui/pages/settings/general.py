@@ -10,6 +10,7 @@ from screen_translate.ui.widgets import (
     SettingsCardGroup,
     WidgetSettingCard,
     load_qta_icon,
+    make_row_widget,
     make_switch_setting_card,
 )
 
@@ -31,6 +32,45 @@ def build_general_page(dialog: Any) -> QWidget:
             content="Look for newer app releases when Screen Translate launches.",
             checked=bool(dialog.s.get("checkUpdateOnStart", False)),
             on_changed=lambda value: dialog.s.set("checkUpdateOnStart", value),
+            parent=grp_app,
+        )
+    )
+    grp_app.addSettingCard(
+        WidgetSettingCard(
+            load_qta_icon("mdi6.aspect-ratio"),
+            "Initial main window size",
+            "Choose the default width and height used when no saved size is restored.",
+            make_row_widget(
+                bind_spin("main_window_initial_width", dialog.s, 700, 4000),
+                bind_spin("main_window_initial_height", dialog.s, 300, 3000),
+                stretch_first=False,
+            ),
+            grp_app,
+            stretch=1,
+        )
+    )
+    grp_app.addSettingCard(
+        make_switch_setting_card(
+            icon=load_qta_icon("mdi6.content-save-cog-outline"),
+            title="Save main window size",
+            content="Remember the last main window size and restore it on next launch.",
+            checked=bool(dialog.s.get("save_main_window_size", True)),
+            on_changed=lambda value: dialog.s.set("save_main_window_size", value),
+            parent=grp_app,
+        )
+    )
+    grp_app.addSettingCard(
+        make_switch_setting_card(
+            icon=load_qta_icon("mdi6.identifier"),
+            title="Show source language codes",
+            content="Prefix the source-language list with codes like [EN] or [JA].",
+            checked=bool(dialog.s.get("show_source_language_codes", False)),
+            on_changed=lambda value: (
+                dialog.s.set("show_source_language_codes", value),
+                dialog.controller.main_window._refresh_lang_combos()
+                if getattr(dialog.controller, "main_window", None) is not None
+                else None
+            ),
             parent=grp_app,
         )
     )

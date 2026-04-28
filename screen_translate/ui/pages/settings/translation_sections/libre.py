@@ -44,6 +44,126 @@ from .shared import (
 )
 
 
+def collect_libre_local_info(dialog: Any) -> dict[str, object]:
+    """Collect managed local LibreTranslate status off the UI thread."""
+    install_dir = libre_install_dir(dialog)
+    info = inspect_local_libretranslate(install_dir)
+    port = str(dialog.s.get("libre_local_port", "5000")).strip() or "5000"
+    endpoint = f"http://127.0.0.1:{port}"
+    package_dir = str(libre_package_dir(dialog))
+    is_running = dialog.controller.is_local_libretranslate_running()
+
+    try:
+        configure_argos_package_dir(package_dir)
+        import argostranslate.package as argos_package
+
+        packages = [
+            pkg
+            for pkg in argos_package.get_installed_packages()
+            if str(getattr(pkg, "type", "translate")) == "translate"
+        ]
+        codes = sorted(
+            {
+                str(getattr(pkg, "from_code", "")).strip()
+                for pkg in packages
+                if str(getattr(pkg, "from_code", "")).strip()
+            }
+            | {
+                str(getattr(pkg, "to_code", "")).strip()
+                for pkg in packages
+                if str(getattr(pkg, "to_code", "")).strip()
+            }
+        )
+        if codes:
+            languages_summary = (
+                f"{len(codes)} installed language codes from {len(packages)} local model pairs"
+            )
+            languages_details = ", ".join(codes)
+        else:
+            languages_summary = "No local language models detected yet."
+            languages_details = (
+                "Run Update Installed Models to download more LibreTranslate models."
+            )
+    except Exception:
+        languages_summary = "No local language models detected yet."
+        languages_details = (
+            "Run Update Installed Models to download more LibreTranslate models."
+        )
+
+    return {
+        "install_dir": str(install_dir),
+        "package_dir": package_dir,
+        "info": info,
+        "port": port,
+        "endpoint": endpoint,
+        "is_running": is_running,
+        "languages_summary": languages_summary,
+        "languages_details": languages_details,
+    }
+
+
+def apply_libre_local_info(dialog: Any, payload: dict[str, object]) -> None:
+    """Apply managed local LibreTranslate status on the UI thread."""
+    install_dir = str(payload.get("install_dir", ""))
+    package_dir = str(payload.get("package_dir", ""))
+    info = payload.get("info")
+    port = str(payload.get("port", "5000"))
+    endpoint = str(payload.get("endpoint", f"http://127.0.0.1:{port}"))
+    is_running = bool(payload.get("is_running", False))
+    summary = str(payload.get("languages_summary", "No local language models detected yet."))
+    details = str(
+        payload.get(
+            "languages_details",
+            "Run Update Installed Models to download more LibreTranslate models.",
+        )
+    )
+
+    if info is None:
+        return
+
+    dialog._libre_local_dir.blockSignals(True)
+    dialog._libre_local_dir.setText(install_dir)
+    dialog._libre_local_dir.blockSignals(False)
+
+    status = "Installed" if info.installed else "Not installed"
+    version = info.package_version or "n/a"
+    dialog._lbl_libre_local_status.setText(f"{status}  |  libretranslate: {version}")
+    if getattr(dialog, "_btn_libre_setup", None) is not None:
+        dialog._btn_libre_setup.setText(
+            "Update LibreTranslate" if info.installed else "Setup LibreTranslate"
+        )
+    dialog._lbl_libre_local_size.setText(format_bytes(info.size_bytes))
+    dialog._lbl_libre_local_python.setText(str(info.python_executable))
+    dialog._lbl_libre_local_command.setText(str(info.command_executable))
+    if getattr(dialog, "_libre_local_package_dir", None) is not None:
+        dialog._libre_local_package_dir.blockSignals(True)
+        dialog._libre_local_package_dir.setText(package_dir)
+        dialog._libre_local_package_dir.blockSignals(False)
+    dialog._lbl_libre_local_endpoint.setText(endpoint)
+    if getattr(dialog, "_lbl_libre_local_running", None) is not None:
+        if is_running:
+            dialog._lbl_libre_local_running.setText(
+                "Running and reachable on the configured local endpoint."
+            )
+        elif info.installed:
+            dialog._lbl_libre_local_running.setText(
+                "Stopped. Screen Translate will auto-start it when the local LibreTranslate backend is used."
+            )
+        else:
+            dialog._lbl_libre_local_running.setText("Not installed yet.")
+    if getattr(dialog, "_lbl_libre_local_note", None) is not None:
+        dialog._lbl_libre_local_note.setText(
+            "Screen Translate will auto-start the managed local LibreTranslate server when needed "
+            "and stop it when the app exits."
+        )
+    installed_items = info.installed_items or [
+        "No managed LibreTranslate components found yet."
+    ]
+    dialog._libre_local_details.setPlainText("\n".join(installed_items))
+    dialog._lbl_libre_local_languages.setText(summary)
+    dialog._libre_local_language_details.setPlainText(details)
+
+
 def _collect_local_libre_language_summary(dialog: Any) -> tuple[str, str]:
     """Return a summary and details of locally available LibreTranslate languages."""
     if dialog.controller.is_local_libretranslate_running():

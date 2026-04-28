@@ -7,12 +7,13 @@ import platform
 from typing import TYPE_CHECKING
 
 import pycountry
-from PyQt6.QtCore import QSize, Qt, pyqtSlot
+from PyQt6.QtCore import QObject, QRunnable, QSize, Qt, pyqtSignal, pyqtSlot
 from PyQt6.QtGui import QCloseEvent, QIcon
 from PyQt6.QtWidgets import (
     QHBoxLayout,
     QLabel,
     QMenu,
+    QSizePolicy,
     QSplitter,
     QSystemTrayIcon,
     QTextEdit,
@@ -22,8 +23,9 @@ from PyQt6.QtWidgets import (
 from qfluentwidgets import (
     FluentIcon as FIF,
     FluentWindow,
+    IndeterminateProgressBar,
+    MessageBox,
     NavigationItemPosition,
-    ProgressBar,
     SmoothScrollArea,
     ToolButton,
     isDarkTheme,
@@ -31,6 +33,7 @@ from qfluentwidgets import (
 import qtawesome as qta
 
 from screen_translate import __version__
+from screen_translate.core.ocr.language_compat import resolve_tesseract_language_code
 from qfluentwidgets.common.router import qrouter
 from screen_translate.ui.widgets import SuggestionComboBox
 from screen_translate.ui.theme.style_sheet import StyleSheet
@@ -44,6 +47,7 @@ logger = logging.getLogger(__name__)
 
 _APP_NAME = "Screen Translate"
 _COMBOBOX_HEIGHT = 36
+_SETTINGS_PLACEHOLDER_ROUTE = "settings_launch"
 _LANGUAGE_NAME_OVERRIDES: dict[str, str] = {
     "auto": "Auto Detect",
     "zh-CN": "Chinese (Simplified)",
@@ -61,7 +65,47 @@ _LANGUAGE_NAME_OVERRIDES: dict[str, str] = {
     "crh-Latn": "Crimean Tatar (Latin)",
     "ber-Latn": "Berber (Latin)",
 }
-_OCR_INCOMPATIBLE_SUFFIX = " [incompatible with Tesseract OCR]"
+_OCR_INCOMPATIBLE_SUFFIX = "  ⚠"
+
+
+class _LanguageLoadSignals(QObject):
+    """Signals emitted by background language-loading work."""
+
+    finished = pyqtSignal(int, object, object)
+    error = pyqtSignal(int, str)
+
+
+class _LanguageLoadWorker(QRunnable):
+    """Load backend language data off the UI thread."""
+
+    def __init__(self, request_id: int, backend: object, source_code: str) -> None:
+        super().__init__()
+        self.request_id = request_id
+        self.backend = backend
+        self.source_code = source_code
+        self.signals = _LanguageLoadSignals()
+        self.setAutoDelete(True)
+
+    @pyqtSlot()
+    def run(self) -> None:
+        try:
+            langs = (
+                list(self.backend.available_languages())
+                if self.backend is not None
+                and hasattr(self.backend, "available_languages")
+                else []
+            )
+            if self.backend is not None and hasattr(
+                self.backend, "available_target_languages"
+            ):
+                targets = list(
+                    self.backend.available_target_languages(self.source_code)
+                )
+            else:
+                targets = [lang for lang in langs if lang not in {"auto", "Auto"}]
+            self.signals.finished.emit(self.request_id, langs, targets)
+        except Exception as exc:
+            self.signals.error.emit(self.request_id, str(exc))
 
 
 class _PageScrollArea(SmoothScrollArea):
@@ -108,10 +152,13 @@ class MainWindow(FluentWindow):
         self._ocr_images_page: QWidget | None = None
         self._about_page: QWidget | None = None
         self._settings_page: QWidget | None = None
+        self._lang_request_id = 0
+        self._lang_loading = False
+        self._applying_saved_size = False
 
         self.setWindowTitle(f"{_APP_NAME} v{__version__}")
         self.setMinimumSize(QSize(700, 300))
-        self.resize(950, 600)
+        self._apply_initial_size()
         StyleSheet.MAIN_WINDOW.apply(self)
 
         icon = load_icon()
@@ -122,6 +169,34 @@ class MainWindow(FluentWindow):
         self._build_tray()
         self._connect_signals()
         self._restore_state()
+
+    def _apply_initial_size(self) -> None:
+        """Apply either the saved size or the configured initial size."""
+        settings = self.controller.settings
+        width = max(700, int(settings.get("main_window_initial_width", 950)))
+        height = max(300, int(settings.get("main_window_initial_height", 600)))
+        saved = str(settings.get("main_window_size", "")).strip()
+        if bool(settings.get("save_main_window_size", True)) and saved:
+            try:
+                width_text, height_text = saved.split(",", 1)
+                width = max(700, int(width_text))
+                height = max(300, int(height_text))
+            except ValueError:
+                logger.warning("Invalid main_window_size setting: %r", saved)
+        self._applying_saved_size = True
+        self.resize(width, height)
+        self._applying_saved_size = False
+
+    def _persist_window_size(self) -> None:
+        """Persist the current main window size when enabled."""
+        if self._applying_saved_size:
+            return
+        if not bool(self.controller.settings.get("save_main_window_size", True)):
+            return
+        size = self.size()
+        self.controller.settings.set(
+            "main_window_size", f"{size.width()},{size.height()}"
+        )
 
     # ------------------------------------------------------------------
     # UI construction
@@ -160,19 +235,18 @@ class MainWindow(FluentWindow):
         self._progress_label = QLabel("Working...", status_host)
         self._progress_label.setVisible(False)
         status_layout.addWidget(self._progress_label)
-        self.progress = ProgressBar()
-        self.progress.setRange(0, 0)  # indeterminate
+        self.progress = IndeterminateProgressBar(status_host, start=False)
         self.progress.setVisible(False)
         self.progress.setFixedWidth(180)
         self.progress.setFixedHeight(8)
         self.progress.setStyleSheet(
             """
-            QProgressBar {
+            IndeterminateProgressBar {
                 background-color: rgba(255, 255, 255, 0.10);
                 border: 1px solid rgba(255, 255, 255, 0.08);
                 border-radius: 4px;
             }
-            QProgressBar::chunk {
+            IndeterminateProgressBar::chunk {
                 background-color: #2de2ff;
                 border-radius: 4px;
             }
@@ -221,7 +295,7 @@ class MainWindow(FluentWindow):
 
         controls_layout.addWidget(QLabel("Engine:"))
         self.cb_engine = SuggestionComboBox()
-        self.cb_engine.setMinimumWidth(160)
+        self.cb_engine.setMinimumWidth(180)
         self.cb_engine.setMaximumHeight(_COMBOBOX_HEIGHT)
         self.cb_engine.setPlaceholderText("Choose engine")
         controls_layout.addWidget(self.cb_engine)
@@ -231,14 +305,20 @@ class MainWindow(FluentWindow):
         self.cb_source.setMinimumWidth(140)
         self.cb_source.setMaximumHeight(_COMBOBOX_HEIGHT)
         self.cb_source.setPlaceholderText("Source language")
-        controls_layout.addWidget(self.cb_source)
+        self.cb_source.setSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed
+        )
+        controls_layout.addWidget(self.cb_source, 1)
 
         controls_layout.addWidget(QLabel("To:"))
         self.cb_target = SuggestionComboBox()
         self.cb_target.setMinimumWidth(140)
         self.cb_target.setMaximumHeight(_COMBOBOX_HEIGHT)
         self.cb_target.setPlaceholderText("Target language")
-        controls_layout.addWidget(self.cb_target)
+        self.cb_target.setSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed
+        )
+        controls_layout.addWidget(self.cb_target, 1)
 
         self.btn_swap = ToolButton(load_qta_icon("mdi6.swap-horizontal"), controls)
         self.btn_swap.setObjectName("WorkspaceActionButton")
@@ -253,7 +333,15 @@ class MainWindow(FluentWindow):
         self.btn_clear.setFixedSize(38, 38)
         self.btn_clear.setIconSize(QSize(18, 18))
         controls_layout.addWidget(self.btn_clear)
-        controls_layout.addStretch(1)
+
+        self.btn_language_help = ToolButton(
+            load_qta_icon("mdi6.help-circle-outline"), controls
+        )
+        self.btn_language_help.setObjectName("WorkspaceActionButton")
+        self.btn_language_help.setToolTip("Explain OCR compatibility markers")
+        self.btn_language_help.setFixedSize(38, 38)
+        self.btn_language_help.setIconSize(QSize(18, 18))
+        controls_layout.addWidget(self.btn_language_help)
         layout.addWidget(controls)
 
         splitter = QSplitter(Qt.Orientation.Vertical)
@@ -279,7 +367,12 @@ class MainWindow(FluentWindow):
 
         for route_key, icon, text, slot in [
             ("capture_window", FIF.CAMERA, "Capture Window", self._open_capture_window),
-            ("snip", FIF.CUT, "Snip & Translate", self._trigger_snip),
+            (
+                "snip",
+                load_qta_icon("mdi6.crop"),
+                "Snip & Translate",
+                self._trigger_snip,
+            ),
         ]:
             self.navigationInterface.addItem(
                 routeKey=route_key,
@@ -321,10 +414,13 @@ class MainWindow(FluentWindow):
         )
         if settings_page is not None:
             self.register_settings_page(settings_page)
+        else:
+            self._ensure_settings_placeholder()
         self._add_navigation_items()
 
     def register_settings_page(self, settings_page: QWidget) -> None:
         """Embed the settings page into the main stacked area."""
+        self._remove_settings_placeholder()
         self._settings_page = self._embed_page_widget(
             settings_page,
             "settings",
@@ -332,6 +428,27 @@ class MainWindow(FluentWindow):
             "Settings",
             NavigationItemPosition.BOTTOM,
         )
+
+    def _ensure_settings_placeholder(self) -> None:
+        """Show a lightweight Settings nav item before the real page is built."""
+        if self._settings_page is not None:
+            return
+        self.navigationInterface.addItem(
+            routeKey=_SETTINGS_PLACEHOLDER_ROUTE,
+            icon=FIF.SETTING,
+            text="Settings",
+            onClick=self._open_settings,
+            selectable=False,
+            position=NavigationItemPosition.BOTTOM,
+            tooltip=None,
+        )
+
+    def _remove_settings_placeholder(self) -> None:
+        """Remove the temporary Settings nav item if it exists."""
+        try:
+            self.navigationInterface.panel.removeWidget(_SETTINGS_PLACEHOLDER_ROUTE)
+        except Exception:
+            pass
 
     def _embed_page_widget(
         self,
@@ -431,6 +548,7 @@ class MainWindow(FluentWindow):
         self.btn_snip.clicked.connect(self._trigger_snip)
         self.btn_swap.clicked.connect(self._swap_languages)
         self.btn_clear.clicked.connect(self._clear_text)
+        self.btn_language_help.clicked.connect(self._show_language_help)
         self.cb_engine.committed.connect(self._on_engine_changed)
         self.cb_source.committed.connect(self._on_source_changed)
         self.cb_target.committed.connect(self._on_target_changed)
@@ -460,81 +578,56 @@ class MainWindow(FluentWindow):
             idx = 0
         self.cb_engine.setCurrentIndex(max(0, idx))
         self.cb_engine.blockSignals(False)
-        self._on_backends_loading_changed(not self.controller.translation_backends_ready())
-
+        self._on_backends_loading_changed(
+            not self.controller.translation_backends_ready()
+        )
         self._refresh_lang_combos()
-        self.refresh_ocr_compatibility_state()
 
     def _refresh_lang_combos(self) -> None:
-        """Update source/target language combos for the active backend."""
+        """Update source/target language combos for the active backend asynchronously."""
         s = self.controller.settings
         engine_name = self.cb_engine.currentText()
-        self.controller.ensure_backend_ready(engine_name)
         backend = self.controller._backends.get(engine_name)
+        if engine_name == "None" or backend is None:
+            self.cb_source.blockSignals(True)
+            self.cb_target.blockSignals(True)
+            self.cb_source.clear()
+            self.cb_target.clear()
+            self.cb_source.blockSignals(False)
+            self.cb_target.blockSignals(False)
+            self.cb_source.setEnabled(False)
+            self.cb_target.setEnabled(False)
+            self.refresh_ocr_compatibility_state()
+            return
 
-        langs = backend.available_languages() if backend else []
-        src_langs = langs
-
-        self.cb_source.blockSignals(True)
-        self.cb_target.blockSignals(True)
-        self.cb_source.clear()
-        self._populate_language_combo(
-            self.cb_source,
-            src_langs,
-            mark_ocr_compat=True,
-            prefix_code=True,
-        )
-        self.cb_source.refresh_completer()
-
-        saved_src = s.get("sourceLang", "auto")
-
-        idx_src = self._find_language_index(self.cb_source, saved_src)
-        if idx_src < 0:
-            idx_src = self._find_language_index(self.cb_source, "auto")
-        if idx_src < 0 and self.cb_source.count() > 0:
-            idx_src = 0
-
-        self.cb_source.setCurrentIndex(max(0, idx_src))
-        selected_source = self.cb_source.currentData()
-        source_code = selected_source if isinstance(selected_source, str) else "auto"
-        self._refresh_target_combo(
-            backend,
-            source_code,
-            saved_target=str(s.get("targetLang", "en")),
-        )
-
-        is_none = engine_name == "None"
-        has_languages = bool(langs)
-        self.cb_source.setEnabled(not is_none and has_languages)
-        self.cb_target.setEnabled(not is_none and self.cb_target.count() > 0)
-        self.cb_source.blockSignals(False)
-        self.cb_target.blockSignals(False)
-
-        self._persist_selected_language(self.cb_source, "sourceLang")
-        self._persist_selected_language(self.cb_target, "targetLang")
-        self.refresh_ocr_compatibility_state()
+        saved_src = str(s.get("sourceLang", "auto"))
+        request_source = saved_src or "auto"
+        self._lang_request_id += 1
+        request_id = self._lang_request_id
+        worker = _LanguageLoadWorker(request_id, backend, request_source)
+        worker.signals.finished.connect(self._on_languages_loaded)
+        worker.signals.error.connect(self._on_languages_load_error)
+        self._set_languages_loading(True)
+        self.controller._pool.start(worker)
 
     def _refresh_target_combo(
         self,
-        backend: object | None,
-        source_code: str,
+        target_candidates: list[str],
         *,
         saved_target: str | None = None,
     ) -> None:
         """Refresh the target-language combo for the selected source language."""
-        if hasattr(backend, "available_target_languages"):
-            target_candidates = backend.available_target_languages(source_code) if backend else []
-        else:
-            all_languages = backend.available_languages() if backend else []
-            target_candidates = [
-                lang for lang in all_languages if lang not in {"auto", "Auto"}
-            ]
-
         self.cb_target.clear()
-        self._populate_language_combo(self.cb_target, target_candidates)
+        self._populate_language_combo(
+            self.cb_target,
+            target_candidates,
+            backend_name=self.cb_engine.currentText().strip(),
+        )
         self.cb_target.refresh_completer()
 
-        target_code = saved_target or str(self.controller.settings.get("targetLang", "en"))
+        target_code = saved_target or str(
+            self.controller.settings.get("targetLang", "en")
+        )
         idx_tgt = self._find_language_index(self.cb_target, target_code)
         if idx_tgt < 0:
             idx_tgt = self._find_language_index(self.cb_target, "en")
@@ -550,14 +643,22 @@ class MainWindow(FluentWindow):
         *,
         mark_ocr_compat: bool = False,
         prefix_code: bool = False,
+        incompatible_codes: set[str] | None = None,
+        backend_name: str | None = None,
     ) -> None:
         """Populate a language combo with display labels while keeping the code as user data."""
-        for code in languages:
+        for code in self._sorted_language_codes(
+            languages,
+            backend_name=backend_name,
+            keep_auto_first=True,
+        ):
             combo.addItem(
                 self._language_label(
                     code,
                     mark_ocr_compat=mark_ocr_compat,
                     prefix_code=prefix_code,
+                    incompatible_codes=incompatible_codes,
+                    backend_name=backend_name,
                 ),
                 userData=code,
             )
@@ -568,19 +669,54 @@ class MainWindow(FluentWindow):
         *,
         mark_ocr_compat: bool = False,
         prefix_code: bool = False,
+        incompatible_codes: set[str] | None = None,
+        backend_name: str | None = None,
     ) -> str:
         """Return a human-friendly label for a backend language code."""
-        label = self._base_language_label(code)
+        label = self._base_language_label(code, backend_name=backend_name)
         if prefix_code:
-            label = f"[{code.upper()}] {label}"
-        if mark_ocr_compat and not self.controller.is_selected_source_ocr_compatible(
-            code
+            display_code = self._display_language_code(code, backend_name=backend_name)
+            label = f"[{display_code.upper()}] {label}"
+        if (
+            mark_ocr_compat
+            and incompatible_codes is not None
+            and code in incompatible_codes
         ):
             return f"{label}{_OCR_INCOMPATIBLE_SUFFIX}"
         return label
 
-    def _base_language_label(self, code: str) -> str:
+    def _ocr_incompatible_codes(
+        self, languages: list[str], backend_name: str
+    ) -> set[str]:
+        """Return the set of translation language codes incompatible with current OCR settings."""
+        if self.controller.active_ocr_backend_name() != "Tesseract":
+            return set()
+        installed = self.controller.installed_ocr_languages()
+        overrides = self.controller.backend_ocr_overrides(backend_name)
+        return {
+            code
+            for code in languages
+            if resolve_tesseract_language_code(
+                self.controller.normalize_backend_language_code(backend_name, code),
+                installed,
+                overrides=overrides,
+            )
+            is None
+        }
+
+    def _base_language_label(self, code: str, backend_name: str | None = None) -> str:
         """Return the human-friendly label for a language code without compatibility suffixes."""
+        if backend_name:
+            backend = self.controller._backends.get(backend_name)
+            backend_label = getattr(backend, "language_display_name", None)
+            if callable(backend_label):
+                try:
+                    label = str(backend_label(code)).strip()
+                    if label:
+                        return label
+                except Exception:
+                    pass
+
         override = _LANGUAGE_NAME_OVERRIDES.get(code)
         if override:
             return override
@@ -605,6 +741,50 @@ class MainWindow(FluentWindow):
             pass
 
         return code
+
+    def _display_language_code(self, code: str, backend_name: str | None = None) -> str:
+        """Return the short visible code used in UI for a backend language entry."""
+        if backend_name:
+            backend = self.controller._backends.get(backend_name)
+            backend_code = getattr(backend, "language_display_code", None)
+            if callable(backend_code):
+                try:
+                    label_code = str(backend_code(code)).strip()
+                    if label_code:
+                        return label_code
+                except Exception:
+                    pass
+        return code
+
+    def _sorted_language_codes(
+        self,
+        languages: list[str],
+        *,
+        backend_name: str | None = None,
+        keep_auto_first: bool = True,
+    ) -> list[str]:
+        """Sort codes by their visible language label instead of raw code."""
+        unique = list(dict.fromkeys(languages))
+        if not unique:
+            return unique
+
+        def sort_key(code: str) -> tuple[str, str]:
+            return (
+                self._base_language_label(code, backend_name=backend_name).casefold(),
+                code.casefold(),
+            )
+
+        if keep_auto_first and "auto" in unique:
+            return [
+                "auto",
+                *sorted((code for code in unique if code != "auto"), key=sort_key),
+            ]
+        if keep_auto_first and "Auto" in unique:
+            return [
+                "Auto",
+                *sorted((code for code in unique if code != "Auto"), key=sort_key),
+            ]
+        return sorted(unique, key=sort_key)
 
     def refresh_ocr_compatibility_state(self) -> None:
         """Refresh OCR action availability based on source-language compatibility."""
@@ -694,14 +874,14 @@ class MainWindow(FluentWindow):
         self._persist_selected_language(self.cb_source, "sourceLang")
         backend = self.controller._backends.get(self.cb_engine.currentText())
         selected_source = self.cb_source.currentData()
-        self.cb_target.blockSignals(True)
-        self._refresh_target_combo(
-            backend,
-            selected_source if isinstance(selected_source, str) else "auto",
-        )
-        self.cb_target.setEnabled(self.cb_target.count() > 0)
-        self.cb_target.blockSignals(False)
-        self._persist_selected_language(self.cb_target, "targetLang")
+        source_code = selected_source if isinstance(selected_source, str) else "auto"
+        self._lang_request_id += 1
+        request_id = self._lang_request_id
+        worker = _LanguageLoadWorker(request_id, backend, source_code)
+        worker.signals.finished.connect(self._on_languages_loaded)
+        worker.signals.error.connect(self._on_languages_load_error)
+        self._set_languages_loading(True)
+        self.controller._pool.start(worker)
         self.refresh_ocr_compatibility_state()
 
     @pyqtSlot(int)
@@ -745,28 +925,140 @@ class MainWindow(FluentWindow):
         """Show busy indicator."""
         self._progress_label.setVisible(True)
         self.progress.setVisible(True)
+        self.progress.start()
 
     @pyqtSlot(bool)
     def _on_backends_loading_changed(self, loading: bool) -> None:
         """Reflect backend-loading state in the main translation controls."""
         self.cb_engine.setEnabled(not loading)
-        self.cb_source.setEnabled(not loading and self.cb_source.count() > 0)
-        self.cb_target.setEnabled(not loading and self.cb_target.count() > 0)
+        self.cb_source.setEnabled(
+            not loading and not self._lang_loading and self.cb_source.count() > 0
+        )
+        self.cb_target.setEnabled(
+            not loading and not self._lang_loading and self.cb_target.count() > 0
+        )
         self.btn_translate.setEnabled(not loading)
         if loading:
             self._progress_label.setText("Loading backends…")
             self._progress_label.setVisible(True)
             self.progress.setVisible(True)
-        else:
+            self.progress.start()
+        elif not self._lang_loading:
             self._progress_label.setText("Working...")
             self._progress_label.setVisible(False)
             self.progress.setVisible(False)
+            self.progress.stop()
+
+    def _set_languages_loading(self, loading: bool) -> None:
+        """Reflect active language-list loading in the main controls."""
+        self._lang_loading = loading
+        backends_loading = not self.controller.translation_backends_ready()
+        self.cb_source.setEnabled(
+            not loading and not backends_loading and self.cb_source.count() > 0
+        )
+        self.cb_target.setEnabled(
+            not loading and not backends_loading and self.cb_target.count() > 0
+        )
+        self.btn_translate.setEnabled(not loading and not backends_loading)
+        if loading:
+            self._progress_label.setText("Loading languages…")
+            self._progress_label.setVisible(True)
+            self.progress.setVisible(True)
+            self.progress.start()
+        elif not backends_loading:
+            self._progress_label.setText("Working...")
+            self._progress_label.setVisible(False)
+            self.progress.setVisible(False)
+            self.progress.stop()
+
+    @pyqtSlot(int, object, object)
+    def _on_languages_loaded(
+        self,
+        request_id: int,
+        langs_obj: object,
+        targets_obj: object,
+    ) -> None:
+        """Populate language combos after background loading completes."""
+        if request_id != self._lang_request_id:
+            return
+        langs = list(langs_obj) if isinstance(langs_obj, list) else []
+        targets = list(targets_obj) if isinstance(targets_obj, list) else []
+        s = self.controller.settings
+        backend_name = self.cb_engine.currentText().strip()
+        incompatible_codes = self._ocr_incompatible_codes(langs, backend_name)
+
+        self.cb_source.blockSignals(True)
+        self.cb_target.blockSignals(True)
+        self.cb_source.clear()
+        self._populate_language_combo(
+            self.cb_source,
+            langs,
+            mark_ocr_compat=True,
+            prefix_code=bool(
+                self.controller.settings.get("show_source_language_codes", False)
+            ),
+            incompatible_codes=incompatible_codes,
+            backend_name=backend_name,
+        )
+        self.cb_source.refresh_completer()
+
+        saved_src = str(s.get("sourceLang", "auto"))
+        idx_src = self._find_language_index(self.cb_source, saved_src)
+        if idx_src < 0:
+            idx_src = self._find_language_index(self.cb_source, "auto")
+        if idx_src < 0 and self.cb_source.count() > 0:
+            idx_src = 0
+        if idx_src >= 0:
+            self.cb_source.setCurrentIndex(idx_src)
+
+        self._refresh_target_combo(targets, saved_target=str(s.get("targetLang", "en")))
+        self.cb_source.blockSignals(False)
+        self.cb_target.blockSignals(False)
+
+        self._persist_selected_language(self.cb_source, "sourceLang")
+        self._persist_selected_language(self.cb_target, "targetLang")
+        self.refresh_ocr_compatibility_state()
+        self._set_languages_loading(False)
+
+    @pyqtSlot(int, str)
+    def _on_languages_load_error(self, request_id: int, error: str) -> None:
+        """Handle background language-loading failure."""
+        if request_id != self._lang_request_id:
+            return
+        logger.warning("Failed to load backend languages: %s", error)
+        self.cb_source.blockSignals(True)
+        self.cb_target.blockSignals(True)
+        self.cb_source.clear()
+        self.cb_target.clear()
+        self.cb_source.blockSignals(False)
+        self.cb_target.blockSignals(False)
+        self.refresh_ocr_compatibility_state()
+        self._set_languages_loading(False)
+
+    @pyqtSlot()
+    def _show_language_help(self) -> None:
+        """Explain the OCR compatibility warning marker in the source-language list."""
+        box = MessageBox(
+            "OCR Compatibility",
+            (
+                "A ⚠ marker means that the selected translation language does not currently "
+                "map / match into the OCR languages.\n\n"
+                "When using OCR, capture and snipping are disabled for those "
+                "source languages until you either choose a compatible language or add an "
+                "OCR Key Override in Settings."
+            ),
+            self,
+        )
+        box.yesButton.setText("OK")
+        box.cancelButton.hide()
+        box.exec()
 
     @pyqtSlot()
     def _on_idle(self) -> None:
         """Hide busy indicator."""
         self._progress_label.setVisible(False)
         self.progress.setVisible(False)
+        self.progress.stop()
 
     @pyqtSlot(str)
     def _on_ocr_result(self, text: str) -> None:
@@ -799,6 +1091,10 @@ class MainWindow(FluentWindow):
     # ------------------------------------------------------------------
 
     def _open_settings(self) -> None:
+        if self.controller.settings_page is None and hasattr(
+            self.controller, "create_settings_page"
+        ):
+            self.controller.create_settings_page()  # type: ignore[attr-defined]
         if self.controller.settings_page and self._settings_page is not None:
             self._show_stack_page(self._settings_page, "settings")
 
@@ -952,4 +1248,10 @@ class MainWindow(FluentWindow):
             event.accept()
             return
         event.ignore()
+        self._persist_window_size()
         self._hide_to_tray()
+
+    def resizeEvent(self, event) -> None:  # type: ignore[override]
+        """Persist window size changes while the user resizes the main window."""
+        super().resizeEvent(event)
+        self._persist_window_size()

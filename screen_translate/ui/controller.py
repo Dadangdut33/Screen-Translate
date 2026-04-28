@@ -49,6 +49,9 @@ from screen_translate.core.translation.libretranslate_local import (
     local_libretranslate_dir_from_setting,
     local_libretranslate_server_command,
 )
+from screen_translate.core.translation.openrouter_backend import (
+    load_openrouter_backend,
+)
 from screen_translate.core.translation.proxy import (
     build_translation_proxies,
     translation_no_proxy,
@@ -345,6 +348,21 @@ class AppController(QObject):
         )
         backends.append(libre)
 
+        openrouter_backend = load_openrouter_backend(
+            api_key=str(settings.get("openrouter_api_key", "")),
+            base_url=str(settings.get("openrouter_base_url", "https://openrouter.ai/api/v1")),
+            model=str(settings.get("openrouter_model", "openrouter/free")),
+            timeout=float(settings.get("openrouter_timeout", 60)),
+            debug_logging=bool(settings.get("openrouter_debug_logging", False)),
+            system_prompt_template=str(
+                settings.get("openrouter_system_prompt_template", "")
+            ),
+            user_prompt_template=str(settings.get("openrouter_user_prompt_template", "{{text}}")),
+            custom_languages=settings.get("openrouter_custom_languages", {}),
+            proxies=proxies,
+        )
+        backends.append(openrouter_backend)
+
         deepl_key = str(settings.get("deepl_api_key", ""))
         deepl_official = load_deepl_official_backend(
             api_key=deepl_key,
@@ -360,9 +378,9 @@ class AppController(QObject):
         """Capture backend-related settings for worker-thread discovery."""
         keys = [
             "translation_proxy_enabled",
-            "translation_http_proxy",
-            "translation_https_proxy",
-            "translation_no_proxy",
+            "translation_proxy_http",
+            "translation_proxy_https",
+            "translation_proxy_no_proxy",
             "argos_package_dir",
             "libre_use_local",
             "libre_local_port",
@@ -371,6 +389,14 @@ class AppController(QObject):
             "libre_https",
             "libre_api_key",
             "deepl_api_key",
+            "openrouter_api_key",
+            "openrouter_base_url",
+            "openrouter_model",
+            "openrouter_timeout",
+            "openrouter_debug_logging",
+            "openrouter_system_prompt_template",
+            "openrouter_user_prompt_template",
+            "openrouter_custom_languages",
             "translators_region",
         ]
         return {key: self.settings.get(key, "") for key in keys}
@@ -592,7 +618,6 @@ class AppController(QObject):
         """
         self._active_backend_name = name
         self.settings.set("engine", name)
-        self.ensure_backend_ready(name)
         logger.debug("Active backend → %s", name)
 
     def get_ocr_backend(self) -> TesseractOCRBackend:
@@ -660,6 +685,23 @@ class AppController(QObject):
         """Return OCR language overrides for a specific translation backend."""
         return dict(self.ocr_language_overrides().get(backend_name, {}))
 
+    def normalize_backend_language_code(
+        self,
+        backend_name: str,
+        language_code: str,
+    ) -> str:
+        """Return the canonical backend language code for a UI selection key."""
+        backend = self._backends.get(backend_name)
+        resolver = getattr(backend, "resolve_language_code", None)
+        if callable(resolver):
+            try:
+                resolved = str(resolver(language_code)).strip()
+                if resolved:
+                    return resolved
+            except Exception:
+                pass
+        return language_code
+
     def set_backend_ocr_override(
         self,
         backend_name: str,
@@ -695,7 +737,7 @@ class AppController(QObject):
         result: list[tuple[str, str | None]] = []
         for lang_code in backend.available_languages():
             resolved = resolve_tesseract_language_code(
-                lang_code,
+                self.normalize_backend_language_code(backend_name, lang_code),
                 installed,
                 overrides=overrides,
             )
@@ -748,7 +790,7 @@ class AppController(QObject):
         """Map the UI language selection to an installed Tesseract language code."""
         installed = self.installed_ocr_languages()
         resolved = resolve_tesseract_language_code(
-            selected_lang,
+            self.normalize_backend_language_code(self.active_backend_name(), selected_lang),
             installed,
             overrides=self.backend_ocr_overrides(self.active_backend_name()),
         )
@@ -764,8 +806,11 @@ class AppController(QObject):
         lang = selected_lang or str(self.settings.get("sourceLang", "auto"))
         translation_backend = backend_name or self.active_backend_name()
         if ocr_backend_name == "Tesseract":
+            normalized_lang = self.normalize_backend_language_code(
+                translation_backend, lang
+            )
             return is_tesseract_language_compatible(
-                lang,
+                normalized_lang,
                 self.installed_ocr_languages(),
                 overrides=self.backend_ocr_overrides(translation_backend),
             )

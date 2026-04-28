@@ -85,6 +85,20 @@ DEFAULTS: dict[str, Any] = {
     "argos_package_dir": "",
     # DeepL official
     "deepl_api_key": "",
+    # OpenRouter
+    "openrouter_api_key": "",
+    "openrouter_base_url": "https://openrouter.ai/api/v1",
+    "openrouter_model": "openrouter/free",
+    "openrouter_timeout": 60,
+    "openrouter_debug_logging": False,
+    "openrouter_system_prompt_template": (
+        "You are a precise translation engine.\n"
+        "Translate from {{source_language}} to {{target_language}}.\n"
+        "Return only the translated text.\n\n"
+    ),
+    "openrouter_user_prompt_template": "{{text}}",
+    "openrouter_custom_languages": [],
+    "show_source_language_codes": False,
     # Translation proxy
     "translation_proxy_enabled": False,
     "translation_proxy_http": "",
@@ -173,6 +187,17 @@ class SettingsManager:
             if isinstance(raw, dict):
                 return raw
             return fallback
+        if isinstance(fallback, list):
+            if isinstance(raw, str):
+                try:
+                    parsed = json.loads(raw)
+                    if isinstance(parsed, list):
+                        return parsed
+                except json.JSONDecodeError:
+                    return fallback
+            if isinstance(raw, list):
+                return raw
+            return fallback
         return raw
 
     def set(self, key: str, value: Any) -> None:
@@ -182,7 +207,7 @@ class SettingsManager:
             key: Settings key name.
             value: New value to persist.
         """
-        if isinstance(value, dict):
+        if isinstance(value, (dict, list)):
             self._qs.setValue(key, json.dumps(value, sort_keys=True))
         else:
             self._qs.setValue(key, value)

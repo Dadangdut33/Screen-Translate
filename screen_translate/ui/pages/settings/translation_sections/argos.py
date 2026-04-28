@@ -46,6 +46,94 @@ from .shared import (
 logger = logging.getLogger(__name__)
 
 
+def collect_argos_info(dialog: Any) -> dict[str, object]:
+    """Collect Argos Translate informational data off the UI thread."""
+    import argostranslate.settings as argos_settings
+    import argostranslate.translate as argos_translate
+
+    argos_translate.get_installed_languages.cache_clear()
+    installed_languages = argos_translate.get_installed_languages()
+    installed_count = len(installed_languages)
+    configured_dir = configure_argos_package_dir(
+        str(dialog.s.get("argos_package_dir", ""))
+    )
+    package_dir = str(getattr(argos_settings, "package_data_dir", configured_dir))
+    size_bytes = argos_package_dir_size(str(dialog.s.get("argos_package_dir", "")))
+
+    installed_pairs: set[tuple[str, str]] = set()
+    for source in installed_languages:
+        src_code = str(getattr(source, "code", "")).strip()
+        if not src_code:
+            continue
+        for target in installed_languages:
+            tgt_code = str(getattr(target, "code", "")).strip()
+            if not tgt_code or src_code == tgt_code:
+                continue
+            try:
+                translation = source.get_translation(target)
+            except Exception:
+                translation = None
+            if translation is not None:
+                installed_pairs.add((src_code, tgt_code))
+
+    return {
+        "installed_count": installed_count,
+        "configured_dir": str(configured_dir),
+        "package_dir": package_dir,
+        "size_bytes": size_bytes,
+        "installed_pairs": installed_pairs,
+    }
+
+
+def apply_argos_info(dialog: Any, payload: dict[str, object]) -> None:
+    """Apply Argos Translate informational data on the UI thread."""
+    installed_count = int(payload.get("installed_count", 0))
+    configured_dir = str(payload.get("configured_dir", ""))
+    package_dir = str(payload.get("package_dir", configured_dir))
+    size_bytes = int(payload.get("size_bytes", 0))
+    installed_pairs = payload.get("installed_pairs", set())
+    if not isinstance(installed_pairs, set):
+        installed_pairs = set()
+
+    dialog._lbl_argos_status.setText(f"Installed language packs: {installed_count}")
+    dialog._lbl_argos_dir.setText(package_dir)
+    if getattr(dialog, "_argos_dir_edit", None) is not None:
+        dialog._argos_dir_edit.blockSignals(True)
+        dialog._argos_dir_edit.setText(configured_dir)
+        dialog._argos_dir_edit.blockSignals(False)
+    if getattr(dialog, "_lbl_argos_installed_codes", None) is not None:
+        dialog._lbl_argos_installed_codes.setText(
+            format_bytes(size_bytes) if installed_count or size_bytes else "0 B"
+        )
+    dialog._argos_installed_pairs = installed_pairs
+    refresh_argos_table_install_state(dialog)
+
+
+def collect_argos_package_index(dialog: Any) -> dict[str, object]:
+    """Collect Argos package-index data off the UI thread."""
+    configure_argos_package_dir(str(dialog.s.get("argos_package_dir", "")))
+    import argostranslate.package as argos_package
+
+    argos_package.update_package_index()
+    available_packages = argos_package.get_available_packages()
+    return {
+        "available_packages": available_packages,
+        "count": len(available_packages),
+    }
+
+
+def apply_argos_package_index(dialog: Any, payload: dict[str, object]) -> None:
+    """Apply Argos package-index data on the UI thread."""
+    available_packages = payload.get("available_packages", [])
+    if not isinstance(available_packages, list):
+        available_packages = []
+    dialog._argos_packages = available_packages
+    dialog._lbl_argos_index_status.setText(
+        f"Available online pack pairs: {int(payload.get('count', len(available_packages)))}"
+    )
+    rebuild_argos_packages_table(dialog)
+
+
 def refresh_argos_info(dialog: Any) -> None:
     """Refresh Argos Translate informational labels."""
     try:

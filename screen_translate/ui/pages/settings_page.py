@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Callable
 
 from PyQt6.QtCore import QEvent, QSize, Qt, QTimer
 from PyQt6.QtGui import QBrush, QColor, QIcon, QPalette
@@ -11,6 +11,7 @@ from PyQt6.QtWidgets import (
     QFormLayout,
     QGroupBox,
     QHBoxLayout,
+    QLabel,
     QListWidgetItem,
     QSizePolicy,
     QStackedWidget,
@@ -68,6 +69,8 @@ class SettingsPage(QWidget):
         self._nav_refresh_timer = QTimer(self)
         self._nav_refresh_timer.setSingleShot(True)
         self._nav_refresh_timer.timeout.connect(self._refresh_nav_style)
+        self._lazy_page_builders: dict[int, Callable[[], QWidget]] = {}
+        self._lazy_page_labels: dict[int, str] = {}
 
         self.setWindowTitle("Settings")
         self.setObjectName("SettingsPage")
@@ -101,36 +104,32 @@ class SettingsPage(QWidget):
         self._nav_list.setObjectName("SettingsNavList")
         nav_layout.addWidget(self._nav_list, 1)
 
-        pages = [
+        pages: list[tuple[str, QWidget | Callable[[], QWidget]]] = [
             ("General", build_general_page(self)),
             ("Capture", build_capture_page(self)),
             ("OCR", build_ocr_page(self)),
             ("OCR Key Override", build_ocr_overrides_page(self)),
-            ("Translation", build_translation_page(self)),
+            ("Translation", lambda: build_translation_page(self)),
             ("Hotkeys", build_hotkeys_page(self)),
             ("Appearance", build_appearance_page(self)),
         ]
 
-        for label, page in pages:
-            page_layout = page.layout()
-            if page_layout is not None:
-                page_layout.setContentsMargins(0, 0, 0, 0)
-                page_layout.setSpacing(12)
-            page.setMinimumWidth(0)
-            page.setSizePolicy(
-                QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred
-            )
+        for label, page_or_builder in pages:
+            if callable(page_or_builder):
+                page = self._create_lazy_placeholder_page(label)
+                page_index = self._pages.count()
+                self._lazy_page_builders[page_index] = page_or_builder
+                self._lazy_page_labels[page_index] = label
+            else:
+                page = page_or_builder
+                self._prepare_settings_subpage(page)
             item = QListWidgetItem(self._nav_icon(label), label)
             item.setSizeHint(QSize(0, 40))
             self._nav_list.addItem(item)
             self._pages.addWidget(page)
 
-        self._nav_list.currentRowChanged.connect(self._pages.setCurrentIndex)
-        self._nav_list.currentRowChanged.connect(
-            lambda _row: self._sync_nav_item_colors()
-        )
+        self._nav_list.currentRowChanged.connect(self._on_nav_row_changed)
         self._nav_list.setCurrentRow(0)
-        self._pages.setCurrentIndex(0)
         self._schedule_nav_style_refresh()
 
         content_row.addWidget(self._nav_panel)
@@ -260,6 +259,69 @@ class SettingsPage(QWidget):
     # ------------------------------------------------------------------
     # Helpers
     # ------------------------------------------------------------------
+
+    def _prepare_settings_subpage(self, page: QWidget) -> QWidget:
+        """Apply consistent sizing/layout rules to a settings subpage."""
+        page_layout = page.layout()
+        if page_layout is not None:
+            page_layout.setContentsMargins(0, 0, 0, 0)
+            page_layout.setSpacing(12)
+        page.setMinimumWidth(0)
+        page.setSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred
+        )
+        return page
+
+    def _create_lazy_placeholder_page(self, label: str) -> QWidget:
+        """Create a lightweight placeholder for an expensive settings subpage."""
+        page = QWidget(self)
+        layout = QVBoxLayout(page)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(12)
+        hint = QWidget(page)
+        hint_layout = QVBoxLayout(hint)
+        hint_layout.setContentsMargins(12, 12, 12, 12)
+        hint_layout.setSpacing(6)
+        title = QLabel(label, hint)
+        title.setObjectName("LazySettingsTitle")
+        body = QLabel(
+            "This section will be prepared when you open it.",
+            hint,
+        )
+        body.setWordWrap(True)
+        hint_layout.addWidget(title)
+        hint_layout.addWidget(body)
+        layout.addWidget(hint)
+        layout.addStretch(1)
+        return self._prepare_settings_subpage(page)
+
+    def _on_nav_row_changed(self, row: int) -> None:
+        """Switch page and lazily build expensive sections on first open."""
+        if row < 0:
+            return
+        self._ensure_page_built(row)
+        self._pages.setCurrentIndex(row)
+        self._sync_nav_item_colors()
+
+    def _ensure_page_built(self, row: int) -> None:
+        """Build a lazy settings subpage if it has not been created yet."""
+        builder = self._lazy_page_builders.get(row)
+        if builder is None:
+            return
+        placeholder = self._pages.widget(row)
+        try:
+            built_page = self._prepare_settings_subpage(builder())
+        except Exception:
+            logger.exception(
+                "Failed to build lazy settings page: %s",
+                self._lazy_page_labels.get(row, row),
+            )
+            return
+        self._pages.removeWidget(placeholder)
+        placeholder.deleteLater()
+        self._pages.insertWidget(row, built_page)
+        del self._lazy_page_builders[row]
+        self._lazy_page_labels.pop(row, None)
 
     def _group_form(self, title: str) -> tuple[QGroupBox, QFormLayout]:
         """Create a titled group box with a ready-to-use form layout."""

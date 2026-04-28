@@ -183,12 +183,13 @@ def main() -> None:
                     settings_page = SettingsPage(controller)
                     controller.settings_page = settings_page
                     main_win.register_settings_page(settings_page)
-                controller.translation_backends_reloaded.connect(_load_settings_page)
+                controller.create_settings_page = _load_settings_page  # type: ignore[attr-defined]
                 controller.start_async_translation_backends_load()
             else:
                 if splash is not None:
                     splash.close()
                 logger.info("Silent start (-s flag): running in tray only")
+                controller.create_settings_page = lambda: None  # type: ignore[attr-defined]
                 controller.start_async_translation_backends_load()
 
             if bool(settings.get("checkUpdateOnStart", True)):
