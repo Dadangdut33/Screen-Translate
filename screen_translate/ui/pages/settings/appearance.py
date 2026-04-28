@@ -8,12 +8,7 @@ from typing import Any
 
 from PyQt6.QtCore import QMetaObject, QProcess, Qt
 from PyQt6.QtGui import QColor
-from PyQt6.QtWidgets import (
-    QApplication,
-    QColorDialog,
-    QVBoxLayout,
-    QWidget,
-)
+from PyQt6.QtWidgets import QApplication, QColorDialog, QVBoxLayout, QWidget
 from qfluentwidgets import (
     CheckBox,
     ComboBox,
@@ -23,6 +18,13 @@ from qfluentwidgets import (
     PushButton,
     Theme,
     qconfig,
+)
+
+from screen_translate.ui.widgets import (
+    SettingsCardGroup,
+    WidgetSettingCard,
+    load_qta_icon,
+    make_switch_setting_card,
 )
 
 from .common import bind_spin
@@ -94,11 +96,7 @@ def _restart_application(dialog: Any) -> None:
 
 
 def on_theme_changed(dialog: Any, theme: str) -> None:
-    """Persist the selected theme.
-
-    Live theme switching is intentionally disabled because it can crash the
-    current Qt/QFluentWidgets widget tree on some systems.
-    """
+    """Persist the selected theme."""
     dialog.s.set("theme", theme)
     _update_theme_restart_notice(dialog, theme)
 
@@ -143,8 +141,10 @@ def build_appearance_page(dialog: Any) -> QWidget:
     """Build the Appearance settings page."""
     w = QWidget()
     vl = QVBoxLayout(w)
+    vl.setContentsMargins(0, 0, 0, 0)
+    vl.setSpacing(20)
 
-    grp_theme, fl_theme = dialog._group_form("Theme")
+    grp_theme = SettingsCardGroup("Theme", w)
     dialog._cb_theme = ComboBox()
     dialog._cb_theme.addItems(_THEME_OPTIONS)
     saved_theme = str(dialog.s.get("theme", "Dark"))
@@ -153,15 +153,27 @@ def build_appearance_page(dialog: Any) -> QWidget:
     dialog._cb_theme.currentTextChanged.connect(
         lambda theme: on_theme_changed(dialog, theme)
     )
-    fl_theme.addRow("Theme:", dialog._cb_theme)
-    dialog._chk_use_fusion_base_style = CheckBox("Set base style to Fusion")
-    dialog._chk_use_fusion_base_style.setChecked(
-        bool(dialog.s.get("use_fusion_base_style", False))
+    grp_theme.addSettingCards(
+        [
+            WidgetSettingCard(
+                load_qta_icon("mdi6.theme-light-dark"),
+                "Theme",
+                "Choose between the app's Fluent dark and light themes.",
+                dialog._cb_theme,
+                grp_theme,
+            ),
+            make_switch_setting_card(
+                icon=load_qta_icon("mdi6.palette-swatch-outline"),
+                title="Set base style to Fusion",
+                content="Use Qt's cross-platform Fusion base style under the Fluent theme. Restart required.",
+                checked=bool(dialog.s.get("use_fusion_base_style", False)),
+                on_changed=lambda checked: on_fusion_base_style_changed(dialog, checked),
+                parent=grp_theme,
+            ),
+        ]
     )
-    dialog._chk_use_fusion_base_style.toggled.connect(
-        lambda checked: on_fusion_base_style_changed(dialog, checked)
-    )
-    fl_theme.addRow("", dialog._chk_use_fusion_base_style)
+    vl.addWidget(grp_theme)
+
     dialog._theme_restart_notice = InfoBar(
         InfoBarIcon.WARNING,
         "Restart Required",
@@ -174,25 +186,74 @@ def build_appearance_page(dialog: Any) -> QWidget:
     restart_button = PushButton("Restart Now", dialog._theme_restart_notice)
     restart_button.clicked.connect(lambda: _restart_application(dialog))
     dialog._theme_restart_notice.addWidget(restart_button)
-    fl_theme.addRow(dialog._theme_restart_notice)
     _update_theme_restart_notice(dialog, dialog._cb_theme.currentText())
-    vl.addWidget(grp_theme)
+    vl.addWidget(dialog._theme_restart_notice)
 
-    grp_query, fl_query = dialog._group_form("Query Window")
-    fl_query.addRow("Font size:", bind_spin("tb_ex_q_font_size", dialog.s, 6, 72))
-    fl_query.addRow("Font color:", color_picker_row(dialog, "tb_ex_q_font_color"))
-    fl_query.addRow("Background:", color_picker_row(dialog, "tb_ex_q_bg_color"))
+    grp_query = SettingsCardGroup("Query Window", w)
+    grp_query.addSettingCards(
+        [
+            WidgetSettingCard(
+                load_qta_icon("mdi6.format-size"),
+                "Font size",
+                "Adjust the text size used in the query floating window.",
+                bind_spin("tb_ex_q_font_size", dialog.s, 6, 72),
+                grp_query,
+            ),
+            WidgetSettingCard(
+                load_qta_icon("mdi6.format-color-text"),
+                "Font color",
+                "Choose the query window text color.",
+                color_picker_row(dialog, "tb_ex_q_font_color"),
+                grp_query,
+            ),
+            WidgetSettingCard(
+                load_qta_icon("mdi6.palette-outline"),
+                "Background color",
+                "Choose the query window background color.",
+                color_picker_row(dialog, "tb_ex_q_bg_color"),
+                grp_query,
+            ),
+        ]
+    )
     vl.addWidget(grp_query)
 
-    grp_result, fl_result = dialog._group_form("Result Window")
-    fl_result.addRow("Font size:", bind_spin("tb_ex_res_font_size", dialog.s, 6, 72))
-    fl_result.addRow("Font color:", color_picker_row(dialog, "tb_ex_res_font_color"))
-    fl_result.addRow("Background:", color_picker_row(dialog, "tb_ex_res_bg_color"))
+    grp_result = SettingsCardGroup("Result Window", w)
+    grp_result.addSettingCards(
+        [
+            WidgetSettingCard(
+                load_qta_icon("mdi6.format-size"),
+                "Font size",
+                "Adjust the text size used in the result floating window.",
+                bind_spin("tb_ex_res_font_size", dialog.s, 6, 72),
+                grp_result,
+            ),
+            WidgetSettingCard(
+                load_qta_icon("mdi6.format-color-text"),
+                "Font color",
+                "Choose the result window text color.",
+                color_picker_row(dialog, "tb_ex_res_font_color"),
+                grp_result,
+            ),
+            WidgetSettingCard(
+                load_qta_icon("mdi6.palette-outline"),
+                "Background color",
+                "Choose the result window background color.",
+                color_picker_row(dialog, "tb_ex_res_bg_color"),
+                grp_result,
+            ),
+        ]
+    )
     vl.addWidget(grp_result)
 
-    grp_mask, fl_mask = dialog._group_form("Mask Window")
-    fl_mask.addRow(
-        "Background color:", color_picker_row(dialog, "mask_window_bg_color")
+    grp_mask = SettingsCardGroup("Mask Window", w)
+    grp_mask.addSettingCard(
+        WidgetSettingCard(
+            load_qta_icon("mdi6.blur"),
+            "Background color",
+            "Choose the overlay color used by the mask window.",
+            color_picker_row(dialog, "mask_window_bg_color"),
+            grp_mask,
+        )
     )
     vl.addWidget(grp_mask)
     vl.addStretch()

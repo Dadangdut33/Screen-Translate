@@ -5,11 +5,10 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from PyQt6.QtCore import QProcess, QProcessEnvironment, QUrl, Qt
+from PyQt6.QtCore import QProcess, QProcessEnvironment, QUrl
 from PyQt6.QtGui import QDesktopServices
 from PyQt6.QtWidgets import (
     QFileDialog,
-    QFrame,
     QHBoxLayout,
     QLabel,
     QPlainTextEdit,
@@ -17,7 +16,7 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
-from qfluentwidgets import BodyLabel, CheckBox, FluentIcon as FIF, PushButton
+from qfluentwidgets import BodyLabel, CheckBox, PushButton
 
 from screen_translate.core.translation.argos_backend import configure_argos_package_dir
 from screen_translate.core.translation.libretranslate_local import (
@@ -26,6 +25,7 @@ from screen_translate.core.translation.libretranslate_local import (
     local_libretranslate_command,
     local_libretranslate_setup_steps,
 )
+from screen_translate.ui.widgets import InfoBannerCard
 
 from .shared import (
     confirm_directory_move,
@@ -516,44 +516,6 @@ def on_libre_use_local_toggled(dialog: Any, checked: bool) -> None:
     refresh_translation_runtime(dialog)
 
 
-def _build_banner_card(title: str, content: str, parent: QWidget) -> QFrame:
-    """Build a simple explanatory card."""
-    card = QFrame(parent)
-    card.setStyleSheet(
-        """
-        QFrame {
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 10px;
-            background-color: rgba(255, 255, 255, 0.03);
-        }
-        QLabel {
-            border: none;
-            background: transparent;
-        }
-        """
-    )
-    layout = QHBoxLayout(card)
-    layout.setContentsMargins(14, 12, 14, 12)
-    layout.setSpacing(12)
-
-    icon_label = QLabel(card)
-    icon_label.setPixmap(FIF.INFO.icon().pixmap(18, 18))
-    layout.addWidget(icon_label, 0)
-    layout.setAlignment(icon_label, Qt.AlignmentFlag.AlignTop)
-
-    text_layout = QVBoxLayout()
-    text_layout.setContentsMargins(0, 0, 0, 0)
-    text_layout.setSpacing(6)
-    title_label = QLabel(title, card)
-    title_label.setStyleSheet("font-weight: 600;")
-    body_label = BodyLabel(content, card)
-    body_label.setWordWrap(True)
-    text_layout.addWidget(title_label)
-    text_layout.addWidget(body_label)
-    layout.addLayout(text_layout, 1)
-    return card
-
-
 def build_libre_section(dialog: Any) -> QWidget:
     """Build the LibreTranslate settings section."""
     page = QWidget()
@@ -562,7 +524,7 @@ def build_libre_section(dialog: Any) -> QWidget:
     layout.setSpacing(12)
 
     grp_libre, fl_libre = dialog._group_form("LibreTranslate")
-    libre_banner = _build_banner_card(
+    libre_banner = InfoBannerCard(
         "LibreTranslate",
         "Server/API backend. In local mode, Screen Translate manages a local LibreTranslate runtime "
         "and model directory for you. Unlike Argos Translate, this backend runs through an HTTP service "

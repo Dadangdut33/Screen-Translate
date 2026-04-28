@@ -12,7 +12,6 @@ from PyQt6.QtCore import QProcess, QUrl, Qt
 from PyQt6.QtGui import QDesktopServices
 from PyQt6.QtWidgets import (
     QFileDialog,
-    QFrame,
     QHeaderView,
     QHBoxLayout,
     QLabel,
@@ -23,7 +22,6 @@ from PyQt6.QtWidgets import (
 )
 from qfluentwidgets import (
     BodyLabel,
-    FluentIcon as FIF,
     LineEdit,
     PushButton,
     TableWidget,
@@ -33,6 +31,7 @@ from screen_translate.core.translation.argos_backend import (
     argos_package_dir_size,
     configure_argos_package_dir,
 )
+from screen_translate.ui.widgets import InfoBannerCard
 
 from .shared import (
     argos_install_dir,
@@ -45,44 +44,6 @@ from .shared import (
 )
 
 logger = logging.getLogger(__name__)
-
-
-def _build_banner_card(title: str, content: str, parent: QWidget) -> QFrame:
-    """Build a simple explanatory card."""
-    card = QFrame(parent)
-    card.setStyleSheet(
-        """
-        QFrame {
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 10px;
-            background-color: rgba(255, 255, 255, 0.03);
-        }
-        QLabel {
-            border: none;
-            background: transparent;
-        }
-        """
-    )
-    layout = QHBoxLayout(card)
-    layout.setContentsMargins(14, 12, 14, 12)
-    layout.setSpacing(12)
-
-    icon_label = QLabel(card)
-    icon_label.setPixmap(FIF.INFO.icon().pixmap(18, 18))
-    layout.addWidget(icon_label, 0)
-    layout.setAlignment(icon_label, Qt.AlignmentFlag.AlignTop)
-
-    text_layout = QVBoxLayout()
-    text_layout.setContentsMargins(0, 0, 0, 0)
-    text_layout.setSpacing(6)
-    title_label = QLabel(title, card)
-    title_label.setStyleSheet("font-weight: 600;")
-    body_label = BodyLabel(content, card)
-    body_label.setWordWrap(True)
-    text_layout.addWidget(title_label)
-    text_layout.addWidget(body_label)
-    layout.addLayout(text_layout, 1)
-    return card
 
 
 def refresh_argos_info(dialog: Any) -> None:
@@ -494,7 +455,7 @@ def build_argos_section(dialog: Any) -> QWidget:
     from .shared import default_argos_package_dir, make_passthrough_line_edit
 
     grp_argos, fl_argos = dialog._group_form("Argos Translate")
-    argos_banner = _build_banner_card(
+    argos_banner = InfoBannerCard(
         "Argos Translate",
         "Direct offline backend. Screen Translate talks to installed Argos language packs in-process, "
         "without an HTTP server. Use LibreTranslate if you want a local or remote API/server workflow.",

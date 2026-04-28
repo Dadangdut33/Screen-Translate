@@ -3,8 +3,9 @@
 from __future__ import annotations
 
 from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QColor, QPainter, QPaintEvent
 from PyQt6.QtWidgets import QFrame, QHBoxLayout, QLabel, QVBoxLayout, QWidget
-from qfluentwidgets import BodyLabel
+from qfluentwidgets import BodyLabel, isDarkTheme
 
 from .icons import load_qta_icon
 
@@ -21,19 +22,7 @@ class InfoBannerCard(QFrame):
         icon_name: str = "mdi6.information-outline",
     ) -> None:
         super().__init__(parent)
-        self.setStyleSheet(
-            """
-            QFrame {
-                border: 1px solid rgba(255, 255, 255, 0.08);
-                border-radius: 10px;
-                background-color: rgba(255, 255, 255, 0.03);
-            }
-            QLabel {
-                border: none;
-                background: transparent;
-            }
-            """
-        )
+        self.setObjectName("InfoBannerCard")
 
         layout = QHBoxLayout(self)
         layout.setContentsMargins(14, 12, 14, 12)
@@ -64,3 +53,20 @@ class InfoBannerCard(QFrame):
     def setContent(self, content: str) -> None:
         """Set the body content."""
         self.contentLabel.setText(content)
+
+    def paintEvent(self, event: QPaintEvent) -> None:
+        """Paint a theme-aware border/background so light mode stays readable."""
+        super().paintEvent(event)
+        painter = QPainter(self)
+        painter.setRenderHints(QPainter.RenderHint.Antialiasing)
+
+        if isDarkTheme():
+            brush = QColor(255, 255, 255, 8)
+            pen = QColor(255, 255, 255, 20)
+        else:
+            brush = QColor(255, 255, 255, 210)
+            pen = QColor(0, 0, 0, 32)
+
+        painter.setBrush(brush)
+        painter.setPen(pen)
+        painter.drawRoundedRect(self.rect().adjusted(1, 1, -1, -1), 10, 10)

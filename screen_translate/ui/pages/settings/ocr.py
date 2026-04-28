@@ -4,13 +4,18 @@ from __future__ import annotations
 
 from typing import Any
 
-from PyQt6.QtCore import pyqtSlot
-from PyQt6.QtWidgets import QFileDialog
-from PyQt6.QtWidgets import QFormLayout, QGroupBox, QHBoxLayout, QVBoxLayout, QWidget
+from PyQt6.QtWidgets import QFileDialog, QVBoxLayout, QWidget
 from qfluentwidgets import ComboBox, PushButton
 
+from screen_translate.ui.widgets import (
+    SettingsCardGroup,
+    WidgetSettingCard,
+    load_qta_icon,
+    make_row_widget,
+    make_switch_setting_card,
+)
+
 from .common import (
-    bind_check_with_callback,
     bind_combo_with_callback,
     bind_line_with_callback,
     bind_spin,
@@ -18,7 +23,6 @@ from .common import (
 from .ocr_overrides import refresh_ocr_override_table
 
 
-@pyqtSlot(str)
 def on_ocr_backend_changed(dialog: Any, name: str) -> None:
     """Persist OCR backend selection and refresh OCR-dependent UI."""
     dialog.controller.set_active_ocr_backend(name)
@@ -40,8 +44,11 @@ def build_ocr_page(dialog: Any) -> QWidget:
     """Build the OCR settings page."""
     w = QWidget()
     vl = QVBoxLayout(w)
+    vl.setContentsMargins(0, 0, 0, 0)
+    vl.setSpacing(12)
 
-    grp_engine, fl_engine = dialog._group_form("Tesseract")
+    grp_engine = SettingsCardGroup("Tesseract", w)
+
     dialog._cb_ocr_backend = ComboBox()
     dialog._cb_ocr_backend.addItems(dialog.controller.available_ocr_backend_names())
     saved_ocr_backend = str(dialog.s.get("ocr_backend", "Tesseract"))
@@ -50,79 +57,147 @@ def build_ocr_page(dialog: Any) -> QWidget:
     dialog._cb_ocr_backend.currentTextChanged.connect(
         lambda name: on_ocr_backend_changed(dialog, name)
     )
-    fl_engine.addRow("OCR backend:", dialog._cb_ocr_backend)
+    grp_engine.addSettingCard(
+        WidgetSettingCard(
+            load_qta_icon("mdi6.text-recognition"),
+            "OCR backend",
+            "Choose which OCR engine Screen Translate should use.",
+            dialog._cb_ocr_backend,
+            grp_engine,
+        )
+    )
 
-    row = QHBoxLayout()
     dialog._tes_path = bind_line_with_callback(
         "tesseract_loc",
         dialog.s,
         dialog.controller.reset_ocr_backend,
         "Leave empty to use system PATH",
     )
-    row.addWidget(dialog._tes_path)
     btn_browse = PushButton("Browse…")
     btn_browse.clicked.connect(lambda: browse_tesseract(dialog))
-    row.addWidget(btn_browse)
-    fl_engine.addRow("Tesseract path:", row)
+    grp_engine.addSettingCard(
+        WidgetSettingCard(
+            load_qta_icon("mdi6.file-find-outline"),
+            "Tesseract path",
+            "Point to a specific Tesseract executable, or leave empty to use PATH.",
+            make_row_widget(dialog._tes_path, btn_browse, stretch_first=False),
+            grp_engine,
+        )
+    )
 
-    fl_engine.addRow(
-        "Extra config:",
-        bind_line_with_callback(
-            "tesseract_config",
-            dialog.s,
-            dialog.controller.reset_ocr_backend,
-            "--psm 6",
-        ),
-    )
-    fl_engine.addRow(
-        bind_check_with_callback(
-            "tesseract_psm5_vertical",
-            "Auto PSM 5 for vertical scripts",
-            dialog.s,
-            dialog.controller.reset_ocr_backend,
+    grp_engine.addSettingCard(
+        WidgetSettingCard(
+            load_qta_icon("mdi6.tune"),
+            "Extra config",
+            "Pass additional Tesseract command-line options.",
+            bind_line_with_callback(
+                "tesseract_config",
+                dialog.s,
+                dialog.controller.reset_ocr_backend,
+                "--psm 6",
+            ),
+            grp_engine,
         )
     )
-    fl_engine.addRow(
-        bind_check_with_callback(
-            "enhance_with_grayscale",
-            "Grayscale + autocontrast preprocessing",
-            dialog.s,
-            dialog.controller.reset_ocr_backend,
-        )
+
+    grp_engine.addSettingCards(
+        [
+            make_switch_setting_card(
+                icon=load_qta_icon("mdi6.format-text-rotation-angle-up"),
+                title="Auto PSM 5 for vertical scripts",
+                content="Automatically use a layout mode better suited for vertical text.",
+                checked=bool(dialog.s.get("tesseract_psm5_vertical", False)),
+                on_changed=lambda _value: (
+                    dialog.s.set("tesseract_psm5_vertical", _value),
+                    dialog.controller.reset_ocr_backend(),
+                ),
+                parent=grp_engine,
+            ),
+            make_switch_setting_card(
+                icon=load_qta_icon("mdi6.image-filter-hdr"),
+                title="Grayscale + autocontrast preprocessing",
+                content="Preprocess the image before OCR to improve readability.",
+                checked=bool(dialog.s.get("enhance_with_grayscale", False)),
+                on_changed=lambda _value: (
+                    dialog.s.set("enhance_with_grayscale", _value),
+                    dialog.controller.reset_ocr_backend(),
+                ),
+                parent=grp_engine,
+            ),
+            make_switch_setting_card(
+                icon=load_qta_icon("mdi6.vector-polyline"),
+                title="Use OpenCV contour text detection",
+                content="Use OpenCV contour detection to isolate text regions before OCR.",
+                checked=bool(dialog.s.get("enhance_with_cv2_contour", False)),
+                on_changed=lambda _value: (
+                    dialog.s.set("enhance_with_cv2_contour", _value),
+                    dialog.controller.reset_ocr_backend(),
+                ),
+                parent=grp_engine,
+            ),
+            make_switch_setting_card(
+                icon=load_qta_icon("mdi6.bug-outline"),
+                title="Save OpenCV contoured debug image",
+                content="Save the intermediate OpenCV contour result for debugging.",
+                checked=bool(dialog.s.get("save_cv2_contour_image", False)),
+                on_changed=lambda _value: (
+                    dialog.s.set("save_cv2_contour_image", _value),
+                    dialog.controller.reset_ocr_backend(),
+                ),
+                parent=grp_engine,
+            ),
+        ]
     )
-    fl_engine.addRow(
-        bind_check_with_callback(
-            "enhance_with_cv2_contour",
-            "Use OpenCV contour text detection",
-            dialog.s,
-            dialog.controller.reset_ocr_backend,
+
+    grp_engine.addSettingCard(
+        WidgetSettingCard(
+            load_qta_icon("mdi6.invert-colors"),
+            "Background type",
+            "Tell OCR whether the image background should be treated as light, dark, or auto-detected.",
+            bind_combo_with_callback(
+                "enhance_background",
+                ["Auto-Detect", "Light", "Dark"],
+                dialog.s,
+                dialog.controller.reset_ocr_backend,
+            ),
+            grp_engine,
         )
-    )
-    fl_engine.addRow(
-        bind_check_with_callback(
-            "save_cv2_contour_image",
-            "Save OpenCV contoured debug image",
-            dialog.s,
-            dialog.controller.reset_ocr_backend,
-        )
-    )
-    fl_engine.addRow(
-        "Background type:",
-        bind_combo_with_callback(
-            "enhance_background",
-            ["Auto-Detect", "Light", "Dark"],
-            dialog.s,
-            dialog.controller.reset_ocr_backend,
-        ),
     )
     vl.addWidget(grp_engine)
 
-    grp = QGroupBox("Capture Offset Correction")
-    grp_f = QFormLayout(grp)
-    grp_f.addRow("Offset X:", bind_spin("offSetX", dialog.s, -500, 500))
-    grp_f.addRow("Offset Y:", bind_spin("offSetY", dialog.s, -500, 500))
-    grp_f.addRow("Offset W:", bind_spin("offSetW", dialog.s, -500, 500))
-    grp_f.addRow("Offset H:", bind_spin("offSetH", dialog.s, -500, 500))
-    vl.addWidget(grp)
+    grp_offset = SettingsCardGroup("Capture Offset Correction", w)
+    grp_offset.addSettingCards(
+        [
+            WidgetSettingCard(
+                load_qta_icon("mdi6.axis-x-arrow"),
+                "Offset X",
+                "Horizontal offset correction applied to capture coordinates.",
+                bind_spin("offSetX", dialog.s, -500, 500),
+                grp_offset,
+            ),
+            WidgetSettingCard(
+                load_qta_icon("mdi6.axis-y-arrow"),
+                "Offset Y",
+                "Vertical offset correction applied to capture coordinates.",
+                bind_spin("offSetY", dialog.s, -500, 500),
+                grp_offset,
+            ),
+            WidgetSettingCard(
+                load_qta_icon("mdi6.arrow-expand-horizontal"),
+                "Offset W",
+                "Width correction applied to the captured region.",
+                bind_spin("offSetW", dialog.s, -500, 500),
+                grp_offset,
+            ),
+            WidgetSettingCard(
+                load_qta_icon("mdi6.arrow-expand-vertical"),
+                "Offset H",
+                "Height correction applied to the captured region.",
+                bind_spin("offSetH", dialog.s, -500, 500),
+                grp_offset,
+            ),
+        ]
+    )
+    vl.addWidget(grp_offset)
     vl.addStretch()
     return w
